@@ -1,0 +1,173 @@
+# ============================================================
+# JavaScript / Yarn dependencies
+# ============================================================
+node_modules/
+.pnp
+.pnp.js
+.yarn/build-state.yml
+.yarn/install-state.gz
+.yarn/unplugged/
+
+# Keep package.json and yarn.lock tracked.
+
+# ============================================================
+# Frontend and backend build outputs
+# ============================================================
+build/
+dist/
+dist-ssr/
+out/
+bin/
+storybook-static/
+
+# A source package can legitimately be named "build", "out", or "bin".
+!**/src/main/**/build/
+!**/src/test/**/build/
+!**/src/main/**/out/
+!**/src/test/**/out/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# ============================================================
+# Java / Gradle
+# ============================================================
+.gradle/
+*.class
+*.jar
+*.war
+*.ear
+*.hprof
+hs_err_pid*
+replay_pid*
+
+# The Gradle Wrapper JAR is required to run the project.
+!**/gradle/wrapper/gradle-wrapper.jar
+
+# ============================================================
+# Tests and coverage
+# ============================================================
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+cypress/screenshots/
+cypress/videos/
+
+# ============================================================
+# Tool and bundler caches
+# ============================================================
+.cache/
+.parcel-cache/
+.sass-cache/
+.swc/
+.turbo/
+.vite/
+.eslintcache
+.stylelintcache
+.prettier-cache
+*.tsbuildinfo
+
+# ============================================================
+# Logs and runtime-generated files
+# ============================================================
+logs/
+*.log
+*.pid
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+backend/uploads/
+frontend/uploads/
+docker-data/
+
+# ============================================================
+# Local configuration and secrets
+# ============================================================
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.local
+
+application-local.properties
+application-local.yml
+application-local.yaml
+application-secrets.properties
+application-secrets.yml
+application-secrets.yaml
+
+secrets/
+credentials.json
+service-account*.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+!*.example.pem
+!*.example.key
+
+# ============================================================
+# IDE and editor settings
+# ============================================================
+**/.vscode/*
+!**/.vscode/extensions.json
+.idea/
+
+# Eclipse / Spring Tool Suite
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# IntelliJ IDEA
+*.iws
+*.iml
+*.ipr
+
+# Visual Studio
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# NetBeans
+**/nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# ============================================================
+# Operating system files
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ============================================================
+# Temporary and backup files
+# ============================================================
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.orig
+*.swp
+*.swo
+*~
+.history/
+
+# Spring Initializr helper file
+HELP.md
