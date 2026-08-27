@@ -1,2 +1,3 @@
-# at-cost-ball-platform
-야구 정가 양도 플랫폼
+# kkiri-kkiri
+
+기숙사 룸메이트 매칭 플랫폼

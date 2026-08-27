@@ -1,5 +1,5 @@
 # ============================================================
-# JavaScript / Yarn dependencies
+# JavaScript / Yarn 의존성
 # ============================================================
 node_modules/
 .pnp
@@ -8,10 +8,10 @@ node_modules/
 .yarn/install-state.gz
 .yarn/unplugged/
 
-# Keep package.json and yarn.lock tracked.
+# package.json과 yarn.lock은 Git 추적을 유지합니다.
 
 # ============================================================
-# Frontend and backend build outputs
+# 프론트엔드 및 백엔드 빌드 결과물
 # ============================================================
 build/
 dist/
@@ -20,7 +20,7 @@ out/
 bin/
 storybook-static/
 
-# A source package can legitimately be named "build", "out", or "bin".
+# 소스 패키지 이름으로 사용된 build, out, bin 디렉터리는 제외하지 않습니다.
 !**/src/main/**/build/
 !**/src/test/**/build/
 !**/src/main/**/out/
@@ -40,11 +40,11 @@ storybook-static/
 hs_err_pid*
 replay_pid*
 
-# The Gradle Wrapper JAR is required to run the project.
+# 프로젝트 실행에 필요한 Gradle Wrapper JAR은 제외하지 않습니다.
 !**/gradle/wrapper/gradle-wrapper.jar
 
 # ============================================================
-# Tests and coverage
+# 테스트 및 코드 커버리지
 # ============================================================
 coverage/
 .nyc_output/
@@ -54,7 +54,7 @@ cypress/screenshots/
 cypress/videos/
 
 # ============================================================
-# Tool and bundler caches
+# 도구 및 번들러 캐시
 # ============================================================
 .cache/
 .parcel-cache/
@@ -68,7 +68,7 @@ cypress/videos/
 *.tsbuildinfo
 
 # ============================================================
-# Logs and runtime-generated files
+# 로그 및 실행 중 생성되는 파일
 # ============================================================
 logs/
 *.log
@@ -83,7 +83,7 @@ frontend/uploads/
 docker-data/
 
 # ============================================================
-# Local configuration and secrets
+# 로컬 설정 및 비밀 정보
 # ============================================================
 .env
 .env.*
@@ -111,7 +111,7 @@ service-account*.json
 !*.example.key
 
 # ============================================================
-# IDE and editor settings
+# IDE 및 편집기 설정
 # ============================================================
 **/.vscode/*
 !**/.vscode/extensions.json
@@ -144,7 +144,7 @@ nbdist/
 .nb-gradle/
 
 # ============================================================
-# Operating system files
+# 운영체제 파일
 # ============================================================
 .DS_Store
 .DS_Store?
@@ -156,7 +156,7 @@ Desktop.ini
 $RECYCLE.BIN/
 
 # ============================================================
-# Temporary and backup files
+# 임시 파일 및 백업 파일
 # ============================================================
 tmp/
 temp/
@@ -169,5 +169,9 @@ temp/
 *~
 .history/
 
-# Spring Initializr helper file
+# Spring Initializr 도우미 파일
 HELP.md
+
+# 프로젝트 문서
+DESIGN.md
+README.md
