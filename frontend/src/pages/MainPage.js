@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { Link, NavLink } from "react-router";
 import {
   ArrowRight,
   BadgeCheck,
+  BookOpen,
   Calculator,
   CalendarDays,
   CheckCircle2,
@@ -10,11 +10,14 @@ import {
   ChevronRight,
   Clock,
   Eye,
-  Home,
+  Heart,
   MapPin,
   MessageCircle,
   RefreshCw,
+  Search,
+  ShieldCheck,
   Sparkles,
+  Users,
 } from "lucide-react";
 
 import * as S from "./MainPageCss";
@@ -70,9 +73,10 @@ const ROOMMATES = [
 const COMMUNITY_POSTS = [
   {
     id: 1,
-    category: "자유",
+    category: "생활 정보",
     title: "새빛관 세탁실, 덜 붐비는 시간대를 정리했어요",
-    excerpt: "일주일 동안 이용해 보고 층별로 여유로운 시간을 표로 정리했습니다.",
+    excerpt:
+      "일주일 동안 이용해 보고 층별로 여유로운 시간을 표로 정리했습니다.",
     author: "기숙사생활러",
     time: "18분 전",
     views: 428,
@@ -80,37 +84,37 @@ const COMMUNITY_POSTS = [
   },
   {
     id: 2,
-    category: "나눔",
-    title: "미개봉 세탁 세제 소분해서 나눔합니다",
-    excerpt: "향이 맞지 않아 남은 제품을 기숙사 로비에서 나누려고 해요.",
-    author: "민트초코",
+    category: "모집",
+    title: "주말 아침 한강 러닝 같이 할 분 구해요",
+    excerpt: "초보자 속도로 5km 정도 달려요. 이번 주 토요일부터 시작합니다.",
+    author: "달리는감자",
     time: "42분 전",
     views: 285,
     comments: 19,
   },
   {
     id: 3,
-    category: "분실",
-    title: "학생회관 앞에서 파란색 카드지갑을 주웠어요",
-    excerpt: "학생증이 함께 들어 있어 안내 데스크에 맡겨 두었습니다.",
-    author: "익명의참새",
+    category: "나눔",
+    title: "미개봉 세탁 세제 소분해서 나눔합니다",
+    excerpt: "향이 맞지 않아 남은 제품을 기숙사 로비에서 나누려고 해요.",
+    author: "민트초코",
     time: "1시간 전",
     views: 196,
     comments: 11,
   },
   {
     id: 4,
-    category: "민원",
-    title: "공용 주방 환풍기 점검을 요청드립니다",
-    excerpt: "저녁 시간대 연기가 빠지지 않아 생활관에 점검을 요청했어요.",
-    author: "한울관2층",
+    category: "분실물",
+    title: "학생회관 앞에서 파란색 카드지갑을 주웠어요",
+    excerpt: "학생증이 함께 들어 있어 안내 데스크에 맡겨 두었습니다.",
+    author: "익명의참새",
     time: "2시간 전",
     views: 154,
     comments: 7,
   },
 ];
 
-const POST_FILTERS = ["전체", "자유", "나눔", "분실", "민원"];
+const POST_FILTERS = ["전체", "생활 정보", "모집", "관심 글"];
 
 const CALENDAR_MONTHS = [
   {
@@ -211,7 +215,9 @@ function getCalendarCells(month) {
   ];
 }
 
-function MainPage({ pageMode = "home" }) {
+function MainPage() {
+  const [roommateView, setRoommateView] = useState("recommended");
+  const [savedRoommateIds, setSavedRoommateIds] = useState([]);
   const [activeProfileId, setActiveProfileId] = useState(null);
   const [postFilter, setPostFilter] = useState("전체");
   const [calendarMonthIndex, setCalendarMonthIndex] = useState(1);
@@ -221,13 +227,26 @@ function MainPage({ pageMode = "home" }) {
   const [scoreForm, setScoreForm] = useState(INITIAL_SCORE_FORM);
   const [scoreResult, setScoreResult] = useState(null);
 
-  const visiblePosts = useMemo(() => {
-    const filteredPosts =
-      postFilter === "전체"
-        ? COMMUNITY_POSTS
-        : COMMUNITY_POSTS.filter((post) => post.category === postFilter);
+  const visibleRoommates = useMemo(() => {
+    if (roommateView === "saved") {
+      return ROOMMATES.filter((roommate) =>
+        savedRoommateIds.includes(roommate.id),
+      );
+    }
 
-    return filteredPosts.slice(0, 3);
+    return ROOMMATES;
+  }, [roommateView, savedRoommateIds]);
+
+  const visiblePosts = useMemo(() => {
+    if (postFilter === "전체") {
+      return COMMUNITY_POSTS;
+    }
+
+    if (postFilter === "관심 글") {
+      return [];
+    }
+
+    return COMMUNITY_POSTS.filter((post) => post.category === postFilter);
   }, [postFilter]);
 
   const activeMonth = CALENDAR_MONTHS[calendarMonthIndex];
@@ -236,6 +255,14 @@ function MainPage({ pageMode = "home" }) {
     [activeMonth],
   );
   const selectedEvents = activeMonth.events[selectedDate] || [];
+
+  const toggleSavedRoommate = (roommateId) => {
+    setSavedRoommateIds((currentIds) =>
+      currentIds.includes(roommateId)
+        ? currentIds.filter((id) => id !== roommateId)
+        : [...currentIds, roommateId],
+    );
+  };
 
   const toggleProfile = (roommateId) => {
     setActiveProfileId((currentId) =>
@@ -300,151 +327,219 @@ function MainPage({ pageMode = "home" }) {
   };
 
   return (
-    <S.PageShell>
-      <S.PageGlobalStyle />
-      <S.TopBar>
-        <S.TopBarInner>
-          <S.BrandLink as={Link} to="/" aria-label="Roomie 홈으로 이동">
-            <S.LogoMark>
-              <Home size={20} aria-hidden="true" />
-            </S.LogoMark>
-            <span>Roomie</span>
-          </S.BrandLink>
+    <S.Page>
+      <S.Container>
+        <S.Hero aria-labelledby="main-hero-title">
+          <S.HeroContent>
+            <S.Eyebrow>
+              <Sparkles size={15} aria-hidden="true" />
+              캠퍼스 생활의 좋은 시작
+            </S.Eyebrow>
+            <S.HeroTitle id="main-hero-title">
+              나와 잘 맞는 룸메이트를, 편안하게 만나보세요
+            </S.HeroTitle>
+            <S.HeroDescription>
+              생활 습관부터 수면 패턴까지 꼼꼼하게 비교하고, 믿을 수 있는 학교
+              친구와 새로운 기숙사 생활을 시작해 보세요.
+            </S.HeroDescription>
+            <S.HeroActions>
+              <S.PrimaryLink href="#recommended-roommates">
+                <Search size={18} aria-hidden="true" />
+                추천 룸메이트 보기
+                <ArrowRight size={18} aria-hidden="true" />
+              </S.PrimaryLink>
+              <S.SecondaryLink href="#popular-community">
+                <BookOpen size={18} aria-hidden="true" />
+                인기 글 둘러보기
+              </S.SecondaryLink>
+            </S.HeroActions>
+            <S.TrustNote>
+              <ShieldCheck size={18} aria-hidden="true" />
+              재학생 인증 프로필을 우선으로 안내해 드려요.
+            </S.TrustNote>
+          </S.HeroContent>
 
-          <S.MainNavigation aria-label="주요 메뉴">
-            <S.NavigationLink as={NavLink} to="/roommates">
-              룸메찾기
-            </S.NavigationLink>
-            <S.NavigationLink as={NavLink} to="/community">
-              커뮤니티
-            </S.NavigationLink>
-            <S.NavigationLink as={NavLink} to="/chat">
-              채팅
-            </S.NavigationLink>
-          </S.MainNavigation>
+          <S.HeroSummary aria-label="오늘의 추천 요약">
+            <S.SummaryTop>
+              <S.SummaryIcon>
+                <Users size={20} aria-hidden="true" />
+              </S.SummaryIcon>
+              <div>
+                <S.SummaryLabel>오늘의 추천</S.SummaryLabel>
+                <S.SummaryTitle>새로운 인연을 확인해 보세요</S.SummaryTitle>
+              </div>
+            </S.SummaryTop>
+            <S.TopMatch>
+              <S.TopMatchAvatar>서</S.TopMatchAvatar>
+              <S.TopMatchInfo>
+                <strong>김서연 님</strong>
+                <span>생활 패턴 4개 일치</span>
+              </S.TopMatchInfo>
+              <S.TopMatchScore>96%</S.TopMatchScore>
+            </S.TopMatch>
+            <S.SummaryProgress aria-hidden="true">
+              <span />
+            </S.SummaryProgress>
+            <S.SummaryChecks>
+              <li>
+                <CheckCircle2 size={16} aria-hidden="true" />
+                비흡연 선호 일치
+              </li>
+              <li>
+                <CheckCircle2 size={16} aria-hidden="true" />
+                취침 시간대 유사
+              </li>
+              <li>
+                <CheckCircle2 size={16} aria-hidden="true" />
+                동일 생활관 희망
+              </li>
+            </S.SummaryChecks>
+          </S.HeroSummary>
+        </S.Hero>
 
-          <S.AuthNavigation aria-label="계정 메뉴">
-            <S.LoginLink as={Link} to="/login">
-              로그인
-            </S.LoginLink>
-            <S.AuthDivider aria-hidden="true">/</S.AuthDivider>
-            <S.SignUpLink as={Link} to="/signup">
-              회원가입
-            </S.SignUpLink>
-          </S.AuthNavigation>
-        </S.TopBarInner>
-      </S.TopBar>
-
-      <S.Page>
-        <S.Container>
-        {pageMode !== "community" && (
-          <S.Section
-            id="recommended-roommates"
-            aria-labelledby="roommate-title"
-            $first
-          >
+        <S.Section id="recommended-roommates" aria-labelledby="roommate-title">
           <S.SectionHeader>
             <div>
               <S.SectionKicker>RECOMMENDED ROOMMATE</S.SectionKicker>
               <S.SectionTitle id="roommate-title">
-                나랑 잘 맞는 룸메이트
+                나와 잘 맞는 룸메이트
               </S.SectionTitle>
               <S.SectionDescription>
                 입력한 생활 습관과 선호 조건을 바탕으로 추천했어요.
               </S.SectionDescription>
             </div>
-            {pageMode === "home" && (
-              <S.MoreLink
-                as={Link}
-                to="/roommates"
-                aria-label="추천 룸메이트 전체 보기"
+            <S.TabList role="group" aria-label="룸메이트 목록 필터">
+              <S.TabButton
+                type="button"
+                aria-pressed={roommateView === "recommended"}
+                $active={roommateView === "recommended"}
+                onClick={() => setRoommateView("recommended")}
               >
-                더보기
-                <ChevronRight size={17} aria-hidden="true" />
-              </S.MoreLink>
-            )}
+                추천 목록
+              </S.TabButton>
+              <S.TabButton
+                type="button"
+                aria-pressed={roommateView === "saved"}
+                $active={roommateView === "saved"}
+                onClick={() => setRoommateView("saved")}
+              >
+                관심 목록 {savedRoommateIds.length}
+              </S.TabButton>
+            </S.TabList>
           </S.SectionHeader>
 
-          <S.ProfileGrid>
-            {ROOMMATES.map((roommate) => {
-              const isProfileOpen = activeProfileId === roommate.id;
+          {visibleRoommates.length > 0 ? (
+            <S.ProfileGrid>
+              {visibleRoommates.map((roommate) => {
+                const isSaved = savedRoommateIds.includes(roommate.id);
+                const isProfileOpen = activeProfileId === roommate.id;
 
-              return (
-                <S.ProfileCard key={roommate.id}>
-                  <S.CardTopline>
-                    <S.MatchBadge>
-                      <Sparkles size={14} aria-hidden="true" />
-                      {roommate.matchScore}% 매칭
-                    </S.MatchBadge>
-                  </S.CardTopline>
+                return (
+                  <S.ProfileCard key={roommate.id}>
+                    <S.CardTopline>
+                      <S.FavoriteButton
+                        type="button"
+                        $active={isSaved}
+                        aria-pressed={isSaved}
+                        aria-label={`${roommate.name} 님을 관심 목록${
+                          isSaved ? "에서 삭제" : "에 추가"
+                        }`}
+                        onClick={() => toggleSavedRoommate(roommate.id)}
+                      >
+                        <Heart size={18} aria-hidden="true" />
+                      </S.FavoriteButton>
+                      <S.MatchBadge>
+                        <Sparkles size={14} aria-hidden="true" />
+                        {roommate.matchScore}% 매칭
+                      </S.MatchBadge>
+                    </S.CardTopline>
 
-                  <S.ProfileIdentity>
-                    <S.ProfileAvatar $tone={roommate.tone}>
-                      {roommate.initial}
-                    </S.ProfileAvatar>
-                    <S.ProfileNameArea>
-                      <S.ProfileNameRow>
-                        <h3>{roommate.name}</h3>
-                        <S.VerifiedBadge title="재학생 인증 완료">
-                          <BadgeCheck size={17} aria-hidden="true" />
-                          인증
-                        </S.VerifiedBadge>
-                      </S.ProfileNameRow>
-                      <p>{roommate.major}</p>
-                    </S.ProfileNameArea>
-                  </S.ProfileIdentity>
+                    <S.ProfileIdentity>
+                      <S.ProfileAvatar $tone={roommate.tone}>
+                        {roommate.initial}
+                      </S.ProfileAvatar>
+                      <S.ProfileNameArea>
+                        <S.ProfileNameRow>
+                          <h3>{roommate.name}</h3>
+                          <S.VerifiedBadge title="재학생 인증 완료">
+                            <BadgeCheck size={17} aria-hidden="true" />
+                            인증
+                          </S.VerifiedBadge>
+                        </S.ProfileNameRow>
+                        <p>{roommate.major}</p>
+                      </S.ProfileNameArea>
+                    </S.ProfileIdentity>
 
-                  <S.ProfileMeta>
-                    <span>
-                      <MapPin size={15} aria-hidden="true" />
-                      {roommate.dormitory}
-                    </span>
-                    <span>
-                      <Clock size={15} aria-hidden="true" />
-                      {roommate.status}
-                    </span>
-                  </S.ProfileMeta>
+                    <S.ProfileMeta>
+                      <span>
+                        <MapPin size={15} aria-hidden="true" />
+                        {roommate.dormitory}
+                      </span>
+                      <span>
+                        <Clock size={15} aria-hidden="true" />
+                        {roommate.status}
+                      </span>
+                    </S.ProfileMeta>
 
-                  <S.TagList aria-label={`${roommate.name} 님의 생활 습관`}>
-                    {roommate.tags.map((tag) => (
-                      <S.Tag key={tag}>{tag}</S.Tag>
-                    ))}
-                  </S.TagList>
+                    <S.TagList aria-label={`${roommate.name} 님의 생활 습관`}>
+                      {roommate.tags.map((tag) => (
+                        <S.Tag key={tag}>{tag}</S.Tag>
+                      ))}
+                    </S.TagList>
 
-                  <S.MatchNote>
-                    <CheckCircle2 size={17} aria-hidden="true" />
-                    {roommate.matchNote}
-                  </S.MatchNote>
+                    <S.MatchNote>
+                      <CheckCircle2 size={17} aria-hidden="true" />
+                      {roommate.matchNote}
+                    </S.MatchNote>
 
-                  {isProfileOpen && (
-                    <S.ProfileDetails aria-live="polite">
-                      <p>{roommate.introduction}</p>
-                      <span>{roommate.preference}</span>
-                    </S.ProfileDetails>
-                  )}
+                    {isProfileOpen && (
+                      <S.ProfileDetails aria-live="polite">
+                        <p>{roommate.introduction}</p>
+                        <span>{roommate.preference}</span>
+                      </S.ProfileDetails>
+                    )}
 
-                  <S.ProfileActionRow>
-                    <S.ProfileButton
-                      type="button"
-                      onClick={() => toggleProfile(roommate.id)}
-                      aria-expanded={isProfileOpen}
-                    >
-                      {isProfileOpen ? "간단 프로필 닫기" : "간단 프로필 보기"}
-                    </S.ProfileButton>
-                  </S.ProfileActionRow>
-                </S.ProfileCard>
-              );
-            })}
-          </S.ProfileGrid>
-          </S.Section>
-        )}
+                    <S.ProfileActionRow>
+                      <S.ProfileButton
+                        type="button"
+                        onClick={() => toggleProfile(roommate.id)}
+                        aria-expanded={isProfileOpen}
+                      >
+                        {isProfileOpen
+                          ? "간단 프로필 닫기"
+                          : "간단 프로필 보기"}
+                      </S.ProfileButton>
+                      <S.SaveTextButton
+                        type="button"
+                        $active={isSaved}
+                        onClick={() => toggleSavedRoommate(roommate.id)}
+                      >
+                        <Heart size={16} aria-hidden="true" />
+                        {isSaved ? "저장됨" : "관심 저장"}
+                      </S.SaveTextButton>
+                    </S.ProfileActionRow>
+                  </S.ProfileCard>
+                );
+              })}
+            </S.ProfileGrid>
+          ) : (
+            <S.EmptyState>
+              <S.EmptyIcon>
+                <Heart size={24} aria-hidden="true" />
+              </S.EmptyIcon>
+              <h3>아직 관심 룸메이트가 없어요</h3>
+              <p>추천 목록에서 마음에 드는 프로필을 저장해 보세요.</p>
+              <S.EmptyAction
+                type="button"
+                onClick={() => setRoommateView("recommended")}
+              >
+                추천 목록으로 돌아가기
+              </S.EmptyAction>
+            </S.EmptyState>
+          )}
+        </S.Section>
 
-        {pageMode !== "roommates" && (
-          <S.Section
-            id="popular-community"
-            aria-labelledby="community-title"
-            $first={pageMode === "community"}
-          >
+        <S.Section id="popular-community" aria-labelledby="community-title">
           <S.SectionHeader>
             <div>
               <S.SectionKicker>COMMUNITY NOW</S.SectionKicker>
@@ -455,69 +550,72 @@ function MainPage({ pageMode = "home" }) {
                 기숙사 생활에 도움이 되는 정보와 새로운 모임을 확인하세요.
               </S.SectionDescription>
             </div>
-            {pageMode === "home" && (
-              <S.MoreLink
-                as={Link}
-                to="/community"
-                aria-label="커뮤니티 게시판 전체 보기"
-              >
-                더보기
-                <ChevronRight size={17} aria-hidden="true" />
-              </S.MoreLink>
-            )}
+            <S.FilterList role="group" aria-label="인기 게시글 분류">
+              {POST_FILTERS.map((filter) => (
+                <S.FilterButton
+                  key={filter}
+                  type="button"
+                  $active={postFilter === filter}
+                  aria-pressed={postFilter === filter}
+                  onClick={() => setPostFilter(filter)}
+                >
+                  {filter}
+                </S.FilterButton>
+              ))}
+            </S.FilterList>
           </S.SectionHeader>
 
-          <S.FilterList role="group" aria-label="인기 게시글 분류">
-            {POST_FILTERS.map((filter) => (
-              <S.FilterButton
-                key={filter}
-                type="button"
-                $active={postFilter === filter}
-                aria-pressed={postFilter === filter}
-                onClick={() => setPostFilter(filter)}
-              >
-                {filter}
-              </S.FilterButton>
-            ))}
-          </S.FilterList>
-
           <S.CommunityCard>
-            <S.PostList>
-              {visiblePosts.map((post, index) => (
-                <S.PostItem key={post.id}>
-                  <S.PostRank aria-label={`인기 순위 ${index + 1}위`}>
-                    {index + 1}
-                  </S.PostRank>
-                  <S.PostContent>
-                    <S.PostMetaTop>
-                      <S.CategoryBadge $type={post.category}>
-                        {post.category}
-                      </S.CategoryBadge>
-                      <span>{post.time}</span>
-                    </S.PostMetaTop>
-                    <S.PostTitle>{post.title}</S.PostTitle>
-                    <S.PostExcerpt>{post.excerpt}</S.PostExcerpt>
-                    <S.PostAuthor>{post.author}</S.PostAuthor>
-                  </S.PostContent>
-                  <S.PostStats aria-label="게시글 반응">
-                    <span>
-                      <Eye size={15} aria-hidden="true" />
-                      {post.views}
-                    </span>
-                    <span>
-                      <MessageCircle size={15} aria-hidden="true" />
-                      {post.comments}
-                    </span>
-                  </S.PostStats>
-                </S.PostItem>
-              ))}
-            </S.PostList>
+            {visiblePosts.length > 0 ? (
+              <S.PostList>
+                {visiblePosts.map((post, index) => (
+                  <S.PostItem key={post.id}>
+                    <S.PostRank aria-label={`인기 순위 ${index + 1}위`}>
+                      {index + 1}
+                    </S.PostRank>
+                    <S.PostContent>
+                      <S.PostMetaTop>
+                        <S.CategoryBadge $type={post.category}>
+                          {post.category}
+                        </S.CategoryBadge>
+                        <span>{post.time}</span>
+                      </S.PostMetaTop>
+                      <S.PostTitle>{post.title}</S.PostTitle>
+                      <S.PostExcerpt>{post.excerpt}</S.PostExcerpt>
+                      <S.PostAuthor>{post.author}</S.PostAuthor>
+                    </S.PostContent>
+                    <S.PostStats aria-label="게시글 반응">
+                      <span>
+                        <Eye size={15} aria-hidden="true" />
+                        {post.views}
+                      </span>
+                      <span>
+                        <MessageCircle size={15} aria-hidden="true" />
+                        {post.comments}
+                      </span>
+                    </S.PostStats>
+                  </S.PostItem>
+                ))}
+              </S.PostList>
+            ) : (
+              <S.CompactEmpty>
+                <BookOpen size={25} aria-hidden="true" />
+                <div>
+                  <h3>관심 글이 아직 없어요</h3>
+                  <p>유용한 글을 저장하면 이곳에서 빠르게 볼 수 있어요.</p>
+                </div>
+                <S.GhostButton
+                  type="button"
+                  onClick={() => setPostFilter("전체")}
+                >
+                  전체 글 보기
+                </S.GhostButton>
+              </S.CompactEmpty>
+            )}
           </S.CommunityCard>
-          </S.Section>
-        )}
+        </S.Section>
 
-        {pageMode === "home" && (
-          <S.Section aria-labelledby="campus-tools-title">
+        <S.Section aria-labelledby="campus-tools-title">
           <S.SectionHeader>
             <div>
               <S.SectionKicker>CAMPUS LIVING TOOLS</S.SectionKicker>
@@ -787,11 +885,9 @@ function MainPage({ pageMode = "home" }) {
               </S.Disclaimer>
             </S.ToolCard>
           </S.UtilityGrid>
-          </S.Section>
-        )}
-        </S.Container>
-      </S.Page>
-    </S.PageShell>
+        </S.Section>
+      </S.Container>
+    </S.Page>
   );
 }
 

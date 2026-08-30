@@ -68,8 +68,12 @@ export const PageShell = styled.div`
   color: ${colors.text};
   background: ${colors.warm};
   font-family:
-    "Plus Jakarta Sans", "Pretendard", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+    "Plus Jakarta Sans",
+    "Pretendard",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 `;
 
 export const TopBar = styled.header`
@@ -271,8 +275,12 @@ export const Page = styled.main`
   color: ${colors.text};
   background: ${colors.warm};
   font-family:
-    "Plus Jakarta Sans", "Pretendard", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+    "Plus Jakarta Sans",
+    "Pretendard",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 
   *,
   *::before,
@@ -637,8 +645,7 @@ export const FilterButton = styled.button`
   ${focusRing};
   min-height: 44px;
   padding: 0 12px;
-  border: 1px solid
-    ${({ $active }) => ($active ? colors.navy : colors.border)};
+  border: 1px solid ${({ $active }) => ($active ? colors.navy : colors.border)};
   border-radius: 999px;
   color: ${({ $active }) => ($active ? colors.white : colors.textSoft)};
   background: ${({ $active }) => ($active ? colors.navy : colors.white)};
@@ -983,8 +990,7 @@ export const CalendarDay = styled.button`
     if ($dayTone === "saturday") return colors.blue;
     return colors.textSoft;
   }};
-  background: ${({ $selected }) =>
-    $selected ? colors.navy : "transparent"};
+  background: ${({ $selected }) => ($selected ? colors.navy : "transparent")};
   font-size: 12px;
   font-weight: ${({ $selected }) => ($selected ? 700 : 500)};
   cursor: pointer;
@@ -999,8 +1005,7 @@ export const CalendarDay = styled.button`
     width: 4px;
     height: 4px;
     border-radius: 999px;
-    background: ${({ $selected }) =>
-      $selected ? "#83eee7" : colors.mint};
+    background: ${({ $selected }) => ($selected ? "#83eee7" : colors.mint)};
     opacity: ${({ $hasEvent }) => ($hasEvent ? 1 : 0)};
     transform: translateX(50%);
     content: "";
@@ -1328,7 +1333,8 @@ export const ScoreRing = styled.div`
   height: 82px;
   border-radius: 50%;
   background: conic-gradient(
-    ${colors.mint} ${({ $score }) => Math.max(0, Math.min(100, $score)) * 3.6}deg,
+    ${colors.mint}
+      ${({ $score }) => Math.max(0, Math.min(100, $score)) * 3.6}deg,
     #dbeeed 0
   );
 `;
