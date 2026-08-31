@@ -8,9 +8,10 @@ function App() {
       <Route path="/" element={<MainPage />} />
       <Route path="/roommates" element={<MainPage pageMode="roommates" />} />
       <Route path="/community" element={<MainPage pageMode="community" />} />
-      <Route path="/chat" element={<MainPage />} />
-      <Route path="/login" element={<MainPage />} />
-      <Route path="/signup" element={<MainPage />} />
+      <Route path="/chat" element={<MainPage pageMode="chat" />} />
+      <Route path="/calendar" element={<MainPage pageMode="calendar" />} />
+      <Route path="/login" element={<MainPage pageMode="login" />} />
+      <Route path="/profile" element={<MainPage pageMode="profile" />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

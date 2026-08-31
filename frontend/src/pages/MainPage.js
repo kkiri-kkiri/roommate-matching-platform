@@ -14,8 +14,6 @@ import {
   MapPin,
   MessageCircle,
   RefreshCw,
-  Search,
-  ShieldCheck,
   Sparkles,
   Users,
 } from "lucide-react";
@@ -73,10 +71,10 @@ const ROOMMATES = [
 const COMMUNITY_POSTS = [
   {
     id: 1,
-    category: "생활 정보",
-    title: "새빛관 세탁실, 덜 붐비는 시간대를 정리했어요",
+    category: "자유",
+    title: "새 학기 룸메이트와 꼭 정해두면 좋은 생활 규칙",
     excerpt:
-      "일주일 동안 이용해 보고 층별로 여유로운 시간을 표로 정리했습니다.",
+      "소등 시간부터 공용 물품 사용까지, 서로 편해지는 기준을 정리했어요.",
     author: "기숙사생활러",
     time: "18분 전",
     views: 428,
@@ -84,10 +82,10 @@ const COMMUNITY_POSTS = [
   },
   {
     id: 2,
-    category: "모집",
-    title: "주말 아침 한강 러닝 같이 할 분 구해요",
-    excerpt: "초보자 속도로 5km 정도 달려요. 이번 주 토요일부터 시작합니다.",
-    author: "달리는감자",
+    category: "택배",
+    title: "새빛관 공동 택배함 오늘 도착분 확인하세요",
+    excerpt: "오후 도착 택배가 많아 수령 위치와 보관 시간을 안내해 드려요.",
+    author: "택배도우미",
     time: "42분 전",
     views: 285,
     comments: 19,
@@ -102,19 +100,9 @@ const COMMUNITY_POSTS = [
     views: 196,
     comments: 11,
   },
-  {
-    id: 4,
-    category: "분실물",
-    title: "학생회관 앞에서 파란색 카드지갑을 주웠어요",
-    excerpt: "학생증이 함께 들어 있어 안내 데스크에 맡겨 두었습니다.",
-    author: "익명의참새",
-    time: "2시간 전",
-    views: 154,
-    comments: 7,
-  },
 ];
 
-const POST_FILTERS = ["전체", "생활 정보", "모집", "관심 글"];
+const POST_FILTERS = ["전체", "자유", "택배", "나눔", "민원"];
 
 const CALENDAR_MONTHS = [
   {
@@ -203,9 +191,15 @@ const CALENDAR_MONTHS = [
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 const INITIAL_SCORE_FORM = {
+  region: "capital",
   grade: "4.1",
-  distance: "65",
   priority: "0",
+};
+
+const REGION_OPTIONS = {
+  capital: { label: "서울 · 경기 · 인천", points: 10 },
+  central: { label: "충청 · 강원", points: 20 },
+  southern: { label: "전라 · 경상 · 제주", points: 30 },
 };
 
 function getCalendarCells(month) {
@@ -215,8 +209,42 @@ function getCalendarCells(month) {
   ];
 }
 
-function MainPage() {
-  const [roommateView, setRoommateView] = useState("recommended");
+function getStoredUser() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const accessToken =
+    window.localStorage.getItem("accessToken") ||
+    window.localStorage.getItem("token");
+
+  if (!accessToken) {
+    return null;
+  }
+
+  try {
+    const storedProfile = JSON.parse(
+      window.localStorage.getItem("user") ||
+        window.localStorage.getItem("profile") ||
+        "{}",
+    );
+
+    return {
+      name: storedProfile.name || storedProfile.nickname || "내 프로필",
+      initial: (
+        storedProfile.name ||
+        storedProfile.nickname ||
+        "나"
+      ).slice(0, 1),
+    };
+  } catch {
+    return { name: "내 프로필", initial: "나" };
+  }
+}
+
+function MainPage({ pageMode = "home", currentUser }) {
+  const authenticatedUser =
+    currentUser === undefined ? getStoredUser() : currentUser;
   const [savedRoommateIds, setSavedRoommateIds] = useState([]);
   const [activeProfileId, setActiveProfileId] = useState(null);
   const [postFilter, setPostFilter] = useState("전체");
@@ -227,26 +255,13 @@ function MainPage() {
   const [scoreForm, setScoreForm] = useState(INITIAL_SCORE_FORM);
   const [scoreResult, setScoreResult] = useState(null);
 
-  const visibleRoommates = useMemo(() => {
-    if (roommateView === "saved") {
-      return ROOMMATES.filter((roommate) =>
-        savedRoommateIds.includes(roommate.id),
-      );
-    }
-
-    return ROOMMATES;
-  }, [roommateView, savedRoommateIds]);
-
   const visiblePosts = useMemo(() => {
-    if (postFilter === "전체") {
-      return COMMUNITY_POSTS;
-    }
+    const filteredPosts =
+      postFilter === "전체"
+        ? COMMUNITY_POSTS
+        : COMMUNITY_POSTS.filter((post) => post.category === postFilter);
 
-    if (postFilter === "관심 글") {
-      return [];
-    }
-
-    return COMMUNITY_POSTS.filter((post) => post.category === postFilter);
+    return filteredPosts.slice(0, 3);
   }, [postFilter]);
 
   const activeMonth = CALENDAR_MONTHS[calendarMonthIndex];
@@ -295,14 +310,10 @@ function MainPage() {
     event.preventDefault();
 
     const grade = Math.min(4.5, Math.max(0, Number(scoreForm.grade) || 0));
-    const distance = Math.min(
-      150,
-      Math.max(0, Number(scoreForm.distance) || 0),
-    );
+    const regionPoints = REGION_OPTIONS[scoreForm.region]?.points || 0;
     const priorityPoints = Number(scoreForm.priority);
     const gradePoints = Math.round((grade / 4.5) * 55);
-    const distancePoints = Math.round((distance / 150) * 30);
-    const total = Math.min(100, gradePoints + distancePoints + priorityPoints);
+    const total = Math.min(100, gradePoints + regionPoints + priorityPoints);
 
     let message = "조금 더 준비하면 가능성이 높아져요";
 
@@ -315,7 +326,7 @@ function MainPage() {
     setScoreResult({
       total,
       gradePoints,
-      distancePoints,
+      regionPoints,
       priorityPoints,
       message,
     });
@@ -327,77 +338,69 @@ function MainPage() {
   };
 
   return (
-    <S.Page>
-      <S.Container>
-        <S.Hero aria-labelledby="main-hero-title">
-          <S.HeroContent>
-            <S.Eyebrow>
-              <Sparkles size={15} aria-hidden="true" />
-              캠퍼스 생활의 좋은 시작
-            </S.Eyebrow>
-            <S.HeroTitle id="main-hero-title">
-              나와 잘 맞는 룸메이트를, 편안하게 만나보세요
-            </S.HeroTitle>
-            <S.HeroDescription>
-              생활 습관부터 수면 패턴까지 꼼꼼하게 비교하고, 믿을 수 있는 학교
-              친구와 새로운 기숙사 생활을 시작해 보세요.
-            </S.HeroDescription>
-            <S.HeroActions>
-              <S.PrimaryLink href="#recommended-roommates">
-                <Search size={18} aria-hidden="true" />
-                추천 룸메이트 보기
-                <ArrowRight size={18} aria-hidden="true" />
-              </S.PrimaryLink>
-              <S.SecondaryLink href="#popular-community">
-                <BookOpen size={18} aria-hidden="true" />
-                인기 글 둘러보기
-              </S.SecondaryLink>
-            </S.HeroActions>
-            <S.TrustNote>
-              <ShieldCheck size={18} aria-hidden="true" />
-              재학생 인증 프로필을 우선으로 안내해 드려요.
-            </S.TrustNote>
-          </S.HeroContent>
-
-          <S.HeroSummary aria-label="오늘의 추천 요약">
-            <S.SummaryTop>
-              <S.SummaryIcon>
+    <>
+      <S.PageGlobalStyle />
+      <S.PageShell>
+        <S.TopBar>
+          <S.TopBarInner>
+            <S.BrandLink href="/" aria-label="Roomie 홈">
+              <S.LogoMark>
                 <Users size={20} aria-hidden="true" />
-              </S.SummaryIcon>
-              <div>
-                <S.SummaryLabel>오늘의 추천</S.SummaryLabel>
-                <S.SummaryTitle>새로운 인연을 확인해 보세요</S.SummaryTitle>
-              </div>
-            </S.SummaryTop>
-            <S.TopMatch>
-              <S.TopMatchAvatar>서</S.TopMatchAvatar>
-              <S.TopMatchInfo>
-                <strong>김서연 님</strong>
-                <span>생활 패턴 4개 일치</span>
-              </S.TopMatchInfo>
-              <S.TopMatchScore>96%</S.TopMatchScore>
-            </S.TopMatch>
-            <S.SummaryProgress aria-hidden="true">
-              <span />
-            </S.SummaryProgress>
-            <S.SummaryChecks>
-              <li>
-                <CheckCircle2 size={16} aria-hidden="true" />
-                비흡연 선호 일치
-              </li>
-              <li>
-                <CheckCircle2 size={16} aria-hidden="true" />
-                취침 시간대 유사
-              </li>
-              <li>
-                <CheckCircle2 size={16} aria-hidden="true" />
-                동일 생활관 희망
-              </li>
-            </S.SummaryChecks>
-          </S.HeroSummary>
-        </S.Hero>
+              </S.LogoMark>
+              <span>Roomie</span>
+            </S.BrandLink>
 
-        <S.Section id="recommended-roommates" aria-labelledby="roommate-title">
+            <S.MainNavigation aria-label="주요 메뉴">
+              <S.NavigationLink
+                href="/roommates"
+                className={pageMode === "roommates" ? "active" : undefined}
+              >
+                룸메찾기
+              </S.NavigationLink>
+              <S.NavigationLink
+                href="/community"
+                className={pageMode === "community" ? "active" : undefined}
+              >
+                커뮤니티
+              </S.NavigationLink>
+              <S.NavigationLink
+                href="/chat"
+                className={pageMode === "chat" ? "active" : undefined}
+              >
+                채팅
+              </S.NavigationLink>
+              <S.NavigationLink
+                href="/calendar#campus-calendar"
+                className={pageMode === "calendar" ? "active" : undefined}
+              >
+                캘린더
+              </S.NavigationLink>
+            </S.MainNavigation>
+
+            <S.AuthNavigation aria-label="계정 메뉴">
+              {authenticatedUser ? (
+                <S.ProfileLink href="/profile" aria-label="내 프로필 보기">
+                  <S.HeaderAvatar>
+                    {authenticatedUser.initial ||
+                      authenticatedUser.name?.slice(0, 1) ||
+                      "나"}
+                  </S.HeaderAvatar>
+                  <span>{authenticatedUser.name || "내 프로필"}</span>
+                </S.ProfileLink>
+              ) : (
+                <S.LoginLink href="/login">로그인</S.LoginLink>
+              )}
+            </S.AuthNavigation>
+          </S.TopBarInner>
+        </S.TopBar>
+
+        <S.Page>
+          <S.Container>
+            <S.Section
+              $first
+              id="recommended-roommates"
+              aria-labelledby="roommate-title"
+            >
           <S.SectionHeader>
             <div>
               <S.SectionKicker>RECOMMENDED ROOMMATE</S.SectionKicker>
@@ -408,46 +411,20 @@ function MainPage() {
                 입력한 생활 습관과 선호 조건을 바탕으로 추천했어요.
               </S.SectionDescription>
             </div>
-            <S.TabList role="group" aria-label="룸메이트 목록 필터">
-              <S.TabButton
-                type="button"
-                aria-pressed={roommateView === "recommended"}
-                $active={roommateView === "recommended"}
-                onClick={() => setRoommateView("recommended")}
-              >
-                추천 목록
-              </S.TabButton>
-              <S.TabButton
-                type="button"
-                aria-pressed={roommateView === "saved"}
-                $active={roommateView === "saved"}
-                onClick={() => setRoommateView("saved")}
-              >
-                관심 목록 {savedRoommateIds.length}
-              </S.TabButton>
-            </S.TabList>
+            <S.MoreLink href="/roommates">
+              더보기
+              <ArrowRight size={17} aria-hidden="true" />
+            </S.MoreLink>
           </S.SectionHeader>
 
-          {visibleRoommates.length > 0 ? (
-            <S.ProfileGrid>
-              {visibleRoommates.map((roommate) => {
+          <S.ProfileGrid>
+            {ROOMMATES.map((roommate) => {
                 const isSaved = savedRoommateIds.includes(roommate.id);
                 const isProfileOpen = activeProfileId === roommate.id;
 
                 return (
                   <S.ProfileCard key={roommate.id}>
                     <S.CardTopline>
-                      <S.FavoriteButton
-                        type="button"
-                        $active={isSaved}
-                        aria-pressed={isSaved}
-                        aria-label={`${roommate.name} 님을 관심 목록${
-                          isSaved ? "에서 삭제" : "에 추가"
-                        }`}
-                        onClick={() => toggleSavedRoommate(roommate.id)}
-                      >
-                        <Heart size={18} aria-hidden="true" />
-                      </S.FavoriteButton>
                       <S.MatchBadge>
                         <Sparkles size={14} aria-hidden="true" />
                         {roommate.matchScore}% 매칭
@@ -521,22 +498,7 @@ function MainPage() {
                   </S.ProfileCard>
                 );
               })}
-            </S.ProfileGrid>
-          ) : (
-            <S.EmptyState>
-              <S.EmptyIcon>
-                <Heart size={24} aria-hidden="true" />
-              </S.EmptyIcon>
-              <h3>아직 관심 룸메이트가 없어요</h3>
-              <p>추천 목록에서 마음에 드는 프로필을 저장해 보세요.</p>
-              <S.EmptyAction
-                type="button"
-                onClick={() => setRoommateView("recommended")}
-              >
-                추천 목록으로 돌아가기
-              </S.EmptyAction>
-            </S.EmptyState>
-          )}
+          </S.ProfileGrid>
         </S.Section>
 
         <S.Section id="popular-community" aria-labelledby="community-title">
@@ -601,8 +563,8 @@ function MainPage() {
               <S.CompactEmpty>
                 <BookOpen size={25} aria-hidden="true" />
                 <div>
-                  <h3>관심 글이 아직 없어요</h3>
-                  <p>유용한 글을 저장하면 이곳에서 빠르게 볼 수 있어요.</p>
+                  <h3>이 분류의 인기 글이 아직 없어요</h3>
+                  <p>다른 분류를 선택해 새로운 이야기를 확인해 보세요.</p>
                 </div>
                 <S.GhostButton
                   type="button"
@@ -629,7 +591,7 @@ function MainPage() {
           </S.SectionHeader>
 
           <S.UtilityGrid>
-            <S.ToolCard aria-labelledby="calendar-title">
+            <S.ToolCard id="campus-calendar" aria-labelledby="calendar-title">
               <S.ToolHeader>
                 <S.ToolHeading>
                   <S.ToolIcon $tone="blue">
@@ -748,7 +710,30 @@ function MainPage() {
               <S.ScoreForm onSubmit={calculateDormitoryScore}>
                 <S.FormGrid>
                   <S.FieldGroup>
-                    <label htmlFor="grade">직전 학기 성적</label>
+                    <label htmlFor="region">지역</label>
+                    <S.SelectWrap>
+                      <select
+                        id="region"
+                        name="region"
+                        value={scoreForm.region}
+                        onChange={handleScoreFieldChange}
+                        aria-describedby="region-hint"
+                      >
+                        {Object.entries(REGION_OPTIONS).map(
+                          ([value, option]) => (
+                            <option key={value} value={value}>
+                              {option.label}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                      <ChevronRight size={17} aria-hidden="true" />
+                    </S.SelectWrap>
+                    <small id="region-hint">지역 기준 최대 30점 반영</small>
+                  </S.FieldGroup>
+
+                  <S.FieldGroup>
+                    <label htmlFor="grade">직전 학기 설정</label>
                     <S.InputWithSuffix>
                       <input
                         id="grade"
@@ -764,24 +749,6 @@ function MainPage() {
                       <span>/ 4.5</span>
                     </S.InputWithSuffix>
                     <small id="grade-hint">최대 55점 반영</small>
-                  </S.FieldGroup>
-
-                  <S.FieldGroup>
-                    <label htmlFor="distance">학교까지 거리</label>
-                    <S.InputWithSuffix>
-                      <input
-                        id="distance"
-                        name="distance"
-                        type="number"
-                        min="0"
-                        max="150"
-                        value={scoreForm.distance}
-                        onChange={handleScoreFieldChange}
-                        aria-describedby="distance-hint"
-                      />
-                      <span>km</span>
-                    </S.InputWithSuffix>
-                    <small id="distance-hint">최대 30점 반영</small>
                   </S.FieldGroup>
 
                   <S.FieldGroup $wide>
@@ -835,7 +802,7 @@ function MainPage() {
                   <S.ScoreBreakdown>
                     <S.ScoreRow>
                       <div>
-                        <span>성적</span>
+                        <span>직전 학기 성적</span>
                         <strong>{scoreResult.gradePoints} / 55</strong>
                       </div>
                       <S.ScoreBar>
@@ -846,12 +813,12 @@ function MainPage() {
                     </S.ScoreRow>
                     <S.ScoreRow>
                       <div>
-                        <span>통학 거리</span>
-                        <strong>{scoreResult.distancePoints} / 30</strong>
+                        <span>지역</span>
+                        <strong>{scoreResult.regionPoints} / 30</strong>
                       </div>
                       <S.ScoreBar>
                         <S.ScoreBarFill
-                          $value={(scoreResult.distancePoints / 30) * 100}
+                          $value={(scoreResult.regionPoints / 30) * 100}
                         />
                       </S.ScoreBar>
                     </S.ScoreRow>
@@ -886,8 +853,10 @@ function MainPage() {
             </S.ToolCard>
           </S.UtilityGrid>
         </S.Section>
-      </S.Container>
-    </S.Page>
+          </S.Container>
+        </S.Page>
+      </S.PageShell>
+    </>
   );
 }
 

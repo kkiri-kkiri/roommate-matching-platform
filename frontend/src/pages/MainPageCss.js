@@ -242,8 +242,69 @@ const authLinkStyle = css`
 
 export const LoginLink = styled.a`
   ${authLinkStyle};
-  padding: 0 5px;
-  color: ${colors.textSoft};
+  padding: 0 15px;
+  border: 1px solid ${colors.border};
+  color: ${colors.navy};
+  background: ${colors.white};
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: rgba(0, 167, 159, 0.42);
+      background: ${colors.mintSoft};
+    }
+  }
+`;
+
+export const ProfileLink = styled.a`
+  ${focusRing};
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+  min-height: 44px;
+  padding: 4px 10px 4px 5px;
+  border: 1px solid ${colors.border};
+  border-radius: 999px;
+  color: ${colors.navyDark};
+  background: ${colors.white};
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: rgba(0, 167, 159, 0.42);
+      background: ${colors.mintSoft};
+    }
+  }
+
+  @media (max-width: 420px) {
+    padding-right: 5px;
+
+    > span:last-child {
+      display: none;
+    }
+  }
+`;
+
+export const HeaderAvatar = styled.span`
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: ${colors.white};
+  background: linear-gradient(145deg, ${colors.mint}, ${colors.mintDark});
+  font-size: 13px;
+  font-weight: 800;
 `;
 
 export const AuthDivider = styled.span`
@@ -607,7 +668,9 @@ export const ProfileDetails = styled.div`
 `;
 
 export const ProfileActionRow = styled.div`
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
   margin-top: auto;
   padding-top: 18px;
 `;
@@ -664,6 +727,54 @@ export const CommunityCard = styled.div`
   border-radius: 16px;
   background: ${colors.white};
   box-shadow: 0 4px 12px rgba(12, 50, 115, 0.05);
+`;
+
+export const CompactEmpty = styled.div`
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  min-height: 116px;
+  padding: 22px 24px;
+  color: ${colors.muted};
+
+  > svg {
+    color: ${colors.blue};
+  }
+
+  h3 {
+    margin: 0;
+    color: ${colors.navyDark};
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: auto minmax(0, 1fr);
+
+    > button {
+      grid-column: 1 / -1;
+    }
+  }
+`;
+
+export const GhostButton = styled.button`
+  ${focusRing};
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid ${colors.border};
+  border-radius: 10px;
+  color: ${colors.navy};
+  background: ${colors.white};
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
 `;
 
 export const PostList = styled.ol`
@@ -742,6 +853,10 @@ const categoryTone = {
   나눔: css`
     color: ${colors.mintDark};
     background: ${colors.mintSoft};
+  `,
+  택배: css`
+    color: #76510a;
+    background: ${colors.goldSoft};
   `,
   분실: css`
     color: ${colors.gold};
@@ -836,6 +951,7 @@ export const UtilityGrid = styled.div`
 
 export const ToolCard = styled.article`
   min-width: 0;
+  scroll-margin-top: 96px;
   padding: 24px;
   border: 1px solid ${colors.border};
   border-radius: 16px;
@@ -856,15 +972,40 @@ export const ToolHeader = styled.header`
   margin-bottom: 22px;
 
   @media (max-width: 520px) {
-    align-items: flex-start;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: start;
+  }
+`;
+
+export const SaveTextButton = styled.button`
+  ${focusRing};
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid
+    ${({ $active }) => ($active ? "rgba(0, 167, 159, 0.45)" : colors.border)};
+  border-radius: 11px;
+  color: ${({ $active }) => ($active ? colors.mintDark : colors.textSoft)};
+  background: ${({ $active }) => ($active ? colors.mintSoft : colors.white)};
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+
+  svg {
+    fill: ${({ $active }) => ($active ? "currentColor" : "none")};
   }
 `;
 
 export const ToolHeading = styled.div`
   display: flex;
   gap: 11px;
-  align-items: center;
+  align-items: flex-start;
 
   > div {
     min-width: 0;
@@ -897,6 +1038,7 @@ export const ToolIcon = styled.span`
   justify-content: center;
   width: 44px;
   height: 44px;
+  margin-top: 1px;
   border-radius: 13px;
   color: ${({ $tone }) => ($tone === "mint" ? colors.mintDark : colors.blue)};
   background: ${({ $tone }) =>
@@ -905,9 +1047,11 @@ export const ToolIcon = styled.span`
 
 export const MonthControls = styled.div`
   display: grid;
-  grid-template-columns: 32px auto 32px;
+  grid-template-columns: 44px minmax(92px, 1fr) 44px;
   gap: 6px;
   align-items: center;
+  width: 204px;
+  margin-left: auto;
 
   button {
     ${focusRing};
@@ -931,11 +1075,17 @@ export const MonthControls = styled.div`
   }
 
   strong {
-    min-width: 88px;
+    min-width: 0;
     color: ${colors.navyDark};
     font-size: 13px;
     line-height: 18px;
     text-align: center;
+  }
+
+  @media (max-width: 520px) {
+    grid-column: 1 / -1;
+    justify-self: end;
+    width: min(204px, 100%);
   }
 `;
 
