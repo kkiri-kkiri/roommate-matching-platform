@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router";
 
 import MainPage from "./pages/MainPage";
+import SurveyPage from "./pages/SurveyPage";
 
 function App() {
   return (
@@ -12,6 +13,9 @@ function App() {
       <Route path="/calendar" element={<MainPage pageMode="calendar" />} />
       <Route path="/login" element={<MainPage pageMode="login" />} />
       <Route path="/profile" element={<MainPage pageMode="profile" />} />
+      <Route path="/signup" element={<SurveyPage />} />
+      <Route path="/signup/survey" element={<SurveyPage />} />
+      <Route path="/survey" element={<SurveyPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
