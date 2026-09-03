@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import MainPage from "./pages/MainPage";
 import SurveyPage from "./pages/SurveyPage";
@@ -6,16 +6,13 @@ import SurveyPage from "./pages/SurveyPage";
 function App() {
   return (
     <Routes>
+      {/* 메인페이지 */}
       <Route path="/" element={<MainPage />} />
-      <Route path="/roommates" element={<MainPage pageMode="roommates" />} />
-      <Route path="/community" element={<MainPage pageMode="community" />} />
-      <Route path="/chat" element={<MainPage pageMode="chat" />} />
-      <Route path="/calendar" element={<MainPage pageMode="calendar" />} />
-      <Route path="/login" element={<MainPage pageMode="login" />} />
-      <Route path="/profile" element={<MainPage pageMode="profile" />} />
-      <Route path="/signup" element={<SurveyPage />} />
-      <Route path="/signup/survey" element={<SurveyPage />} />
+
+      {/* 내 프로필 설문 페이지 */}
       <Route path="/survey" element={<SurveyPage />} />
+
+      {/* 존재하지 않는 주소로 접근했을 경우 메인페이지로 이동 */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
