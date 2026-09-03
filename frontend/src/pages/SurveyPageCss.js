@@ -463,6 +463,14 @@ export const Fieldset = styled.fieldset`
   border: 0;
   border-bottom: 1px solid ${colors.border};
 
+  &:first-of-type {
+    margin-top: 24px;
+  }
+
+  & + & {
+    margin-top: 24px;
+  }
+
   &:last-of-type {
     border-bottom: 0;
   }
