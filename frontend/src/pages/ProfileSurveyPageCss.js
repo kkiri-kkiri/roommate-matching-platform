@@ -38,8 +38,13 @@ export const Page = styled.main`
   color: ${colors.text};
   background: ${colors.warm};
   font-family:
-    "Plus Jakarta Sans", Pretendard, "Noto Sans KR", -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+    "Plus Jakarta Sans",
+    Pretendard,
+    "Noto Sans KR",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 
   &,
   *,
@@ -236,7 +241,8 @@ export const StepButton = styled.button`
   width: 100%;
   min-height: 62px;
   padding: 9px 10px;
-  border: 1px solid ${({ $active }) => ($active ? "rgba(12, 50, 115, 0.12)" : "transparent")};
+  border: 1px solid
+    ${({ $active }) => ($active ? "rgba(12, 50, 115, 0.12)" : "transparent")};
   border-radius: 12px;
   color: ${colors.textSoft};
   background: ${({ $active }) => ($active ? colors.navySoft : "transparent")};
@@ -264,9 +270,12 @@ export const StepMarker = styled.span`
   justify-content: center;
   width: 34px;
   height: 34px;
-  border: 1px solid ${({ $active, $complete }) => ($active || $complete ? "transparent" : colors.border)};
+  border: 1px solid
+    ${({ $active, $complete }) =>
+      $active || $complete ? "transparent" : colors.border};
   border-radius: 50%;
-  color: ${({ $active, $complete }) => ($active || $complete ? colors.white : colors.muted)};
+  color: ${({ $active, $complete }) =>
+    $active || $complete ? colors.white : colors.muted};
   background: ${({ $active, $complete }) => {
     if ($complete) return colors.mint;
     if ($active) return colors.navy;
@@ -463,6 +472,14 @@ export const Fieldset = styled.fieldset`
   border: 0;
   border-bottom: 1px solid ${colors.border};
 
+  &:first-of-type {
+    margin-top: 24px;
+  }
+
+  & + & {
+    margin-top: 24px;
+  }
+
   &:last-of-type {
     border-bottom: 0;
   }
@@ -573,10 +590,12 @@ export const ChoiceLabel = styled.label`
   min-width: 0;
   min-height: 50px;
   padding: 10px 13px;
-  border: 1px solid ${({ $selected }) => ($selected ? colors.mint : colors.border)};
+  border: 1px solid
+    ${({ $selected }) => ($selected ? colors.mint : colors.border)};
   border-radius: 12px;
   color: ${({ $selected }) => ($selected ? colors.mintDark : colors.textSoft)};
-  background: ${({ $selected }) => ($selected ? colors.mintSoft : colors.white)};
+  background: ${({ $selected }) =>
+    $selected ? colors.mintSoft : colors.white};
   font-size: 14px;
   font-weight: ${({ $selected }) => ($selected ? 700 : 550)};
   line-height: 20px;
@@ -600,7 +619,8 @@ export const ChoiceLabel = styled.label`
   @media (hover: hover) {
     &:hover {
       border-color: ${({ $selected }) => ($selected ? colors.mint : "#b9c7c6")};
-      background: ${({ $selected }) => ($selected ? colors.mintSoft : "#fbfdfd")};
+      background: ${({ $selected }) =>
+        $selected ? colors.mintSoft : "#fbfdfd"};
       transform: translateY(-1px);
     }
   }
@@ -626,7 +646,8 @@ export const ChoiceIndicator = styled.span`
   justify-content: center;
   width: 20px;
   height: 20px;
-  border: 1.5px solid ${({ $selected }) => ($selected ? colors.mint : "#a9acb3")};
+  border: 1.5px solid
+    ${({ $selected }) => ($selected ? colors.mint : "#a9acb3")};
   border-radius: ${({ $multiple }) => ($multiple ? "6px" : "50%")};
   color: ${colors.white};
   background: ${({ $selected }) => ($selected ? colors.mint : colors.white)};
@@ -669,7 +690,8 @@ export const SelectShell = styled.div`
   align-items: center;
   height: 50px;
   overflow: hidden;
-  border: 1px solid ${({ $hasError }) => ($hasError ? colors.error : colors.border)};
+  border: 1px solid
+    ${({ $hasError }) => ($hasError ? colors.error : colors.border)};
   border-radius: 12px;
   background: ${colors.white};
   transition:
@@ -724,7 +746,8 @@ export const TextInput = styled.input`
   width: 100%;
   height: 50px;
   padding: 0 14px;
-  border: 1px solid ${({ $hasError }) => ($hasError ? colors.error : colors.border)};
+  border: 1px solid
+    ${({ $hasError }) => ($hasError ? colors.error : colors.border)};
   border-radius: 12px;
   outline: 0;
   color: ${colors.text};
@@ -814,7 +837,8 @@ export const MbtiButton = styled.button`
   width: 44px;
   height: 44px;
   padding: 0;
-  border: 1px solid ${({ $selected }) => ($selected ? colors.mint : colors.border)};
+  border: 1px solid
+    ${({ $selected }) => ($selected ? colors.mint : colors.border)};
   border-radius: 10px;
   color: ${({ $selected }) => ($selected ? colors.white : colors.textSoft)};
   background: ${({ $selected }) => ($selected ? colors.mint : colors.white)};
