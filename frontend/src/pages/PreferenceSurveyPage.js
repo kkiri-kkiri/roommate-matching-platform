@@ -11,7 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import * as S from "./RoommatePreferenceSurveyCss";
+import * as S from "./PreferenceSurveyPageCss";
 
 const SURVEY_STEPS = [
   {
