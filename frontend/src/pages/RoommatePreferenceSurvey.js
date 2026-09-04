@@ -24,7 +24,12 @@ const SURVEY_STEPS = [
         id: "department",
         label: "학과·학부",
         type: "single",
-        options: ["같은 전공", "같은 학부의 다른 전공", "다른 학부", "상관없음"],
+        options: [
+          "같은 전공",
+          "같은 학부의 다른 전공",
+          "다른 학부",
+          "상관없음",
+        ],
       },
       {
         id: "age",
@@ -48,30 +53,6 @@ const SURVEY_STEPS = [
         ],
         exclusiveOptions: ["학년 상관없음"],
       },
-      {
-        id: "mbtiEnergy",
-        label: "MBTI - 에너지 방향",
-        type: "single",
-        options: ["E", "I", "상관없음"],
-      },
-      {
-        id: "mbtiPerception",
-        label: "MBTI - 인식 방식",
-        type: "single",
-        options: ["N", "S", "상관없음"],
-      },
-      {
-        id: "mbtiJudgment",
-        label: "MBTI - 판단 방식",
-        type: "single",
-        options: ["F", "T", "상관없음"],
-      },
-      {
-        id: "mbtiLifestyle",
-        label: "MBTI - 생활 양식",
-        type: "single",
-        options: ["P", "J", "상관없음"],
-      },
     ],
   },
   {
@@ -84,7 +65,15 @@ const SURVEY_STEPS = [
         id: "bedtime",
         label: "선호하는 취침시간",
         type: "multi",
-        options: ["22시 이전", "23시", "자정(24시)", "1시", "2시", "3시 이후", "상관없음"],
+        options: [
+          "22시 이전",
+          "23시",
+          "자정",
+          "1시",
+          "2시",
+          "3시 이후",
+          "상관없음",
+        ],
         exclusiveOptions: ["상관없음"],
       },
       {
@@ -93,8 +82,9 @@ const SURVEY_STEPS = [
         type: "multi",
         options: [
           "6시 이전",
-          "7시",
-          "8시",
+          "6시 ~ 7시",
+          "7시 ~ 8시",
+          "8시 ~ 9시",
           "9시",
           "10시 이후",
           "수업 시간에 따라 유동적",
@@ -106,19 +96,34 @@ const SURVEY_STEPS = [
         id: "sleepTalking",
         label: "잠꼬대 허용 정도",
         type: "single",
-        options: ["없음만 가능", "적음까지 괜찮음", "보통까지 괜찮음", "상관없음"],
+        options: [
+          "없음만 가능",
+          "적음까지 괜찮음",
+          "보통까지 괜찮음",
+          "상관없음",
+        ],
       },
       {
         id: "snoring",
         label: "코골이 허용 정도",
         type: "single",
-        options: ["없음만 가능", "적음까지 괜찮음", "보통까지 괜찮음", "상관없음"],
+        options: [
+          "없음만 가능",
+          "적음까지 괜찮음",
+          "보통까지 괜찮음",
+          "상관없음",
+        ],
       },
       {
         id: "teethGrinding",
         label: "이갈이 허용 정도",
         type: "single",
-        options: ["없음만 가능", "적음까지 괜찮음", "보통까지 괜찮음", "상관없음"],
+        options: [
+          "없음만 가능",
+          "적음까지 괜찮음",
+          "보통까지 괜찮음",
+          "상관없음",
+        ],
       },
     ],
   },
@@ -126,7 +131,8 @@ const SURVEY_STEPS = [
     id: "habits",
     shortTitle: "청소·습관",
     title: "청소·생활 습관",
-    description: "공용 공간을 함께 관리할 룸메이트의 생활 습관을 선택해 주세요.",
+    description:
+      "공용 공간을 함께 관리할 룸메이트의 생활 습관을 선택해 주세요.",
     fields: [
       {
         id: "cleaningFrequency",
@@ -166,7 +172,12 @@ const SURVEY_STEPS = [
         id: "temperature",
         label: "온도 선호",
         type: "single",
-        options: ["추위를 타는 사람", "더위를 타는 사람", "보통인 사람", "상관없음"],
+        options: [
+          "추위를 타는 사람",
+          "더위를 타는 사람",
+          "보통인 사람",
+          "상관없음",
+        ],
       },
     ],
   },
@@ -215,7 +226,8 @@ const SURVEY_STEPS = [
     id: "requirements",
     shortTitle: "필수조건",
     title: "필수조건 설정",
-    description: "매칭할 때 반드시 만족해야 하는 조건을 마지막으로 확인해 주세요.",
+    description:
+      "매칭할 때 반드시 만족해야 하는 조건을 마지막으로 확인해 주세요.",
     fields: [
       {
         id: "requiredConditions",
@@ -272,7 +284,9 @@ function validateStep(step, values) {
 }
 
 function getChoiceColumns(field) {
-  const longestOption = Math.max(...field.options.map((option) => option.length));
+  const longestOption = Math.max(
+    ...field.options.map((option) => option.length),
+  );
 
   if (field.options.length > 12) return 4;
   if (longestOption >= 13) return 2;
@@ -281,9 +295,11 @@ function getChoiceColumns(field) {
 }
 
 function prefersReducedMotion() {
-  return typeof window !== "undefined"
-    && typeof window.matchMedia === "function"
-    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return (
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
 }
 
 function RoommatePreferenceSurvey() {
@@ -313,9 +329,9 @@ function RoommatePreferenceSurvey() {
 
   useEffect(() => {
     if (
-      typeof window === "undefined"
-      || typeof window.matchMedia !== "function"
-      || !window.matchMedia("(max-width: 820px)").matches
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function" ||
+      !window.matchMedia("(max-width: 820px)").matches
     ) {
       return;
     }
@@ -326,10 +342,11 @@ function RoommatePreferenceSurvey() {
 
     const stepListRect = stepList.getBoundingClientRect();
     const activeButtonRect = activeButton.getBoundingClientRect();
-    const targetLeft = stepList.scrollLeft
-      + activeButtonRect.left
-      - stepListRect.left
-      - (stepListRect.width - activeButtonRect.width) / 2;
+    const targetLeft =
+      stepList.scrollLeft +
+      activeButtonRect.left -
+      stepListRect.left -
+      (stepListRect.width - activeButtonRect.width) / 2;
     stepList.scrollTo?.({
       left: Math.max(0, targetLeft),
       behavior: prefersReducedMotion() ? "auto" : "smooth",
@@ -372,7 +389,9 @@ function RoommatePreferenceSurvey() {
       let nextValues;
 
       if (selectedValues.includes(option)) {
-        nextValues = selectedValues.filter((selectedOption) => selectedOption !== option);
+        nextValues = selectedValues.filter(
+          (selectedOption) => selectedOption !== option,
+        );
       } else if (exclusiveOptions.includes(option)) {
         nextValues = [option];
       } else {
@@ -463,23 +482,20 @@ function RoommatePreferenceSurvey() {
     handleNext();
   };
 
-  const renderError = (field) => (
+  const renderError = (field) =>
     errors[field.id] ? (
       <S.ErrorText id={`${field.id}-error`}>
         <AlertCircle size={14} aria-hidden="true" />
         {errors[field.id]}
       </S.ErrorText>
-    ) : null
-  );
+    ) : null;
 
   const renderChoiceField = (field) => {
     const isMultiple = field.type === "multi";
     const selectedValues = isMultiple ? values[field.id] : [];
     const hasError = Boolean(errors[field.id]);
     const hintId = `${field.id}-hint`;
-    const describedBy = hasError
-      ? `${hintId} ${field.id}-error`
-      : hintId;
+    const describedBy = hasError ? `${hintId} ${field.id}-error` : hintId;
 
     return (
       <S.Fieldset
@@ -504,8 +520,8 @@ function RoommatePreferenceSurvey() {
           <S.SelectionGuide>
             <Check size={14} aria-hidden="true" />
             <span>
-              여러 항목을 선택할 수 있어요. ‘상관없음’ 또는 ‘필수조건 없음’은 다른
-              선택과 함께 적용되지 않습니다.
+              여러 항목을 선택할 수 있어요. ‘상관없음’ 또는 ‘필수조건 없음’은
+              다른 선택과 함께 적용되지 않습니다.
             </span>
           </S.SelectionGuide>
         )}
@@ -518,7 +534,11 @@ function RoommatePreferenceSurvey() {
             const inputId = `${field.id}-${optionIndex}`;
 
             return (
-              <S.ChoiceLabel key={option} htmlFor={inputId} $selected={selected}>
+              <S.ChoiceLabel
+                key={option}
+                htmlFor={inputId}
+                $selected={selected}
+              >
                 <S.HiddenInput
                   id={inputId}
                   type={isMultiple ? "checkbox" : "radio"}
@@ -551,7 +571,8 @@ function RoommatePreferenceSurvey() {
             <S.SummaryHeader>
               <strong>선택한 필수조건</strong>
               <span>
-                {hasNoRequiredCondition ? 0 : selectedRequirements.length}개 선택
+                {hasNoRequiredCondition ? 0 : selectedRequirements.length}개
+                선택
               </span>
             </S.SummaryHeader>
             {selectedRequirements.length === 0 ? (
@@ -584,12 +605,16 @@ function RoommatePreferenceSurvey() {
           </S.Eyebrow>
           <S.PageTitle>내가 원하는 룸메이트</S.PageTitle>
           <S.PageDescription>
-            함께 지낼 룸메이트에게 바라는 생활 기준을 알려주세요. 응답은 더 잘 맞는
-            룸메이트를 찾는 데 활용됩니다.
+            함께 지낼 룸메이트에게 바라는 생활 기준을 알려주세요. 응답은 더 잘
+            맞는 룸메이트를 찾는 데 활용됩니다.
           </S.PageDescription>
           <S.IntroMeta>
-            <span><Clock3 size={15} aria-hidden="true" /> 약 5분 소요</span>
-            <span><ShieldCheck size={15} aria-hidden="true" /> 총 20개 문항</span>
+            <span>
+              <Clock3 size={15} aria-hidden="true" /> 약 5분 소요
+            </span>
+            <span>
+              <ShieldCheck size={15} aria-hidden="true" /> 총 20개 문항
+            </span>
           </S.IntroMeta>
         </S.Intro>
 
@@ -612,7 +637,9 @@ function RoommatePreferenceSurvey() {
             <S.StepList ref={stepListRef}>
               {SURVEY_STEPS.map((step, stepIndex) => {
                 const active = stepIndex === currentStepIndex;
-                const answeredCount = step.fields.filter((field) => isAnswered(field, values)).length;
+                const answeredCount = step.fields.filter((field) =>
+                  isAnswered(field, values),
+                ).length;
                 const complete = answeredCount === step.fields.length;
 
                 return (
@@ -628,11 +655,17 @@ function RoommatePreferenceSurvey() {
                       onClick={() => goToStep(stepIndex)}
                     >
                       <S.StepMarker $active={active} $complete={complete}>
-                        {complete ? <Check size={15} aria-hidden="true" /> : stepIndex + 1}
+                        {complete ? (
+                          <Check size={15} aria-hidden="true" />
+                        ) : (
+                          stepIndex + 1
+                        )}
                       </S.StepMarker>
                       <S.StepCopy>
                         <strong>{step.shortTitle}</strong>
-                        <span>{answeredCount} / {step.fields.length} 응답</span>
+                        <span>
+                          {answeredCount} / {step.fields.length} 응답
+                        </span>
                       </S.StepCopy>
                     </S.StepButton>
                   </li>
@@ -655,7 +688,9 @@ function RoommatePreferenceSurvey() {
                 {currentStep.title}
               </S.FormTitle>
               <S.FormDescription>{currentStep.description}</S.FormDescription>
-              <S.RequiredNotice><span>필수</span> 모든 문항에 응답해 주세요.</S.RequiredNotice>
+              <S.RequiredNotice>
+                <span>필수</span> 모든 문항에 응답해 주세요.
+              </S.RequiredNotice>
             </S.FormHeader>
 
             <S.FormBody>
@@ -673,7 +708,8 @@ function RoommatePreferenceSurvey() {
                 <S.ConditionNotice>
                   <Info size={17} aria-hidden="true" />
                   <span>
-                    아래에서 선택한 항목은 단순 점수 계산이 아니라 필수조건으로 적용합니다.
+                    아래에서 선택한 항목은 단순 점수 계산이 아니라 필수조건으로
+                    적용합니다.
                   </span>
                 </S.ConditionNotice>
               )}
@@ -681,14 +717,13 @@ function RoommatePreferenceSurvey() {
               {currentStep.fields.map(renderChoiceField)}
 
               {showComplete && (
-                <S.CompleteBanner
-                  ref={completeRef}
-                  tabIndex="-1"
-                >
+                <S.CompleteBanner ref={completeRef} tabIndex="-1">
                   <CheckCircle2 size={21} aria-hidden="true" />
                   <div>
                     <strong>원하는 룸메이트 조건 입력을 완료했어요.</strong>
-                    <span>현재 화면은 UI 확인용이며 실제 데이터는 제출되지 않습니다.</span>
+                    <span>
+                      현재 화면은 UI 확인용이며 실제 데이터는 제출되지 않습니다.
+                    </span>
                   </div>
                 </S.CompleteBanner>
               )}
@@ -704,10 +739,14 @@ function RoommatePreferenceSurvey() {
                 이전
               </S.BackButton>
               <S.NextButton type="submit">
-                {currentStepIndex === SURVEY_STEPS.length - 1 ? "설문 완료" : "다음"}
                 {currentStepIndex === SURVEY_STEPS.length - 1
-                  ? <Check size={17} aria-hidden="true" />
-                  : <ArrowRight size={17} aria-hidden="true" />}
+                  ? "설문 완료"
+                  : "다음"}
+                {currentStepIndex === SURVEY_STEPS.length - 1 ? (
+                  <Check size={17} aria-hidden="true" />
+                ) : (
+                  <ArrowRight size={17} aria-hidden="true" />
+                )}
               </S.NextButton>
             </S.FormFooter>
           </S.FormCard>

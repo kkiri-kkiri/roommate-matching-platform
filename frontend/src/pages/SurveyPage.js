@@ -137,10 +137,30 @@ const FACULTY_OPTIONS = [
 ];
 
 const MBTI_DIMENSIONS = [
-  { id: "mbtiEnergy", label: "에너지 방향", helper: "외향 / 내향", options: ["E", "I"] },
-  { id: "mbtiInformation", label: "인식 방식", helper: "직관 / 감각", options: ["N", "S"] },
-  { id: "mbtiDecision", label: "판단 방식", helper: "감정 / 사고", options: ["F", "T"] },
-  { id: "mbtiLifestyle", label: "생활 양식", helper: "인식 / 판단", options: ["P", "J"] },
+  {
+    id: "mbtiEnergy",
+    label: "에너지 방향",
+    helper: "외향 / 내향",
+    options: ["E", "I"],
+  },
+  {
+    id: "mbtiInformation",
+    label: "인식 방식",
+    helper: "직관 / 감각",
+    options: ["N", "S"],
+  },
+  {
+    id: "mbtiDecision",
+    label: "판단 방식",
+    helper: "감정 / 사고",
+    options: ["F", "T"],
+  },
+  {
+    id: "mbtiLifestyle",
+    label: "생활 양식",
+    helper: "인식 / 판단",
+    options: ["P", "J"],
+  },
 ];
 
 const SURVEY_STEPS = [
@@ -150,14 +170,52 @@ const SURVEY_STEPS = [
     title: "기본·학적 정보",
     description: "학교 정보와 기본 정보를 입력해주세요.",
     fields: [
-      { id: "gender", label: "성별", type: "single", options: ["남자", "여자"], required: true },
-      { id: "dormitory", label: "생활관", type: "single", options: ["나래", "호연", "비룡", "창조"], required: true },
+      {
+        id: "gender",
+        label: "성별",
+        type: "single",
+        options: ["남자", "여자"],
+        required: true,
+      },
+      {
+        id: "dormitory",
+        label: "생활관",
+        type: "single",
+        options: ["나래", "호연", "비룡", "창조"],
+        required: true,
+      },
       { id: "faculty", label: "나의 학부", type: "faculty", required: true },
       { id: "major", label: "나의 전공", type: "major", required: true },
-      { id: "birthYear", label: "출생연도", type: "text", placeholder: "예: 2005", inputMode: "numeric", required: true },
-      { id: "studentId", label: "학번", type: "text", placeholder: "학번을 입력해주세요", inputMode: "numeric", required: true },
-      { id: "grade", label: "학년", type: "single", options: ["1학년", "2학년", "3학년", "4학년", "5학년"], required: true },
-      { id: "mbti", label: "MBTI", type: "mbti", dimensions: MBTI_DIMENSIONS, required: true },
+      {
+        id: "birthYear",
+        label: "출생연도",
+        type: "text",
+        placeholder: "예: 2005",
+        inputMode: "numeric",
+        required: true,
+      },
+      {
+        id: "studentId",
+        label: "학번",
+        type: "text",
+        placeholder: "학번을 입력해주세요",
+        inputMode: "numeric",
+        required: true,
+      },
+      {
+        id: "grade",
+        label: "학년",
+        type: "single",
+        options: ["1학년", "2학년", "3학년", "4학년", "5학년"],
+        required: true,
+      },
+      {
+        id: "mbti",
+        label: "MBTI",
+        type: "mbti",
+        dimensions: MBTI_DIMENSIONS,
+        required: true,
+      },
     ],
   },
   {
@@ -166,16 +224,91 @@ const SURVEY_STEPS = [
     title: "생활 패턴",
     description: "서로 편안한 생활을 위해 수면과 방 사용 습관을 알려주세요.",
     fields: [
-      { id: "sleepTime", label: "취침시간", type: "single", options: ["22시 이전", "23시", "자정(24시)", "1시", "2시", "3시 이후"], required: true },
-      { id: "wakeTime", label: "기상시간", type: "single", options: ["6시 이전", "7시", "8시", "9시", "10시 이후", "수업 시간에 따라 유동적"], required: true },
-      { id: "sleepTalking", label: "잠꼬대", type: "single", options: ["없음", "적음", "보통", "심함"], required: true },
-      { id: "snoring", label: "코골이", type: "single", options: ["없음", "적음", "보통", "심함"], required: true },
-      { id: "teethGrinding", label: "이갈이", type: "single", options: ["없음", "적음", "보통", "심함"], required: true },
-      { id: "sleepSensitivity", label: "잠귀", type: "single", options: ["밝음 (소리에 잘 깨요)", "보통", "어두움 (잘 깨지 않아요)"], required: true },
-      { id: "lightingPreference", label: "조명 환경", type: "single", options: ["밝음 선호", "어두움 선호", "상관 없음"], required: true },
-      { id: "phoneCall", label: "전화", type: "single", options: ["항상 밖에서", "방에서는 짧게만", "상관없음"], required: true },
-      { id: "dormStayDays", label: "기숙사 상주 주기", type: "multi", options: ["월", "화", "수", "목", "금", "토", "일"], allShortcut: true, required: true },
-      { id: "hairDryerInRoom", label: "방 안에서 드라이기 사용", type: "single", options: ["사용해요", "사용하지 않아요"], required: true },
+      {
+        id: "sleepTime",
+        label: "취침시간",
+        type: "single",
+        options: [
+          "22시 이전",
+          "23시 ~ 24시",
+          "24시 ~ 01시",
+          "01시 ~ 02시",
+          "02시 ~ 03시",
+          "03시 이후",
+        ],
+        required: true,
+      },
+      {
+        id: "wakeTime",
+        label: "기상시간",
+        type: "single",
+        options: [
+          "06시 이전",
+          "07시 ~ 08시",
+          "08시 ~ 09시",
+          "09시 ~ 10시",
+          "10시 이후",
+          "수업 시간에 따라 유동적",
+        ],
+        required: true,
+      },
+      {
+        id: "sleepTalking",
+        label: "잠꼬대",
+        type: "single",
+        options: ["없음", "적음", "보통", "심함"],
+        required: true,
+      },
+      {
+        id: "snoring",
+        label: "코골이",
+        type: "single",
+        options: ["없음", "적음", "보통", "심함"],
+        required: true,
+      },
+      {
+        id: "teethGrinding",
+        label: "이갈이",
+        type: "single",
+        options: ["없음", "적음", "보통", "심함"],
+        required: true,
+      },
+      {
+        id: "sleepSensitivity",
+        label: "잠귀",
+        type: "single",
+        options: ["밝음 (소리에 잘 깨요)", "보통", "어두움 (잘 깨지 않아요)"],
+        required: true,
+      },
+      {
+        id: "lightingPreference",
+        label: "조명 환경",
+        type: "single",
+        options: ["밝음 선호", "어두움 선호", "상관 없음"],
+        required: true,
+      },
+      {
+        id: "phoneCall",
+        label: "전화",
+        type: "single",
+        options: ["항상 밖에서", "방에서는 짧게만", "상관없음"],
+        required: true,
+      },
+      {
+        id: "dormStayDays",
+        label: "기숙사 상주 주기",
+        type: "multi",
+        options: ["월", "화", "수", "목", "금", "토", "일"],
+        allShortcut: true,
+        required: true,
+      },
+      {
+        id: "hairDryerInRoom",
+        label: "방 안에서 드라이기 사용",
+        type: "single",
+        options: ["사용해요", "사용하지 않아요"],
+        required: true,
+      },
     ],
   },
   {
@@ -184,14 +317,76 @@ const SURVEY_STEPS = [
     title: "청소·생활 습관",
     description: "공용 공간을 함께 사용하는 나의 생활 방식을 선택해주세요.",
     fields: [
-      { id: "cleaningFrequency", label: "청소", type: "single", options: ["안함", "주 1회", "주 2회", "주 3회", "주 4회", "주 5회", "매일", "유동적"], required: true },
-      { id: "cleaningStyle", label: "청소 방식", type: "single", options: ["같이 청소", "각자 영역만 청소", "상황에 따라 협의"], required: true },
-      { id: "indoorEating", label: "실내 취식", type: "single", options: ["가능", "불가능", "냄새 안나는 음식 가능"], required: true },
-      { id: "smoking", label: "흡연 여부", type: "single", options: ["비흡연", "일반담배", "전자담배"], required: true },
-      { id: "mediaSound", label: "소리(음악, OTT 등)", type: "single", options: ["항상 이어폰 사용해주세요", "공부·과제할 때 아니면 상관없음", "소리만 작게 해주세요", "자유롭게 하세요"], required: true },
-      { id: "showerTime", label: "샤워 시간대", type: "single", options: ["아침", "저녁", "유동적"], required: true },
-      { id: "showerDuration", label: "샤워 소요시간", type: "single", options: ["10분", "20분", "30분", "40분", "그 이상"], required: true },
-      { id: "temperaturePreference", label: "온도 선호", type: "single", options: ["추위 타요", "더위 타요", "보통"], required: true },
+      {
+        id: "cleaningFrequency",
+        label: "청소",
+        type: "single",
+        options: [
+          "안함",
+          "주 1회",
+          "주 2회",
+          "주 3회",
+          "주 4회",
+          "주 5회",
+          "매일",
+          "유동적",
+        ],
+        required: true,
+      },
+      {
+        id: "cleaningStyle",
+        label: "청소 방식",
+        type: "single",
+        options: ["같이 청소", "각자 영역만 청소", "상황에 따라 협의"],
+        required: true,
+      },
+      {
+        id: "indoorEating",
+        label: "실내 취식",
+        type: "single",
+        options: ["가능", "불가능", "냄새 안나는 음식 가능"],
+        required: true,
+      },
+      {
+        id: "smoking",
+        label: "흡연 여부",
+        type: "single",
+        options: ["비흡연", "일반담배", "전자담배"],
+        required: true,
+      },
+      {
+        id: "mediaSound",
+        label: "소리(음악, OTT 등)",
+        type: "single",
+        options: [
+          "항상 이어폰 사용해주세요",
+          "공부·과제할 때 아니면 상관없음",
+          "소리만 작게 해주세요",
+          "자유롭게 하세요",
+        ],
+        required: true,
+      },
+      {
+        id: "showerTime",
+        label: "샤워 시간대",
+        type: "single",
+        options: ["아침", "저녁", "유동적"],
+        required: true,
+      },
+      {
+        id: "showerDuration",
+        label: "샤워 소요시간",
+        type: "single",
+        options: ["10분", "20분", "30분", "40분", "그 이상"],
+        required: true,
+      },
+      {
+        id: "temperaturePreference",
+        label: "온도 선호",
+        type: "single",
+        options: ["추위 타요", "더위 타요", "보통"],
+        required: true,
+      },
     ],
   },
   {
@@ -200,12 +395,49 @@ const SURVEY_STEPS = [
     title: "기숙사 생활",
     description: "룸메이트와 공유하게 될 생활 방식에 대해 알려주세요.",
     fields: [
-      { id: "roommateInteraction", label: "룸메이트와의 교류 정도", type: "single", options: ["친하게 지내고 싶음", "적당히 대화", "필요한 대화만"], required: true },
-      { id: "mealPlan", label: "신청한 기숙사 식사", type: "multi", options: ["조식", "중식", "석식", "신청 안 함"], exclusiveOptions: ["신청 안 함"], required: true },
-      { id: "bugHandling", label: "벌레", type: "single", options: ["잘 잡음", "못 잡음", "작은 건 잡음"], required: true },
-      { id: "scentProductUse", label: "향수·디퓨저 등 향 제품 사용·허용", type: "single", options: ["자주 사용", "가끔 사용", "사용 안 함", "상관없음"], required: true },
-      { id: "desktopUse", label: "데스크탑 사용·허용", type: "single", options: ["사용해요", "사용하지 않아요", "특정 시간 제외하면 상관없음"], required: true },
-      { id: "sharedItems", label: "공용물품 사용", type: "single", options: ["적극적으로 공유", "일부만 공유", "각자 사용"], required: true },
+      {
+        id: "roommateInteraction",
+        label: "룸메이트와의 교류 정도",
+        type: "single",
+        options: ["친하게 지내고 싶음", "적당히 대화", "필요한 대화만"],
+        required: true,
+      },
+      {
+        id: "mealPlan",
+        label: "신청한 기숙사 식사",
+        type: "multi",
+        options: ["조식", "중식", "석식", "신청 안 함"],
+        exclusiveOptions: ["신청 안 함"],
+        required: true,
+      },
+      {
+        id: "bugHandling",
+        label: "벌레",
+        type: "single",
+        options: ["잘 잡음", "못 잡음", "작은 건 잡음"],
+        required: true,
+      },
+      {
+        id: "scentProductUse",
+        label: "향수·디퓨저 등 향 제품 사용·허용",
+        type: "single",
+        options: ["자주 사용", "가끔 사용", "사용 안 함", "상관없음"],
+        required: true,
+      },
+      {
+        id: "desktopUse",
+        label: "데스크탑 사용·허용",
+        type: "single",
+        options: ["사용해요", "사용하지 않아요", "특정 시간 제외하면 상관없음"],
+        required: true,
+      },
+      {
+        id: "sharedItems",
+        label: "공용물품 사용",
+        type: "single",
+        options: ["적극적으로 공유", "일부만 공유", "각자 사용"],
+        required: true,
+      },
     ],
   },
 ];
@@ -237,7 +469,9 @@ function createInitialValues() {
 }
 
 function isEmpty(value) {
-  return Array.isArray(value) ? value.length === 0 : !String(value || "").trim();
+  return Array.isArray(value)
+    ? value.length === 0
+    : !String(value || "").trim();
 }
 
 function validateStep(step, values) {
@@ -262,12 +496,20 @@ function validateStep(step, values) {
     if (field.id === "birthYear" && values.birthYear) {
       const currentYear = new Date().getFullYear();
       const birthYear = Number(values.birthYear);
-      if (!/^\d{4}$/.test(values.birthYear) || birthYear < 1900 || birthYear > currentYear) {
+      if (
+        !/^\d{4}$/.test(values.birthYear) ||
+        birthYear < 1900 ||
+        birthYear > currentYear
+      ) {
         nextErrors.birthYear = `1900년부터 ${currentYear}년 사이의 연도를 입력해주세요.`;
       }
     }
 
-    if (field.id === "studentId" && values.studentId && !/^\d+$/.test(values.studentId)) {
+    if (
+      field.id === "studentId" &&
+      values.studentId &&
+      !/^\d+$/.test(values.studentId)
+    ) {
       nextErrors.studentId = "학번은 숫자로만 입력해주세요.";
     }
   });
@@ -283,10 +525,13 @@ function isFieldAnswered(field, values) {
 }
 
 function getChoiceColumns(field) {
-  const longestOption = Math.max(...field.options.map((option) => option.length));
+  const longestOption = Math.max(
+    ...field.options.map((option) => option.length),
+  );
   if (longestOption >= 16) return 2;
   if (field.options.length <= 4) return field.options.length;
-  if (field.options.length <= 7 && longestOption <= 5) return field.options.length;
+  if (field.options.length <= 7 && longestOption <= 5)
+    return field.options.length;
   return 4;
 }
 
@@ -300,10 +545,17 @@ function SurveyPage() {
   const completeRef = useRef(null);
 
   const currentStep = SURVEY_STEPS[currentStepIndex];
-  const selectedFaculty = useMemo(() => findFaculty(values.faculty), [values.faculty]);
-  const mbti = MBTI_DIMENSIONS.map((dimension) => values[dimension.id]).join("");
+  const selectedFaculty = useMemo(
+    () => findFaculty(values.faculty),
+    [values.faculty],
+  );
+  const mbti = MBTI_DIMENSIONS.map((dimension) => values[dimension.id]).join(
+    "",
+  );
   const allFields = SURVEY_STEPS.flatMap((step) => step.fields);
-  const answeredFieldCount = allFields.filter((field) => isFieldAnswered(field, values)).length;
+  const answeredFieldCount = allFields.filter((field) =>
+    isFieldAnswered(field, values),
+  ).length;
   const progress = Math.round((answeredFieldCount / allFields.length) * 100);
 
   const clearError = (fieldId) => {
@@ -330,14 +582,18 @@ function SurveyPage() {
   };
 
   const toggleMultiValue = (field, option) => {
-    const selectedValues = Array.isArray(values[field.id]) ? values[field.id] : [];
+    const selectedValues = Array.isArray(values[field.id])
+      ? values[field.id]
+      : [];
     const exclusiveOptions = field.exclusiveOptions || [];
     let nextValues;
 
     if (exclusiveOptions.includes(option)) {
       nextValues = selectedValues.includes(option) ? [] : [option];
     } else {
-      const regularValues = selectedValues.filter((value) => !exclusiveOptions.includes(value));
+      const regularValues = selectedValues.filter(
+        (value) => !exclusiveOptions.includes(value),
+      );
       nextValues = regularValues.includes(option)
         ? regularValues.filter((value) => value !== option)
         : [...regularValues, option];
@@ -347,12 +603,16 @@ function SurveyPage() {
 
   const toggleEveryDay = (field) => {
     const selectedValues = values[field.id];
-    const everyDaySelected = field.options.every((option) => selectedValues.includes(option));
+    const everyDaySelected = field.options.every((option) =>
+      selectedValues.includes(option),
+    );
     setFieldValue(field.id, everyDaySelected ? [] : [...field.options]);
   };
 
   const focusTitle = () => {
-    window.requestAnimationFrame(() => titleRef.current?.focus({ preventScroll: true }));
+    window.requestAnimationFrame(() =>
+      titleRef.current?.focus({ preventScroll: true }),
+    );
   };
 
   const goToStep = (stepIndex) => {
@@ -414,11 +674,10 @@ function SurveyPage() {
 
   const renderLabel = (field) => (
     <S.LabelRow>
-      <S.LabelText>
-        {field.label}
-        {field.required && <S.RequiredBadge>필수</S.RequiredBadge>}
-      </S.LabelText>
-      {FIELD_HINTS[field.id] && <S.FieldHint>{FIELD_HINTS[field.id]}</S.FieldHint>}
+      <S.LabelText>{field.label}</S.LabelText>
+      {FIELD_HINTS[field.id] && (
+        <S.FieldHint>{FIELD_HINTS[field.id]}</S.FieldHint>
+      )}
     </S.LabelRow>
   );
 
@@ -463,7 +722,11 @@ function SurveyPage() {
               : values[field.id] === option;
             const inputId = `${field.id}-${optionIndex}`;
             return (
-              <S.ChoiceLabel key={option} htmlFor={inputId} $selected={selected}>
+              <S.ChoiceLabel
+                key={option}
+                htmlFor={inputId}
+                $selected={selected}
+              >
                 <S.HiddenInput
                   id={inputId}
                   type={multiple ? "checkbox" : "radio"}
@@ -499,34 +762,39 @@ function SurveyPage() {
 
     return (
       <S.Field key={field.id} data-field-id={field.id}>
-        <S.FieldLabel htmlFor={field.id}>
-          {field.label}
-          {field.required && <S.RequiredBadge>필수</S.RequiredBadge>}
-        </S.FieldLabel>
+        <S.FieldLabel htmlFor={field.id}>{field.label}</S.FieldLabel>
         <S.SelectShell $hasError={Boolean(errors[field.id])}>
           <S.Select
             id={field.id}
             value={values[field.id]}
             disabled={disabled}
             aria-invalid={Boolean(errors[field.id])}
-            aria-describedby={errors[field.id] ? `${field.id}-error` : undefined}
+            aria-describedby={
+              errors[field.id] ? `${field.id}-error` : undefined
+            }
             onChange={(event) => setFieldValue(field.id, event.target.value)}
           >
             {hasNoMajor ? (
               <option value="세부전공 없음">세부전공 없음</option>
             ) : (
               <option value="">
-                {!facultyField && !selectedFaculty ? "학부를 먼저 선택해주세요" : `${field.label} 선택`}
+                {!facultyField && !selectedFaculty
+                  ? "학부를 먼저 선택해주세요"
+                  : `${field.label} 선택`}
               </option>
             )}
             {options.map((option) => (
-              <option key={option} value={option}>{option}</option>
+              <option key={option} value={option}>
+                {option}
+              </option>
             ))}
           </S.Select>
           <ChevronDown size={18} aria-hidden="true" />
         </S.SelectShell>
         <S.HelperText>
-          {hasNoMajor ? "선택한 학부는 별도 세부전공이 없어요." : FIELD_HINTS[field.id]}
+          {hasNoMajor
+            ? "선택한 학부는 별도 세부전공이 없어요."
+            : FIELD_HINTS[field.id]}
         </S.HelperText>
         {renderError(field)}
       </S.Field>
@@ -535,10 +803,7 @@ function SurveyPage() {
 
   const renderTextField = (field) => (
     <S.Field key={field.id} data-field-id={field.id}>
-      <S.FieldLabel htmlFor={field.id}>
-        {field.label}
-        {field.required && <S.RequiredBadge>필수</S.RequiredBadge>}
-      </S.FieldLabel>
+      <S.FieldLabel htmlFor={field.id}>{field.label}</S.FieldLabel>
       <S.TextInput
         id={field.id}
         type="text"
@@ -550,7 +815,9 @@ function SurveyPage() {
         aria-invalid={Boolean(errors[field.id])}
         aria-describedby={errors[field.id] ? `${field.id}-error` : undefined}
         $hasError={Boolean(errors[field.id])}
-        onChange={(event) => setFieldValue(field.id, event.target.value.replace(/\D/g, ""))}
+        onChange={(event) =>
+          setFieldValue(field.id, event.target.value.replace(/\D/g, ""))
+        }
       />
       <S.HelperText>{FIELD_HINTS[field.id]}</S.HelperText>
       {renderError(field)}
@@ -567,7 +834,11 @@ function SurveyPage() {
       <S.MbtiLayout>
         <S.MbtiGrid>
           {field.dimensions.map((dimension) => (
-            <S.MbtiAxis key={dimension.id} role="group" aria-label={dimension.label}>
+            <S.MbtiAxis
+              key={dimension.id}
+              role="group"
+              aria-label={dimension.label}
+            >
               <S.MbtiAxisText>
                 <strong>{dimension.label}</strong>
                 <span>{dimension.helper}</span>
@@ -594,7 +865,9 @@ function SurveyPage() {
         <S.MbtiPreview aria-live="polite">
           <span>나의 MBTI</span>
           <strong>{mbti.length === 4 ? mbti : "— — — —"}</strong>
-          <small>{mbti.length === 4 ? "선택 완료" : "네 기준을 선택해주세요"}</small>
+          <small>
+            {mbti.length === 4 ? "선택 완료" : "네 기준을 선택해주세요"}
+          </small>
         </S.MbtiPreview>
       </S.MbtiLayout>
       {renderError(field)}
@@ -602,8 +875,10 @@ function SurveyPage() {
   );
 
   const renderField = (field) => {
-    if (field.type === "single" || field.type === "multi") return renderChoiceField(field);
-    if (field.type === "faculty" || field.type === "major") return renderSelectField(field);
+    if (field.type === "single" || field.type === "multi")
+      return renderChoiceField(field);
+    if (field.type === "faculty" || field.type === "major")
+      return renderSelectField(field);
     if (field.type === "text") return renderTextField(field);
     if (field.type === "mbti") return renderMbtiField(field);
     return null;
@@ -640,14 +915,21 @@ function SurveyPage() {
       <S.SurveyPageReset />
       <S.Content>
         <S.Intro>
-          <S.Eyebrow><Sparkles size={15} aria-hidden="true" /> ROOMMATE PROFILE</S.Eyebrow>
+          <S.Eyebrow>
+            <Sparkles size={15} aria-hidden="true" /> ROOMMATE PROFILE
+          </S.Eyebrow>
           <S.PageTitle>나와 잘 맞는 룸메이트를 찾아볼까요?</S.PageTitle>
           <S.PageDescription>
-            생활 습관을 솔직하게 알려주면 서로 더 편안하게 지낼 수 있는 룸메이트를 찾는 데 도움이 돼요.
+            생활 습관을 솔직하게 알려주면 서로 더 편안하게 지낼 수 있는
+            룸메이트를 찾는 데 도움이 돼요.
           </S.PageDescription>
           <S.IntroMeta>
-            <span><Clock3 size={15} aria-hidden="true" /> 약 5분 소요</span>
-            <span><ShieldCheck size={15} aria-hidden="true" /> 매칭 목적으로만 활용</span>
+            <span>
+              <Clock3 size={15} aria-hidden="true" /> 약 5분 소요
+            </span>
+            <span>
+              <ShieldCheck size={15} aria-hidden="true" /> 매칭 목적으로만 활용
+            </span>
           </S.IntroMeta>
         </S.Intro>
 
@@ -669,8 +951,11 @@ function SurveyPage() {
             <S.StepList>
               {SURVEY_STEPS.map((step, stepIndex) => {
                 const active = currentStepIndex === stepIndex;
-                const answeredCount = step.fields.filter((field) => isFieldAnswered(field, values)).length;
-                const complete = Object.keys(validateStep(step, values)).length === 0;
+                const answeredCount = step.fields.filter((field) =>
+                  isFieldAnswered(field, values),
+                ).length;
+                const complete =
+                  Object.keys(validateStep(step, values)).length === 0;
                 return (
                   <li key={step.id}>
                     <S.StepButton
@@ -680,11 +965,17 @@ function SurveyPage() {
                       aria-current={active ? "step" : undefined}
                     >
                       <S.StepMarker $active={active} $complete={complete}>
-                        {complete ? <Check size={15} aria-hidden="true" /> : stepIndex + 1}
+                        {complete ? (
+                          <Check size={15} aria-hidden="true" />
+                        ) : (
+                          stepIndex + 1
+                        )}
                       </S.StepMarker>
                       <S.StepCopy>
                         <strong>{step.shortTitle}</strong>
-                        <span>{answeredCount} / {step.fields.length} 입력</span>
+                        <span>
+                          {answeredCount} / {step.fields.length} 입력
+                        </span>
                       </S.StepCopy>
                     </S.StepButton>
                   </li>
@@ -699,10 +990,13 @@ function SurveyPage() {
 
           <S.FormCard as="form" onSubmit={handleSubmit} noValidate>
             <S.FormHeader>
-              <S.StepKicker>STEP {currentStepIndex + 1} OF {SURVEY_STEPS.length}</S.StepKicker>
-              <S.FormTitle ref={titleRef} tabIndex="-1">{currentStep.title}</S.FormTitle>
+              <S.StepKicker>
+                STEP {currentStepIndex + 1} OF {SURVEY_STEPS.length}
+              </S.StepKicker>
+              <S.FormTitle ref={titleRef} tabIndex="-1">
+                {currentStep.title}
+              </S.FormTitle>
               <S.FormDescription>{currentStep.description}</S.FormDescription>
-              <S.RequiredNotice><span>필수</span> 표시는 꼭 입력해주세요.</S.RequiredNotice>
             </S.FormHeader>
 
             <S.FormBody>
@@ -711,7 +1005,6 @@ function SurveyPage() {
                   <AlertCircle size={18} aria-hidden="true" />
                   <div>
                     <strong>아직 입력하지 않은 항목이 있어요.</strong>
-                    <span>표시된 필수 항목을 확인해주세요.</span>
                   </div>
                 </S.ValidationBanner>
               )}
@@ -721,7 +1014,9 @@ function SurveyPage() {
                   <CheckCircle2 size={21} aria-hidden="true" />
                   <div>
                     <strong>모든 답변을 확인했어요.</strong>
-                    <span>현재 화면은 UI 확인용이며 실제 저장은 진행되지 않습니다.</span>
+                    <span>
+                      현재 화면은 UI 확인용이며 실제 저장은 진행되지 않습니다.
+                    </span>
                   </div>
                 </S.CompleteBanner>
               )}
@@ -736,10 +1031,14 @@ function SurveyPage() {
                 <ArrowLeft size={17} aria-hidden="true" /> 이전
               </S.BackButton>
               <S.NextButton type="submit">
-                {currentStepIndex === SURVEY_STEPS.length - 1 ? "입력 완료" : "다음"}
                 {currentStepIndex === SURVEY_STEPS.length - 1
-                  ? <Check size={17} aria-hidden="true" />
-                  : <ArrowRight size={17} aria-hidden="true" />}
+                  ? "입력 완료"
+                  : "다음"}
+                {currentStepIndex === SURVEY_STEPS.length - 1 ? (
+                  <Check size={17} aria-hidden="true" />
+                ) : (
+                  <ArrowRight size={17} aria-hidden="true" />
+                )}
               </S.NextButton>
             </S.FormFooter>
           </S.FormCard>
