@@ -1164,7 +1164,7 @@ export const CalendarDay = styled.button`
   @media (hover: hover) {
     &:hover {
       background: ${({ $selected }) =>
-        $selected ? colors.navy : colors.navySoft};
+    $selected ? colors.navy : colors.navySoft};
     }
   }
 `;

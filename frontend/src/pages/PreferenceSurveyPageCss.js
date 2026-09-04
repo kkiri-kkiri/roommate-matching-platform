@@ -277,7 +277,7 @@ export const StepMarker = styled.span`
   height: 34px;
   border: 1px solid
     ${({ $active, $complete }) =>
-      $active || $complete ? "transparent" : colors.border};
+    $active || $complete ? "transparent" : colors.border};
   border-radius: 50%;
   color: ${({ $active, $complete }) =>
     $active || $complete ? colors.white : colors.muted};
@@ -613,7 +613,7 @@ export const ChoiceLabel = styled.label`
     &:hover {
       border-color: ${({ $selected }) => ($selected ? colors.mint : "#b9c7c6")};
       background: ${({ $selected }) =>
-        $selected ? colors.mintSoft : "#fbfdfd"};
+    $selected ? colors.mintSoft : "#fbfdfd"};
       transform: translateY(-1px);
     }
   }

@@ -44,7 +44,10 @@ function App() {
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/find-id" element={<FindIdPage />} />
       <Route path="/find-password" element={<FindPasswordPage />} />
-      <Route path="/profile" element={<Navigate to="/profile-survey" replace />} />
+      <Route
+        path="/profile"
+        element={<Navigate to="/profile-survey" replace />}
+      />
       <Route path="/profile-survey" element={<ProfileSurveyPage />} />
       <Route
         path="/roommate-preference-survey"
