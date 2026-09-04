@@ -226,8 +226,8 @@ function getStoredUser() {
   try {
     const storedProfile = JSON.parse(
       window.localStorage.getItem("user") ||
-        window.localStorage.getItem("profile") ||
-        "{}",
+      window.localStorage.getItem("profile") ||
+      "{}",
     );
 
     return {
@@ -718,9 +718,8 @@ function MainPage({ pageMode = "home", currentUser }) {
                                 : "weekday"
                           }
                           aria-pressed={isSelected}
-                          aria-label={`${activeMonth.shortLabel} ${day}일${
-                            hasEvent ? ", 일정 있음" : ""
-                          }`}
+                          aria-label={`${activeMonth.shortLabel} ${day}일${hasEvent ? ", 일정 있음" : ""
+                            }`}
                           onClick={() => setSelectedDate(day)}
                         >
                           <span>{day}</span>
