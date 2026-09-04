@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import MainPage from "./pages/MainPage";
 import RoommatePreferenceSurvey from "./pages/RoommatePreferenceSurvey";
-import SurveyPage from "./pages/SurveyPage";
+import SurveyPage from "./pages/ProfileSurveyPage";
 
 function App() {
   return (

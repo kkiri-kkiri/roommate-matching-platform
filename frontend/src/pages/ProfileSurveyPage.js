@@ -12,7 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import * as S from "./SurveyPageCss";
+import * as S from "./ProfileSurveyPageCss";
 
 const FACULTY_OPTIONS = [
   {

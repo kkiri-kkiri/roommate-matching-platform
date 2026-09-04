@@ -26,7 +26,7 @@ const focusRing = css`
   }
 `;
 
-export const PageReset = createGlobalStyle`
+export const SurveyPageReset = createGlobalStyle`
   body {
     margin: 0;
   }
@@ -38,8 +38,13 @@ export const Page = styled.main`
   color: ${colors.text};
   background: ${colors.warm};
   font-family:
-    "Plus Jakarta Sans", Pretendard, "Noto Sans KR", -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+    "Plus Jakarta Sans",
+    Pretendard,
+    "Noto Sans KR",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 
   &,
   *,
@@ -49,11 +54,12 @@ export const Page = styled.main`
   }
 
   button,
-  input {
+  input,
+  select {
     font: inherit;
   }
 
-  @media (max-width: 720px) {
+  @media (max-width: 700px) {
     padding: 36px 16px 56px;
   }
 `;
@@ -64,10 +70,10 @@ export const Content = styled.div`
 `;
 
 export const Intro = styled.header`
-  max-width: 800px;
+  max-width: 780px;
   margin-bottom: 40px;
 
-  @media (max-width: 720px) {
+  @media (max-width: 700px) {
     margin-bottom: 28px;
   }
 `;
@@ -96,21 +102,21 @@ export const PageTitle = styled.h1`
   letter-spacing: -0.01em;
   word-break: keep-all;
 
-  @media (max-width: 720px) {
+  @media (max-width: 700px) {
     font-size: 24px;
     line-height: 32px;
   }
 `;
 
 export const PageDescription = styled.p`
-  max-width: 720px;
+  max-width: 690px;
   margin: 13px 0 0;
   color: ${colors.textSoft};
   font-size: 16px;
   line-height: 26px;
   word-break: keep-all;
 
-  @media (max-width: 720px) {
+  @media (max-width: 700px) {
     font-size: 14px;
     line-height: 22px;
   }
@@ -133,14 +139,13 @@ export const IntroMeta = styled.div`
   }
 
   svg {
-    flex: 0 0 auto;
     color: ${colors.mint};
   }
 `;
 
 export const SurveyLayout = styled.div`
   display: grid;
-  grid-template-columns: 268px minmax(0, 1fr);
+  grid-template-columns: 264px minmax(0, 1fr);
   gap: 24px;
   align-items: start;
 
@@ -163,7 +168,7 @@ export const StepPanel = styled.aside`
     padding: 20px;
   }
 
-  @media (max-width: 520px) {
+  @media (max-width: 640px) {
     padding: 18px 16px;
   }
 `;
@@ -200,16 +205,11 @@ export const ProgressTrack = styled.div`
 
 export const ProgressFill = styled.span`
   display: block;
-  width: ${({ $progress }) =>
-    Math.max(0, Math.min(100, Number($progress) || 0))}%;
+  width: ${({ $progress }) => Math.max(0, Math.min(100, $progress))}%;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, ${colors.mintDark}, ${colors.mint});
   transition: width 220ms ease;
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-  }
 `;
 
 export const StepList = styled.ol`
@@ -227,13 +227,12 @@ export const StepList = styled.ol`
 
   @media (max-width: 820px) {
     display: flex;
-    padding-bottom: 4px;
+    padding-bottom: 2px;
     overflow-x: auto;
-    overscroll-behavior-inline: contain;
     scrollbar-width: thin;
 
     li {
-      flex: 0 0 158px;
+      flex: 0 0 142px;
     }
   }
 `;
@@ -248,8 +247,7 @@ export const StepButton = styled.button`
   min-height: 62px;
   padding: 9px 10px;
   border: 1px solid
-    ${({ $active }) =>
-      $active ? "rgba(12, 50, 115, 0.14)" : "transparent"};
+    ${({ $active }) => ($active ? "rgba(12, 50, 115, 0.12)" : "transparent")};
   border-radius: 12px;
   color: ${colors.textSoft};
   background: ${({ $active }) => ($active ? colors.navySoft : "transparent")};
@@ -261,8 +259,7 @@ export const StepButton = styled.button`
 
   @media (hover: hover) {
     &:hover {
-      background: ${({ $active }) =>
-        $active ? colors.navySoft : "#f7f7f7"};
+      background: ${({ $active }) => ($active ? colors.navySoft : "#f7f7f7")};
     }
   }
 
@@ -314,7 +311,7 @@ export const StepCopy = styled.span`
     margin-top: 2px;
     color: ${colors.subtle};
     font-size: 12px;
-    line-height: 17px;
+    line-height: 16px;
   }
 `;
 
@@ -372,34 +369,31 @@ export const StepKicker = styled.span`
 `;
 
 export const FormTitle = styled.h2`
-  scroll-margin-top: 112px;
+  scroll-margin-top: 96px;
   margin: 0;
-  border-radius: 4px;
   color: ${colors.navyDark};
   font-size: 24px;
   font-weight: 800;
   line-height: 32px;
   letter-spacing: -0.025em;
-  word-break: keep-all;
 
   &:focus {
     outline: none;
   }
 
   &:focus-visible {
+    border-radius: 4px;
     outline: 3px solid rgba(0, 167, 159, 0.24);
-    outline-offset: 4px;
+    outline-offset: 5px;
   }
 
   @media (max-width: 640px) {
-    scroll-margin-top: 80px;
     font-size: 21px;
     line-height: 29px;
   }
 `;
 
 export const FormDescription = styled.p`
-  max-width: 680px;
   margin: 7px 0 0;
   color: ${colors.muted};
   font-size: 14px;
@@ -417,7 +411,6 @@ export const RequiredNotice = styled.p`
     color: ${colors.error};
     font-weight: 800;
   }
-
 `;
 
 export const FormBody = styled.div`
@@ -441,7 +434,6 @@ export const ValidationBanner = styled.div`
   background: ${colors.errorSoft};
 
   svg {
-    flex: 0 0 auto;
     margin-top: 2px;
   }
 
@@ -469,14 +461,6 @@ export const Fieldset = styled.fieldset`
   padding: 28px 0;
   border: 0;
   border-bottom: 1px solid ${colors.border};
-
-  &:first-of-type {
-    margin-top: 24px;
-  }
-
-  & + & {
-    margin-top: 24px;
-  }
 
   &:last-of-type {
     border-bottom: 0;
@@ -516,14 +500,14 @@ export const LabelText = styled.span`
 export const RequiredBadge = styled.span`
   display: inline-flex;
   align-items: center;
-  min-height: 22px;
-  padding: 0 8px;
+  min-height: 21px;
+  padding: 0 7px;
   border-radius: 999px;
   color: ${colors.error};
   background: ${colors.errorSoft};
   font-size: 12px;
   font-weight: 800;
-  line-height: 16px;
+  line-height: 14px;
   letter-spacing: 0.02em;
 `;
 
@@ -537,52 +521,50 @@ export const FieldHint = styled.span`
 export const ConditionNotice = styled.div`
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 10px;
+  gap: 11px;
   align-items: start;
-  margin: 24px 0 0;
+  margin-bottom: 16px;
   padding: 15px 16px;
   border: 1px solid rgba(52, 120, 246, 0.18);
   border-radius: 12px;
-  color: ${colors.textSoft};
+  color: ${colors.blue};
   background: #f2f6ff;
-  font-size: 13px;
-  line-height: 20px;
-  word-break: keep-all;
 
   svg {
-    margin-top: 2px;
-    color: ${colors.blue};
+    margin-top: 1px;
+  }
+
+  strong,
+  span {
+    display: block;
   }
 
   strong {
     color: ${colors.navy};
+    font-size: 13px;
+    line-height: 19px;
+  }
+
+  span {
+    margin-top: 2px;
+    color: ${colors.textSoft};
+    font-size: 12px;
+    line-height: 18px;
+    word-break: keep-all;
   }
 `;
 
 export const SelectionGuide = styled.p`
-  display: flex;
-  gap: 7px;
-  align-items: flex-start;
-  margin: -3px 0 12px;
-  color: ${colors.muted};
+  margin: -4px 0 12px;
+  color: ${colors.subtle};
   font-size: 12px;
   line-height: 18px;
   word-break: keep-all;
-
-  svg {
-    flex: 0 0 auto;
-    margin-top: 2px;
-    color: ${colors.mint};
-  }
 `;
 
 export const ChoiceGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(
-    ${({ $columns }) =>
-      Math.max(1, Math.min(4, Number($columns) || 3))},
-    minmax(0, 1fr)
-  );
+  grid-template-columns: repeat(${({ $columns }) => $columns}, minmax(0, 1fr));
   gap: 10px;
 
   @media (max-width: 720px) {
@@ -604,8 +586,7 @@ export const ChoiceLabel = styled.label`
   border: 1px solid
     ${({ $selected }) => ($selected ? colors.mint : colors.border)};
   border-radius: 12px;
-  color: ${({ $selected }) =>
-    $selected ? colors.mintDark : colors.textSoft};
+  color: ${({ $selected }) => ($selected ? colors.mintDark : colors.textSoft)};
   background: ${({ $selected }) =>
     $selected ? colors.mintSoft : colors.white};
   font-size: 14px;
@@ -630,16 +611,11 @@ export const ChoiceLabel = styled.label`
 
   @media (hover: hover) {
     &:hover {
-      border-color: ${({ $selected }) =>
-        $selected ? colors.mint : "#b9c7c6"};
+      border-color: ${({ $selected }) => ($selected ? colors.mint : "#b9c7c6")};
       background: ${({ $selected }) =>
         $selected ? colors.mintSoft : "#fbfdfd"};
       transform: translateY(-1px);
     }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
   }
 `;
 
@@ -667,35 +643,41 @@ export const ChoiceIndicator = styled.span`
     ${({ $selected }) => ($selected ? colors.mint : "#a9acb3")};
   border-radius: ${({ $multiple }) => ($multiple ? "6px" : "50%")};
   color: ${colors.white};
-  background: ${({ $selected }) =>
-    $selected ? colors.mint : colors.white};
+  background: ${({ $selected }) => ($selected ? colors.mint : colors.white)};
 `;
 
-export const RequirementSummary = styled.section`
-  margin: 8px 0 28px;
-  padding: 20px;
-  border: 1px solid rgba(0, 167, 159, 0.22);
-  border-radius: 14px;
-  background: #fbfefd;
+export const RequirementSummary = styled.div`
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid
+    ${({ $empty }) => ($empty ? colors.border : "rgba(0, 167, 159, 0.24)")};
+  border-radius: 12px;
+  background: ${({ $empty }) => ($empty ? "#fafafa" : colors.mintSoft)};
 `;
 
 export const SummaryHeader = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
 
-  strong {
-    color: ${colors.navyDark};
-    font-size: 14px;
-    line-height: 20px;
-  }
-
   span {
-    color: ${colors.mintDark};
+    display: inline-flex;
+    gap: 7px;
+    align-items: center;
+    color: ${colors.textSoft};
     font-size: 12px;
     font-weight: 700;
+    line-height: 18px;
+  }
+
+  svg {
+    color: ${colors.mintDark};
+  }
+
+  strong {
+    color: ${colors.mintDark};
+    font-size: 12px;
     line-height: 18px;
   }
 `;
@@ -703,29 +685,28 @@ export const SummaryHeader = styled.div`
 export const SummaryChips = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 14px;
+  gap: 7px;
+  margin-top: 12px;
 `;
 
 export const SummaryChip = styled.span`
   display: inline-flex;
   align-items: center;
-  min-height: 30px;
-  padding: 5px 11px;
-  border: 1px solid rgba(0, 167, 159, 0.2);
+  min-height: 28px;
+  padding: 5px 10px;
   border-radius: 999px;
   color: ${colors.mintDark};
-  background: ${colors.mintSoft};
+  background: ${colors.white};
   font-size: 12px;
   font-weight: 700;
-  line-height: 18px;
+  line-height: 16px;
 `;
 
 export const SummaryEmpty = styled.p`
-  margin: 12px 0 0;
+  margin: 8px 0 0;
   color: ${colors.muted};
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
   word-break: keep-all;
 `;
 
@@ -758,17 +739,8 @@ export const CompleteBanner = styled.div`
   background: ${colors.mintSoft};
 
   &:focus {
-    outline: none;
-  }
-
-  &:focus-visible {
-    outline: 3px solid rgba(0, 167, 159, 0.22);
+    outline: 3px solid rgba(0, 167, 159, 0.18);
     outline-offset: 2px;
-  }
-
-  svg {
-    flex: 0 0 auto;
-    margin-top: 2px;
   }
 
   strong,
@@ -822,18 +794,10 @@ const actionButton = css`
     background-color 160ms ease,
     transform 160ms ease;
 
-  svg {
-    flex: 0 0 auto;
-  }
-
   @media (hover: hover) {
     &:not(:disabled):hover {
       transform: translateY(-1px);
     }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
   }
 
   @media (max-width: 420px) {
@@ -870,16 +834,8 @@ export const NextButton = styled.button`
   background: ${colors.navy};
   box-shadow: 0 4px 10px rgba(12, 50, 115, 0.14);
 
-  &:disabled {
-    border-color: #afb6c4;
-    color: #f4f4f4;
-    background: #afb6c4;
-    box-shadow: none;
-    cursor: not-allowed;
-  }
-
   @media (hover: hover) {
-    &:not(:disabled):hover {
+    &:hover {
       border-color: ${colors.navyDark};
       background: ${colors.navyDark};
     }
