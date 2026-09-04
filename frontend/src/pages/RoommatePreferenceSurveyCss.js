@@ -26,7 +26,7 @@ const focusRing = css`
   }
 `;
 
-export const SurveyPageReset = createGlobalStyle`
+export const PageReset = createGlobalStyle`
   body {
     margin: 0;
   }
