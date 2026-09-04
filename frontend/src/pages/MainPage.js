@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
   ArrowRight,
   BadgeCheck,
@@ -203,6 +203,12 @@ const REGION_OPTIONS = {
   southern: { label: "전라 · 경상 · 제주", points: 30 },
 };
 
+const PAGE_SECTION_IDS = {
+  roommates: "recommended-roommates",
+  community: "popular-community",
+  calendar: "campus-calendar",
+};
+
 function getCalendarCells(month) {
   return [
     ...Array.from({ length: month.startOffset }, () => null),
@@ -246,6 +252,7 @@ function getStoredUser() {
 }
 
 function MainPage({ pageMode = "home", currentUser }) {
+  const { hash } = useLocation();
   const authenticatedUser =
     currentUser === undefined ? getStoredUser() : currentUser;
 
@@ -258,6 +265,19 @@ function MainPage({ pageMode = "home", currentUser }) {
   );
   const [scoreForm, setScoreForm] = useState(INITIAL_SCORE_FORM);
   const [scoreResult, setScoreResult] = useState(null);
+
+  useEffect(() => {
+    const sectionId = hash.slice(1) || PAGE_SECTION_IDS[pageMode];
+    if (!sectionId) return undefined;
+
+    const frameId = window.requestAnimationFrame(() => {
+      document
+        .getElementById(sectionId)
+        ?.scrollIntoView?.({ block: "start" });
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [hash, pageMode]);
 
   const visiblePosts = useMemo(() => {
     const filteredPosts =
@@ -401,7 +421,7 @@ function MainPage({ pageMode = "home", currentUser }) {
               {authenticatedUser ? (
                 <S.ProfileLink
                   as={Link}
-                  to="/profile"
+                  to="/profile-survey"
                   aria-label="내 프로필 보기"
                 >
                   <S.HeaderAvatar>
