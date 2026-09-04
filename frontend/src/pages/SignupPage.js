@@ -6,16 +6,12 @@ const INITIAL_FORM = {
   password: "",
   passwordConfirm: "",
   nickname: "",
-  email: "",
-  phone: "",
+  schoolEmailId: "",
 };
 
-const INITIAL_TERMS = {
-  age: false,
-  service: false,
-  privacy: false,
-  marketing: false,
-};
+const SCHOOL_EMAIL_DOMAIN = "@hknu.ac.kr";
+const SCHOOL_EMAIL_ID_PATTERN =
+  /^[A-Za-z0-9_%+-]+(?:\.[A-Za-z0-9_%+-]+)*$/;
 
 const SignupPage = () => {
   const [form, setForm] = useState(INITIAL_FORM);
@@ -25,22 +21,23 @@ const SignupPage = () => {
   const [verificationSent, setVerificationSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [verificationFeedback, setVerificationFeedback] = useState(null);
-  const [terms, setTerms] = useState(INITIAL_TERMS);
   const [submitFeedback, setSubmitFeedback] = useState(null);
 
   const passwordIsLongEnough = form.password.length >= 8;
   const passwordMatches =
     form.passwordConfirm.length > 0 && form.password === form.passwordConfirm;
-  const allTermsChecked = Object.values(terms).every(Boolean);
-  const requiredTermsChecked = terms.age && terms.service && terms.privacy;
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
+    const nextValue =
+      name === "schoolEmailId"
+        ? value.split("@")[0].replace(/\s/g, "").slice(0, 64)
+        : value;
 
-    setForm((current) => ({ ...current, [name]: value }));
+    setForm((current) => ({ ...current, [name]: nextValue }));
     setSubmitFeedback(null);
 
-    if (name === "phone") {
+    if (name === "schoolEmailId") {
       setVerificationCode("");
       setVerificationSent(false);
       setIsVerified(false);
@@ -49,12 +46,12 @@ const SignupPage = () => {
   };
 
   const handleSendCode = () => {
-    const phoneDigits = form.phone.replace(/\D/g, "");
+    const schoolEmailId = form.schoolEmailId.trim();
 
-    if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+    if (!SCHOOL_EMAIL_ID_PATTERN.test(schoolEmailId)) {
       setVerificationFeedback({
         tone: "error",
-        text: "휴대전화 번호를 정확히 입력해 주세요.",
+        text: "학교 이메일의 @ 앞부분을 정확히 입력해 주세요.",
       });
       return;
     }
@@ -64,7 +61,7 @@ const SignupPage = () => {
     setIsVerified(false);
     setVerificationFeedback({
       tone: "info",
-      text: "인증번호를 전송했어요. 화면 확인용으로 숫자 6자리를 입력해 주세요.",
+      text: `${schoolEmailId}${SCHOOL_EMAIL_DOMAIN}로 인증번호를 전송했어요. 화면 확인용으로 숫자 6자리를 입력해 주세요.`,
     });
   };
 
@@ -80,25 +77,8 @@ const SignupPage = () => {
     setIsVerified(true);
     setVerificationFeedback({
       tone: "success",
-      text: "본인인증이 완료되었습니다.",
+      text: "재학생 인증이 완료되었습니다.",
     });
-    setSubmitFeedback(null);
-  };
-
-  const handleAllTerms = (event) => {
-    const { checked } = event.target;
-    setTerms({
-      age: checked,
-      service: checked,
-      privacy: checked,
-      marketing: checked,
-    });
-    setSubmitFeedback(null);
-  };
-
-  const handleTermChange = (event) => {
-    const { name, checked } = event.target;
-    setTerms((current) => ({ ...current, [name]: checked }));
     setSubmitFeedback(null);
   };
 
@@ -110,8 +90,7 @@ const SignupPage = () => {
       form.password,
       form.passwordConfirm,
       form.nickname,
-      form.email,
-      form.phone,
+      form.schoolEmailId,
     ];
 
     if (requiredValues.some((value) => !value.trim())) {
@@ -130,10 +109,10 @@ const SignupPage = () => {
       return;
     }
 
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) {
+    if (!SCHOOL_EMAIL_ID_PATTERN.test(form.schoolEmailId.trim())) {
       setSubmitFeedback({
         tone: "error",
-        text: "올바른 이메일 형식으로 입력해 주세요.",
+        text: "학교 이메일 형식을 다시 확인해 주세요.",
       });
       return;
     }
@@ -141,15 +120,7 @@ const SignupPage = () => {
     if (!isVerified) {
       setSubmitFeedback({
         tone: "error",
-        text: "휴대전화 본인인증을 완료해 주세요.",
-      });
-      return;
-    }
-
-    if (!requiredTermsChecked) {
-      setSubmitFeedback({
-        tone: "error",
-        text: "필수 약관에 모두 동의해 주세요.",
+        text: "학교 이메일 재학생 인증을 완료해 주세요.",
       });
       return;
     }
@@ -302,35 +273,19 @@ const SignupPage = () => {
               </S.FieldGroup>
             </S.TwoColumnFields>
 
-            <S.TwoColumnFields>
-              <S.FieldGroup>
-                <S.Label htmlFor="signup-nickname">닉네임</S.Label>
-                <S.Input
-                  id="signup-nickname"
-                  name="nickname"
-                  type="text"
-                  value={form.nickname}
-                  onChange={handleInputChange}
-                  placeholder="표시할 닉네임"
-                  autoComplete="nickname"
-                  required
-                />
-              </S.FieldGroup>
-
-              <S.FieldGroup>
-                <S.Label htmlFor="signup-email">이메일</S.Label>
-                <S.Input
-                  id="signup-email"
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleInputChange}
-                  placeholder="name@example.com"
-                  autoComplete="email"
-                  required
-                />
-              </S.FieldGroup>
-            </S.TwoColumnFields>
+            <S.FieldGroup>
+              <S.Label htmlFor="signup-nickname">닉네임</S.Label>
+              <S.Input
+                id="signup-nickname"
+                name="nickname"
+                type="text"
+                value={form.nickname}
+                onChange={handleInputChange}
+                placeholder="표시할 닉네임"
+                autoComplete="nickname"
+                required
+              />
+            </S.FieldGroup>
           </S.FormSection>
 
           <S.Divider />
@@ -340,30 +295,36 @@ const SignupPage = () => {
               <S.SectionNumber aria-hidden="true">2</S.SectionNumber>
               <S.SectionHeadingGroup>
                 <S.SectionTitle id="verification-section-title">
-                  본인인증
+                  재학생 인증
                 </S.SectionTitle>
                 <S.SectionDescription>
-                  안전한 이용을 위해 휴대전화 번호를 확인합니다.
+                  한경국립대학교 학교 이메일로 재학생 여부를 확인합니다.
                 </S.SectionDescription>
               </S.SectionHeadingGroup>
             </S.SectionHeader>
 
             <S.FieldGroup>
-              <S.Label htmlFor="signup-phone">휴대전화 번호</S.Label>
+              <S.Label htmlFor="signup-school-email">학교 이메일</S.Label>
               <S.ActionRow>
-                <S.Input
-                  id="signup-phone"
-                  name="phone"
-                  type="tel"
-                  inputMode="numeric"
-                  value={form.phone}
-                  onChange={handleInputChange}
-                  placeholder="01012345678"
-                  autoComplete="tel"
-                  required
-                  readOnly={isVerified}
-                  aria-describedby="verification-status"
-                />
+                <S.EmailInputGroup $readOnly={isVerified}>
+                  <S.EmailLocalInput
+                    id="signup-school-email"
+                    name="schoolEmailId"
+                    type="text"
+                    inputMode="email"
+                    value={form.schoolEmailId}
+                    onChange={handleInputChange}
+                    placeholder="학교 이메일 아이디"
+                    autoComplete="email"
+                    maxLength={64}
+                    required
+                    readOnly={isVerified}
+                    aria-describedby="school-email-domain verification-status"
+                  />
+                  <S.EmailDomain id="school-email-domain">
+                    {SCHOOL_EMAIL_DOMAIN}
+                  </S.EmailDomain>
+                </S.EmailInputGroup>
                 <S.OutlineButton
                   type="button"
                   onClick={handleSendCode}
@@ -376,6 +337,9 @@ const SignupPage = () => {
                       : "인증번호 전송"}
                 </S.OutlineButton>
               </S.ActionRow>
+              <S.HelperText>
+                학교 이메일에서 @ 앞부분만 입력해 주세요.
+              </S.HelperText>
             </S.FieldGroup>
 
             {verificationSent && !isVerified && (
@@ -421,78 +385,9 @@ const SignupPage = () => {
               $tone={verificationFeedback?.tone || "neutral"}
             >
               {verificationFeedback?.text ||
-                "휴대전화 번호 입력 후 인증번호를 받아 주세요."}
+                "학교 이메일 입력 후 인증번호를 받아 주세요."}
             </S.VerificationStatus>
           </S.FormSection>
-
-          <S.Divider />
-
-          <S.TermsSection aria-labelledby="terms-section-title">
-            <S.SectionHeader>
-              <S.SectionNumber aria-hidden="true">3</S.SectionNumber>
-              <S.SectionTitle id="terms-section-title">약관 동의</S.SectionTitle>
-            </S.SectionHeader>
-
-            <S.AllAgreeLabel>
-              <S.Checkbox
-                type="checkbox"
-                checked={allTermsChecked}
-                onChange={handleAllTerms}
-              />
-              <S.AllAgreeText>
-                전체 동의
-                <S.AllAgreeDescription>
-                  선택 항목을 포함한 모든 약관에 동의합니다.
-                </S.AllAgreeDescription>
-              </S.AllAgreeText>
-            </S.AllAgreeLabel>
-
-            <S.TermList>
-              <S.TermLabel>
-                <S.Checkbox
-                  type="checkbox"
-                  name="age"
-                  checked={terms.age}
-                  onChange={handleTermChange}
-                  required
-                />
-                <S.Requirement>필수</S.Requirement>
-                만 14세 이상입니다
-              </S.TermLabel>
-              <S.TermLabel>
-                <S.Checkbox
-                  type="checkbox"
-                  name="service"
-                  checked={terms.service}
-                  onChange={handleTermChange}
-                  required
-                />
-                <S.Requirement>필수</S.Requirement>
-                서비스 이용약관 동의
-              </S.TermLabel>
-              <S.TermLabel>
-                <S.Checkbox
-                  type="checkbox"
-                  name="privacy"
-                  checked={terms.privacy}
-                  onChange={handleTermChange}
-                  required
-                />
-                <S.Requirement>필수</S.Requirement>
-                개인정보 수집 및 이용 동의
-              </S.TermLabel>
-              <S.TermLabel>
-                <S.Checkbox
-                  type="checkbox"
-                  name="marketing"
-                  checked={terms.marketing}
-                  onChange={handleTermChange}
-                />
-                <S.Requirement $optional>선택</S.Requirement>
-                이벤트 및 혜택 알림 수신 동의
-              </S.TermLabel>
-            </S.TermList>
-          </S.TermsSection>
 
           {submitFeedback && (
             <S.SubmitFeedback

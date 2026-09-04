@@ -179,6 +179,71 @@ export const Input = styled.input`
   }
 `;
 
+export const EmailInputGroup = styled.div`
+  min-width: 0;
+  height: 52px;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid #e2e2e4;
+  border-radius: 12px;
+  background: ${({ $readOnly }) => ($readOnly ? "#f3f3f3" : "#ffffff")};
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+
+  &:hover {
+    border-color: ${({ $readOnly }) => ($readOnly ? "#e2e2e4" : "#c4c6d2")};
+  }
+
+  &:focus-within {
+    border-color: #00a79f;
+    box-shadow: 0 0 0 3px rgba(0, 167, 159, 0.14);
+  }
+`;
+
+export const EmailLocalInput = styled.input`
+  min-width: 0;
+  padding: 0 14px;
+  flex: 1 1 auto;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #1a1c1c;
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+
+  &::placeholder {
+    color: #8e8e93;
+  }
+
+  &:read-only {
+    color: #747781;
+  }
+`;
+
+export const EmailDomain = styled.span`
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  border-left: 1px solid #e2e2e4;
+  background: #f3f3f3;
+  color: #444650;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    padding: 0 10px;
+    font-size: 13px;
+  }
+`;
+
 export const HelperText = styled.p`
   margin: 0;
   color: #8e8e93;
@@ -332,88 +397,6 @@ export const VerificationStatus = styled.p`
   }};
   font-size: 13px;
   line-height: 20px;
-`;
-
-export const TermsSection = styled.section`
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-
-export const AllAgreeLabel = styled.label`
-  padding: 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  border: 1px solid #e2e2e4;
-  border-radius: 12px;
-  background: #f9f9f9;
-  cursor: pointer;
-
-  &:hover {
-    border-color: #c4c6d2;
-  }
-`;
-
-export const Checkbox = styled.input`
-  width: 18px;
-  height: 18px;
-  margin: 1px 0 0;
-  flex: 0 0 auto;
-  accent-color: #0c3273;
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: 2px solid #00a79f;
-    outline-offset: 2px;
-  }
-`;
-
-export const AllAgreeText = styled.span`
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  color: #1a1c1c;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 20px;
-`;
-
-export const AllAgreeDescription = styled.span`
-  color: #747781;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 18px;
-`;
-
-export const TermList = styled.div`
-  padding: 0 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-`;
-
-export const TermLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: #444650;
-  font-size: 14px;
-  line-height: 20px;
-  cursor: pointer;
-`;
-
-export const Requirement = styled.span`
-  min-width: 34px;
-  padding: 3px 7px;
-  border-radius: 9999px;
-  background: ${({ $optional }) => ($optional ? "#f3f3f3" : "#dff7f4")};
-  color: ${({ $optional }) => ($optional ? "#747781" : "#006a65")};
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 14px;
-  text-align: center;
 `;
 
 export const SubmitFeedback = styled.p`
