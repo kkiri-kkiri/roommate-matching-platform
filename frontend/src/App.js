@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import CommunityPage from "./pages/CommunityPage";
 import FindIdPage from "./pages/FindIdPage";
 import FindPasswordPage from "./pages/FindPasswordPage";
 import LoginPage from "./pages/LoginPage";
@@ -86,13 +87,27 @@ function App() {
       <Route path="/roommates" element={<RoommateSearchPage />} />
       <Route
         path="/community"
-        element={
-          <MainPage
-            pageMode="community"
-            currentUser={currentUser}
-            onLogout={handleLogout}
-          />
-        }
+        element={<CommunityPage currentUser={currentUser} />}
+      />
+      <Route
+        path="/community/posts/new"
+        element={<CommunityPage currentUser={currentUser} />}
+      />
+      <Route
+        path="/community/posts/:postId"
+        element={<CommunityPage currentUser={currentUser} />}
+      />
+      <Route
+        path="/community/posts/:postId/edit"
+        element={<CommunityPage currentUser={currentUser} />}
+      />
+      <Route
+        path="/community/my-posts"
+        element={<CommunityPage currentUser={currentUser} />}
+      />
+      <Route
+        path="/community/my-comments"
+        element={<CommunityPage currentUser={currentUser} />}
       />
       <Route
         path="/chat"
