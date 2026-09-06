@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   ArrowRight,
@@ -7,15 +7,18 @@ import {
   Calculator,
   CalendarDays,
   CheckCircle2,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
   Eye,
   Heart,
+  LogOut,
   MapPin,
   MessageCircle,
   RefreshCw,
   Sparkles,
+  UserRound,
   Users,
 } from "lucide-react";
 
@@ -251,11 +254,14 @@ function getStoredUser() {
   }
 }
 
-function MainPage({ pageMode = "home", currentUser }) {
+function MainPage({ pageMode = "home", currentUser, onLogout }) {
   const { hash } = useLocation();
   const authenticatedUser =
     currentUser === undefined ? getStoredUser() : currentUser;
 
+  const profileMenuRef = useRef(null);
+  const profileButtonRef = useRef(null);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [savedRoommateIds, setSavedRoommateIds] = useState([]);
   const [activeProfileId, setActiveProfileId] = useState(null);
   const [postFilter, setPostFilter] = useState("전체");
@@ -278,6 +284,36 @@ function MainPage({ pageMode = "home", currentUser }) {
 
     return () => window.cancelAnimationFrame(frameId);
   }, [hash, pageMode]);
+
+  useEffect(() => {
+    if (!isProfileMenuOpen) return undefined;
+
+    const closeOnOutsideClick = (event) => {
+      if (!profileMenuRef.current?.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        setIsProfileMenuOpen(false);
+        profileButtonRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isProfileMenuOpen]);
+
+  const handleLogout = () => {
+    setIsProfileMenuOpen(false);
+    onLogout?.();
+  };
 
   const visiblePosts = useMemo(() => {
     const filteredPosts =
@@ -419,19 +455,58 @@ function MainPage({ pageMode = "home", currentUser }) {
 
             <S.AuthNavigation aria-label="계정 메뉴">
               {authenticatedUser ? (
-                <S.ProfileLink
-                  as={Link}
-                  to="/profile-survey"
-                  aria-label="내 프로필 보기"
-                >
-                  <S.HeaderAvatar>
-                    {authenticatedUser.initial ||
-                      authenticatedUser.name?.slice(0, 1) ||
-                      "나"}
-                  </S.HeaderAvatar>
+                <S.ProfileMenu ref={profileMenuRef}>
+                  <S.AccountMenuButton
+                    ref={profileButtonRef}
+                    type="button"
+                    aria-label={
+                      isProfileMenuOpen
+                        ? "프로필 메뉴 닫기"
+                        : "프로필 메뉴 열기"
+                    }
+                    aria-haspopup="menu"
+                    aria-expanded={isProfileMenuOpen}
+                    aria-controls="profile-dropdown"
+                    onClick={() =>
+                      setIsProfileMenuOpen((isOpen) => !isOpen)
+                    }
+                  >
+                    <S.HeaderAvatar>
+                      {authenticatedUser.initial ||
+                        authenticatedUser.name?.slice(0, 1) ||
+                        "나"}
+                    </S.HeaderAvatar>
 
-                  <span>{authenticatedUser.name || "내 프로필"}</span>
-                </S.ProfileLink>
+                    <S.ProfileName>
+                      {authenticatedUser.name || "내 프로필"}
+                    </S.ProfileName>
+
+                    <ChevronDown size={15} aria-hidden="true" />
+                  </S.AccountMenuButton>
+
+                  {isProfileMenuOpen && (
+                    <S.ProfileDropdown id="profile-dropdown">
+                      <S.ProfileMenuLink
+                        as={Link}
+                        to="/profile"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                      >
+                        <UserRound size={17} aria-hidden="true" />
+                        <span>마이페이지</span>
+                      </S.ProfileMenuLink>
+
+                      <S.ProfileMenuDivider aria-hidden="true" />
+
+                      <S.LogoutButton
+                        type="button"
+                        onClick={handleLogout}
+                      >
+                        <LogOut size={17} aria-hidden="true" />
+                        <span>로그아웃</span>
+                      </S.LogoutButton>
+                    </S.ProfileDropdown>
+                  )}
+                </S.ProfileMenu>
               ) : (
                 <S.LoginLink as={Link} to="/login">
                   로그인
