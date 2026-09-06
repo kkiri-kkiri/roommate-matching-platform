@@ -179,6 +179,71 @@ export const Input = styled.input`
   }
 `;
 
+export const EmailInputGroup = styled.div`
+  min-width: 0;
+  height: 52px;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid #e2e2e4;
+  border-radius: 12px;
+  background: ${({ $readOnly }) => ($readOnly ? "#f3f3f3" : "#ffffff")};
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+
+  &:hover {
+    border-color: ${({ $readOnly }) => ($readOnly ? "#e2e2e4" : "#c4c6d2")};
+  }
+
+  &:focus-within {
+    border-color: #00a79f;
+    box-shadow: 0 0 0 3px rgba(0, 167, 159, 0.14);
+  }
+`;
+
+export const EmailLocalInput = styled.input`
+  min-width: 0;
+  padding: 0 14px;
+  flex: 1 1 auto;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #1a1c1c;
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+
+  &::placeholder {
+    color: #8e8e93;
+  }
+
+  &:read-only {
+    color: #747781;
+  }
+`;
+
+export const EmailDomain = styled.span`
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  border-left: 1px solid #e2e2e4;
+  background: #f3f3f3;
+  color: #444650;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    padding: 0 10px;
+    font-size: 13px;
+  }
+`;
+
 export const HelperText = styled.p`
   margin: 0;
   color: #8e8e93;
@@ -195,6 +260,288 @@ export const TwoColumnFields = styled.div`
   @media (max-width: 640px) {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+`;
+
+export const SelectShell = styled.div`
+  position: relative;
+  min-width: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #e2e2e4;
+  border-radius: 12px;
+  background: ${({ $disabled }) => ($disabled ? "#f3f3f3" : "#ffffff")};
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+
+  &:hover {
+    border-color: ${({ $disabled }) => ($disabled ? "#e2e2e4" : "#c4c6d2")};
+  }
+
+  &:focus-within {
+    border-color: #00a79f;
+    box-shadow: 0 0 0 3px rgba(0, 167, 159, 0.14);
+  }
+
+  svg {
+    position: absolute;
+    right: 14px;
+    color: #747781;
+    pointer-events: none;
+  }
+`;
+
+export const Select = styled.select`
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0 44px 0 16px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #1a1c1c;
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  appearance: none;
+  cursor: pointer;
+  text-overflow: ellipsis;
+
+  &:disabled {
+    color: #747781;
+    cursor: not-allowed;
+  }
+`;
+
+export const ChoiceFieldset = styled.fieldset`
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+`;
+
+export const ChoiceLegend = styled.legend`
+  display: block;
+  width: 100%;
+  margin: 0 0 10px;
+  padding: 0;
+  color: #1a1c1c;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0.02em;
+`;
+
+export const ChoiceGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  gap: 10px;
+`;
+
+export const ChoiceLabel = styled.label`
+  min-width: 0;
+  min-height: 50px;
+  padding: 10px 13px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid ${({ $selected }) => ($selected ? "#00a79f" : "#e2e2e4")};
+  border-radius: 12px;
+  background: ${({ $selected }) => ($selected ? "#eefaf8" : "#ffffff")};
+  color: ${({ $selected }) => ($selected ? "#006a65" : "#444650")};
+  font-size: 14px;
+  font-weight: ${({ $selected }) => ($selected ? 700 : 500)};
+  line-height: 20px;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background-color 150ms ease,
+    transform 150ms ease;
+
+  > span:last-child {
+    min-width: 0;
+    word-break: keep-all;
+  }
+
+  &:focus-within {
+    outline: 3px solid rgba(0, 167, 159, 0.18);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: ${({ $selected }) => ($selected ? "#00a79f" : "#b9c7c6")};
+      background: ${({ $selected }) => ($selected ? "#eefaf8" : "#fbfdfd")};
+      transform: translateY(-1px);
+    }
+  }
+`;
+
+export const HiddenChoiceInput = styled.input`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+`;
+
+export const ChoiceIndicator = styled.span`
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 1.5px solid ${({ $selected }) => ($selected ? "#00a79f" : "#a9acb3")};
+  border-radius: 50%;
+  background: ${({ $selected }) => ($selected ? "#00a79f" : "#ffffff")};
+  color: #ffffff;
+`;
+
+export const MbtiFieldset = styled(ChoiceFieldset)``;
+
+export const MbtiLayout = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px;
+  gap: 14px;
+
+  @media (max-width: 720px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+`;
+
+export const MbtiGrid = styled.div`
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+
+  @media (max-width: 520px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+`;
+
+export const MbtiAxis = styled.div`
+  min-width: 0;
+  min-height: 68px;
+  padding: 11px 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid #e2e2e4;
+  border-radius: 12px;
+  background: #fbfbfb;
+`;
+
+export const MbtiAxisText = styled.span`
+  min-width: 0;
+
+  strong,
+  span {
+    display: block;
+  }
+
+  strong {
+    color: #444650;
+    font-size: 13px;
+    line-height: 18px;
+  }
+
+  span {
+    margin-top: 2px;
+    color: #8e8e93;
+    font-size: 10px;
+    line-height: 15px;
+  }
+`;
+
+export const MbtiChoices = styled.span`
+  display: grid;
+  grid-template-columns: repeat(2, 44px);
+  gap: 6px;
+`;
+
+export const MbtiButton = styled.button`
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid ${({ $selected }) => ($selected ? "#00a79f" : "#e2e2e4")};
+  border-radius: 10px;
+  background: ${({ $selected }) => ($selected ? "#00a79f" : "#ffffff")};
+  color: ${({ $selected }) => ($selected ? "#ffffff" : "#444650")};
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background-color 150ms ease;
+
+  &:focus-visible {
+    outline: 3px solid rgba(0, 167, 159, 0.24);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: #00a79f;
+    }
+  }
+`;
+
+export const MbtiPreview = styled.div`
+  min-height: 146px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #001d4f, #0c3273);
+  color: #ffffff;
+  text-align: center;
+
+  span {
+    color: #b9caff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+  }
+
+  strong {
+    margin-top: 7px;
+    font-size: 22px;
+    line-height: 28px;
+    letter-spacing: 0.08em;
+  }
+
+  small {
+    margin-top: 7px;
+    color: #dce5ff;
+    font-size: 10px;
+    line-height: 15px;
+  }
+
+  @media (max-width: 720px) {
+    min-height: 112px;
   }
 `;
 
@@ -312,11 +659,11 @@ export const VerificationStatus = styled.p`
   padding: 12px 14px;
   border: 1px solid
     ${({ $tone }) => {
-      if ($tone === "success") return "#9edbd7";
-      if ($tone === "error") return "#ffb4ab";
-      if ($tone === "info") return "#c7d7ff";
-      return "#e2e2e4";
-    }};
+    if ($tone === "success") return "#9edbd7";
+    if ($tone === "error") return "#ffb4ab";
+    if ($tone === "info") return "#c7d7ff";
+    return "#e2e2e4";
+  }};
   border-radius: 12px;
   background: ${({ $tone }) => {
     if ($tone === "success") return "#eefaf8";
@@ -332,88 +679,6 @@ export const VerificationStatus = styled.p`
   }};
   font-size: 13px;
   line-height: 20px;
-`;
-
-export const TermsSection = styled.section`
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-
-export const AllAgreeLabel = styled.label`
-  padding: 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  border: 1px solid #e2e2e4;
-  border-radius: 12px;
-  background: #f9f9f9;
-  cursor: pointer;
-
-  &:hover {
-    border-color: #c4c6d2;
-  }
-`;
-
-export const Checkbox = styled.input`
-  width: 18px;
-  height: 18px;
-  margin: 1px 0 0;
-  flex: 0 0 auto;
-  accent-color: #0c3273;
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: 2px solid #00a79f;
-    outline-offset: 2px;
-  }
-`;
-
-export const AllAgreeText = styled.span`
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  color: #1a1c1c;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 20px;
-`;
-
-export const AllAgreeDescription = styled.span`
-  color: #747781;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 18px;
-`;
-
-export const TermList = styled.div`
-  padding: 0 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-`;
-
-export const TermLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: #444650;
-  font-size: 14px;
-  line-height: 20px;
-  cursor: pointer;
-`;
-
-export const Requirement = styled.span`
-  min-width: 34px;
-  padding: 3px 7px;
-  border-radius: 9999px;
-  background: ${({ $optional }) => ($optional ? "#f3f3f3" : "#dff7f4")};
-  color: ${({ $optional }) => ($optional ? "#747781" : "#006a65")};
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 14px;
-  text-align: center;
 `;
 
 export const SubmitFeedback = styled.p`

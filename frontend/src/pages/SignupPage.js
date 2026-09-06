@@ -1,21 +1,186 @@
 import { useState } from "react";
+import { Check, ChevronDown } from "lucide-react";
 import * as S from "./SignupPageCss";
+
+const FACULTY_OPTIONS = [
+  {
+    name: "인문융합공공인재학부",
+    majors: [
+      "문예창작미디어콘텐츠홍보전공",
+      "영미언어문화전공",
+      "행정학전공",
+      "노동복지전공",
+    ],
+  },
+  { name: "법경영학부", majors: ["법학전공", "경영학전공"] },
+  {
+    name: "웰니스산업융합학부",
+    majors: ["의류산업학전공", "복지상담학전공", "식품영양학전공"],
+  },
+  {
+    name: "식물자원조경학부",
+    majors: ["식물생명환경전공", "조경학전공"],
+  },
+  {
+    name: "동물생명융합학부",
+    majors: ["동물생명과학전공", "동물응용과학전공"],
+  },
+  {
+    name: "생명공학부",
+    majors: ["원예생명공학전공", "응용생명공학전공"],
+  },
+  {
+    name: "건설환경공학부",
+    majors: ["토목공학전공", "환경공학전공"],
+  },
+  {
+    name: "사회안전시스템공학부",
+    majors: ["안전공학전공", "지역자원시스템공학전공"],
+  },
+  {
+    name: "식품생명화학공학부",
+    majors: ["식품생명공학전공", "화학공학전공"],
+  },
+  {
+    name: "컴퓨터응용수학부",
+    majors: [
+      "소프트웨어&서비스컴퓨팅전공",
+      "소프트웨어융합전공",
+      "정보보안전공",
+      "응용수학전공",
+    ],
+  },
+  {
+    name: "ICT로봇기계공학부",
+    majors: ["ICT로봇공학전공", "기계공학전공"],
+  },
+  {
+    name: "전자전기공학부",
+    majors: ["전자공학전공", "전기공학전공"],
+  },
+  {
+    name: "건축융합학부",
+    majors: ["건축학전공(5년제)", "건축공학전공"],
+  },
+  {
+    name: "디자인예술스포츠학부",
+    majors: [
+      "스포츠과학전공",
+      "시각미디어디자인전공",
+      "제품공간디자인전공",
+      "실용음악전공",
+      "귀금속보석공예전공",
+    ],
+  },
+  {
+    name: "복지융합학부",
+    majors: [
+      "사회복지학전공",
+      "한국수어교육전공",
+      "유아특수보육학전공",
+      "의료재활공학전공",
+    ],
+  },
+  {
+    name: "사회통합학부",
+    majors: ["공공행정전공", "상담심리교육전공", "특수체육학전공"],
+  },
+  { name: "AI반도체융합학부", majors: ["AI반도체융합전공"] },
+  { name: "HK자율전공학부", majors: [] },
+  {
+    name: "글로벌창의인재학부",
+    majors: [
+      "글로벌스포츠매니지먼트전공",
+      "글로벌경영전공",
+      "글로벌인공지능IT전공",
+      "식물스마트팜전공",
+      "식물생의학전공",
+      "바이오에너지전공",
+      "아시아문화경영전공",
+      "Bio-Mobility전공",
+      "English Language, Literature and Language Technology전공",
+    ],
+  },
+  {
+    name: "미래융합학부",
+    majors: [
+      "노동복지전공",
+      "행정관리전공",
+      "레저스포츠매니지먼트전공",
+      "융합레포츠전공",
+    ],
+  },
+  {
+    name: "AI융합학부",
+    majors: [
+      "AI스마트팜융합전공(융합전공)",
+      "스마트헬스케어전공(융합전공)",
+      "AI빅데이터융합전공(융합전공)",
+      "공공헬스케어IT융합전공(융합전공)",
+      "반도체융합전공(융합전공)",
+      "스마트애그리푸드시스템전공(융합전공)",
+      "탄소중립바이오시스템융합전공(융합전공)",
+    ],
+  },
+];
+
+const MBTI_DIMENSIONS = [
+  {
+    id: "mbtiEnergy",
+    label: "에너지 방향",
+    helper: "외향 / 내향",
+    options: ["E", "I"],
+  },
+  {
+    id: "mbtiInformation",
+    label: "인식 방식",
+    helper: "직관 / 감각",
+    options: ["N", "S"],
+  },
+  {
+    id: "mbtiDecision",
+    label: "판단 방식",
+    helper: "감정 / 사고",
+    options: ["F", "T"],
+  },
+  {
+    id: "mbtiLifestyle",
+    label: "생활 양식",
+    helper: "인식 / 판단",
+    options: ["P", "J"],
+  },
+];
+
+const GENDER_OPTIONS = ["남자", "여자"];
+const DORMITORY_OPTIONS = ["나래", "호연", "비룡", "창조"];
+const GRADE_OPTIONS = ["1학년", "2학년", "3학년", "4학년", "5학년"];
 
 const INITIAL_FORM = {
   loginId: "",
   password: "",
   passwordConfirm: "",
   nickname: "",
-  email: "",
-  phone: "",
+  schoolEmailId: "",
+  gender: "",
+  dormitory: "",
+  faculty: "",
+  major: "",
+  birthYear: "",
+  studentId: "",
+  grade: "",
+  mbtiEnergy: "",
+  mbtiInformation: "",
+  mbtiDecision: "",
+  mbtiLifestyle: "",
 };
 
-const INITIAL_TERMS = {
-  age: false,
-  service: false,
-  privacy: false,
-  marketing: false,
-};
+const SCHOOL_EMAIL_DOMAIN = "@hknu.ac.kr";
+const SCHOOL_EMAIL_ID_PATTERN =
+  /^[A-Za-z0-9_%+-]+(?:\.[A-Za-z0-9_%+-]+)*$/;
+const STUDENT_ID_PATTERN = /^\d{2}$/;
+
+const findFaculty = (name) =>
+  FACULTY_OPTIONS.find((faculty) => faculty.name === name);
 
 const SignupPage = () => {
   const [form, setForm] = useState(INITIAL_FORM);
@@ -25,22 +190,52 @@ const SignupPage = () => {
   const [verificationSent, setVerificationSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [verificationFeedback, setVerificationFeedback] = useState(null);
-  const [terms, setTerms] = useState(INITIAL_TERMS);
   const [submitFeedback, setSubmitFeedback] = useState(null);
 
   const passwordIsLongEnough = form.password.length >= 8;
   const passwordMatches =
     form.passwordConfirm.length > 0 && form.password === form.passwordConfirm;
-  const allTermsChecked = Object.values(terms).every(Boolean);
-  const requiredTermsChecked = terms.age && terms.service && terms.privacy;
+  const selectedFaculty = findFaculty(form.faculty);
+  const majorOptions = selectedFaculty?.majors || [];
+  const hasNoMajor = Boolean(selectedFaculty && majorOptions.length === 0);
+  const mbti = MBTI_DIMENSIONS.map((dimension) => form[dimension.id]).join("");
+  const currentYear = new Date().getFullYear();
+  const birthYear = Number(form.birthYear);
+  const birthYearIsValid =
+    /^\d{4}$/.test(form.birthYear) &&
+    birthYear >= 1900 &&
+    birthYear <= currentYear;
+  const studentIdIsValid = STUDENT_ID_PATTERN.test(form.studentId);
+
+  const setFormValue = (name, value) => {
+    setForm((current) => {
+      const nextForm = { ...current, [name]: value };
+
+      if (name === "faculty") {
+        const faculty = findFaculty(value);
+        nextForm.major = faculty?.majors.length === 0 ? "세부전공 없음" : "";
+      }
+
+      return nextForm;
+    });
+    setSubmitFeedback(null);
+  };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
+    let nextValue = value;
 
-    setForm((current) => ({ ...current, [name]: value }));
-    setSubmitFeedback(null);
+    if (name === "schoolEmailId") {
+      nextValue = value.split("@")[0].replace(/\s/g, "").slice(0, 64);
+    } else if (name === "birthYear") {
+      nextValue = value.replace(/\D/g, "").slice(0, 4);
+    } else if (name === "studentId") {
+      nextValue = value.replace(/\D/g, "").slice(0, 2);
+    }
 
-    if (name === "phone") {
+    setFormValue(name, nextValue);
+
+    if (name === "schoolEmailId") {
       setVerificationCode("");
       setVerificationSent(false);
       setIsVerified(false);
@@ -49,12 +244,12 @@ const SignupPage = () => {
   };
 
   const handleSendCode = () => {
-    const phoneDigits = form.phone.replace(/\D/g, "");
+    const schoolEmailId = form.schoolEmailId.trim();
 
-    if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+    if (!SCHOOL_EMAIL_ID_PATTERN.test(schoolEmailId)) {
       setVerificationFeedback({
         tone: "error",
-        text: "휴대전화 번호를 정확히 입력해 주세요.",
+        text: "학교 이메일의 @ 앞부분을 정확히 입력해 주세요.",
       });
       return;
     }
@@ -64,7 +259,7 @@ const SignupPage = () => {
     setIsVerified(false);
     setVerificationFeedback({
       tone: "info",
-      text: "인증번호를 전송했어요. 화면 확인용으로 숫자 6자리를 입력해 주세요.",
+      text: `${schoolEmailId}${SCHOOL_EMAIL_DOMAIN}로 인증번호를 전송했어요. 화면 확인용으로 숫자 6자리를 입력해 주세요.`,
     });
   };
 
@@ -80,25 +275,8 @@ const SignupPage = () => {
     setIsVerified(true);
     setVerificationFeedback({
       tone: "success",
-      text: "본인인증이 완료되었습니다.",
+      text: "재학생 인증이 완료되었습니다.",
     });
-    setSubmitFeedback(null);
-  };
-
-  const handleAllTerms = (event) => {
-    const { checked } = event.target;
-    setTerms({
-      age: checked,
-      service: checked,
-      privacy: checked,
-      marketing: checked,
-    });
-    setSubmitFeedback(null);
-  };
-
-  const handleTermChange = (event) => {
-    const { name, checked } = event.target;
-    setTerms((current) => ({ ...current, [name]: checked }));
     setSubmitFeedback(null);
   };
 
@@ -110,8 +288,14 @@ const SignupPage = () => {
       form.password,
       form.passwordConfirm,
       form.nickname,
-      form.email,
-      form.phone,
+      form.schoolEmailId,
+      form.gender,
+      form.dormitory,
+      form.faculty,
+      form.major,
+      form.birthYear,
+      form.studentId,
+      form.grade,
     ];
 
     if (requiredValues.some((value) => !value.trim())) {
@@ -130,10 +314,10 @@ const SignupPage = () => {
       return;
     }
 
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) {
+    if (!SCHOOL_EMAIL_ID_PATTERN.test(form.schoolEmailId.trim())) {
       setSubmitFeedback({
         tone: "error",
-        text: "올바른 이메일 형식으로 입력해 주세요.",
+        text: "학교 이메일 형식을 다시 확인해 주세요.",
       });
       return;
     }
@@ -141,15 +325,43 @@ const SignupPage = () => {
     if (!isVerified) {
       setSubmitFeedback({
         tone: "error",
-        text: "휴대전화 본인인증을 완료해 주세요.",
+        text: "학교 이메일 재학생 인증을 완료해 주세요.",
       });
       return;
     }
 
-    if (!requiredTermsChecked) {
+    if (MBTI_DIMENSIONS.some((dimension) => !form[dimension.id])) {
       setSubmitFeedback({
         tone: "error",
-        text: "필수 약관에 모두 동의해 주세요.",
+        text: "MBTI 네 가지 기준을 모두 선택해 주세요.",
+      });
+      return;
+    }
+
+    if (
+      !selectedFaculty ||
+      (selectedFaculty.majors.length > 0 &&
+        !selectedFaculty.majors.includes(form.major))
+    ) {
+      setSubmitFeedback({
+        tone: "error",
+        text: "학부와 전공을 다시 확인해 주세요.",
+      });
+      return;
+    }
+
+    if (!birthYearIsValid) {
+      setSubmitFeedback({
+        tone: "error",
+        text: `출생연도는 1900년부터 ${currentYear}년 사이의 네 자리 숫자로 입력해 주세요.`,
+      });
+      return;
+    }
+
+    if (!studentIdIsValid) {
+      setSubmitFeedback({
+        tone: "error",
+        text: "학번은 숫자 두 자리로 입력해 주세요.",
       });
       return;
     }
@@ -159,6 +371,40 @@ const SignupPage = () => {
       text: "가입 정보를 모두 확인했어요. 현재 화면에서는 실제 회원가입이 진행되지 않습니다.",
     });
   };
+
+  const renderChoiceField = (name, label, options) => (
+    <S.ChoiceFieldset>
+      <S.ChoiceLegend>{label}</S.ChoiceLegend>
+      <S.ChoiceGrid>
+        {options.map((option, optionIndex) => {
+          const inputId = `signup-${name}-${optionIndex}`;
+          const selected = form[name] === option;
+
+          return (
+            <S.ChoiceLabel
+              key={option}
+              htmlFor={inputId}
+              $selected={selected}
+            >
+              <S.HiddenChoiceInput
+                id={inputId}
+                type="radio"
+                name={name}
+                value={option}
+                checked={selected}
+                onChange={() => setFormValue(name, option)}
+                required
+              />
+              <S.ChoiceIndicator $selected={selected}>
+                {selected && <Check size={13} aria-hidden="true" />}
+              </S.ChoiceIndicator>
+              <span>{option}</span>
+            </S.ChoiceLabel>
+          );
+        })}
+      </S.ChoiceGrid>
+    </S.ChoiceFieldset>
+  );
 
   return (
     <S.Page>
@@ -302,35 +548,19 @@ const SignupPage = () => {
               </S.FieldGroup>
             </S.TwoColumnFields>
 
-            <S.TwoColumnFields>
-              <S.FieldGroup>
-                <S.Label htmlFor="signup-nickname">닉네임</S.Label>
-                <S.Input
-                  id="signup-nickname"
-                  name="nickname"
-                  type="text"
-                  value={form.nickname}
-                  onChange={handleInputChange}
-                  placeholder="표시할 닉네임"
-                  autoComplete="nickname"
-                  required
-                />
-              </S.FieldGroup>
-
-              <S.FieldGroup>
-                <S.Label htmlFor="signup-email">이메일</S.Label>
-                <S.Input
-                  id="signup-email"
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleInputChange}
-                  placeholder="name@example.com"
-                  autoComplete="email"
-                  required
-                />
-              </S.FieldGroup>
-            </S.TwoColumnFields>
+            <S.FieldGroup>
+              <S.Label htmlFor="signup-nickname">닉네임</S.Label>
+              <S.Input
+                id="signup-nickname"
+                name="nickname"
+                type="text"
+                value={form.nickname}
+                onChange={handleInputChange}
+                placeholder="표시할 닉네임"
+                autoComplete="nickname"
+                required
+              />
+            </S.FieldGroup>
           </S.FormSection>
 
           <S.Divider />
@@ -340,30 +570,36 @@ const SignupPage = () => {
               <S.SectionNumber aria-hidden="true">2</S.SectionNumber>
               <S.SectionHeadingGroup>
                 <S.SectionTitle id="verification-section-title">
-                  본인인증
+                  재학생 인증
                 </S.SectionTitle>
                 <S.SectionDescription>
-                  안전한 이용을 위해 휴대전화 번호를 확인합니다.
+                  한경국립대학교 학교 이메일로 재학생 여부를 확인합니다.
                 </S.SectionDescription>
               </S.SectionHeadingGroup>
             </S.SectionHeader>
 
             <S.FieldGroup>
-              <S.Label htmlFor="signup-phone">휴대전화 번호</S.Label>
+              <S.Label htmlFor="signup-school-email">학교 이메일</S.Label>
               <S.ActionRow>
-                <S.Input
-                  id="signup-phone"
-                  name="phone"
-                  type="tel"
-                  inputMode="numeric"
-                  value={form.phone}
-                  onChange={handleInputChange}
-                  placeholder="01012345678"
-                  autoComplete="tel"
-                  required
-                  readOnly={isVerified}
-                  aria-describedby="verification-status"
-                />
+                <S.EmailInputGroup $readOnly={isVerified}>
+                  <S.EmailLocalInput
+                    id="signup-school-email"
+                    name="schoolEmailId"
+                    type="text"
+                    inputMode="email"
+                    value={form.schoolEmailId}
+                    onChange={handleInputChange}
+                    placeholder="학교 이메일 아이디"
+                    autoComplete="email"
+                    maxLength={64}
+                    required
+                    readOnly={isVerified}
+                    aria-describedby="school-email-domain verification-status"
+                  />
+                  <S.EmailDomain id="school-email-domain">
+                    {SCHOOL_EMAIL_DOMAIN}
+                  </S.EmailDomain>
+                </S.EmailInputGroup>
                 <S.OutlineButton
                   type="button"
                   onClick={handleSendCode}
@@ -376,6 +612,9 @@ const SignupPage = () => {
                       : "인증번호 전송"}
                 </S.OutlineButton>
               </S.ActionRow>
+              <S.HelperText>
+                학교 이메일에서 @ 앞부분만 입력해 주세요.
+              </S.HelperText>
             </S.FieldGroup>
 
             {verificationSent && !isVerified && (
@@ -421,78 +660,191 @@ const SignupPage = () => {
               $tone={verificationFeedback?.tone || "neutral"}
             >
               {verificationFeedback?.text ||
-                "휴대전화 번호 입력 후 인증번호를 받아 주세요."}
+                "학교 이메일 입력 후 인증번호를 받아 주세요."}
             </S.VerificationStatus>
           </S.FormSection>
 
           <S.Divider />
 
-          <S.TermsSection aria-labelledby="terms-section-title">
+          <S.FormSection aria-labelledby="profile-section-title">
             <S.SectionHeader>
               <S.SectionNumber aria-hidden="true">3</S.SectionNumber>
-              <S.SectionTitle id="terms-section-title">약관 동의</S.SectionTitle>
+              <S.SectionHeadingGroup>
+                <S.SectionTitle id="profile-section-title">
+                  내 정보
+                </S.SectionTitle>
+                <S.SectionDescription>
+                  기본 정보와 학적 정보를 입력해 주세요.
+                </S.SectionDescription>
+              </S.SectionHeadingGroup>
             </S.SectionHeader>
 
-            <S.AllAgreeLabel>
-              <S.Checkbox
-                type="checkbox"
-                checked={allTermsChecked}
-                onChange={handleAllTerms}
-              />
-              <S.AllAgreeText>
-                전체 동의
-                <S.AllAgreeDescription>
-                  선택 항목을 포함한 모든 약관에 동의합니다.
-                </S.AllAgreeDescription>
-              </S.AllAgreeText>
-            </S.AllAgreeLabel>
+            {renderChoiceField("gender", "성별", GENDER_OPTIONS)}
+            {renderChoiceField("dormitory", "생활관", DORMITORY_OPTIONS)}
 
-            <S.TermList>
-              <S.TermLabel>
-                <S.Checkbox
-                  type="checkbox"
-                  name="age"
-                  checked={terms.age}
-                  onChange={handleTermChange}
+            <S.TwoColumnFields>
+              <S.FieldGroup>
+                <S.Label htmlFor="signup-faculty">나의 학부</S.Label>
+                <S.SelectShell>
+                  <S.Select
+                    id="signup-faculty"
+                    name="faculty"
+                    value={form.faculty}
+                    onChange={handleInputChange}
+                    aria-describedby="faculty-guide"
+                    required
+                  >
+                    <option value="">학부 선택</option>
+                    {FACULTY_OPTIONS.map((faculty) => (
+                      <option key={faculty.name} value={faculty.name}>
+                        {faculty.name}
+                      </option>
+                    ))}
+                  </S.Select>
+                  <ChevronDown size={18} aria-hidden="true" />
+                </S.SelectShell>
+                <S.HelperText id="faculty-guide">
+                  학부를 먼저 선택해 주세요.
+                </S.HelperText>
+              </S.FieldGroup>
+
+              <S.FieldGroup>
+                <S.Label htmlFor="signup-major">나의 전공</S.Label>
+                <S.SelectShell $disabled={!selectedFaculty || hasNoMajor}>
+                  <S.Select
+                    id="signup-major"
+                    name="major"
+                    value={form.major}
+                    onChange={handleInputChange}
+                    disabled={!selectedFaculty || hasNoMajor}
+                    aria-describedby="major-guide"
+                    required
+                  >
+                    {hasNoMajor ? (
+                      <option value="세부전공 없음">세부전공 없음</option>
+                    ) : (
+                      <option value="">
+                        {selectedFaculty
+                          ? "전공 선택"
+                          : "학부를 먼저 선택해 주세요"}
+                      </option>
+                    )}
+                    {majorOptions.map((major) => (
+                      <option key={major} value={major}>
+                        {major}
+                      </option>
+                    ))}
+                  </S.Select>
+                  <ChevronDown size={18} aria-hidden="true" />
+                </S.SelectShell>
+                <S.HelperText id="major-guide">
+                  {hasNoMajor
+                    ? "선택한 학부는 별도 세부전공이 없어요."
+                    : "선택한 학부의 전공만 표시돼요."}
+                </S.HelperText>
+              </S.FieldGroup>
+            </S.TwoColumnFields>
+
+            <S.TwoColumnFields>
+              <S.FieldGroup>
+                <S.Label htmlFor="signup-birth-year">출생연도</S.Label>
+                <S.Input
+                  id="signup-birth-year"
+                  name="birthYear"
+                  type="text"
+                  inputMode="numeric"
+                  value={form.birthYear}
+                  onChange={handleInputChange}
+                  placeholder="예: 2005"
+                  autoComplete="bday-year"
+                  maxLength={4}
+                  pattern="[0-9]{4}"
                   required
+                  aria-invalid={Boolean(form.birthYear && !birthYearIsValid)}
+                  aria-describedby="birth-year-guide"
                 />
-                <S.Requirement>필수</S.Requirement>
-                만 14세 이상입니다
-              </S.TermLabel>
-              <S.TermLabel>
-                <S.Checkbox
-                  type="checkbox"
-                  name="service"
-                  checked={terms.service}
-                  onChange={handleTermChange}
+                <S.HelperText id="birth-year-guide">
+                  1900년부터 {currentYear}년 사이의 네 자리 숫자를 입력해
+                  주세요.
+                </S.HelperText>
+              </S.FieldGroup>
+
+              <S.FieldGroup>
+                <S.Label htmlFor="signup-student-id">학번</S.Label>
+                <S.Input
+                  id="signup-student-id"
+                  name="studentId"
+                  type="text"
+                  inputMode="numeric"
+                  value={form.studentId}
+                  onChange={handleInputChange}
+                  placeholder="예: 25"
+                  autoComplete="off"
+                  maxLength={2}
+                  pattern={STUDENT_ID_PATTERN.source}
                   required
+                  aria-invalid={Boolean(form.studentId && !studentIdIsValid)}
+                  aria-describedby="student-id-guide"
                 />
-                <S.Requirement>필수</S.Requirement>
-                서비스 이용약관 동의
-              </S.TermLabel>
-              <S.TermLabel>
-                <S.Checkbox
-                  type="checkbox"
-                  name="privacy"
-                  checked={terms.privacy}
-                  onChange={handleTermChange}
-                  required
-                />
-                <S.Requirement>필수</S.Requirement>
-                개인정보 수집 및 이용 동의
-              </S.TermLabel>
-              <S.TermLabel>
-                <S.Checkbox
-                  type="checkbox"
-                  name="marketing"
-                  checked={terms.marketing}
-                  onChange={handleTermChange}
-                />
-                <S.Requirement $optional>선택</S.Requirement>
-                이벤트 및 혜택 알림 수신 동의
-              </S.TermLabel>
-            </S.TermList>
-          </S.TermsSection>
+                <S.HelperText id="student-id-guide">
+                  학번은 숫자 두 자리로 입력해 주세요.
+                </S.HelperText>
+              </S.FieldGroup>
+            </S.TwoColumnFields>
+
+            {renderChoiceField("grade", "학년", GRADE_OPTIONS)}
+
+            <S.MbtiFieldset aria-describedby="mbti-guide">
+              <S.ChoiceLegend>MBTI</S.ChoiceLegend>
+              <S.MbtiLayout>
+                <S.MbtiGrid>
+                  {MBTI_DIMENSIONS.map((dimension) => (
+                    <S.MbtiAxis
+                      key={dimension.id}
+                      role="group"
+                      aria-label={dimension.label}
+                    >
+                      <S.MbtiAxisText>
+                        <strong>{dimension.label}</strong>
+                        <span>{dimension.helper}</span>
+                      </S.MbtiAxisText>
+                      <S.MbtiChoices>
+                        {dimension.options.map((option) => {
+                          const selected = form[dimension.id] === option;
+                          return (
+                            <S.MbtiButton
+                              key={option}
+                              type="button"
+                              $selected={selected}
+                              aria-label={`${dimension.label} ${option}`}
+                              aria-pressed={selected}
+                              onClick={() =>
+                                setFormValue(dimension.id, option)
+                              }
+                            >
+                              {option}
+                            </S.MbtiButton>
+                          );
+                        })}
+                      </S.MbtiChoices>
+                    </S.MbtiAxis>
+                  ))}
+                </S.MbtiGrid>
+                <S.MbtiPreview aria-live="polite">
+                  <span>나의 MBTI</span>
+                  <strong>{mbti.length === 4 ? mbti : "— — — —"}</strong>
+                  <small>
+                    {mbti.length === 4
+                      ? "선택 완료"
+                      : "네 기준을 선택해 주세요"}
+                  </small>
+                </S.MbtiPreview>
+              </S.MbtiLayout>
+              <S.HelperText id="mbti-guide">
+                네 가지 기준을 모두 선택해 주세요.
+              </S.HelperText>
+            </S.MbtiFieldset>
+          </S.FormSection>
 
           {submitFeedback && (
             <S.SubmitFeedback

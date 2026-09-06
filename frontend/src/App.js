@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import MainPage from "./pages/MainPage";
 import PreferenceSurveyPage from "./pages/PreferenceSurveyPage";
 import ProfileSurveyPage from "./pages/ProfileSurveyPage";
+import RoommateSearchPage from "./pages/RoommateSearchPage";
 import SignupPage from "./pages/SignupPage";
 
 function App() {
@@ -24,10 +25,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<MainPage currentUser={currentUser} />} />
-      <Route
-        path="/roommates"
-        element={<MainPage pageMode="roommates" currentUser={currentUser} />}
-      />
+      <Route path="/roommates" element={<RoommateSearchPage />} />
       <Route
         path="/community"
         element={<MainPage pageMode="community" currentUser={currentUser} />}
