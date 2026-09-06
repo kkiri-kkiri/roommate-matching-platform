@@ -1,8 +1,13 @@
 import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import * as S from "./LoginPageCss";
 
 const REMEMBERED_LOGIN_ID_KEY = "rememberedLoginId";
+const TEST_ACCOUNT = {
+  loginId: "test01",
+  password: "test1234",
+};
 
 function getRememberedLoginId() {
   if (typeof window === "undefined") return "";
@@ -26,11 +31,25 @@ const LoginPage = ({ onLogin }) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    const normalizedLoginId = loginId.trim();
 
-    if (!loginId.trim() || !password) {
+    if (!normalizedLoginId || !password) {
       setFeedback({
         tone: "error",
+        reason: "required",
         text: "아이디와 비밀번호를 모두 입력해 주세요.",
+      });
+      return;
+    }
+
+    if (
+      normalizedLoginId !== TEST_ACCOUNT.loginId ||
+      password !== TEST_ACCOUNT.password
+    ) {
+      setFeedback({
+        tone: "error",
+        reason: "credentials",
+        text: "아이디 또는 비밀번호가 올바르지 않습니다.",
       });
       return;
     }
@@ -42,7 +61,7 @@ const LoginPage = ({ onLogin }) => {
 
     try {
       if (rememberId) {
-        window.localStorage.setItem(REMEMBERED_LOGIN_ID_KEY, loginId.trim());
+        window.localStorage.setItem(REMEMBERED_LOGIN_ID_KEY, normalizedLoginId);
       } else {
         window.localStorage.removeItem(REMEMBERED_LOGIN_ID_KEY);
       }
@@ -51,8 +70,8 @@ const LoginPage = ({ onLogin }) => {
     }
 
     onLogin?.({
-      loginId: loginId.trim(),
-      displayName: loginId.trim(),
+      loginId: normalizedLoginId,
+      displayName: normalizedLoginId,
     });
 
     navigate("/", { replace: true });
@@ -65,102 +84,122 @@ const LoginPage = ({ onLogin }) => {
   };
 
   return (
-    <S.Page>
-      <S.LoginCard aria-labelledby="login-title">
-        <S.Header>
-          <S.Eyebrow>ROOMMATE MATCHING</S.Eyebrow>
-          <S.Title id="login-title">다시 만나 반가워요</S.Title>
-          <S.Description>
-            로그인하고 나와 잘 맞는 룸메이트를 찾아보세요.
-          </S.Description>
-        </S.Header>
+    <>
+      <S.PageGlobalStyle />
+      <S.Page>
+        <S.PageInner>
+          <S.BackLink to="/">
+            <ArrowLeft aria-hidden="true" />
+            메인으로 돌아가기
+          </S.BackLink>
 
-        <S.Form onSubmit={handleSubmit} noValidate>
-          <S.FieldGroup>
-            <S.Label htmlFor="login-id">아이디</S.Label>
-            <S.Input
-              id="login-id"
-              name="loginId"
-              type="text"
-              value={loginId}
-              onChange={(event) => {
-                setLoginId(event.target.value);
-                clearFeedback();
-              }}
-              placeholder="아이디를 입력해 주세요"
-              autoComplete="username"
-              required
-              aria-invalid={feedback?.tone === "error" && !loginId.trim()}
-            />
-          </S.FieldGroup>
+          <S.LoginCard aria-labelledby="login-title">
+            <S.Header>
+              <S.Eyebrow>ROOMMATE MATCHING</S.Eyebrow>
+              <S.Title id="login-title">다시 만나 반가워요</S.Title>
+              <S.Description>
+                로그인하고 나와 잘 맞는 룸메이트를 찾아보세요.
+              </S.Description>
+            </S.Header>
 
-          <S.FieldGroup>
-            <S.Label htmlFor="login-password">비밀번호</S.Label>
-            <S.PasswordField>
-              <S.Input
-                id="login-password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(event) => {
-                  setPassword(event.target.value);
-                  clearFeedback();
-                }}
-                placeholder="비밀번호를 입력해 주세요"
-                autoComplete="current-password"
-                required
-                aria-invalid={feedback?.tone === "error" && !password}
-                $hasAction
-              />
-              <S.VisibilityButton
-                type="button"
-                onClick={() => setShowPassword((current) => !current)}
-                aria-label={
-                  showPassword ? "비밀번호 숨기기" : "비밀번호 표시하기"
-                }
-                aria-pressed={showPassword}
-              >
-                {showPassword ? "숨기기" : "보기"}
-              </S.VisibilityButton>
-            </S.PasswordField>
-          </S.FieldGroup>
+            <S.Form onSubmit={handleSubmit} noValidate>
+              <S.FieldGroup>
+                <S.Label htmlFor="login-id">아이디</S.Label>
+                <S.Input
+                  id="login-id"
+                  name="loginId"
+                  type="text"
+                  value={loginId}
+                  onChange={(event) => {
+                    setLoginId(event.target.value);
+                    clearFeedback();
+                  }}
+                  placeholder="아이디를 입력해 주세요"
+                  autoComplete="username"
+                  required
+                  aria-invalid={
+                    feedback?.tone === "error" &&
+                    (feedback.reason === "credentials" || !loginId.trim())
+                  }
+                />
+              </S.FieldGroup>
 
-          <S.OptionRow>
-            <S.CheckLabel>
-              <S.Checkbox
-                type="checkbox"
-                checked={rememberId}
-                onChange={(event) => setRememberId(event.target.checked)}
-              />
-              아이디 저장
-            </S.CheckLabel>
+              <S.FieldGroup>
+                <S.Label htmlFor="login-password">비밀번호</S.Label>
+                <S.PasswordField>
+                  <S.Input
+                    id="login-password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                      clearFeedback();
+                    }}
+                    placeholder="비밀번호를 입력해 주세요"
+                    autoComplete="current-password"
+                    required
+                    aria-invalid={
+                      feedback?.tone === "error" &&
+                      (feedback.reason === "credentials" || !password)
+                    }
+                    $hasAction
+                  />
+                  <S.VisibilityButton
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    aria-label={
+                      showPassword ? "비밀번호 숨기기" : "비밀번호 표시하기"
+                    }
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? "숨기기" : "보기"}
+                  </S.VisibilityButton>
+                </S.PasswordField>
+              </S.FieldGroup>
 
-            <S.UtilityLinks aria-label="계정 찾기">
-              <S.UtilityLink to="/find-id">아이디 찾기</S.UtilityLink>
-              <S.LinkDivider aria-hidden="true" />
-              <S.UtilityLink to="/find-password">비밀번호 찾기</S.UtilityLink>
-            </S.UtilityLinks>
-          </S.OptionRow>
+              <S.OptionRow>
+                <S.CheckLabel>
+                  <S.Checkbox
+                    type="checkbox"
+                    checked={rememberId}
+                    onChange={(event) => setRememberId(event.target.checked)}
+                  />
+                  아이디 저장
+                </S.CheckLabel>
 
-          {feedback && (
-            <S.Feedback
-              role={feedback.tone === "error" ? "alert" : "status"}
-              aria-live={feedback.tone === "error" ? "assertive" : "polite"}
-              $tone={feedback.tone}
-            >
-              {feedback.text}
-            </S.Feedback>
-          )}
+                <S.UtilityLinks aria-label="계정 찾기">
+                  <S.UtilityLink to="/find-id">아이디 찾기</S.UtilityLink>
+                  <S.LinkDivider aria-hidden="true" />
+                  <S.UtilityLink to="/find-password">
+                    비밀번호 찾기
+                  </S.UtilityLink>
+                </S.UtilityLinks>
+              </S.OptionRow>
 
-          <S.SubmitButton type="submit">로그인</S.SubmitButton>
-        </S.Form>
+              {feedback && (
+                <S.Feedback
+                  role={feedback.tone === "error" ? "alert" : "status"}
+                  aria-live={
+                    feedback.tone === "error" ? "assertive" : "polite"
+                  }
+                  $tone={feedback.tone}
+                >
+                  {feedback.text}
+                </S.Feedback>
+              )}
 
-        <S.SignupPrompt>
-          <S.SignupText>아직 계정이 없으신가요?</S.SignupText>
-          <S.SignupLink to="/signup">회원가입</S.SignupLink>
-        </S.SignupPrompt>
-      </S.LoginCard>
-    </S.Page>
+              <S.SubmitButton type="submit">로그인</S.SubmitButton>
+            </S.Form>
+
+            <S.SignupPrompt>
+              <S.SignupText>아직 계정이 없으신가요?</S.SignupText>
+              <S.SignupLink to="/signup">회원가입</S.SignupLink>
+            </S.SignupPrompt>
+          </S.LoginCard>
+        </S.PageInner>
+      </S.Page>
+    </>
   );
 };
 

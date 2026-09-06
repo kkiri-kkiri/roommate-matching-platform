@@ -10,33 +10,109 @@ import ProfileSurveyPage from "./pages/ProfileSurveyPage";
 import RoommateSearchPage from "./pages/RoommateSearchPage";
 import SignupPage from "./pages/SignupPage";
 
+const AUTHENTICATED_USER_KEY = "roomieAuthenticatedUser";
+
+function getStoredAuthenticatedUser() {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  try {
+    const storedUser = JSON.parse(
+      window.localStorage.getItem(AUTHENTICATED_USER_KEY) || "null",
+    );
+
+    if (!storedUser?.name) {
+      return undefined;
+    }
+
+    return {
+      name: storedUser.name,
+      initial: storedUser.initial || storedUser.name.slice(0, 1),
+    };
+  } catch {
+    return undefined;
+  }
+}
+
 function App() {
-  const [currentUser, setCurrentUser] = useState();
+  const [currentUser, setCurrentUser] = useState(getStoredAuthenticatedUser);
 
   const handleLogin = ({ displayName, loginId }) => {
     const name = displayName || loginId || "내 프로필";
-
-    setCurrentUser({
+    const authenticatedUser = {
       name,
       initial: name.slice(0, 1),
-    });
+    };
+
+    setCurrentUser(authenticatedUser);
+
+    try {
+      window.localStorage.setItem(
+        AUTHENTICATED_USER_KEY,
+        JSON.stringify(authenticatedUser),
+      );
+    } catch {
+      // 저장소를 사용할 수 없어도 현재 화면의 로그인은 계속 진행합니다.
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+
+    try {
+      [
+        AUTHENTICATED_USER_KEY,
+        "accessToken",
+        "token",
+        "user",
+        "profile",
+      ].forEach((key) => {
+        window.localStorage.removeItem(key);
+      });
+    } catch {
+      // 저장소를 사용할 수 없는 환경에서도 화면의 로그인 상태는 해제합니다.
+    }
   };
 
   return (
     <Routes>
-      <Route path="/" element={<MainPage currentUser={currentUser} />} />
+      <Route
+        path="/"
+        element={
+          <MainPage currentUser={currentUser} onLogout={handleLogout} />
+        }
+      />
       <Route path="/roommates" element={<RoommateSearchPage />} />
       <Route
         path="/community"
-        element={<MainPage pageMode="community" currentUser={currentUser} />}
+        element={
+          <MainPage
+            pageMode="community"
+            currentUser={currentUser}
+            onLogout={handleLogout}
+          />
+        }
       />
       <Route
         path="/chat"
-        element={<MainPage pageMode="chat" currentUser={currentUser} />}
+        element={
+          <MainPage
+            pageMode="chat"
+            currentUser={currentUser}
+            onLogout={handleLogout}
+          />
+        }
       />
       <Route
         path="/calendar"
-        element={<MainPage pageMode="calendar" currentUser={currentUser} />}
+        element={
+          <MainPage
+            pageMode="calendar"
+            currentUser={currentUser}
+            onLogout={handleLogout}
+          />
+        }
       />
       <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
       <Route path="/signup" element={<SignupPage />} />

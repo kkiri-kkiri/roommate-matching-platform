@@ -1,13 +1,23 @@
-import styled from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
 import { Link } from "react-router-dom";
 
+export const PageGlobalStyle = createGlobalStyle`
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: #faf9f6;
+  }
+`;
+
 export const Page = styled.main`
-  min-height: calc(100vh - 144px);
-  min-height: calc(100dvh - 144px);
-  padding: 64px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 64px 20px 80px;
   background: #faf9f6;
   color: #1a1c1c;
   font-family:
@@ -24,15 +34,49 @@ export const Page = styled.main`
   }
 
   @media (max-width: 600px) {
-    min-height: calc(100vh - 112px);
-    min-height: calc(100dvh - 112px);
-    padding: 40px 16px;
-    align-items: flex-start;
+    padding: 32px 16px 56px;
+  }
+`;
+
+export const PageInner = styled.div`
+  width: min(100%, 480px);
+  margin: 0 auto;
+`;
+
+export const BackLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  color: #444650;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-decoration: none;
+  transition: color 160ms ease;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    color: #3478f6;
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(0, 167, 159, 0.2);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
   }
 `;
 
 export const LoginCard = styled.section`
-  width: min(100%, 480px);
+  width: 100%;
   padding: 40px;
   border: 1px solid #e2e2e4;
   border-radius: 16px;

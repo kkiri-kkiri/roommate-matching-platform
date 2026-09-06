@@ -258,7 +258,18 @@ export const LoginLink = styled.a`
   }
 `;
 
-export const ProfileLink = styled.a`
+export const ProfileMenu = styled.div`
+  position: relative;
+`;
+
+export const ProfileName = styled.span`
+  overflow: hidden;
+  max-width: 132px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+export const AccountMenuButton = styled.button`
   ${focusRing};
   display: inline-flex;
   gap: 9px;
@@ -272,10 +283,25 @@ export const ProfileLink = styled.a`
   font-size: 13px;
   font-weight: 700;
   line-height: 18px;
-  text-decoration: none;
+  cursor: pointer;
   transition:
     border-color 160ms ease,
     background-color 160ms ease;
+
+  > svg {
+    flex: 0 0 auto;
+    color: ${colors.muted};
+    transition: transform 160ms ease;
+  }
+
+  &[aria-expanded="true"] {
+    border-color: rgba(0, 167, 159, 0.42);
+    background: ${colors.mintSoft};
+
+    > svg {
+      transform: rotate(180deg);
+    }
+  }
 
   @media (hover: hover) {
     &:hover {
@@ -287,7 +313,7 @@ export const ProfileLink = styled.a`
   @media (max-width: 420px) {
     padding-right: 5px;
 
-    > span:last-child {
+    ${ProfileName} {
       display: none;
     }
   }
@@ -305,6 +331,76 @@ export const HeaderAvatar = styled.span`
   background: linear-gradient(145deg, ${colors.mint}, ${colors.mintDark});
   font-size: 13px;
   font-weight: 800;
+`;
+
+export const ProfileDropdown = styled.div`
+  position: absolute;
+  z-index: 70;
+  top: calc(100% + 9px);
+  right: 0;
+  width: 184px;
+  padding: 7px;
+  border: 1px solid ${colors.border};
+  border-radius: 14px;
+  background: ${colors.white};
+  box-shadow: 0 14px 34px rgba(0, 29, 79, 0.14);
+`;
+
+const profileMenuItemStyle = css`
+  ${focusRing};
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+
+  svg {
+    flex: 0 0 auto;
+  }
+`;
+
+export const ProfileMenuLink = styled.a`
+  ${profileMenuItemStyle};
+  color: ${colors.navyDark};
+
+  @media (hover: hover) {
+    &:hover {
+      color: ${colors.navy};
+      background: ${colors.navySoft};
+    }
+  }
+`;
+
+export const ProfileMenuDivider = styled.span`
+  display: block;
+  height: 1px;
+  margin: 5px 4px;
+  background: ${colors.border};
+`;
+
+export const LogoutButton = styled.button`
+  ${profileMenuItemStyle};
+  color: #a43b4c;
+
+  @media (hover: hover) {
+    &:hover {
+      color: #8b2d3d;
+      background: #fff0f3;
+    }
+  }
 `;
 
 export const AuthDivider = styled.span`

@@ -1,4 +1,4 @@
-import styled, { css } from "styled-components";
+import styled, { createGlobalStyle, css } from "styled-components";
 import { Link } from "react-router-dom";
 
 const focusRing = css`
@@ -12,9 +12,23 @@ const reduceMotion = css`
   }
 `;
 
+export const PageGlobalStyle = createGlobalStyle`
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: #faf9f6;
+  }
+`;
+
 export const Page = styled.main`
   width: 100%;
-  min-height: calc(100vh - 144px);
+  min-height: 100vh;
+  min-height: 100dvh;
   padding: 64px 20px 80px;
   box-sizing: border-box;
   background: #faf9f6;
@@ -29,13 +43,12 @@ export const Page = styled.main`
   }
 
   @media (max-width: 640px) {
-    min-height: calc(100vh - 112px);
     padding: 32px 16px 56px;
   }
 `;
 
 export const PageInner = styled.div`
-  width: min(100%, 720px);
+  width: min(100%, 560px);
   margin: 0 auto;
 `;
 
@@ -123,65 +136,8 @@ export const Description = styled.p`
   line-height: 24px;
 `;
 
-export const Tabs = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
-  padding: 4px;
-  border-radius: 14px;
-  background: #f3f3f3;
-`;
-
-export const Tab = styled.button`
-  display: inline-flex;
-  min-width: 0;
-  min-height: 48px;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border: 0;
-  border-radius: 10px;
-  background: ${({ $active }) => ($active ? "#ffffff" : "transparent")};
-  box-shadow: ${({ $active }) =>
-        $active ? "0 2px 8px rgba(12, 50, 115, 0.08)" : "none"};
-  color: ${({ $active }) => ($active ? "#0c3273" : "#747781")};
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 20px;
-  cursor: pointer;
-  transition: background 160ms ease, box-shadow 160ms ease, color 160ms ease;
-
-  svg {
-    width: 18px;
-    height: 18px;
-    flex: 0 0 auto;
-  }
-
-  &:hover {
-    color: #0c3273;
-  }
-
-  &:focus-visible {
-    ${focusRing}
-  }
-
-  @media (max-width: 420px) {
-    gap: 6px;
-    padding-inline: 8px;
-    font-size: 13px;
-  }
-
-  ${reduceMotion}
-`;
-
 export const Panel = styled.div`
-  padding-top: 32px;
-
-  @media (max-width: 640px) {
-    padding-top: 28px;
-  }
+  min-width: 0;
 `;
 
 export const SectionHeading = styled.h2`
@@ -374,7 +330,7 @@ export const ResultPanel = styled.div`
     ${({ $tone }) => ($tone === "success" ? "#b8e4df" : "#f0cfcb")};
   border-radius: 16px;
   background: ${({ $tone }) =>
-        $tone === "success" ? "#f1fbfa" : "#fff7f5"};
+    $tone === "success" ? "#f1fbfa" : "#fff7f5"};
 
   @media (max-width: 480px) {
     gap: 12px;
@@ -390,7 +346,7 @@ export const ResultIcon = styled.span`
   place-items: center;
   border-radius: 50%;
   background: ${({ $tone }) =>
-        $tone === "success" ? "#d8f4f1" : "#ffdad6"};
+    $tone === "success" ? "#d8f4f1" : "#ffdad6"};
   color: ${({ $tone }) => ($tone === "success" ? "#006a65" : "#ba1a1a")};
 
   svg {
