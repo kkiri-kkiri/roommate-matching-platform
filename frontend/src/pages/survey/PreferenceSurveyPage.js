@@ -57,8 +57,8 @@ const SURVEY_STEPS = [
   },
   {
     id: "sleep",
-    shortTitle: "수면·생활",
-    title: "수면·생활 패턴",
+    shortTitle: "수면 패턴",
+    title: "수면 패턴",
     description: "서로 편안하게 쉴 수 있도록 선호하는 수면 습관을 알려주세요.",
     fields: [
       {
@@ -129,10 +129,45 @@ const SURVEY_STEPS = [
   },
   {
     id: "habits",
-    shortTitle: "청소·습관",
-    title: "청소·생활 습관",
+    shortTitle: "생활 습관",
+    title: "생활 습관",
     description:
       "공용 공간을 함께 관리할 룸메이트의 생활 습관을 선택해 주세요.",
+    fields: [
+      {
+        id: "smoking",
+        label: "흡연 여부",
+        type: "single",
+        options: ["비흡연자만", "전자담배까지 허용", "흡연 여부 상관없음"],
+      },
+      {
+        id: "lightingPreference",
+        label: "조명 환경",
+        type: "single",
+        options: ["밝음 선호", "어두움 선호", "상관 없음"],
+        required: true,
+      },
+      {
+        id: "showerTime",
+        label: "샤워 시간대",
+        type: "single",
+        options: ["아침", "저녁", "유동적"],
+        required: true,
+      },
+      {
+        id: "showerDuration",
+        label: "샤워 소요시간",
+        type: "single",
+        options: ["10분", "20분", "30분", "40분", "그 이상"],
+        required: true,
+      },
+    ],
+  },
+  {
+    id: "dormitory",
+    shortTitle: "청소 및 공동생활",
+    title: "청소 및 공동생활",
+    description: "룸메이트와 어느 정도 일상을 나누고 싶은지 알려주세요.",
     fields: [
       {
         id: "cleaningFrequency",
@@ -163,31 +198,6 @@ const SURVEY_STEPS = [
         ],
       },
       {
-        id: "smoking",
-        label: "흡연 여부",
-        type: "single",
-        options: ["비흡연자만", "전자담배까지 허용", "흡연 여부 상관없음"],
-      },
-      {
-        id: "temperature",
-        label: "온도 선호",
-        type: "single",
-        options: [
-          "추위를 타는 사람",
-          "더위를 타는 사람",
-          "보통인 사람",
-          "상관없음",
-        ],
-      },
-    ],
-  },
-  {
-    id: "dormitory",
-    shortTitle: "기숙사 생활",
-    title: "기숙사 생활",
-    description: "룸메이트와 어느 정도 일상을 나누고 싶은지 알려주세요.",
-    fields: [
-      {
         id: "interaction",
         label: "룸메이트와의 교류 정도",
         type: "single",
@@ -217,6 +227,17 @@ const SURVEY_STEPS = [
           "적극적으로 공유하는 사람",
           "일부만 공유하는 사람",
           "각자 사용하는 사람",
+          "상관없음",
+        ],
+      },
+      {
+        id: "temperature",
+        label: "온도 선호",
+        type: "single",
+        options: [
+          "추위를 타는 사람",
+          "더위를 타는 사람",
+          "보통인 사람",
           "상관없음",
         ],
       },
@@ -506,10 +527,7 @@ function RoommatePreferenceSurvey() {
       >
         <S.Legend>
           <S.LabelRow>
-            <S.LabelText>
-              {field.label}
-              <S.RequiredBadge>필수</S.RequiredBadge>
-            </S.LabelText>
+            <S.LabelText>{field.label}</S.LabelText>
             <S.FieldHint id={hintId}>
               {isMultiple ? "복수 선택 가능" : "하나만 선택"}
             </S.FieldHint>
@@ -688,9 +706,6 @@ function RoommatePreferenceSurvey() {
                 {currentStep.title}
               </S.FormTitle>
               <S.FormDescription>{currentStep.description}</S.FormDescription>
-              <S.RequiredNotice>
-                <span>필수</span> 모든 문항에 응답해 주세요.
-              </S.RequiredNotice>
             </S.FormHeader>
 
             <S.FormBody>
@@ -699,7 +714,7 @@ function RoommatePreferenceSurvey() {
                   <AlertCircle size={18} aria-hidden="true" />
                   <div>
                     <strong>아직 응답하지 않은 문항이 있어요.</strong>
-                    <span>표시된 필수 문항을 확인해 주세요.</span>
+                    <span>표시된 문항을 확인해 주세요.</span>
                   </div>
                 </S.ValidationBanner>
               )}

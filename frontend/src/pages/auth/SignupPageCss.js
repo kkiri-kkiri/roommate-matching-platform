@@ -659,11 +659,11 @@ export const VerificationStatus = styled.p`
   padding: 12px 14px;
   border: 1px solid
     ${({ $tone }) => {
-    if ($tone === "success") return "#9edbd7";
-    if ($tone === "error") return "#ffb4ab";
-    if ($tone === "info") return "#c7d7ff";
-    return "#e2e2e4";
-  }};
+      if ($tone === "success") return "#9edbd7";
+      if ($tone === "error") return "#ffb4ab";
+      if ($tone === "info") return "#c7d7ff";
+      return "#e2e2e4";
+    }};
   border-radius: 12px;
   background: ${({ $tone }) => {
     if ($tone === "success") return "#eefaf8";

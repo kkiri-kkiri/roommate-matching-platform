@@ -453,7 +453,6 @@ export const ResetFilterButton = styled.button`
   @media (max-width: 480px) {
     align-self: flex-end;
   }
-
 `;
 
 export const SearchLayout = styled.div`
@@ -597,7 +596,8 @@ export const FilterChoice = styled.label`
     ${({ $selected }) => ($selected ? colors.mint : colors.border)};
   border-radius: 999px;
   color: ${({ $selected }) => ($selected ? colors.mintDark : colors.textSoft)};
-  background: ${({ $selected }) => ($selected ? colors.mintSoft : colors.white)};
+  background: ${({ $selected }) =>
+    $selected ? colors.mintSoft : colors.white};
   font-size: 14px;
   font-weight: ${({ $selected }) => ($selected ? 600 : 500)};
   line-height: 16px;

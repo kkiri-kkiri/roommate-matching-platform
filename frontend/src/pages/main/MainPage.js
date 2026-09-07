@@ -235,8 +235,8 @@ function getStoredUser() {
   try {
     const storedProfile = JSON.parse(
       window.localStorage.getItem("user") ||
-      window.localStorage.getItem("profile") ||
-      "{}",
+        window.localStorage.getItem("profile") ||
+        "{}",
     );
 
     return {
@@ -277,9 +277,7 @@ function MainPage({ pageMode = "home", currentUser, onLogout }) {
     if (!sectionId) return undefined;
 
     const frameId = window.requestAnimationFrame(() => {
-      document
-        .getElementById(sectionId)
-        ?.scrollIntoView?.({ block: "start" });
+      document.getElementById(sectionId)?.scrollIntoView?.({ block: "start" });
     });
 
     return () => window.cancelAnimationFrame(frameId);
@@ -467,9 +465,7 @@ function MainPage({ pageMode = "home", currentUser, onLogout }) {
                     aria-haspopup="menu"
                     aria-expanded={isProfileMenuOpen}
                     aria-controls="profile-dropdown"
-                    onClick={() =>
-                      setIsProfileMenuOpen((isOpen) => !isOpen)
-                    }
+                    onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
                   >
                     <S.HeaderAvatar>
                       {authenticatedUser.initial ||
@@ -497,10 +493,7 @@ function MainPage({ pageMode = "home", currentUser, onLogout }) {
 
                       <S.ProfileMenuDivider aria-hidden="true" />
 
-                      <S.LogoutButton
-                        type="button"
-                        onClick={handleLogout}
-                      >
+                      <S.LogoutButton type="button" onClick={handleLogout}>
                         <LogOut size={17} aria-hidden="true" />
                         <span>로그아웃</span>
                       </S.LogoutButton>
@@ -813,8 +806,9 @@ function MainPage({ pageMode = "home", currentUser, onLogout }) {
                                 : "weekday"
                           }
                           aria-pressed={isSelected}
-                          aria-label={`${activeMonth.shortLabel} ${day}일${hasEvent ? ", 일정 있음" : ""
-                            }`}
+                          aria-label={`${activeMonth.shortLabel} ${day}일${
+                            hasEvent ? ", 일정 있음" : ""
+                          }`}
                           onClick={() => setSelectedDate(day)}
                         >
                           <span>{day}</span>
