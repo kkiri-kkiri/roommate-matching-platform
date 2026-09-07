@@ -7,6 +7,7 @@ import FindIdPage from "./pages/auth/FindIdPage";
 import FindPasswordPage from "./pages/auth/FindPasswordPage";
 import LoginPage from "./pages/auth/LoginPage";
 import MainPage from "./pages/main/MainPage";
+import MyPage from "./pages/mypage/MyPage";
 import PreferenceSurveyPage from "./pages/survey/PreferenceSurveyPage";
 import ProfileSurveyPage from "./pages/survey/ProfileSurveyPage";
 import RoommateSearchPage from "./pages/roommate/RoommateSearchPage";
@@ -118,7 +119,7 @@ function App() {
       <Route path="/find-password" element={<FindPasswordPage />} />
       <Route
         path="/profile"
-        element={<Navigate to="/profile-survey" replace />}
+        element={<MyPage currentUser={currentUser} />}
       />
       <Route path="/profile-survey" element={<ProfileSurveyPage />} />
       <Route
