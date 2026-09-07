@@ -26,7 +26,7 @@ const focusRing = css`
   }
 `;
 
-export const PageReset = createGlobalStyle`
+export const SurveyPageReset = createGlobalStyle`
   body {
     margin: 0;
   }
@@ -96,16 +96,11 @@ export const Eyebrow = styled.span`
 export const PageTitle = styled.h1`
   margin: 16px 0 0;
   color: ${colors.navyDark};
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 36px;
-  letter-spacing: -0.01em;
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.035em;
   word-break: keep-all;
-
-  @media (max-width: 700px) {
-    font-size: 24px;
-    line-height: 32px;
-  }
 `;
 
 export const PageDescription = styled.p`
@@ -149,7 +144,7 @@ export const SurveyLayout = styled.div`
   gap: 24px;
   align-items: start;
 
-  @media (max-width: 1024px) {
+  @media (max-width: 960px) {
     grid-template-columns: minmax(0, 1fr);
   }
 `;
@@ -163,7 +158,7 @@ export const StepPanel = styled.aside`
   background: ${colors.white};
   box-shadow: 0 4px 12px rgba(12, 50, 115, 0.05);
 
-  @media (max-width: 1024px) {
+  @media (max-width: 960px) {
     position: static;
     padding: 20px;
   }
@@ -219,13 +214,13 @@ export const StepList = styled.ol`
   padding: 0;
   list-style: none;
 
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+  @media (max-width: 960px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
     margin-top: 18px;
   }
 
-  @media (max-width: 820px) {
+  @media (max-width: 700px) {
     display: flex;
     padding-bottom: 2px;
     overflow-x: auto;
@@ -263,7 +258,7 @@ export const StepButton = styled.button`
     }
   }
 
-  @media (max-width: 1024px) {
+  @media (max-width: 960px) {
     min-height: 68px;
     padding: 9px;
   }
@@ -296,22 +291,25 @@ export const StepCopy = styled.span`
   strong,
   span {
     display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   strong {
     color: ${colors.navyDark};
     font-size: 13px;
     line-height: 19px;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
 
   span {
     margin-top: 2px;
     color: ${colors.subtle};
-    font-size: 12px;
+    font-size: 11px;
     line-height: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 `;
 
@@ -333,7 +331,7 @@ export const SideNote = styled.div`
     color: ${colors.blue};
   }
 
-  @media (max-width: 1024px) {
+  @media (max-width: 960px) {
     display: none;
   }
 `;
@@ -350,7 +348,6 @@ export const FormCard = styled.section`
 export const FormHeader = styled.header`
   position: relative;
   padding: 32px 36px 28px;
-  border-bottom: 1px solid ${colors.border};
   background: linear-gradient(135deg, #ffffff 0%, #fbfcff 100%);
 
   @media (max-width: 640px) {
@@ -369,7 +366,6 @@ export const StepKicker = styled.span`
 `;
 
 export const FormTitle = styled.h2`
-  scroll-margin-top: 96px;
   margin: 0;
   color: ${colors.navyDark};
   font-size: 24px;
@@ -379,12 +375,6 @@ export const FormTitle = styled.h2`
 
   &:focus {
     outline: none;
-  }
-
-  &:focus-visible {
-    border-radius: 4px;
-    outline: 3px solid rgba(0, 167, 159, 0.24);
-    outline-offset: 5px;
   }
 
   @media (max-width: 640px) {
@@ -402,7 +392,10 @@ export const FormDescription = styled.p`
 `;
 
 export const RequiredNotice = styled.p`
-  margin: 12px 0 0;
+  position: absolute;
+  right: 36px;
+  bottom: 28px;
+  margin: 0;
   color: ${colors.subtle};
   font-size: 12px;
   line-height: 18px;
@@ -410,6 +403,11 @@ export const RequiredNotice = styled.p`
   span {
     color: ${colors.error};
     font-weight: 800;
+  }
+
+  @media (max-width: 760px) {
+    position: static;
+    margin-top: 12px;
   }
 `;
 
@@ -460,10 +458,13 @@ export const Fieldset = styled.fieldset`
   margin: 0;
   padding: 28px 0;
   border: 0;
-  border-bottom: 1px solid ${colors.border};
 
-  &:last-of-type {
-    border-bottom: 0;
+  &:first-of-type {
+    margin-top: 24px;
+  }
+
+  & + & {
+    margin-top: 24px;
   }
 
   @media (max-width: 640px) {
@@ -505,7 +506,7 @@ export const RequiredBadge = styled.span`
   border-radius: 999px;
   color: ${colors.error};
   background: ${colors.errorSoft};
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 800;
   line-height: 14px;
   letter-spacing: 0.02em;
@@ -518,48 +519,37 @@ export const FieldHint = styled.span`
   line-height: 18px;
 `;
 
-export const ConditionNotice = styled.div`
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 11px;
-  align-items: start;
-  margin-bottom: 16px;
-  padding: 15px 16px;
-  border: 1px solid rgba(52, 120, 246, 0.18);
-  border-radius: 12px;
-  color: ${colors.blue};
-  background: #f2f6ff;
-
-  svg {
-    margin-top: 1px;
-  }
-
-  strong,
-  span {
-    display: block;
-  }
-
-  strong {
-    color: ${colors.navy};
-    font-size: 13px;
-    line-height: 19px;
-  }
-
-  span {
-    margin-top: 2px;
-    color: ${colors.textSoft};
-    font-size: 12px;
-    line-height: 18px;
-    word-break: keep-all;
-  }
+export const QuickSelectRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin: -5px 0 10px;
 `;
 
-export const SelectionGuide = styled.p`
-  margin: -4px 0 12px;
-  color: ${colors.subtle};
+export const QuickSelectButton = styled.button`
+  ${focusRing};
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 11px;
+  border: 1px solid ${colors.border};
+  border-radius: 999px;
+  color: ${colors.mintDark};
+  background: ${colors.white};
   font-size: 12px;
-  line-height: 18px;
-  word-break: keep-all;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: rgba(0, 167, 159, 0.5);
+      background: ${colors.mintSoft};
+    }
+  }
 `;
 
 export const ChoiceGrid = styled.div`
@@ -646,70 +636,6 @@ export const ChoiceIndicator = styled.span`
   background: ${({ $selected }) => ($selected ? colors.mint : colors.white)};
 `;
 
-export const RequirementSummary = styled.div`
-  margin-top: 20px;
-  padding: 16px;
-  border: 1px solid
-    ${({ $empty }) => ($empty ? colors.border : "rgba(0, 167, 159, 0.24)")};
-  border-radius: 12px;
-  background: ${({ $empty }) => ($empty ? "#fafafa" : colors.mintSoft)};
-`;
-
-export const SummaryHeader = styled.div`
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-
-  span {
-    display: inline-flex;
-    gap: 7px;
-    align-items: center;
-    color: ${colors.textSoft};
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 18px;
-  }
-
-  svg {
-    color: ${colors.mintDark};
-  }
-
-  strong {
-    color: ${colors.mintDark};
-    font-size: 12px;
-    line-height: 18px;
-  }
-`;
-
-export const SummaryChips = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 12px;
-`;
-
-export const SummaryChip = styled.span`
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  color: ${colors.mintDark};
-  background: ${colors.white};
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 16px;
-`;
-
-export const SummaryEmpty = styled.p`
-  margin: 8px 0 0;
-  color: ${colors.muted};
-  font-size: 12px;
-  line-height: 18px;
-  word-break: keep-all;
-`;
-
 export const ErrorText = styled.p`
   display: flex;
   gap: 6px;
@@ -767,7 +693,6 @@ export const FormFooter = styled.footer`
   align-items: center;
   justify-content: space-between;
   padding: 22px 36px;
-  border-top: 1px solid ${colors.border};
   background: #fdfdfd;
 
   @media (max-width: 640px) {

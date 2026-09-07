@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import ChatPage from "./pages/ChatPage";
-import CommunityPage from "./pages/CommunityPage";
-import FindIdPage from "./pages/FindIdPage";
-import FindPasswordPage from "./pages/FindPasswordPage";
-import LoginPage from "./pages/LoginPage";
-import MainPage from "./pages/MainPage";
-import PreferenceSurveyPage from "./pages/PreferenceSurveyPage";
-import ProfileSurveyPage from "./pages/ProfileSurveyPage";
-import RoommateSearchPage from "./pages/RoommateSearchPage";
-import SignupPage from "./pages/SignupPage";
+import ChatPage from "./pages/chat/ChatPage";
+import CommunityPage from "./pages/community/CommunityPage";
+import FindIdPage from "./pages/auth/FindIdPage";
+import FindPasswordPage from "./pages/auth/FindPasswordPage";
+import LoginPage from "./pages/auth/LoginPage";
+import MainPage from "./pages/main/MainPage";
+import PreferenceSurveyPage from "./pages/survey/PreferenceSurveyPage";
+import ProfileSurveyPage from "./pages/survey/ProfileSurveyPage";
+import RoommateSearchPage from "./pages/roommate/RoommateSearchPage";
+import SignupPage from "./pages/auth/SignupPage";
 
 const AUTHENTICATED_USER_KEY = "roomieAuthenticatedUser";
 
