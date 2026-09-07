@@ -111,16 +111,7 @@ function App() {
         element={<CommunityPage currentUser={currentUser} />}
       />
       <Route path="/chat" element={<ChatPage />} />
-      <Route
-        path="/calendar"
-        element={
-          <MainPage
-            pageMode="calendar"
-            currentUser={currentUser}
-            onLogout={handleLogout}
-          />
-        }
-      />
+      <Route path="/calendar" element={<CalendarPage />} />
       <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/find-id" element={<FindIdPage />} />
