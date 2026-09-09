@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import ChatPage from "./pages/chat/ChatPage";
+import CalendarPage from "./pages/CalendarPage";
 import CommunityPage from "./pages/community/CommunityPage";
 import FindIdPage from "./pages/auth/FindIdPage";
 import FindPasswordPage from "./pages/auth/FindPasswordPage";
@@ -82,9 +83,7 @@ function App() {
     <Routes>
       <Route
         path="/"
-        element={
-          <MainPage currentUser={currentUser} onLogout={handleLogout} />
-        }
+        element={<MainPage currentUser={currentUser} onLogout={handleLogout} />}
       />
       <Route path="/roommates" element={<RoommateSearchPage />} />
       <Route
@@ -117,10 +116,7 @@ function App() {
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/find-id" element={<FindIdPage />} />
       <Route path="/find-password" element={<FindPasswordPage />} />
-      <Route
-        path="/profile"
-        element={<MyPage currentUser={currentUser} />}
-      />
+      <Route path="/profile" element={<MyPage currentUser={currentUser} />} />
       <Route path="/profile-survey" element={<ProfileSurveyPage />} />
       <Route
         path="/roommate-preference-survey"
