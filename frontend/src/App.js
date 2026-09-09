@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import MainLayout from "./layouts/MainLayout";
+
 import ChatPage from "./pages/chat/ChatPage";
 import CalendarPage from "./pages/CalendarPage";
 import CommunityPage from "./pages/community/CommunityPage";
@@ -82,46 +84,47 @@ function App() {
   return (
     <Routes>
       <Route
-        path="/"
-        element={<MainPage currentUser={currentUser} onLogout={handleLogout} />}
-      />
-      <Route path="/roommates" element={<RoommateSearchPage />} />
-      <Route
-        path="/community"
-        element={<CommunityPage currentUser={currentUser} />}
-      />
-      <Route
-        path="/community/posts/new"
-        element={<CommunityPage currentUser={currentUser} />}
-      />
-      <Route
-        path="/community/posts/:postId"
-        element={<CommunityPage currentUser={currentUser} />}
-      />
-      <Route
-        path="/community/posts/:postId/edit"
-        element={<CommunityPage currentUser={currentUser} />}
-      />
-      <Route
-        path="/community/my-posts"
-        element={<CommunityPage currentUser={currentUser} />}
-      />
-      <Route
-        path="/community/my-comments"
-        element={<CommunityPage currentUser={currentUser} />}
-      />
-      <Route path="/chat" element={<ChatPage />} />
-      <Route path="/calendar" element={<CalendarPage />} />
+        element={<MainLayout currentUser={currentUser} onLogout={handleLogout} />}
+      >
+        <Route index element={<MainPage />} />
+        <Route path="/roommates" element={<RoommateSearchPage />} />
+        <Route
+          path="/community"
+          element={<CommunityPage currentUser={currentUser} />}
+        />
+        <Route
+          path="/community/posts/new"
+          element={<CommunityPage currentUser={currentUser} />}
+        />
+        <Route
+          path="/community/posts/:postId"
+          element={<CommunityPage currentUser={currentUser} />}
+        />
+        <Route
+          path="/community/posts/:postId/edit"
+          element={<CommunityPage currentUser={currentUser} />}
+        />
+        <Route
+          path="/community/my-posts"
+          element={<CommunityPage currentUser={currentUser} />}
+        />
+        <Route
+          path="/community/my-comments"
+          element={<CommunityPage currentUser={currentUser} />}
+        />
+        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/profile" element={<MyPage currentUser={currentUser} />} />
+        <Route path="/profile-survey" element={<ProfileSurveyPage />} />
+        <Route
+          path="/roommate-preference-survey"
+          element={<PreferenceSurveyPage />}
+        />
+      </Route>
       <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/find-id" element={<FindIdPage />} />
       <Route path="/find-password" element={<FindPasswordPage />} />
-      <Route path="/profile" element={<MyPage currentUser={currentUser} />} />
-      <Route path="/profile-survey" element={<ProfileSurveyPage />} />
-      <Route
-        path="/roommate-preference-survey"
-        element={<PreferenceSurveyPage />}
-      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
