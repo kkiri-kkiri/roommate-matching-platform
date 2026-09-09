@@ -40,10 +40,10 @@ export const TopBarInner = styled.div`
   padding: 0 20px;
 
   @media (max-width: 760px) {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     row-gap: 0;
-    min-height: 112px;
-    padding: 8px 16px 0;
+    min-height: 72px;
+    padding: 0 12px;
   }
 `;
 
@@ -73,6 +73,10 @@ export const LogoImage = styled.img`
     width: 148px;
     margin-left: -7px;
   }
+
+  @media (max-width: 480px) {
+    width: 112px;
+  }
 `;
 
 export const MainNavigation = styled.nav`
@@ -82,16 +86,15 @@ export const MainNavigation = styled.nav`
   justify-content: center;
 
   @media (max-width: 760px) {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    gap: 2px;
+    grid-column: 2;
+    grid-row: 1;
+    gap: 0;
     justify-content: flex-start;
-    width: calc(100% + 32px);
-    min-height: 48px;
-    margin: 0 -16px;
-    padding: 0 12px;
+    min-width: 0;
+    min-height: 72px;
+    margin: 0;
+    padding: 0 4px;
     overflow-x: auto;
-    border-top: 1px solid rgba(226, 226, 228, 0.7);
     scrollbar-width: none;
 
     &::-webkit-scrollbar {
@@ -149,12 +152,23 @@ export const NavigationLink = styled.a`
   }
 
   @media (max-width: 760px) {
-    min-height: 48px;
-    padding: 0 13px;
+    min-height: 52px;
+    padding: 0 8px;
+    font-size: 12px;
 
     &::after {
-      right: 12px;
-      left: 12px;
+      right: 8px;
+      left: 8px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 0 5px;
+    font-size: 11px;
+
+    &::after {
+      right: 5px;
+      left: 5px;
     }
   }
 `;
@@ -166,8 +180,9 @@ export const AuthNavigation = styled.nav`
   justify-self: end;
 
   @media (max-width: 760px) {
-    grid-column: 2;
+    grid-column: 3;
     grid-row: 1;
+    gap: 3px;
   }
 `;
 

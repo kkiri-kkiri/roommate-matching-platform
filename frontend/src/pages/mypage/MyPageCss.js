@@ -48,9 +48,14 @@ const button = css`
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 
-  svg { flex-shrink: 0; }
+  svg {
+    flex-shrink: 0;
+  }
 
   &:disabled {
     color: ${colors.muted};
@@ -72,7 +77,9 @@ const control = css`
   background: ${colors.white};
   font-size: 14px;
   line-height: 22px;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 
   &:focus {
     outline: none;
@@ -84,12 +91,16 @@ const control = css`
     border-color: ${colors.error};
   }
 
-  &:read-only:not(select), &:disabled {
+  &:read-only:not(select),
+  &:disabled {
     color: ${colors.secondary};
     background: ${colors.soft};
   }
 
-  &:disabled { cursor: not-allowed; opacity: 1; }
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 1;
+  }
 `;
 
 export const Page = styled.main`
@@ -97,24 +108,54 @@ export const Page = styled.main`
   padding: 56px 24px 80px;
   color: ${colors.text};
   background: ${colors.warm};
-  font-family: "Plus Jakarta Sans", Pretendard, "Noto Sans KR", -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    "Plus Jakarta Sans",
+    Pretendard,
+    "Noto Sans KR",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   font-size: 16px;
   line-height: 1.5;
   overflow-wrap: anywhere;
 
-  &, *, *::before, *::after { box-sizing: border-box; }
-  button, input, select { font-family: inherit; }
-  button, a, input, select, [tabindex] { ${focusRing} }
-  svg { vertical-align: middle; }
-  img { display: block; max-width: 100%; }
+  &,
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  button,
+  input,
+  select {
+    font-family: inherit;
+  }
+  button,
+  a,
+  input,
+  select,
+  [tabindex] {
+    ${focusRing}
+  }
+  svg {
+    vertical-align: middle;
+  }
+  img {
+    display: block;
+    max-width: 100%;
+  }
 
   @media (max-width: 640px) {
     padding: 32px 16px 48px;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { transition: none; }
+    *,
+    *::before,
+    *::after {
+      transition: none;
+    }
   }
 `;
 
@@ -126,7 +167,9 @@ export const Container = styled.div`
 
 export const Intro = styled.div`
   margin-bottom: 40px;
-  @media (max-width: 640px) { margin-bottom: 28px; }
+  @media (max-width: 640px) {
+    margin-bottom: 28px;
+  }
 `;
 
 export const Eyebrow = styled.span`
@@ -147,7 +190,10 @@ export const PageTitle = styled.h1`
   font-weight: 700;
   line-height: 44px;
   letter-spacing: -0.02em;
-  @media (max-width: 640px) { font-size: 28px; line-height: 36px; }
+  @media (max-width: 640px) {
+    font-size: 28px;
+    line-height: 36px;
+  }
 `;
 
 export const Description = styled.p`
@@ -156,7 +202,10 @@ export const Description = styled.p`
   font-size: 15px;
   line-height: 24px;
   word-break: keep-all;
-  @media (max-width: 640px) { font-size: 14px; line-height: 22px; }
+  @media (max-width: 640px) {
+    font-size: 14px;
+    line-height: 22px;
+  }
 `;
 
 export const Layout = styled.div`
@@ -165,8 +214,13 @@ export const Layout = styled.div`
   align-items: start;
   gap: 32px;
 
-  @media (max-width: 1000px) { grid-template-columns: 220px minmax(0, 1fr); gap: 24px; }
-  @media (max-width: 800px) { grid-template-columns: minmax(0, 1fr); }
+  @media (max-width: 1000px) {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 800px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 `;
 
 export const Sidebar = styled.aside`
@@ -183,8 +237,8 @@ export const Sidebar = styled.aside`
 
 export const Avatar = styled.img`
   flex-shrink: 0;
-  width: ${({ $large }) => $large ? "96px" : "48px"};
-  height: ${({ $large }) => $large ? "96px" : "48px"};
+  width: ${({ $large }) => ($large ? "96px" : "48px")};
+  height: ${({ $large }) => ($large ? "96px" : "48px")};
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: 12px;
@@ -198,7 +252,9 @@ export const SidebarProfile = styled.div`
   padding: 0 4px 24px;
   margin-bottom: 16px;
   border-bottom: 1px solid ${colors.border};
-  > div { min-width: 0; }
+  > div {
+    min-width: 0;
+  }
 
   @media (max-width: 800px) {
     padding-bottom: 16px;
@@ -241,24 +297,34 @@ export const MenuLink = styled(Link)`
   min-height: 48px;
   padding: 12px;
   border-radius: 12px;
-  color: ${({ $active }) => $active ? colors.navy : colors.secondary};
-  background: ${({ $active }) => $active ? colors.navySoft : "transparent"};
+  color: ${({ $active }) => ($active ? colors.navy : colors.secondary)};
+  background: ${({ $active }) => ($active ? colors.navySoft : "transparent")};
   font-size: 14px;
-  font-weight: ${({ $active }) => $active ? 700 : 500};
+  font-weight: ${({ $active }) => ($active ? 700 : 500)};
   line-height: 22px;
   text-decoration: none;
   transition: background 150ms ease;
-  svg { flex-shrink: 0; }
-  > span:first-of-type { flex: 1; }
-  &:hover { background: ${({ $active }) => $active ? "#e5edf9" : colors.soft}; }
+  svg {
+    flex-shrink: 0;
+  }
+  > span:first-of-type {
+    flex: 1;
+  }
+  &:hover {
+    background: ${({ $active }) => ($active ? "#e5edf9" : colors.soft)};
+  }
 
   @media (max-width: 800px) {
     gap: 8px;
     padding: 10px 12px;
-    > svg:last-child:not(:first-child) { display: none; }
+    > svg:last-child:not(:first-child) {
+      display: none;
+    }
   }
 
-  @media (max-width: 480px) { font-size: 13px; }
+  @media (max-width: 480px) {
+    font-size: 13px;
+  }
 `;
 
 export const MenuCount = styled.span`
@@ -280,9 +346,18 @@ export const SideNote = styled.div`
   padding: 20px 14px;
   border-radius: 12px;
   background: ${colors.warm};
-  > svg { margin-bottom: 10px; color: ${colors.mintDark}; }
-  > strong { display: block; color: ${colors.navy}; font-size: 13px; }
-  @media (max-width: 800px) { display: none; }
+  > svg {
+    margin-bottom: 10px;
+    color: ${colors.mintDark};
+  }
+  > strong {
+    display: block;
+    color: ${colors.navy};
+    font-size: 13px;
+  }
+  @media (max-width: 800px) {
+    display: none;
+  }
 `;
 
 export const Content = styled.section`
@@ -302,7 +377,9 @@ export const SectionHeading = styled.div`
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
-  > div { min-width: 0; }
+  > div {
+    min-width: 0;
+  }
 `;
 
 export const SectionTitle = styled.h2`
@@ -312,15 +389,24 @@ export const SectionTitle = styled.h2`
   font-weight: 700;
   line-height: 36px;
   letter-spacing: -0.01em;
-  > span { margin-left: 8px; vertical-align: middle; }
-  @media (max-width: 640px) { font-size: 24px; line-height: 32px; }
+  > span {
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  @media (max-width: 640px) {
+    font-size: 24px;
+    line-height: 32px;
+  }
 `;
 
 export const PrimaryButton = styled.button`
   ${button}
   color: ${colors.white};
   background: ${colors.navy};
-  &:hover:not(:disabled) { background: ${colors.navyDark}; box-shadow: 0 4px 12px rgba(12, 50, 115, 0.12); }
+  &:hover:not(:disabled) {
+    background: ${colors.navyDark};
+    box-shadow: 0 4px 12px rgba(12, 50, 115, 0.12);
+  }
 `;
 
 export const SecondaryButton = styled.button`
@@ -328,14 +414,19 @@ export const SecondaryButton = styled.button`
   border: 1.5px solid ${colors.mint};
   color: ${colors.mintDark};
   background: ${colors.white};
-  &:hover:not(:disabled) { background: ${colors.mintSoft}; }
+  &:hover:not(:disabled) {
+    background: ${colors.mintSoft};
+  }
 `;
 
 export const GhostButton = styled.button`
   ${button}
   color: ${colors.secondary};
   background: transparent;
-  &:hover:not(:disabled) { color: ${colors.navy}; background: ${colors.soft}; }
+  &:hover:not(:disabled) {
+    color: ${colors.navy};
+    background: ${colors.soft};
+  }
 `;
 
 export const IconButton = styled.button`
@@ -346,7 +437,10 @@ export const IconButton = styled.button`
   padding: 0;
   color: ${colors.mintDark};
   background: ${colors.mintSoft};
-  &:hover:not(:disabled) { color: ${colors.navy}; background: ${colors.navySoft}; }
+  &:hover:not(:disabled) {
+    color: ${colors.navy};
+    background: ${colors.navySoft};
+  }
 `;
 
 export const Badge = styled.span`
@@ -356,13 +450,15 @@ export const Badge = styled.span`
   gap: 5px;
   padding: 5px 10px;
   border-radius: 999px;
-  color: ${({ $muted }) => $muted ? colors.secondary : colors.mintDark};
-  background: ${({ $muted }) => $muted ? colors.soft : colors.mintSoft};
+  color: ${({ $muted }) => ($muted ? colors.secondary : colors.mintDark)};
+  background: ${({ $muted }) => ($muted ? colors.soft : colors.mintSoft)};
   font-size: 12px;
   font-weight: 600;
   line-height: 18px;
   letter-spacing: 0;
-  svg { flex-shrink: 0; }
+  svg {
+    flex-shrink: 0;
+  }
 `;
 
 export const RequiredBadge = styled.span`
@@ -383,7 +479,9 @@ export const Card = styled.section`
   ${surface}
   min-width: 0;
   padding: 28px;
-  @media (max-width: 640px) { padding: 20px; }
+  @media (max-width: 640px) {
+    padding: 20px;
+  }
 `;
 
 export const CardHeader = styled.div`
@@ -393,7 +491,16 @@ export const CardHeader = styled.div`
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 20px;
-  > svg { color: ${colors.navy}; }
+  > svg {
+    color: ${colors.navy};
+  }
+`;
+
+export const CardHeaderActions = styled.div`
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 `;
 
 export const CardTitle = styled.h3`
@@ -406,7 +513,40 @@ export const CardTitle = styled.h3`
   font-weight: 600;
   line-height: 28px;
   letter-spacing: -0.01em;
-  svg { flex-shrink: 0; color: ${colors.navy}; }
+  svg {
+    flex-shrink: 0;
+    color: ${colors.navy};
+  }
+`;
+
+export const MbtiValue = styled.span`
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  min-height: 26px;
+  margin-top: 1px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: ${colors.mintDark};
+  background: ${colors.mintSoft};
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0.06em;
+`;
+
+export const PasswordSummary = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  color: ${colors.muted};
+  font-size: 14px;
+  line-height: 22px;
+  svg {
+    flex-shrink: 0;
+    color: ${colors.mintDark};
+  }
 `;
 
 export const ProfileHero = styled.div`
@@ -416,8 +556,14 @@ export const ProfileHero = styled.div`
   padding-bottom: 28px;
   margin-bottom: 28px;
   border-bottom: 1px solid ${colors.border};
-  > div { min-width: 0; }
-  @media (max-width: 480px) { align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  > div {
+    min-width: 0;
+  }
+  @media (max-width: 480px) {
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
 `;
 
 export const ProfileName = styled.h3`
@@ -427,7 +573,10 @@ export const ProfileName = styled.h3`
   font-weight: 700;
   line-height: 36px;
   letter-spacing: -0.02em;
-  @media (max-width: 640px) { font-size: 24px; line-height: 32px; }
+  @media (max-width: 640px) {
+    font-size: 24px;
+    line-height: 32px;
+  }
 `;
 
 export const TagRow = styled.div`
@@ -454,13 +603,26 @@ export const DetailGrid = styled.dl`
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px 32px;
   margin: 0;
-  @media (max-width: 480px) { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  @media (max-width: 480px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
 `;
 
 export const DetailItem = styled.div`
   min-width: 0;
-  dt { color: ${colors.muted}; font-size: 13px; line-height: 20px; }
-  dd { margin: 6px 0 0; color: ${colors.text}; font-size: 15px; font-weight: 600; line-height: 24px; }
+  dt {
+    color: ${colors.muted};
+    font-size: 13px;
+    line-height: 20px;
+  }
+  dd {
+    margin: 6px 0 0;
+    color: ${colors.text};
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 24px;
+  }
 `;
 
 export const SummaryGrid = styled.div`
@@ -468,7 +630,9 @@ export const SummaryGrid = styled.div`
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   margin-top: 24px;
-  @media (max-width: 560px) { grid-template-columns: minmax(0, 1fr); }
+  @media (max-width: 560px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 `;
 
 export const SummaryCard = styled.button`
@@ -484,8 +648,13 @@ export const SummaryCard = styled.button`
   text-align: left;
   text-decoration: none;
   cursor: pointer;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
-  &:hover { border-color: ${colors.mint}; box-shadow: 0 8px 20px rgba(12, 50, 115, 0.08); }
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+  &:hover {
+    border-color: ${colors.mint};
+    box-shadow: 0 8px 20px rgba(12, 50, 115, 0.08);
+  }
 `;
 
 export const SummaryTitle = styled.strong`
@@ -520,13 +689,22 @@ export const Banner = styled.div`
   gap: 10px;
   padding: 16px 20px;
   border-radius: 12px;
-  color: ${({ $error }) => $error ? colors.error : colors.mintDark};
-  background: ${({ $error }) => $error ? "#fff2f0" : colors.mintSoft};
+  color: ${({ $error }) => ($error ? colors.error : colors.mintDark)};
+  background: ${({ $error }) => ($error ? "#fff2f0" : colors.mintSoft)};
   font-size: 14px;
   line-height: 23px;
-  > svg { flex-shrink: 0; margin-top: 2px; }
-  > span, > div { flex: 1; min-width: 160px; }
-  > button { margin: -6px 0; }
+  > svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  > span,
+  > div {
+    flex: 1;
+    min-width: 160px;
+  }
+  > button {
+    margin: -6px 0;
+  }
 `;
 
 export const SurveyGrid = styled.dl`
@@ -541,11 +719,29 @@ export const SurveyRow = styled.div`
   gap: 16px;
   padding: 16px 0;
   border-bottom: 1px solid ${colors.border};
-  &:first-child { padding-top: 0; }
-  &:last-child { padding-bottom: 0; border-bottom: 0; }
-  dt { color: ${colors.secondary}; font-size: 14px; line-height: 24px; }
-  dd { margin: 0; color: ${colors.text}; font-size: 14px; font-weight: 600; line-height: 24px; }
-  @media (max-width: 560px) { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  &:first-child {
+    padding-top: 0;
+  }
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  dt {
+    color: ${colors.secondary};
+    font-size: 14px;
+    line-height: 24px;
+  }
+  dd {
+    margin: 0;
+    color: ${colors.text};
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 24px;
+  }
+  @media (max-width: 560px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
 `;
 
 export const FormGrid = styled.div`
@@ -554,12 +750,32 @@ export const FormGrid = styled.div`
   align-items: start;
   gap: 24px;
   margin-top: 16px;
-  @media (max-width: 1000px) and (min-width: 801px) { grid-template-columns: minmax(0, 1fr); }
-  @media (max-width: 560px) { grid-template-columns: minmax(0, 1fr); }
+  @media (max-width: 1000px) and (min-width: 801px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (max-width: 560px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 `;
 
 export const Field = styled.div`
   min-width: 0;
+`;
+
+export const ReadonlyValue = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  gap: 12px;
+  color: ${colors.text};
+  font-size: 14px;
+  line-height: 22px;
+  > button {
+    flex-shrink: 0;
+    min-height: 34px;
+    padding: 7px 10px;
+  }
 `;
 
 export const Label = styled.label`
@@ -572,15 +788,28 @@ export const Label = styled.label`
   font-size: 14px;
   font-weight: 600;
   line-height: 22px;
-  > svg { color: ${colors.muted}; }
+  > svg {
+    color: ${colors.muted};
+  }
 `;
 
-export const Input = styled.input`${control}`;
-export const Select = styled.select`${control} cursor: pointer;`;
+export const Input = styled.input`
+  ${control}
+`;
+export const Select = styled.select`
+  ${control} cursor: pointer;
+`;
 
 export const FieldError = styled.p`
   margin: 8px 0 0;
   color: ${colors.error};
+  font-size: 13px;
+  line-height: 21px;
+`;
+
+export const ValidMessage = styled.p`
+  margin: 8px 0 0;
+  color: ${colors.mintDark};
   font-size: 13px;
   line-height: 21px;
 `;
@@ -591,7 +820,9 @@ export const Helper = styled.p`
   font-size: 13px;
   font-weight: 400;
   line-height: 21px;
-  &:empty { display: none; }
+  &:empty {
+    display: none;
+  }
 `;
 
 export const Fieldset = styled.fieldset`
@@ -622,13 +853,19 @@ export const ChoiceButton = styled.button`
   ${button}
   min-width: 48px;
   padding: 10px 13px;
-  border-color: ${({ $selected }) => $selected ? colors.mint : colors.border};
-  color: ${({ $selected }) => $selected ? colors.mintDark : colors.secondary};
-  background: ${({ $selected }) => $selected ? colors.mintSoft : colors.white};
+  border-color: ${({ $selected }) => ($selected ? colors.mint : colors.border)};
+  color: ${({ $selected }) => ($selected ? colors.mintDark : colors.secondary)};
+  background: ${({ $selected }) =>
+    $selected ? colors.mintSoft : colors.white};
   font-size: 13px;
-  font-weight: ${({ $selected }) => $selected ? 600 : 400};
-  &:hover:not(:disabled) { border-color: ${colors.mint}; background: ${colors.mintSoft}; }
-  &[aria-invalid="true"] { border-color: ${colors.error}; }
+  font-weight: ${({ $selected }) => ($selected ? 600 : 400)};
+  &:hover:not(:disabled) {
+    border-color: ${colors.mint};
+    background: ${colors.mintSoft};
+  }
+  &[aria-invalid="true"] {
+    border-color: ${colors.error};
+  }
 `;
 
 export const FormActions = styled.div`
@@ -638,15 +875,23 @@ export const FormActions = styled.div`
   flex-wrap: wrap;
   gap: 12px;
   padding: 8px 0;
-  @media (max-width: 480px) { > button { flex: 1; } }
+  @media (max-width: 480px) {
+    > button {
+      flex: 1;
+    }
+  }
 `;
 
 export const MbtiGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px 16px;
-  @media (max-width: 1120px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  @media (max-width: 360px) { grid-template-columns: minmax(0, 1fr); }
+  @media (max-width: 1120px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (max-width: 360px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 `;
 
 export const EmptyCard = styled.section`
@@ -656,8 +901,13 @@ export const EmptyCard = styled.section`
   align-items: center;
   padding: 64px 32px;
   text-align: center;
-  > a { margin-top: 28px; max-width: 100%; }
-  @media (max-width: 640px) { padding: 48px 24px; }
+  > a {
+    margin-top: 28px;
+    max-width: 100%;
+  }
+  @media (max-width: 640px) {
+    padding: 48px 24px;
+  }
 `;
 
 export const EmptyIcon = styled.div`
@@ -694,7 +944,9 @@ export const LikeGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
-  @media (max-width: 560px) { grid-template-columns: minmax(0, 1fr); }
+  @media (max-width: 560px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 `;
 
 export const LikeCard = styled.article`
@@ -704,8 +956,12 @@ export const LikeCard = styled.article`
   min-width: 0;
   padding: 24px;
   transition: box-shadow 150ms ease;
-  &:hover { box-shadow: 0 8px 20px rgba(12, 50, 115, 0.08); }
-  @media (max-width: 1000px) and (min-width: 801px) { padding: 20px; }
+  &:hover {
+    box-shadow: 0 8px 20px rgba(12, 50, 115, 0.08);
+  }
+  @media (max-width: 1000px) and (min-width: 801px) {
+    padding: 20px;
+  }
 `;
 
 export const LikeTop = styled.div`
@@ -742,7 +998,9 @@ export const LikeMessage = styled.p`
 export const LikeFooter = styled.div`
   padding-top: 24px;
   margin-top: auto;
-  > a { width: 100%; }
+  > a {
+    width: 100%;
+  }
 `;
 
 export const MatchList = styled.div`
@@ -757,13 +1015,26 @@ export const MatchRow = styled.div`
   gap: 12px;
   padding: 16px 0;
   border-bottom: 1px solid ${colors.border};
-  &:last-child { padding-bottom: 0; border-bottom: 0; }
-  > div { flex: 1; min-width: 0; }
-  > span { flex-shrink: 0; max-width: 140px; }
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  > div {
+    flex: 1;
+    min-width: 0;
+  }
+  > span {
+    flex-shrink: 0;
+    max-width: 140px;
+  }
   @media (max-width: 480px) {
     flex-wrap: wrap;
-    > div { min-width: calc(100% - 64px); }
-    > span { margin-left: 60px; }
+    > div {
+      min-width: calc(100% - 64px);
+    }
+    > span {
+      margin-left: 60px;
+    }
   }
 `;
 
@@ -808,7 +1079,10 @@ export const SubtleLink = styled(Link)`
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
-  &:hover { text-decoration: underline; text-underline-offset: 4px; }
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
 `;
 
 export const PreviewPanel = styled.details`
@@ -830,12 +1104,30 @@ export const PreviewPanel = styled.details`
     list-style: none;
     cursor: pointer;
   }
-  > summary::-webkit-details-marker { display: none; }
-  > summary > span { margin-left: auto; color: ${colors.muted}; font-size: 12px; }
-  > summary::after { content: "+"; margin-left: 6px; font-size: 20px; }
-  &[open] > summary { margin-bottom: 16px; }
-  &[open] > summary::after { content: "−"; }
-  @media (max-width: 360px) { > summary > span { display: none; } }
+  > summary::-webkit-details-marker {
+    display: none;
+  }
+  > summary > span {
+    margin-left: auto;
+    color: ${colors.muted};
+    font-size: 12px;
+  }
+  > summary::after {
+    content: "+";
+    margin-left: 6px;
+    font-size: 20px;
+  }
+  &[open] > summary {
+    margin-bottom: 16px;
+  }
+  &[open] > summary::after {
+    content: "−";
+  }
+  @media (max-width: 360px) {
+    > summary > span {
+      display: none;
+    }
+  }
 `;
 
 export const PreviewOptions = styled.div`
@@ -843,5 +1135,7 @@ export const PreviewOptions = styled.div`
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   margin-top: 20px;
-  @media (max-width: 600px) { grid-template-columns: minmax(0, 1fr); }
+  @media (max-width: 600px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 `;
