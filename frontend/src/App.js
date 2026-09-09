@@ -11,8 +11,6 @@ import FindPasswordPage from "./pages/auth/FindPasswordPage";
 import LoginPage from "./pages/auth/LoginPage";
 import MainPage from "./pages/main/MainPage";
 import MyPage from "./pages/mypage/MyPage";
-import PreferenceSurveyPage from "./pages/survey/PreferenceSurveyPage";
-import ProfileSurveyPage from "./pages/survey/ProfileSurveyPage";
 import RoommateSearchPage from "./pages/roommate/RoommateSearchPage";
 import SignupPage from "./pages/auth/SignupPage";
 
@@ -84,7 +82,9 @@ function App() {
   return (
     <Routes>
       <Route
-        element={<MainLayout currentUser={currentUser} onLogout={handleLogout} />}
+        element={
+          <MainLayout currentUser={currentUser} onLogout={handleLogout} />
+        }
       >
         <Route index element={<MainPage />} />
         <Route path="/roommates" element={<RoommateSearchPage />} />
@@ -115,10 +115,13 @@ function App() {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/profile" element={<MyPage currentUser={currentUser} />} />
-        <Route path="/profile-survey" element={<ProfileSurveyPage />} />
+        <Route
+          path="/profile-survey"
+          element={<Navigate to="/profile?tab=survey" replace />}
+        />
         <Route
           path="/roommate-preference-survey"
-          element={<PreferenceSurveyPage />}
+          element={<Navigate to="/profile?tab=preferences" replace />}
         />
       </Route>
       <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />

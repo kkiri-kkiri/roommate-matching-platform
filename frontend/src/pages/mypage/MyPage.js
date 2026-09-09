@@ -1,9 +1,23 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
-  ArrowRight, BadgeCheck, BookOpen, Building2, Check, CheckCircle2,
-  ChevronRight, ClipboardList, Heart, Info, LockKeyhole, Moon,
-  Pencil, Settings2, ShieldCheck, Sparkles, UserRound, Users,
+  ArrowRight,
+  BadgeCheck,
+  BookOpen,
+  Building2,
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  ClipboardList,
+  Heart,
+  LockKeyhole,
+  Moon,
+  Pencil,
+  Settings2,
+  ShieldCheck,
+  Sparkles,
+  UserRound,
+  Users,
 } from "lucide-react";
 
 import * as S from "./MyPageCss";
@@ -167,10 +181,11 @@ const PROFILE_SECTIONS = [
         required: true,
       },
       {
-        id: "roommateInteraction",
-        label: "룸메이트와의 교류 정도",
-        type: "single",
-        options: ["친하게 지내고 싶음", "적당히 대화", "필요한 대화만"],
+        id: "dormStayDays",
+        label: "기숙사 상주 주기",
+        type: "multi",
+        options: ["월", "화", "수", "목", "금", "토", "일"],
+        allShortcut: true,
         required: true,
       },
       {
@@ -182,11 +197,10 @@ const PROFILE_SECTIONS = [
         required: true,
       },
       {
-        id: "dormStayDays",
-        label: "기숙사 상주 주기",
-        type: "multi",
-        options: ["월", "화", "수", "목", "금", "토", "일"],
-        allShortcut: true,
+        id: "roommateInteraction",
+        label: "룸메이트와의 교류 정도",
+        type: "single",
+        options: ["친하게 지내고 싶음", "적당히 대화", "필요한 대화만"],
         required: true,
       },
       {
@@ -236,8 +250,22 @@ const PREFERENCE_STEPS = [
     description: "함께 생활하고 싶은 룸메이트의 기본 조건을 선택해 주세요.",
     fields: [
       {
+        id: "grade",
+        label: "학년",
+        type: "multi",
+        options: ["1학년", "2학년", "3학년", "4학년", "5학년", "상관없음"],
+        exclusiveOptions: ["상관없음"],
+      },
+      {
+        id: "age",
+        label: "나이",
+        type: "multi",
+        options: ["연하", "동갑", "연상", "상관없음"],
+        exclusiveOptions: ["상관없음"],
+      },
+      {
         id: "department",
-        label: "학과·학부",
+        label: "학부·학과",
         type: "single",
         options: [
           "같은 전공",
@@ -245,28 +273,6 @@ const PREFERENCE_STEPS = [
           "다른 학부",
           "상관없음",
         ],
-      },
-      {
-        id: "age",
-        label: "나이",
-        type: "multi",
-        options: ["연하", "동갑", "연상", "나이 상관없음"],
-        exclusiveOptions: ["나이 상관없음"],
-      },
-      {
-        id: "grade",
-        label: "학년",
-        type: "multi",
-        options: [
-          "1학년",
-          "2학년",
-          "3학년",
-          "4학년",
-          "5학년",
-          "6학년 이상",
-          "학년 상관없음",
-        ],
-        exclusiveOptions: ["학년 상관없음"],
       },
     ],
   },
@@ -302,7 +308,6 @@ const PREFERENCE_STEPS = [
           "8시 ~ 9시",
           "9시",
           "10시 이후",
-          "수업 시간에 따라 유동적",
           "상관없음",
         ],
         exclusiveOptions: ["상관없음"],
@@ -353,7 +358,7 @@ const PREFERENCE_STEPS = [
         id: "smoking",
         label: "흡연 여부",
         type: "single",
-        options: ["비흡연자만", "전자담배까지 허용", "흡연 여부 상관없음"],
+        options: ["비흡연자만", "전자담배까지 허용", "상관없음"],
       },
       {
         id: "lightingPreference",
@@ -366,14 +371,20 @@ const PREFERENCE_STEPS = [
         id: "showerTime",
         label: "샤워 시간대",
         type: "single",
-        options: ["아침", "저녁", "유동적"],
+        options: ["아침", "저녁", "상관없음"],
         required: true,
       },
       {
         id: "showerDuration",
         label: "샤워 소요시간",
         type: "single",
-        options: ["10분", "20분", "30분", "40분", "그 이상"],
+        options: [
+          "10분 이하",
+          "20분 이하",
+          "30분 이하",
+          "40분 이하",
+          "상관없음",
+        ],
         required: true,
       },
     ],
@@ -396,7 +407,6 @@ const PREFERENCE_STEPS = [
           "주 4회",
           "주 5회",
           "매일",
-          "유동적",
           "상관없음",
         ],
         exclusiveOptions: ["상관없음"],
@@ -623,52 +633,92 @@ const MBTI_DIMENSIONS = [
 ];
 
 const PROFILE_DEFAULTS = {
-  sleepTime: "23시 ~ 24시", wakeTime: "07시 ~ 08시", sleepTalking: "없음",
-  snoring: "없음", teethGrinding: "없음", sleepSensitivity: "보통",
-  indoorEating: "냄새 안나는 음식 가능", smoking: "비흡연", lightingPreference: "어두움 선호",
-  phoneCall: "항상 밖에서", mediaSound: "항상 이어폰 사용해주세요",
-  showerTime: "저녁", showerDuration: "20분", cleaningFrequency: "주 2회",
-  cleaningStyle: "상황에 따라 협의", roommateInteraction: "적당히 대화",
-  mealPlan: ["조식", "석식"], dormStayDays: ["월", "화", "수", "목", "금"],
-  temperaturePreference: "보통", bugHandling: "작은 건 잡음",
-  scentProductUse: "사용 안 함", desktopUse: "사용하지 않아요", sharedItems: "일부만 공유",
+  sleepTime: "23시 ~ 24시",
+  wakeTime: "07시 ~ 08시",
+  sleepTalking: "없음",
+  snoring: "없음",
+  teethGrinding: "없음",
+  sleepSensitivity: "보통",
+  indoorEating: "냄새 안나는 음식 가능",
+  smoking: "비흡연",
+  lightingPreference: "어두움 선호",
+  phoneCall: "항상 밖에서",
+  mediaSound: "항상 이어폰 사용해주세요",
+  showerTime: "저녁",
+  showerDuration: "20분",
+  cleaningFrequency: "주 2회",
+  cleaningStyle: "상황에 따라 협의",
+  roommateInteraction: "적당히 대화",
+  mealPlan: ["조식", "석식"],
+  dormStayDays: ["월", "화", "수", "목", "금"],
+  temperaturePreference: "보통",
+  bugHandling: "작은 건 잡음",
+  scentProductUse: "사용 안 함",
+  desktopUse: "사용하지 않아요",
+  sharedItems: "일부만 공유",
 };
 
 const PREFERENCE_DEFAULTS = {
-  department: "상관없음", age: ["나이 상관없음"], grade: ["학년 상관없음"],
-  mbtiEnergy: "상관없음", mbtiInformation: "상관없음",
-  mbtiDecision: "상관없음", mbtiLifestyle: "상관없음",
-  bedtime: ["23시", "자정"], wakeTime: ["7시 ~ 8시", "8시 ~ 9시"],
-  sleepTalking: "적음까지 괜찮음", snoring: "없음만 가능", teethGrinding: "적음까지 괜찮음",
-  smoking: "비흡연자만", lightingPreference: "어두움 선호", showerTime: "저녁",
-  showerDuration: "20분", cleaningFrequency: ["주 1회", "주 2회"],
-  cleaningStyle: "상황에 따라 협의하는 사람", interaction: "적당히 대화하고 싶은 사람",
-  meal: "시간 될 때만 같이 먹고 싶음", sharedItems: "일부만 공유하는 사람",
-  temperature: "보통인 사람", requiredConditions: ["흡연 여부", "코골이"],
+  department: "상관없음",
+  age: ["상관없음"],
+  grade: ["상관없음"],
+  mbtiEnergy: "상관없음",
+  mbtiInformation: "상관없음",
+  mbtiDecision: "상관없음",
+  mbtiLifestyle: "상관없음",
+  bedtime: ["23시", "자정"],
+  wakeTime: ["7시 ~ 8시", "8시 ~ 9시"],
+  sleepTalking: "적음까지 괜찮음",
+  snoring: "없음만 가능",
+  teethGrinding: "적음까지 괜찮음",
+  smoking: "비흡연자만",
+  lightingPreference: "어두움 선호",
+  showerTime: "저녁",
+  showerDuration: "20분 이하",
+  cleaningFrequency: ["주 1회", "주 2회"],
+  cleaningStyle: "상황에 따라 협의하는 사람",
+  interaction: "적당히 대화하고 싶은 사람",
+  meal: "시간 될 때만 같이 먹고 싶음",
+  sharedItems: "일부만 공유하는 사람",
+  temperature: "보통인 사람",
+  requiredConditions: ["흡연 여부", "코골이"],
 };
 
-const PREFERENCE_SECTIONS = PREFERENCE_STEPS.filter((step) => step.id !== "requirements").map(
-  (step) => step.id === "basic" ? {
-    ...step,
-    fields: [...step.fields, ...MBTI_DIMENSIONS.map((dimension) => ({
-      ...dimension, label: `MBTI · ${dimension.label}`, type: "single",
-      options: [...dimension.options, "상관없음"],
-    }))],
-  } : step,
+const PREFERENCE_SECTIONS = PREFERENCE_STEPS.filter(
+  (step) => step.id !== "requirements",
 );
 
 const REQUIREMENT_LABELS = {
-  department: "학과·학부", age: "나이", grade: "학년", bedtime: "취침시간",
-  wakeTime: "기상시간", sleepTalking: "잠꼬대", snoring: "코골이", teethGrinding: "이갈이",
-  cleaningFrequency: "청소 주기", cleaningStyle: "청소 방식", smoking: "흡연 여부",
-  temperature: "온도 선호", interaction: "룸메이트와의 교류 정도",
-  meal: "기숙사 식사", sharedItems: "공용물품 사용",
+  department: "학부·학과",
+  age: "나이",
+  grade: "학년",
+  bedtime: "취침시간",
+  wakeTime: "기상시간",
+  sleepTalking: "잠꼬대",
+  snoring: "코골이",
+  teethGrinding: "이갈이",
+  cleaningFrequency: "청소 주기",
+  cleaningStyle: "청소 방식",
+  smoking: "흡연 여부",
+  temperature: "온도 선호",
+  interaction: "룸메이트와의 교류 정도",
+  meal: "기숙사 식사",
+  sharedItems: "공용물품 사용",
 };
 
 const INITIAL_ACCOUNT = {
-  loginId: "haru24", nickname: "차분한하루", schoolEmail: "haru24@hknu.ac.kr",
-  gender: "여자", dormitory: "나래", faculty: "컴퓨터응용수학부", major: "소프트웨어융합전공",
-  grade: "3학년", mbtiEnergy: "I", mbtiInformation: "N", mbtiDecision: "F", mbtiLifestyle: "J",
+  loginId: "haru24",
+  nickname: "차분한하루",
+  schoolEmail: "haru24@hknu.ac.kr",
+  gender: "여자",
+  dormitory: "나래",
+  faculty: "컴퓨터응용수학부",
+  major: "소프트웨어융합전공",
+  grade: "3학년",
+  mbtiEnergy: "I",
+  mbtiInformation: "N",
+  mbtiDecision: "F",
+  mbtiLifestyle: "J",
 };
 
 const MENU_ITEMS = [
@@ -694,146 +744,171 @@ function createAvatar(background, shirt, hair = "#363a46") {
 const MY_PHOTO = createAvatar("#e8eef9", "#0c3273");
 const LIKED_PROFILES = [
   {
-    id: "roommate-cloud", nickname: "포근한구름", year: "24", major: "소프트웨어융합전공",
-    faculty: "컴퓨터응용수학부", dormitory: "나래", grade: "3학년", age: "동갑",
+    id: "roommate-cloud",
+    nickname: "포근한구름",
+    year: "24",
+    major: "소프트웨어융합전공",
+    faculty: "컴퓨터응용수학부",
+    dormitory: "나래",
+    grade: "3학년",
+    age: "동갑",
     photo: createAvatar("#dff6f2", "#00a79f"),
     message: "서로의 공부 시간을 존중하면서 편하게 지내고 싶어요.",
     tags: ["비흡연", "아침형", "주 1회 청소"],
     answers: {
-      mbtiEnergy: "I", mbtiInformation: "N", mbtiDecision: "F", mbtiLifestyle: "J",
-      bedtime: "23시", wakeTime: "7시 ~ 8시", sleepTalking: "없음", snoring: "없음", teethGrinding: "없음",
-      smoking: "비흡연", lightingPreference: "어두움 선호", showerTime: "저녁", showerDuration: "20분",
-      cleaningFrequency: "주 1회", cleaningStyle: "상황에 따라 협의하는 사람",
-      interaction: "적당히 대화하고 싶은 사람", meal: "시간 될 때만 같이 먹고 싶음",
-      sharedItems: "일부만 공유하는 사람", temperature: "보통인 사람",
+      mbtiEnergy: "I",
+      mbtiInformation: "N",
+      mbtiDecision: "F",
+      mbtiLifestyle: "J",
+      bedtime: "23시",
+      wakeTime: "7시 ~ 8시",
+      sleepTalking: "없음",
+      snoring: "없음",
+      teethGrinding: "없음",
+      smoking: "비흡연",
+      lightingPreference: "어두움 선호",
+      showerTime: "저녁",
+      showerDuration: "20분",
+      cleaningFrequency: "주 1회",
+      cleaningStyle: "상황에 따라 협의하는 사람",
+      interaction: "적당히 대화하고 싶은 사람",
+      meal: "시간 될 때만 같이 먹고 싶음",
+      sharedItems: "일부만 공유하는 사람",
+      temperature: "보통인 사람",
     },
   },
   {
-    id: "community-star", nickname: "새벽별", year: "23", major: "경영학전공",
-    faculty: "법경영학부", dormitory: "호연", grade: "4학년", age: "연상",
+    id: "community-star",
+    nickname: "새벽별",
+    year: "23",
+    major: "경영학전공",
+    faculty: "법경영학부",
+    dormitory: "호연",
+    grade: "4학년",
+    age: "연상",
     photo: createAvatar("#e6edff", "#3478f6", "#2c2625"),
     message: "늦게 자는 편이지만 방에서는 늘 이어폰을 사용해요.",
     tags: ["이어폰 사용", "깔끔해요", "개인 시간"],
     answers: {
-      mbtiEnergy: "I", mbtiInformation: "S", mbtiDecision: "T", mbtiLifestyle: "P",
-      bedtime: "2시", wakeTime: "10시 이후", sleepTalking: "적음", snoring: "적음", teethGrinding: "없음",
-      smoking: "비흡연", lightingPreference: "어두움 선호", showerTime: "저녁", showerDuration: "30분",
-      cleaningFrequency: "주 2회", cleaningStyle: "각자 영역만 청소하는 사람",
-      interaction: "필요한 대화만 하고 싶은 사람", meal: "각자 먹고 싶음",
-      sharedItems: "각자 사용하는 사람", temperature: "추위를 타는 사람",
+      mbtiEnergy: "I",
+      mbtiInformation: "S",
+      mbtiDecision: "T",
+      mbtiLifestyle: "P",
+      bedtime: "2시",
+      wakeTime: "10시 이후",
+      sleepTalking: "적음",
+      snoring: "적음",
+      teethGrinding: "없음",
+      smoking: "비흡연",
+      lightingPreference: "어두움 선호",
+      showerTime: "저녁",
+      showerDuration: "30분",
+      cleaningFrequency: "주 2회",
+      cleaningStyle: "각자 영역만 청소하는 사람",
+      interaction: "필요한 대화만 하고 싶은 사람",
+      meal: "각자 먹고 싶음",
+      sharedItems: "각자 사용하는 사람",
+      temperature: "추위를 타는 사람",
     },
   },
   {
-    id: "dormitory-afternoon", nickname: "느긋한오후", year: "24", major: "식품영양학전공",
-    faculty: "웰니스산업융합학부", dormitory: "나래", grade: "3학년", age: "동갑",
+    id: "dormitory-afternoon",
+    nickname: "느긋한오후",
+    year: "24",
+    major: "식품영양학전공",
+    faculty: "웰니스산업융합학부",
+    dormitory: "나래",
+    grade: "3학년",
+    age: "동갑",
     photo: createAvatar("#fce8ed", "#d8607a", "#4c3028"),
     message: "조용하고 여유로운 분위기에서 각자의 루틴을 지켜요.",
     tags: ["비흡연", "조용한 방", "주말 외출"],
     answers: {
-      mbtiEnergy: "I", mbtiInformation: "N", mbtiDecision: "F", mbtiLifestyle: "P",
-      bedtime: "자정", wakeTime: "8시 ~ 9시", sleepTalking: "없음", snoring: "없음", teethGrinding: "적음",
-      smoking: "비흡연", lightingPreference: "밝음 선호", showerTime: "아침", showerDuration: "20분",
-      cleaningFrequency: "주 1회", cleaningStyle: "상황에 따라 협의하는 사람",
-      interaction: "필요한 대화만 하고 싶은 사람", meal: "각자 먹고 싶음",
-      sharedItems: "일부만 공유하는 사람", temperature: "보통인 사람",
+      mbtiEnergy: "I",
+      mbtiInformation: "N",
+      mbtiDecision: "F",
+      mbtiLifestyle: "P",
+      bedtime: "자정",
+      wakeTime: "8시 ~ 9시",
+      sleepTalking: "없음",
+      snoring: "없음",
+      teethGrinding: "적음",
+      smoking: "비흡연",
+      lightingPreference: "밝음 선호",
+      showerTime: "아침",
+      showerDuration: "20분",
+      cleaningFrequency: "주 1회",
+      cleaningStyle: "상황에 따라 협의하는 사람",
+      interaction: "필요한 대화만 하고 싶은 사람",
+      meal: "각자 먹고 싶음",
+      sharedItems: "일부만 공유하는 사람",
+      temperature: "보통인 사람",
     },
   },
 ];
 
-const asArray = (value) => Array.isArray(value) ? value : [value];
-const hasAnswer = (value) => asArray(value).some((item) => String(item || "").trim());
-const isIndifferent = (value) => asArray(value).some((item) => String(item).includes("상관"));
-const displayAnswer = (value) => Array.isArray(value) ? value.join(" · ") : value;
-const profileHref = (profile) => `/chat?room=${encodeURIComponent(profile.id)}&view=profile`;
-const getMbti = (account) => MBTI_DIMENSIONS.map(({ id }) => account[id]).join("");
+const asArray = (value) => (Array.isArray(value) ? value : [value]);
+const hasAnswer = (value) =>
+  asArray(value).some((item) => String(item || "").trim());
+const isIndifferent = (value) =>
+  asArray(value).some((item) => String(item).includes("상관"));
+const displayAnswer = (value) =>
+  Array.isArray(value) ? value.join(" · ") : value;
+const profileHref = (profile) =>
+  `/chat?room=${encodeURIComponent(profile.id)}&view=profile`;
+const getMbti = (account) =>
+  MBTI_DIMENSIONS.map(({ id }) => account[id]).join("");
 
-function getMatch(profile, preferences, account) {
-  const fields = PREFERENCE_SECTIONS.flatMap((section) => section.fields);
-  const results = fields.filter(({ id }) => !isIndifferent(preferences[id])).map(({ id }) => {
-    const selection = asArray(preferences[id]);
-    let actual = profile.answers[id];
-    if (id === "department") {
-      actual = profile.major === account.major ? "같은 전공"
-        : profile.faculty === account.faculty ? "같은 학부의 다른 전공" : "다른 학부";
-    }
-    if (id === "age" || id === "grade") actual = profile[id];
-    let matched = selection.includes(actual);
-    if (["sleepTalking", "snoring", "teethGrinding"].includes(id)) {
-      const limit = { "없음만 가능": 0, "적음까지 괜찮음": 1, "보통까지 괜찮음": 2 }[selection[0]];
-      matched = ["없음", "적음", "보통", "심함"].indexOf(actual) <= limit;
-    }
-    if (id === "smoking") {
-      matched = selection[0] === "비흡연자만" ? actual === "비흡연"
-        : ["비흡연", "전자담배"].includes(actual);
-    }
-    return { id, matched };
-  });
-  const unmet = results.filter(({ id, matched }) =>
-    !matched && preferences.requiredConditions.includes(REQUIREMENT_LABELS[id]));
-  const score = results.length ? Math.round(results.filter(({ matched }) => matched).length / results.length * 100) : null;
-  return {
-    score,
-    eligible: unmet.length === 0,
-    recommended: unmet.length === 0 && (score === null || score >= 60),
-    unmet: unmet.map(({ id }) => REQUIREMENT_LABELS[id]),
-  };
-}
-
-function EmptyState({ type }) {
+function EmptyState({ type, onStart }) {
   const isLikes = type === "likes";
   const isPreference = type === "preferences";
   const Icon = isLikes ? Heart : isPreference ? Users : ClipboardList;
   return (
     <S.EmptyCard>
-      <S.EmptyIcon><Icon size={30} aria-hidden="true" /></S.EmptyIcon>
+      <S.EmptyIcon>
+        <Icon size={30} aria-hidden="true" />
+      </S.EmptyIcon>
       <S.Badge $muted>{isLikes ? "좋아요 0명" : "미작성"}</S.Badge>
-      <S.EmptyTitle>{isLikes ? "아직 마음에 담은 룸메이트가 없어요" : isPreference
-        ? "어떤 룸메이트와 함께하고 싶나요?" : "아직 나의 설문을 작성하지 않았어요"}</S.EmptyTitle>
-      <S.EmptyText>{isLikes ? "마음이 맞을 것 같은 룸메이트를 찾아보세요. 좋아요한 프로필을 여기서 모아볼 수 있어요."
-        : isPreference ? "선호하는 생활 습관과 꼭 필요한 조건을 알려주세요. 더 잘 맞는 룸메이트를 찾는 데 도움이 돼요."
-          : "수면 패턴부터 생활 습관까지, 나의 일상을 알려주면 서로 편안하게 지낼 룸메이트를 찾을 수 있어요."}</S.EmptyText>
-      <S.PrimaryButton as={Link} to={isLikes ? "/roommates" : isPreference
-        ? "/roommate-preference-survey" : "/profile-survey"}>
-        {isLikes ? "룸메이트 둘러보기" : isPreference ? "선호 룸메 설문 작성하기" : "내 설문 작성하기"}
+      <S.EmptyTitle>
+        {isLikes
+          ? "아직 마음에 담은 룸메이트가 없어요"
+          : isPreference
+            ? "어떤 룸메이트와 함께하고 싶나요?"
+            : "아직 나의 설문을 작성하지 않았어요"}
+      </S.EmptyTitle>
+      {isLikes && (
+        <S.EmptyText>
+          마음이 맞을 것 같은 룸메이트를 찾아보세요. 좋아요한 프로필을 여기서
+          모아볼 수 있어요.
+        </S.EmptyText>
+      )}
+      <S.PrimaryButton
+        {...(isLikes
+          ? { as: Link, to: "/roommates" }
+          : { type: "button", onClick: onStart })}
+      >
+        {isLikes
+          ? "룸메이트 둘러보기"
+          : isPreference
+            ? "선호 룸메 설문 작성하기"
+            : "내 설문 작성하기"}
         <ArrowRight size={16} aria-hidden="true" />
       </S.PrimaryButton>
     </S.EmptyCard>
   );
 }
 
-function MatchingPreview({ preferences, account }) {
-  const matches = LIKED_PROFILES.map((profile) => ({ ...profile, ...getMatch(profile, preferences, account) }))
-    .sort((a, b) => Number(b.recommended) - Number(a.recommended) || Number(b.eligible) - Number(a.eligible) || (b.score ?? 0) - (a.score ?? 0));
-  return (
-    <S.Card>
-      <S.CardHeader><S.CardTitle><Sparkles size={19} aria-hidden="true" /> 나의 조건으로 살펴보기</S.CardTitle><S.Badge>예시 매칭</S.Badge></S.CardHeader>
-      <S.Helper>저장한 선호와 일치한 항목의 비율이에요. 필수조건을 충족하고 60% 이상 일치하면 추천해요. 선호 제한이 없으면 필수조건만 확인해요.</S.Helper>
-      <S.MatchList>
-        {matches.map((profile) => (
-          <S.MatchRow key={profile.id}>
-            <S.Avatar src={profile.photo} alt="" />
-            <div>
-              <S.MatchName>{profile.nickname}</S.MatchName>
-              <S.MatchDescription>{profile.recommended ? "필수조건 충족 · 추천 가능" : profile.eligible ? "필수조건 충족 · 선호 일치도 낮음" : `추천 제외 · ${profile.unmet.join(", ")} 불일치`}</S.MatchDescription>
-            </div>
-            <S.Badge $muted={!profile.eligible}>{profile.score === null ? "선호 제한 없음" : `${profile.score}% 일치`}</S.Badge>
-          </S.MatchRow>
-        ))}
-      </S.MatchList>
-    </S.Card>
-  );
-}
-
-function SurveyContent({ type, answers, isEmpty, onSave, account }) {
+function SurveyContent({ type, answers, isEmpty, onSave }) {
   const isPreference = type === "preferences";
   const sections = isPreference ? PREFERENCE_SECTIONS : PROFILE_SECTIONS;
   const [draft, setDraft] = useState(null);
   const [errors, setErrors] = useState({});
-  const [message, setMessage] = useState("");
   const formRef = useRef(null);
   const titleRef = useRef(null);
   const values = draft || answers;
-  const requirements = isPreference ? values.requiredConditions.filter((item) => item !== "필수조건 없음") : [];
+  const requirements = isPreference
+    ? values.requiredConditions.filter((item) => item !== "필수조건 없음")
+    : [];
 
   const updateValue = (field, option) => {
     let value = option;
@@ -841,229 +916,740 @@ function SurveyContent({ type, answers, isEmpty, onSave, account }) {
       const selected = draft[field.id];
       const exclusive = field.exclusiveOptions || [];
       const regular = selected.filter((item) => !exclusive.includes(item));
-      value = selected.includes(option) ? selected.filter((item) => item !== option)
-        : exclusive.includes(option) ? [option] : [...regular, option];
+      value = selected.includes(option)
+        ? selected.filter((item) => item !== option)
+        : exclusive.includes(option)
+          ? [option]
+          : [...regular, option];
     }
     setDraft((current) => ({
-      ...current, [field.id]: value,
-      ...(isPreference && (!hasAnswer(value) || isIndifferent(value)) ? {
-        requiredConditions: current.requiredConditions.filter((item) => item !== REQUIREMENT_LABELS[field.id]),
-      } : {}),
+      ...current,
+      [field.id]: value,
+      ...(isPreference && (!hasAnswer(value) || isIndifferent(value))
+        ? {
+            requiredConditions: current.requiredConditions.filter(
+              (item) => item !== REQUIREMENT_LABELS[field.id],
+            ),
+          }
+        : {}),
     }));
     setErrors((current) => ({ ...current, [field.id]: undefined }));
   };
 
   const save = (event) => {
     event.preventDefault();
-    const missing = sections.flatMap((section) => section.fields).filter((field) => !hasAnswer(draft[field.id]));
+    const missing = sections
+      .flatMap((section) => section.fields)
+      .filter((field) => !hasAnswer(draft[field.id]));
     if (missing.length) {
-      setErrors(Object.fromEntries(missing.map((field) => [field.id, `${field.label} 항목을 선택해 주세요.`])));
-      requestAnimationFrame(() => formRef.current?.querySelector('[aria-invalid="true"]')?.focus());
+      setErrors(
+        Object.fromEntries(
+          missing.map((field) => [
+            field.id,
+            `${field.label} 항목을 선택해 주세요.`,
+          ]),
+        ),
+      );
+      requestAnimationFrame(() =>
+        formRef.current?.querySelector('[aria-invalid="true"]')?.focus(),
+      );
       return;
     }
-    const saved = isPreference ? { ...draft, requiredConditions: requirements.length ? requirements : ["필수조건 없음"] } : draft;
+    const saved = isPreference
+      ? {
+          ...draft,
+          requiredConditions: requirements.length
+            ? requirements
+            : ["필수조건 없음"],
+        }
+      : draft;
     onSave(saved);
     setDraft(null);
     setErrors({});
-    setMessage(isPreference ? "선호 설문을 저장했어요. 아래 예시 매칭에도 변경한 조건을 반영했어요." : "내 설문을 저장했어요. 변경한 답변을 확인해 보세요.");
-    requestAnimationFrame(() => titleRef.current?.focus());
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      titleRef.current?.focus({ preventScroll: true });
+    });
   };
 
   const startEditing = (focusRequirements = false) => {
-    setDraft({ ...answers });
-    setMessage("");
+    const emptyAnswers = Object.fromEntries(
+      sections.flatMap((section) =>
+        section.fields.map((field) => [
+          field.id,
+          field.type === "multi" ? [] : "",
+        ]),
+      ),
+    );
+    setDraft(
+      isEmpty
+        ? {
+            ...emptyAnswers,
+            ...(isPreference ? { requiredConditions: [] } : {}),
+          }
+        : { ...answers },
+    );
     setErrors({});
-    requestAnimationFrame(() => formRef.current?.querySelector(focusRequirements
-      ? '[data-required-conditions] button:not(:disabled)' : 'select, button')?.focus());
+    requestAnimationFrame(() =>
+      formRef.current
+        ?.querySelector(
+          focusRequirements
+            ? "[data-required-conditions] button:not(:disabled)"
+            : "select, button",
+        )
+        ?.focus(),
+    );
   };
 
   return (
     <S.Stack>
       <S.SectionHeading>
-        <div><S.SectionTitle ref={titleRef} tabIndex={-1}>{isPreference ? "선호 룸메 설문" : "내 설문"}</S.SectionTitle>
-          <S.Description>{isPreference ? "함께하고 싶은 룸메이트의 모습을 정리했어요." : "나의 하루를 담은 생활 습관이에요."}</S.Description></div>
-        {!isEmpty && !draft && <S.SecondaryButton onClick={() => startEditing()}><Pencil size={16} aria-hidden="true" /> 설문 수정</S.SecondaryButton>}
+        <div>
+          <S.SectionTitle ref={titleRef} tabIndex={-1}>
+            {isPreference ? "선호 룸메 설문" : "내 설문"}
+          </S.SectionTitle>
+          <S.Description>
+            {isPreference
+              ? "함께하고 싶은 룸메이트의 모습을 정리했어요."
+              : "나의 하루를 담은 생활 습관이에요."}
+          </S.Description>
+        </div>
+        {!isEmpty && !draft && (
+          <S.SecondaryButton onClick={() => startEditing()}>
+            <Pencil size={16} aria-hidden="true" /> 설문 수정
+          </S.SecondaryButton>
+        )}
       </S.SectionHeading>
-      {isEmpty ? <EmptyState type={type} /> : <>
-        {message && <S.Banner role="status"><CheckCircle2 size={19} aria-hidden="true" />{message}</S.Banner>}
-        <S.Banner><CheckCircle2 size={19} aria-hidden="true" /><div><strong>{draft ? "설문을 수정하고 있어요" : "설문 작성 완료"}</strong>
-          <S.Helper>{draft ? "변경을 마쳤다면 아래의 저장 버튼을 눌러주세요." : "생활 습관이나 선호가 바뀌었다면 언제든 수정할 수 있어요."}</S.Helper></div></S.Banner>
-        <S.Stack as="form" ref={formRef} onSubmit={save} noValidate>
-          {sections.map((section, index) => (
-            <S.Card key={section.id}>
-              <S.CardHeader><S.CardTitle>{String(index + 1).padStart(2, "0")} · {section.title}</S.CardTitle>
-                <S.Badge $muted>{section.fields.length}개 항목</S.Badge></S.CardHeader>
-              {draft ? <S.FormGrid>{section.fields.map((field) => (
-                <S.Field key={field.id}>
-                  {field.type === "multi" ? <S.Fieldset>
-                    <S.Legend>{field.label} {requirements.includes(REQUIREMENT_LABELS[field.id]) && <S.RequiredBadge>필수</S.RequiredBadge>}</S.Legend>
-                    <S.Helper>복수 선택 가능</S.Helper>
-                    <S.ChoiceGroup>{field.options.map((option) => <S.ChoiceButton
-                      key={option} type="button" $selected={draft[field.id].includes(option)}
-                      aria-pressed={draft[field.id].includes(option)} aria-invalid={Boolean(errors[field.id])}
-                      aria-describedby={errors[field.id] ? `${type}-${field.id}-error` : undefined}
-                      onClick={() => updateValue(field, option)}>{draft[field.id].includes(option) && <Check size={14} aria-hidden="true" />}{option}
-                    </S.ChoiceButton>)}</S.ChoiceGroup>
-                  </S.Fieldset> : <>
-                    <S.Label htmlFor={`${type}-${field.id}`}>{field.label} {requirements.includes(REQUIREMENT_LABELS[field.id]) && <S.RequiredBadge>필수</S.RequiredBadge>}</S.Label>
-                    <S.Select id={`${type}-${field.id}`} value={draft[field.id]} onChange={(event) => updateValue(field, event.target.value)}
-                      aria-invalid={Boolean(errors[field.id])} aria-describedby={errors[field.id] ? `${type}-${field.id}-error` : undefined}>
-                      <option value="">선택해 주세요</option>{field.options.map((option) => <option key={option} value={option}>{option}</option>)}
-                    </S.Select>
-                  </>}
-                  {errors[field.id] && <S.FieldError id={`${type}-${field.id}-error`} role="alert">{errors[field.id]}</S.FieldError>}
-                </S.Field>
-              ))}</S.FormGrid> : <S.SurveyGrid>{section.fields.map((field) => (
-                <S.SurveyRow key={field.id}><dt>{field.label} {requirements.includes(REQUIREMENT_LABELS[field.id]) && <S.RequiredBadge>필수</S.RequiredBadge>}</dt>
-                  <dd>{displayAnswer(values[field.id])}</dd></S.SurveyRow>
-              ))}</S.SurveyGrid>}
-            </S.Card>
-          ))}
-          {isPreference && <S.Card data-required-conditions>
-            <S.CardHeader><S.CardTitle><ShieldCheck size={19} aria-hidden="true" /> 필수 조건</S.CardTitle>
-              {!draft && <S.GhostButton type="button" onClick={() => startEditing(true)}><Pencil size={15} aria-hidden="true" /> 조건 수정</S.GhostButton>}</S.CardHeader>
-            <S.Helper>{draft ? "구체적인 선호를 선택한 항목만 필수로 지정할 수 있어요. ‘상관없음’인 항목은 제외돼요." : "이 조건은 추천할 때 꼭 충족해야 해요."}</S.Helper>
-            {draft ? <S.ChoiceGroup>
-              {Object.entries(REQUIREMENT_LABELS).map(([id, label]) => <S.ChoiceButton key={id} type="button"
-                disabled={!hasAnswer(draft[id]) || isIndifferent(draft[id])} $selected={requirements.includes(label)}
-                aria-pressed={requirements.includes(label)} onClick={() => setDraft((current) => ({
-                  ...current, requiredConditions: requirements.includes(label) ? requirements.filter((item) => item !== label) : [...requirements, label],
-                }))}>{requirements.includes(label) && <Check size={14} aria-hidden="true" />}{label}</S.ChoiceButton>)}
-              <S.ChoiceButton type="button" $selected={!requirements.length} aria-pressed={!requirements.length}
-                onClick={() => setDraft((current) => ({ ...current, requiredConditions: [] }))}>필수조건 없음</S.ChoiceButton>
-            </S.ChoiceGroup> : <S.TagRow>{requirements.length ? requirements.map((label) => <S.Badge key={label}><Check size={13} aria-hidden="true" />{label} · 필수</S.Badge>) : <S.Tag>필수조건 없음</S.Tag>}</S.TagRow>}
-          </S.Card>}
-          {draft && <S.FormActions><S.GhostButton type="button" onClick={() => {
-            setDraft(null); setErrors({}); requestAnimationFrame(() => titleRef.current?.focus());
-          }}>취소</S.GhostButton>
-            <S.PrimaryButton type="submit"><Check size={17} aria-hidden="true" /> 변경 내용 저장</S.PrimaryButton></S.FormActions>}
-        </S.Stack>
-        {isPreference && <MatchingPreview preferences={answers} account={account} />}
-      </>}
+      {isEmpty && !draft ? (
+        <EmptyState type={type} onStart={() => startEditing()} />
+      ) : (
+        <>
+          <S.Stack as="form" ref={formRef} onSubmit={save} noValidate>
+            {sections.map((section, index) => (
+              <S.Card key={section.id}>
+                <S.CardHeader>
+                  <S.CardTitle>
+                    {String(index + 1).padStart(2, "0")} · {section.title}
+                  </S.CardTitle>
+                  <S.Badge $muted>{section.fields.length}개 항목</S.Badge>
+                </S.CardHeader>
+                {draft ? (
+                  <S.FormGrid>
+                    {section.fields.map((field) => (
+                      <S.Field key={field.id}>
+                        {field.type === "multi" ? (
+                          <S.Fieldset>
+                            <S.Legend>
+                              {field.label}{" "}
+                              {requirements.includes(
+                                REQUIREMENT_LABELS[field.id],
+                              ) && <S.RequiredBadge>필수</S.RequiredBadge>}
+                            </S.Legend>
+                            <S.Helper>복수 선택 가능</S.Helper>
+                            <S.ChoiceGroup>
+                              {field.options.map((option) => (
+                                <S.ChoiceButton
+                                  key={option}
+                                  type="button"
+                                  $selected={draft[field.id].includes(option)}
+                                  aria-pressed={draft[field.id].includes(
+                                    option,
+                                  )}
+                                  aria-invalid={Boolean(errors[field.id])}
+                                  aria-describedby={
+                                    errors[field.id]
+                                      ? `${type}-${field.id}-error`
+                                      : undefined
+                                  }
+                                  onClick={() => updateValue(field, option)}
+                                >
+                                  {draft[field.id].includes(option) && (
+                                    <Check size={14} aria-hidden="true" />
+                                  )}
+                                  {option}
+                                </S.ChoiceButton>
+                              ))}
+                            </S.ChoiceGroup>
+                          </S.Fieldset>
+                        ) : (
+                          <>
+                            <S.Label htmlFor={`${type}-${field.id}`}>
+                              {field.label}{" "}
+                              {requirements.includes(
+                                REQUIREMENT_LABELS[field.id],
+                              ) && <S.RequiredBadge>필수</S.RequiredBadge>}
+                            </S.Label>
+                            <S.Select
+                              id={`${type}-${field.id}`}
+                              value={draft[field.id]}
+                              onChange={(event) =>
+                                updateValue(field, event.target.value)
+                              }
+                              aria-invalid={Boolean(errors[field.id])}
+                              aria-describedby={
+                                errors[field.id]
+                                  ? `${type}-${field.id}-error`
+                                  : undefined
+                              }
+                            >
+                              <option value="">선택해 주세요</option>
+                              {field.options.map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </S.Select>
+                          </>
+                        )}
+                        {errors[field.id] && (
+                          <S.FieldError
+                            id={`${type}-${field.id}-error`}
+                            role="alert"
+                          >
+                            {errors[field.id]}
+                          </S.FieldError>
+                        )}
+                      </S.Field>
+                    ))}
+                  </S.FormGrid>
+                ) : (
+                  <S.SurveyGrid>
+                    {section.fields.map((field) => (
+                      <S.SurveyRow key={field.id}>
+                        <dt>
+                          {field.label}{" "}
+                          {requirements.includes(
+                            REQUIREMENT_LABELS[field.id],
+                          ) && <S.RequiredBadge>필수</S.RequiredBadge>}
+                        </dt>
+                        <dd>{displayAnswer(values[field.id])}</dd>
+                      </S.SurveyRow>
+                    ))}
+                  </S.SurveyGrid>
+                )}
+              </S.Card>
+            ))}
+            {isPreference && (
+              <S.Card data-required-conditions>
+                <S.CardHeader>
+                  <S.CardTitle>
+                    <ShieldCheck size={19} aria-hidden="true" /> 필수 조건
+                  </S.CardTitle>
+                  {!draft && (
+                    <S.GhostButton
+                      type="button"
+                      onClick={() => startEditing(true)}
+                    >
+                      <Pencil size={15} aria-hidden="true" /> 조건 수정
+                    </S.GhostButton>
+                  )}
+                </S.CardHeader>
+                <S.Helper>
+                  {draft
+                    ? "구체적인 선호를 선택한 항목만 필수로 지정할 수 있어요. ‘상관없음’인 항목은 제외돼요."
+                    : "이 조건은 추천할 때 꼭 충족해야 해요."}
+                </S.Helper>
+                {draft ? (
+                  <S.ChoiceGroup>
+                    {Object.entries(REQUIREMENT_LABELS).map(([id, label]) => (
+                      <S.ChoiceButton
+                        key={id}
+                        type="button"
+                        disabled={
+                          !hasAnswer(draft[id]) || isIndifferent(draft[id])
+                        }
+                        $selected={requirements.includes(label)}
+                        aria-pressed={requirements.includes(label)}
+                        onClick={() =>
+                          setDraft((current) => ({
+                            ...current,
+                            requiredConditions: requirements.includes(label)
+                              ? requirements.filter((item) => item !== label)
+                              : [...requirements, label],
+                          }))
+                        }
+                      >
+                        {requirements.includes(label) && (
+                          <Check size={14} aria-hidden="true" />
+                        )}
+                        {label}
+                      </S.ChoiceButton>
+                    ))}
+                    <S.ChoiceButton
+                      type="button"
+                      $selected={!requirements.length}
+                      aria-pressed={!requirements.length}
+                      onClick={() =>
+                        setDraft((current) => ({
+                          ...current,
+                          requiredConditions: [],
+                        }))
+                      }
+                    >
+                      필수조건 없음
+                    </S.ChoiceButton>
+                  </S.ChoiceGroup>
+                ) : (
+                  <S.TagRow>
+                    {requirements.length ? (
+                      requirements.map((label) => (
+                        <S.Badge key={label}>
+                          <Check size={13} aria-hidden="true" />
+                          {label} · 필수
+                        </S.Badge>
+                      ))
+                    ) : (
+                      <S.Tag>필수조건 없음</S.Tag>
+                    )}
+                  </S.TagRow>
+                )}
+              </S.Card>
+            )}
+            {draft && (
+              <S.FormActions>
+                <S.GhostButton
+                  type="button"
+                  onClick={() => {
+                    setDraft(null);
+                    setErrors({});
+                    requestAnimationFrame(() => titleRef.current?.focus());
+                  }}
+                >
+                  취소
+                </S.GhostButton>
+                <S.PrimaryButton type="submit">
+                  <Check size={17} aria-hidden="true" /> 저장
+                </S.PrimaryButton>
+              </S.FormActions>
+            )}
+          </S.Stack>
+        </>
+      )}
     </S.Stack>
   );
 }
 
 function AccountContent({ account, onSave }) {
-  const [draft, setDraft] = useState({ ...account, currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [draft, setDraft] = useState({
+    ...account,
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [editingFields, setEditingFields] = useState({});
+  const [passwordEditing, setPasswordEditing] = useState(false);
   const [errors, setErrors] = useState({});
-  const [message, setMessage] = useState("");
   const formRef = useRef(null);
   const faculty = FACULTY_OPTIONS.find((item) => item.name === draft.faculty);
   const noMajor = Boolean(faculty && faculty.majors.length === 0);
+  const basicFields = ["nickname"];
+  const academicFields = ["dormitory", "grade", "faculty", "major"];
+  const mbtiFields = MBTI_DIMENSIONS.map(({ id }) => id);
+  const basicEditing = basicFields.some((id) => editingFields[id]);
+  const academicEditing = academicFields.some((id) => editingFields[id]);
+  const mbtiEditing = mbtiFields.some((id) => editingFields[id]);
 
   const update = (id, value) => {
-    setDraft((current) => ({ ...current, [id]: value, ...(id === "faculty" ? {
-      major: FACULTY_OPTIONS.find((item) => item.name === value)?.majors.length === 0 ? "세부전공 없음" : "",
-    } : {}) }));
-    setErrors((current) => ({ ...current, [id]: undefined, ...(id === "faculty" ? { major: undefined } : {}) }));
-    setMessage("");
+    setDraft((current) => ({
+      ...current,
+      [id]: value,
+      ...(id === "faculty"
+        ? {
+            major:
+              FACULTY_OPTIONS.find((item) => item.name === value)?.majors
+                .length === 0
+                ? "세부전공 없음"
+                : "",
+          }
+        : {}),
+    }));
+    setErrors((current) => ({
+      ...current,
+      [id]: undefined,
+      ...(id === "faculty" ? { major: undefined } : {}),
+    }));
+  };
+
+  const finishSection = (ids) => {
+    const nextErrors = {};
+    ids.forEach((id) => {
+      if (!draft[id].trim())
+        nextErrors[id] = `${id} 항목을 입력하거나 선택해 주세요.`;
+    });
+    if (
+      ids.includes("faculty") &&
+      faculty?.majors.length &&
+      !faculty.majors.includes(draft.major)
+    ) {
+      nextErrors.faculty = "선택한 학부에 해당하는 전공도 확인해 주세요.";
+    }
+    if (ids.some((id) => MBTI_DIMENSIONS.some((item) => item.id === id))) {
+      MBTI_DIMENSIONS.forEach(({ id, label, options }) => {
+        if (ids.includes(id) && !options.includes(draft[id]))
+          nextErrors[id] = `${label}을 선택해 주세요.`;
+      });
+    }
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) return;
+    onSave({
+      ...account,
+      ...Object.fromEntries(ids.map((id) => [id, draft[id]])),
+    });
+    setEditingFields((current) =>
+      Object.fromEntries(Object.keys(current).map((id) => [id, false])),
+    );
+  };
+
+  const setSectionEditing = (ids, value) => {
+    setEditingFields((current) => ({
+      ...current,
+      ...Object.fromEntries(ids.map((id) => [id, value])),
+    }));
+    setErrors({});
+  };
+
+  const finishPassword = () => {
+    const hasPasswordInput = Boolean(
+      draft.currentPassword || draft.newPassword || draft.confirmPassword,
+    );
+    if (!hasPasswordInput) {
+      setErrors({});
+      setPasswordEditing(false);
+      return;
+    }
+    const nextErrors = {};
+    if (!draft.currentPassword.trim())
+      nextErrors.currentPassword = "현재 비밀번호를 입력해 주세요.";
+    if (!draft.newPassword.trim())
+      nextErrors.newPassword = "변경할 비밀번호를 입력해 주세요.";
+    else if (draft.newPassword.length < 8)
+      nextErrors.newPassword = "비밀번호는 8자 이상 입력해 주세요.";
+    if (!draft.confirmPassword)
+      nextErrors.confirmPassword = "변경할 비밀번호를 한 번 더 입력해 주세요.";
+    else if (draft.newPassword !== draft.confirmPassword)
+      nextErrors.confirmPassword = "새 비밀번호가 일치하지 않아요.";
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) return;
+    setPasswordEditing(false);
+    setDraft((current) => ({
+      ...current,
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    }));
   };
 
   const save = (event) => {
     event.preventDefault();
-    const nextErrors = {};
-    const labels = { nickname: "닉네임", dormitory: "생활관", faculty: "나의 학부", major: "나의 전공", grade: "학년" };
-    Object.entries(labels).forEach(([id, label]) => {
-      if (!draft[id].trim()) nextErrors[id] = `${label} 항목을 입력하거나 선택해 주세요.`;
-    });
-    MBTI_DIMENSIONS.forEach(({ id, label, options }) => {
-      if (!options.includes(draft[id])) nextErrors[id] = `${label}을 선택해 주세요.`;
-    });
-    if (faculty?.majors.length && !faculty.majors.includes(draft.major)) nextErrors.major = "선택한 학부에 해당하는 전공을 선택해 주세요.";
-    const changingPassword = Boolean(draft.currentPassword || draft.newPassword || draft.confirmPassword);
-    if (changingPassword) {
-      if (!draft.currentPassword.trim()) nextErrors.currentPassword = "현재 비밀번호를 입력해 주세요.";
-      if (!draft.newPassword.trim()) nextErrors.newPassword = "변경할 비밀번호를 입력해 주세요.";
-      else if (draft.newPassword === draft.currentPassword) nextErrors.newPassword = "현재 비밀번호와 다른 비밀번호를 입력해 주세요.";
-      if (!draft.confirmPassword) nextErrors.confirmPassword = "변경할 비밀번호를 한 번 더 입력해 주세요.";
-      else if (draft.newPassword !== draft.confirmPassword) nextErrors.confirmPassword = "새 비밀번호가 일치하지 않아요.";
-    }
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length) {
-      requestAnimationFrame(() => formRef.current?.querySelector('[aria-invalid="true"]')?.focus());
-      return;
-    }
-    const saved = Object.fromEntries(Object.keys(INITIAL_ACCOUNT).map((id) => [id, draft[id].trim()]));
-    onSave(saved);
-    setDraft({ ...saved, currentPassword: "", newPassword: "", confirmPassword: "" });
-    setMessage(changingPassword ? "계정 정보를 화면에 반영했어요. 비밀번호는 입력 확인만 완료했으며 실제로 변경되지 않았어요." : "계정 정보를 저장했어요. 프로필에도 변경한 내용을 반영했어요.");
+    if (passwordEditing) finishPassword();
   };
 
-  const renderField = (id, label, { options, readOnly, type = "text", helper } = {}) => (
-    <S.Field key={id}>
-      <S.Label htmlFor={`account-${id}`}>{label}{!readOnly && type !== "password" && " *"}{readOnly && <LockKeyhole size={12} aria-hidden="true" />}</S.Label>
-      {options ? <S.Select id={`account-${id}`} value={draft[id]} disabled={id === "major" && (!faculty || noMajor)}
-        aria-required="true" aria-invalid={Boolean(errors[id])} aria-describedby={`account-${id}-help`} onChange={(event) => update(id, event.target.value)}>
-        {noMajor && id === "major" ? <option value="세부전공 없음">세부전공 없음</option> : <>
-          <option value="">{id === "major" && !faculty ? "학부를 먼저 선택해 주세요" : `${label} 선택`}</option>
-          {options.map((option) => <option key={option} value={option}>{option}</option>)}
-        </>}
-      </S.Select> : <S.Input id={`account-${id}`} type={type} value={draft[id]} readOnly={readOnly}
-        maxLength={id === "nickname" ? 20 : undefined} autoComplete={type === "password" ? id === "currentPassword" ? "current-password" : "new-password" : "off"}
-        aria-required={!readOnly && type !== "password"} aria-invalid={Boolean(errors[id])} aria-describedby={`account-${id}-help`}
-        onChange={(event) => update(id, event.target.value)} />}
-      {errors[id] ? <S.FieldError id={`account-${id}-help`} role="alert">{errors[id]}</S.FieldError>
-        : <S.Helper id={`account-${id}-help`}>{helper || (readOnly ? "변경할 수 없는 정보예요." : "")}</S.Helper>}
-    </S.Field>
-  );
+  const renderField = (
+    id,
+    label,
+    { options, readOnly, type = "text", helper } = {},
+  ) => {
+    const isPassword = type === "password";
+    const isEditing = isPassword ? passwordEditing : editingFields[id];
+    return (
+      <S.Field key={id}>
+        <S.Label htmlFor={`account-${id}`}>
+          {label}
+          {!readOnly && !isPassword && " *"}
+          {readOnly && <LockKeyhole size={12} aria-hidden="true" />}
+        </S.Label>
+        {readOnly || !isEditing ? (
+          <S.ReadonlyValue>
+            {isPassword ? "••••••••" : draft[id] || "-"}
+          </S.ReadonlyValue>
+        ) : options ? (
+          <S.Select
+            id={`account-${id}`}
+            value={draft[id]}
+            disabled={id === "major" && (!faculty || noMajor)}
+            aria-required="true"
+            aria-invalid={Boolean(errors[id])}
+            aria-describedby={`account-${id}-help`}
+            onChange={(event) => update(id, event.target.value)}
+          >
+            {noMajor && id === "major" ? (
+              <option value="세부전공 없음">세부전공 없음</option>
+            ) : (
+              <>
+                <option value="">
+                  {id === "major" && !faculty
+                    ? "학부를 먼저 선택해 주세요"
+                    : `${label} 선택`}
+                </option>
+                {options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </>
+            )}
+          </S.Select>
+        ) : (
+          <S.Input
+            id={`account-${id}`}
+            type={type}
+            value={draft[id]}
+            maxLength={id === "nickname" ? 20 : undefined}
+            autoComplete={
+              type === "password"
+                ? id === "currentPassword"
+                  ? "current-password"
+                  : "new-password"
+                : "off"
+            }
+            aria-required={!readOnly && type !== "password"}
+            aria-invalid={Boolean(errors[id])}
+            aria-describedby={`account-${id}-help`}
+            onChange={(event) => update(id, event.target.value)}
+          />
+        )}
+        {errors[id] ? (
+          <S.FieldError id={`account-${id}-help`} role="alert">
+            {errors[id]}
+          </S.FieldError>
+        ) : (
+          <S.Helper id={`account-${id}-help`}>{helper || ""}</S.Helper>
+        )}
+      </S.Field>
+    );
+  };
 
   return (
     <S.Stack as="form" ref={formRef} onSubmit={save} noValidate>
-      <S.SectionHeading><div><S.SectionTitle>계정 정보</S.SectionTitle><S.Description>나의 정보를 최신 상태로 관리해 주세요.</S.Description></div><S.Badge $muted>* 필수 입력</S.Badge></S.SectionHeading>
-      {message && <S.Banner role="status"><CheckCircle2 size={19} aria-hidden="true" />{message}</S.Banner>}
-      <S.Card><S.CardHeader><S.CardTitle><UserRound size={19} aria-hidden="true" /> 기본 정보</S.CardTitle></S.CardHeader>
+      <S.SectionHeading>
+        <div>
+          <S.SectionTitle>계정 정보</S.SectionTitle>
+          <S.Description>나의 정보를 최신 상태로 관리해 주세요.</S.Description>
+        </div>
+        <S.Badge $muted>필요한 항목만 수정할 수 있어요</S.Badge>
+      </S.SectionHeading>
+      <S.Card>
+        <S.CardHeader>
+          <S.CardTitle>
+            <UserRound size={19} aria-hidden="true" /> 기본 정보
+          </S.CardTitle>
+          <S.SecondaryButton
+            type="button"
+            onClick={() =>
+              basicEditing
+                ? finishSection(basicFields)
+                : setSectionEditing(basicFields, true)
+            }
+          >
+            {basicEditing ? (
+              <>
+                <Check size={16} aria-hidden="true" /> 완료
+              </>
+            ) : (
+              <>
+                <Pencil size={16} aria-hidden="true" /> 수정
+              </>
+            )}
+          </S.SecondaryButton>
+        </S.CardHeader>
         <S.FormGrid>
           {renderField("loginId", "아이디", { readOnly: true })}
-          {renderField("nickname", "닉네임", { helper: "프로필에 표시되는 이름이에요. 최대 20자까지 입력할 수 있어요." })}
+          {renderField("nickname", "닉네임")}
           {renderField("schoolEmail", "학교 이메일", { readOnly: true })}
           {renderField("gender", "성별", { readOnly: true })}
         </S.FormGrid>
       </S.Card>
-      <S.Card><S.CardHeader><S.CardTitle><Building2 size={19} aria-hidden="true" /> 생활관 및 학적 정보</S.CardTitle></S.CardHeader>
+      <S.Card>
+        <S.CardHeader>
+          <S.CardTitle>
+            <Building2 size={19} aria-hidden="true" /> 생활관 및 학적 정보
+          </S.CardTitle>
+          <S.SecondaryButton
+            type="button"
+            onClick={() =>
+              academicEditing
+                ? finishSection(academicFields)
+                : setSectionEditing(academicFields, true)
+            }
+          >
+            {academicEditing ? (
+              <>
+                <Check size={16} aria-hidden="true" /> 완료
+              </>
+            ) : (
+              <>
+                <Pencil size={16} aria-hidden="true" /> 수정
+              </>
+            )}
+          </S.SecondaryButton>
+        </S.CardHeader>
         <S.FormGrid>
-          {renderField("dormitory", "생활관", { options: ["나래", "호연", "비봉", "창조"] })}
-          {renderField("grade", "학년", { options: ["1학년", "2학년", "3학년", "4학년", "5학년"] })}
-          {renderField("faculty", "나의 학부", { options: FACULTY_OPTIONS.map((item) => item.name) })}
-          {renderField("major", "나의 전공", { options: faculty?.majors || [], helper: noMajor ? "선택한 학부에는 세부전공이 없어요." : "선택한 학부에 해당하는 전공만 표시돼요." })}
+          {renderField("dormitory", "생활관", {
+            options: ["나래", "호연", "비봉", "창조"],
+          })}
+          {renderField("grade", "학년", {
+            options: ["1학년", "2학년", "3학년", "4학년", "5학년"],
+          })}
+          {renderField("faculty", "나의 학부", {
+            options: FACULTY_OPTIONS.map((item) => item.name),
+          })}
+          {renderField("major", "나의 전공", {
+            options: faculty?.majors || [],
+            helper: noMajor ? "선택한 학부에는 세부전공이 없어요." : "",
+          })}
         </S.FormGrid>
       </S.Card>
-      <S.Card><S.CardHeader><S.CardTitle><Sparkles size={19} aria-hidden="true" /> MBTI</S.CardTitle><S.Badge>{getMbti(draft)}</S.Badge></S.CardHeader>
-        <S.MbtiGrid>{MBTI_DIMENSIONS.map(({ id, label, options }) => <S.Fieldset key={id}>
-          <S.Legend>{label} *</S.Legend><S.ChoiceGroup>{options.map((option) => <S.ChoiceButton key={option} type="button"
-            $selected={draft[id] === option} aria-pressed={draft[id] === option} aria-invalid={Boolean(errors[id])}
-            aria-describedby={errors[id] ? `${id}-error` : undefined} onClick={() => update(id, option)}>{option}</S.ChoiceButton>)}</S.ChoiceGroup>
-          {errors[id] && <S.FieldError id={`${id}-error`} role="alert">{errors[id]}</S.FieldError>}
-        </S.Fieldset>)}</S.MbtiGrid>
+      <S.Card>
+        <S.CardHeader>
+          <S.CardTitle>
+            <Sparkles size={19} aria-hidden="true" /> MBTI
+            <S.MbtiValue>{getMbti(draft)}</S.MbtiValue>
+          </S.CardTitle>
+          <S.CardHeaderActions>
+            <S.SecondaryButton
+              type="button"
+              onClick={() =>
+                mbtiEditing
+                  ? finishSection(mbtiFields)
+                  : setSectionEditing(mbtiFields, true)
+              }
+            >
+              {mbtiEditing ? (
+                <>
+                  <Check size={16} aria-hidden="true" /> 완료
+                </>
+              ) : (
+                <>
+                  <Pencil size={16} aria-hidden="true" /> 수정
+                </>
+              )}
+            </S.SecondaryButton>
+          </S.CardHeaderActions>
+        </S.CardHeader>
+        <S.MbtiGrid>
+          {MBTI_DIMENSIONS.map(({ id, label, options }) => (
+            <S.Fieldset key={id}>
+              <S.Legend>{label} *</S.Legend>
+              {!editingFields[id] ? (
+                <S.ReadonlyValue>{draft[id]}</S.ReadonlyValue>
+              ) : (
+                <>
+                  <S.ChoiceGroup>
+                    {options.map((option) => (
+                      <S.ChoiceButton
+                        key={option}
+                        type="button"
+                        $selected={draft[id] === option}
+                        aria-pressed={draft[id] === option}
+                        aria-invalid={Boolean(errors[id])}
+                        aria-describedby={
+                          errors[id] ? `${id}-error` : undefined
+                        }
+                        onClick={() => update(id, option)}
+                      >
+                        {option}
+                      </S.ChoiceButton>
+                    ))}
+                  </S.ChoiceGroup>
+                </>
+              )}
+              {errors[id] && (
+                <S.FieldError id={`${id}-error`} role="alert">
+                  {errors[id]}
+                </S.FieldError>
+              )}
+            </S.Fieldset>
+          ))}
+        </S.MbtiGrid>
       </S.Card>
-      <S.Card><S.CardHeader><S.CardTitle><LockKeyhole size={19} aria-hidden="true" /> 비밀번호 변경</S.CardTitle><S.Badge $muted>선택</S.Badge></S.CardHeader>
-        <S.Helper>변경을 원할 때만 세 항목을 모두 입력해 주세요. 이 미리보기에서는 실제 비밀번호가 변경되지 않아요.</S.Helper>
-        <S.FormGrid>
-          {renderField("currentPassword", "현재 비밀번호", { type: "password" })}
-          {renderField("newPassword", "변경할 비밀번호", { type: "password" })}
-          {renderField("confirmPassword", "변경할 비밀번호 확인", { type: "password" })}
-        </S.FormGrid>
+      <S.Card>
+        <S.CardHeader>
+          <S.CardTitle>
+            <LockKeyhole size={19} aria-hidden="true" /> 비밀번호 변경
+          </S.CardTitle>
+          <S.SecondaryButton
+            type="button"
+            onClick={() =>
+              passwordEditing ? finishPassword() : setPasswordEditing(true)
+            }
+          >
+            {passwordEditing ? (
+              <>
+                <Check size={16} aria-hidden="true" /> 완료
+              </>
+            ) : (
+              <>
+                <Pencil size={16} aria-hidden="true" /> 수정
+              </>
+            )}
+          </S.SecondaryButton>
+        </S.CardHeader>
+        {!passwordEditing && (
+          <S.PasswordSummary>
+            <LockKeyhole size={18} aria-hidden="true" />
+            <span>
+              비밀번호는 안전하게 설정되어 있어요. 변경이 필요할 때 수정해
+              주세요.
+            </span>
+          </S.PasswordSummary>
+        )}
+        {passwordEditing && (
+          <>
+            <S.Helper>변경을 원할 때만 세 항목을 모두 입력해 주세요.</S.Helper>
+            <S.FormGrid>
+              {renderField("currentPassword", "현재 비밀번호", {
+                type: "password",
+              })}
+              {renderField("newPassword", "변경할 비밀번호", {
+                type: "password",
+              })}
+              {renderField("confirmPassword", "변경할 비밀번호 확인", {
+                type: "password",
+              })}
+            </S.FormGrid>
+          </>
+        )}
       </S.Card>
-      <S.FormActions><S.GhostButton type="button" onClick={() => {
-        setDraft({ ...account, currentPassword: "", newPassword: "", confirmPassword: "" }); setErrors({}); setMessage("변경 전 정보로 되돌렸어요.");
-      }}>변경 취소</S.GhostButton><S.PrimaryButton type="submit"><Check size={17} aria-hidden="true" /> 변경 내용 저장</S.PrimaryButton></S.FormActions>
     </S.Stack>
   );
 }
 
 function MyPage({ currentUser }) {
   const [searchParams] = useSearchParams();
-  const activeTab = MENU_ITEMS.some((item) => item.id === searchParams.get("tab")) ? searchParams.get("tab") : "profile";
-  const [account, setAccount] = useState(() => ({ ...INITIAL_ACCOUNT, nickname: currentUser?.name || INITIAL_ACCOUNT.nickname }));
+  const activeTab = MENU_ITEMS.some(
+    (item) => item.id === searchParams.get("tab"),
+  )
+    ? searchParams.get("tab")
+    : "profile";
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
+
+  const [account, setAccount] = useState(() => ({
+    ...INITIAL_ACCOUNT,
+    nickname: currentUser?.name || INITIAL_ACCOUNT.nickname,
+  }));
   const [profileAnswers, setProfileAnswers] = useState(PROFILE_DEFAULTS);
   const [preferences, setPreferences] = useState(PREFERENCE_DEFAULTS);
-  const [likedIds, setLikedIds] = useState(() => LIKED_PROFILES.map(({ id }) => id));
-  const [preview, setPreview] = useState({ survey: "filled", preferences: "filled", likes: "filled" });
+  const [likedIds, setLikedIds] = useState(() =>
+    LIKED_PROFILES.map(({ id }) => id),
+  );
+  const [preview, setPreview] = useState({
+    survey: "filled",
+    preferences: "filled",
+    likes: "filled",
+  });
   const [likeMessage, setLikeMessage] = useState("");
   const lastRemoved = useRef(null);
   const likesTitleRef = useRef(null);
-  const likedProfiles = preview.likes === "empty" ? [] : LIKED_PROFILES.filter(({ id }) => likedIds.includes(id));
-  const completeCount = [preview.survey, preview.preferences].filter((value) => value === "filled").length;
+  const likedProfiles =
+    preview.likes === "empty"
+      ? []
+      : LIKED_PROFILES.filter(({ id }) => likedIds.includes(id));
+  const completeCount = [preview.survey, preview.preferences].filter(
+    (value) => value === "filled",
+  ).length;
 
   const removeLike = (profile) => {
     setLikedIds((current) => current.filter((id) => id !== profile.id));
@@ -1073,76 +1659,318 @@ function MyPage({ currentUser }) {
   };
 
   const detailItems = [
-    ["닉네임", account.nickname], ["성별", account.gender], ["생활관", `${account.dormitory} 생활관`],
-    ["학년", account.grade], ["나의 학부", account.faculty], ["나의 전공", account.major], ["MBTI", getMbti(account)],
+    ["닉네임", account.nickname],
+    ["성별", account.gender],
+    ["생활관", `${account.dormitory}관`],
+    ["학년", account.grade],
+    ["나의 학부", account.faculty],
+    ["나의 전공", account.major],
+    ["MBTI", getMbti(account)],
   ];
 
   return (
     <S.Page>
       <S.Container>
-        <S.Intro><S.Eyebrow><UserRound size={15} aria-hidden="true" /> MY SPACE</S.Eyebrow>
-          <S.PageTitle>마이페이지</S.PageTitle><S.Description>나를 알아가는 공간, 더 잘 맞는 룸메이트를 만나는 시작.</S.Description></S.Intro>
         <S.Layout>
           <S.Sidebar>
-            <S.SidebarProfile><S.Avatar src={MY_PHOTO} alt="" /><div><S.SidebarName>{account.nickname}</S.SidebarName><S.Muted>{account.dormitory} 생활관 · {getMbti(account)}</S.Muted></div></S.SidebarProfile>
-            <S.Menu aria-label="마이페이지 메뉴">{MENU_ITEMS.map(({ id, label, icon: Icon }) => <S.MenuLink key={id}
-              to={id === "profile" ? "/profile" : `/profile?tab=${id}`} $active={activeTab === id} aria-current={activeTab === id ? "page" : undefined}>
-              <Icon size={19} aria-hidden="true" /><span>{label}</span>{id === "likes" && <S.MenuCount>{likedProfiles.length}</S.MenuCount>}
-              {activeTab === id && <ChevronRight size={16} aria-hidden="true" />}
-            </S.MenuLink>)}</S.Menu>
-            <S.SideNote><ShieldCheck size={20} aria-hidden="true" /><strong>서로를 알아가는 첫걸음</strong><S.Muted>나의 정보와 설문을 채우고 더 편안한 기숙사 생활을 준비해요.</S.Muted></S.SideNote>
+            <S.SidebarProfile>
+              <S.Avatar src={MY_PHOTO} alt="" />
+              <div>
+                <S.SidebarName>{account.nickname}</S.SidebarName>
+                <S.Muted>
+                  {account.dormitory}관 · {getMbti(account)}
+                </S.Muted>
+              </div>
+            </S.SidebarProfile>
+            <S.Menu aria-label="마이페이지 메뉴">
+              {MENU_ITEMS.map(({ id, label, icon: Icon }) => (
+                <S.MenuLink
+                  key={id}
+                  to={id === "profile" ? "/profile" : `/profile?tab=${id}`}
+                  $active={activeTab === id}
+                  aria-current={activeTab === id ? "page" : undefined}
+                >
+                  <Icon size={19} aria-hidden="true" />
+                  <span>{label}</span>
+                  {id === "likes" && (
+                    <S.MenuCount>{likedProfiles.length}</S.MenuCount>
+                  )}
+                  {activeTab === id && (
+                    <ChevronRight size={16} aria-hidden="true" />
+                  )}
+                </S.MenuLink>
+              ))}
+            </S.Menu>
+            <S.SideNote>
+              <ShieldCheck size={20} aria-hidden="true" />
+              <strong>서로를 알아가는 첫걸음</strong>
+              <S.Muted>
+                나의 정보와 설문을 채우고 더 편안한 기숙사 생활을 준비해요.
+              </S.Muted>
+            </S.SideNote>
           </S.Sidebar>
-          <S.Content aria-label={MENU_ITEMS.find(({ id }) => id === activeTab).label}>
-            {activeTab === "profile" && <S.Stack>
-              <S.SectionHeading><div><S.SectionTitle>내 프로필</S.SectionTitle><S.Description>룸메이트에게 보여줄 나의 기본 정보예요.</S.Description></div>
-                <S.SecondaryButton as={Link} to="/profile?tab=account"><Pencil size={16} aria-hidden="true" /> 프로필 수정</S.SecondaryButton></S.SectionHeading>
-              <S.Card>
-                <S.ProfileHero><S.Avatar $large src={MY_PHOTO} alt={`${account.nickname} 프로필`} /><div><S.Badge><BadgeCheck size={14} aria-hidden="true" /> 한경국립대학교</S.Badge>
-                  <S.ProfileName>{account.nickname}</S.ProfileName><S.Muted>{account.major} · {account.grade}</S.Muted>
-                  <S.TagRow><S.Tag>{account.dormitory} 생활관</S.Tag><S.Tag>{getMbti(account)}</S.Tag></S.TagRow></div></S.ProfileHero>
-                <S.DetailGrid>{detailItems.map(([label, value]) => <S.DetailItem key={label}><dt>{label}</dt><dd>{value}</dd></S.DetailItem>)}</S.DetailGrid>
-              </S.Card>
-              <S.Card><S.CardHeader><S.CardTitle><ClipboardList size={19} aria-hidden="true" /> 나의 설문 현황</S.CardTitle><S.Badge>{completeCount} / 2 완료</S.Badge></S.CardHeader>
-                <S.Helper>두 가지 설문으로 나와 잘 맞는 룸메이트를 더 가까이 만나보세요.</S.Helper>
-                <S.ProgressTrack role="progressbar" aria-label="설문 작성 현황" aria-valuemin={0} aria-valuemax={2} aria-valuenow={completeCount}><S.ProgressFill $value={completeCount * 50} /></S.ProgressTrack>
-                <S.SummaryGrid>{[
-                  { id: "survey", icon: Moon, title: "내 설문", text: "나의 수면 패턴과 생활 습관" },
-                  { id: "preferences", icon: Users, title: "선호 룸메 설문", text: "함께하고 싶은 룸메이트의 모습" },
-                ].map(({ id, icon: Icon, title, text }) => <S.SummaryCard as={Link} key={id} to={`/profile?tab=${id}`}>
-                  <S.CardHeader><Icon size={23} aria-hidden="true" /><S.Badge $muted={preview[id] === "empty"}>{preview[id] === "filled" ? "작성 완료" : "미작성"}</S.Badge></S.CardHeader>
-                  <S.SummaryTitle>{title}</S.SummaryTitle><S.SummaryText>{text}</S.SummaryText><S.SummaryFooter>{preview[id] === "filled" ? "답변 확인하기" : "설문 알아보기"}<ArrowRight size={16} aria-hidden="true" /></S.SummaryFooter>
-                </S.SummaryCard>)}</S.SummaryGrid>
-              </S.Card>
-              <S.Banner><Info size={19} aria-hidden="true" /><span>나의 생활 습관을 솔직하게 알려줄수록 서로를 이해하기 쉬워져요.</span></S.Banner>
-            </S.Stack>}
-            {(activeTab === "survey" || activeTab === "preferences") && <SurveyContent key={`${activeTab}-${preview[activeTab]}`} type={activeTab}
-              answers={activeTab === "survey" ? profileAnswers : preferences} isEmpty={preview[activeTab] === "empty"} account={account}
-              onSave={activeTab === "survey" ? setProfileAnswers : setPreferences} />}
-            {activeTab === "likes" && <S.Stack>
-              <S.SectionHeading><div><S.SectionTitle ref={likesTitleRef} tabIndex={-1}>좋아요 <S.Badge>{likedProfiles.length}명</S.Badge></S.SectionTitle><S.Description>마음에 담아둔 룸메이트를 다시 만나보세요.</S.Description></div>
-                <S.SubtleLink to="/roommates">룸메이트 둘러보기 <ArrowRight size={16} aria-hidden="true" /></S.SubtleLink></S.SectionHeading>
-              {likeMessage && <S.Banner role="status"><CheckCircle2 size={19} aria-hidden="true" /><span>{likeMessage}</span>
-                {lastRemoved.current && <S.GhostButton type="button" onClick={() => {
-                  const id = lastRemoved.current; setLikedIds((current) => current.includes(id) ? current : [...current, id]);
-                  lastRemoved.current = null; setLikeMessage("좋아요를 다시 담았어요.");
-                }}>되돌리기</S.GhostButton>}</S.Banner>}
-              {!likedProfiles.length ? <EmptyState type="likes" /> : <S.LikeGrid>{likedProfiles.map((profile) => <S.LikeCard key={profile.id}>
-                <S.LikeTop><S.Avatar $large src={profile.photo} alt={`${profile.nickname} 프로필`} /><S.IconButton type="button" aria-label={`${profile.nickname} 좋아요 취소`} aria-pressed="true" onClick={() => removeLike(profile)}><Heart size={20} fill="currentColor" aria-hidden="true" /></S.IconButton></S.LikeTop>
-                <S.LikeName>{profile.nickname}</S.LikeName><S.LikeMeta>{profile.year}학번 · {profile.major}</S.LikeMeta>
-                <S.LikeMessage>{profile.message}</S.LikeMessage><S.TagRow>{profile.tags.map((tag) => <S.Tag key={tag}>#{tag}</S.Tag>)}</S.TagRow>
-                <S.LikeFooter><S.SecondaryButton as={Link} to={profileHref(profile)} aria-label={`${profile.nickname} 프로필 보기`}>프로필 보기 <ArrowRight size={16} aria-hidden="true" /></S.SecondaryButton></S.LikeFooter>
-              </S.LikeCard>)}</S.LikeGrid>}
-            </S.Stack>}
-            {activeTab === "account" && <AccountContent account={account} onSave={setAccount} />}
+          <S.Content
+            aria-label={MENU_ITEMS.find(({ id }) => id === activeTab).label}
+          >
+            {activeTab === "profile" && (
+              <S.Stack>
+                <S.SectionHeading>
+                  <div>
+                    <S.SectionTitle>내 프로필</S.SectionTitle>
+                    <S.Description>
+                      룸메이트에게 보여줄 나의 기본 정보예요.
+                    </S.Description>
+                  </div>
+                  <S.SecondaryButton as={Link} to="/profile?tab=account">
+                    <Pencil size={16} aria-hidden="true" /> 프로필 수정
+                  </S.SecondaryButton>
+                </S.SectionHeading>
+                <S.Card>
+                  <S.ProfileHero>
+                    <S.Avatar
+                      $large
+                      src={MY_PHOTO}
+                      alt={`${account.nickname} 프로필`}
+                    />
+                    <div>
+                      <S.Badge>
+                        <BadgeCheck size={14} aria-hidden="true" />{" "}
+                        한경국립대학교
+                      </S.Badge>
+                      <S.ProfileName>{account.nickname}</S.ProfileName>
+                      <S.Muted>
+                        {account.major} · {account.grade}
+                      </S.Muted>
+                      <S.TagRow>
+                        <S.Tag>{account.dormitory}관</S.Tag>
+                        <S.Tag>{getMbti(account)}</S.Tag>
+                      </S.TagRow>
+                    </div>
+                  </S.ProfileHero>
+                  <S.DetailGrid>
+                    {detailItems.map(([label, value]) => (
+                      <S.DetailItem key={label}>
+                        <dt>{label}</dt>
+                        <dd>{value}</dd>
+                      </S.DetailItem>
+                    ))}
+                  </S.DetailGrid>
+                </S.Card>
+                <S.Card>
+                  <S.CardHeader>
+                    <S.CardTitle>
+                      <ClipboardList size={19} aria-hidden="true" /> 나의 설문
+                      현황
+                    </S.CardTitle>
+                    <S.Badge>{completeCount} / 2 완료</S.Badge>
+                  </S.CardHeader>
+                  <S.Helper>
+                    두 가지 설문으로 나와 잘 맞는 룸메이트를 더 가까이
+                    만나보세요.
+                  </S.Helper>
+                  <S.ProgressTrack
+                    role="progressbar"
+                    aria-label="설문 작성 현황"
+                    aria-valuemin={0}
+                    aria-valuemax={2}
+                    aria-valuenow={completeCount}
+                  >
+                    <S.ProgressFill $value={completeCount * 50} />
+                  </S.ProgressTrack>
+                  <S.SummaryGrid>
+                    {[
+                      {
+                        id: "survey",
+                        icon: Moon,
+                        title: "내 설문",
+                        text: "나의 수면 패턴과 생활 습관",
+                      },
+                      {
+                        id: "preferences",
+                        icon: Users,
+                        title: "선호 룸메 설문",
+                        text: "함께하고 싶은 룸메이트의 모습",
+                      },
+                    ].map(({ id, icon: Icon, title, text }) => (
+                      <S.SummaryCard
+                        as={Link}
+                        key={id}
+                        to={`/profile?tab=${id}`}
+                        onClick={() => window.scrollTo(0, 0)}
+                      >
+                        <S.CardHeader>
+                          <Icon size={23} aria-hidden="true" />
+                          <S.Badge $muted={preview[id] === "empty"}>
+                            {preview[id] === "filled" ? "작성 완료" : "미작성"}
+                          </S.Badge>
+                        </S.CardHeader>
+                        <S.SummaryTitle>{title}</S.SummaryTitle>
+                        <S.SummaryText>{text}</S.SummaryText>
+                        <S.SummaryFooter>
+                          {preview[id] === "filled"
+                            ? "답변 확인하기"
+                            : "설문 알아보기"}
+                          <ArrowRight size={16} aria-hidden="true" />
+                        </S.SummaryFooter>
+                      </S.SummaryCard>
+                    ))}
+                  </S.SummaryGrid>
+                </S.Card>
+              </S.Stack>
+            )}
+            {(activeTab === "survey" || activeTab === "preferences") && (
+              <SurveyContent
+                key={`${activeTab}-${preview[activeTab]}`}
+                type={activeTab}
+                answers={activeTab === "survey" ? profileAnswers : preferences}
+                isEmpty={preview[activeTab] === "empty"}
+                onSave={(savedAnswers) => {
+                  if (activeTab === "survey") {
+                    setProfileAnswers(savedAnswers);
+                  } else {
+                    setPreferences(savedAnswers);
+                  }
+                  setPreview((current) => ({
+                    ...current,
+                    [activeTab]: "filled",
+                  }));
+                }}
+              />
+            )}
+            {activeTab === "likes" && (
+              <S.Stack>
+                <S.SectionHeading>
+                  <div>
+                    <S.SectionTitle ref={likesTitleRef} tabIndex={-1}>
+                      좋아요 <S.Badge>{likedProfiles.length}명</S.Badge>
+                    </S.SectionTitle>
+                    <S.Description>
+                      마음에 담아둔 룸메이트를 다시 만나보세요.
+                    </S.Description>
+                  </div>
+                  <S.SubtleLink to="/roommates">
+                    룸메이트 둘러보기{" "}
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </S.SubtleLink>
+                </S.SectionHeading>
+                {likeMessage && (
+                  <S.Banner role="status">
+                    <CheckCircle2 size={19} aria-hidden="true" />
+                    <span>{likeMessage}</span>
+                    {lastRemoved.current && (
+                      <S.GhostButton
+                        type="button"
+                        onClick={() => {
+                          const id = lastRemoved.current;
+                          setLikedIds((current) =>
+                            current.includes(id) ? current : [...current, id],
+                          );
+                          lastRemoved.current = null;
+                          setLikeMessage("좋아요를 다시 담았어요.");
+                        }}
+                      >
+                        되돌리기
+                      </S.GhostButton>
+                    )}
+                  </S.Banner>
+                )}
+                {!likedProfiles.length ? (
+                  <EmptyState type="likes" />
+                ) : (
+                  <S.LikeGrid>
+                    {likedProfiles.map((profile) => (
+                      <S.LikeCard key={profile.id}>
+                        <S.LikeTop>
+                          <S.Avatar
+                            $large
+                            src={profile.photo}
+                            alt={`${profile.nickname} 프로필`}
+                          />
+                          <S.IconButton
+                            type="button"
+                            aria-label={`${profile.nickname} 좋아요 취소`}
+                            aria-pressed="true"
+                            onClick={() => removeLike(profile)}
+                          >
+                            <Heart
+                              size={20}
+                              fill="currentColor"
+                              aria-hidden="true"
+                            />
+                          </S.IconButton>
+                        </S.LikeTop>
+                        <S.LikeName>{profile.nickname}</S.LikeName>
+                        <S.LikeMeta>
+                          {profile.year}학번 · {profile.major}
+                        </S.LikeMeta>
+                        <S.LikeMessage>{profile.message}</S.LikeMessage>
+                        <S.TagRow>
+                          {profile.tags.map((tag) => (
+                            <S.Tag key={tag}>#{tag}</S.Tag>
+                          ))}
+                        </S.TagRow>
+                        <S.LikeFooter>
+                          <S.SecondaryButton
+                            as={Link}
+                            to={profileHref(profile)}
+                            aria-label={`${profile.nickname} 프로필 보기`}
+                          >
+                            프로필 보기{" "}
+                            <ArrowRight size={16} aria-hidden="true" />
+                          </S.SecondaryButton>
+                        </S.LikeFooter>
+                      </S.LikeCard>
+                    ))}
+                  </S.LikeGrid>
+                )}
+              </S.Stack>
+            )}
+            {activeTab === "account" && (
+              <AccountContent account={account} onSave={setAccount} />
+            )}
             <S.PreviewPanel>
-              <summary><BookOpen size={15} aria-hidden="true" /> 화면 미리보기 설정 <span>예시 데이터</span></summary>
-              <S.Helper>데이터가 있는 화면과 없는 화면을 확인할 수 있어요. 수정한 내용은 이 페이지를 벗어나면 초기화돼요.</S.Helper>
-              <S.PreviewOptions>{[["survey", "내 설문"], ["preferences", "선호 룸메 설문"], ["likes", "좋아요"]].map(([id, label]) => <S.Field key={id}>
-                <S.Label htmlFor={`preview-${id}`}>{label}</S.Label><S.Select id={`preview-${id}`} value={preview[id]} onChange={(event) => {
-                  const value = event.target.value; setPreview((current) => ({ ...current, [id]: value }));
-                  if (id === "likes") { setLikeMessage(""); lastRemoved.current = null; if (value === "filled") setLikedIds(LIKED_PROFILES.map((profile) => profile.id)); }
-                }}><option value="filled">{id === "likes" ? "목록 있음" : "작성 완료"}</option><option value="empty">{id === "likes" ? "목록 없음" : "미작성"}</option></S.Select>
-              </S.Field>)}</S.PreviewOptions>
+              <summary>
+                <BookOpen size={15} aria-hidden="true" /> 화면 미리보기 설정{" "}
+                <span>예시 데이터</span>
+              </summary>
+              <S.Helper>
+                데이터가 있는 화면과 없는 화면을 확인할 수 있어요. 수정한 내용은
+                이 페이지를 벗어나면 초기화돼요.
+              </S.Helper>
+              <S.PreviewOptions>
+                {[
+                  ["survey", "내 설문"],
+                  ["preferences", "선호 룸메 설문"],
+                  ["likes", "좋아요"],
+                ].map(([id, label]) => (
+                  <S.Field key={id}>
+                    <S.Label htmlFor={`preview-${id}`}>{label}</S.Label>
+                    <S.Select
+                      id={`preview-${id}`}
+                      value={preview[id]}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        setPreview((current) => ({ ...current, [id]: value }));
+                        if (id === "likes") {
+                          setLikeMessage("");
+                          lastRemoved.current = null;
+                          if (value === "filled")
+                            setLikedIds(
+                              LIKED_PROFILES.map((profile) => profile.id),
+                            );
+                        }
+                      }}
+                    >
+                      <option value="filled">
+                        {id === "likes" ? "목록 있음" : "작성 완료"}
+                      </option>
+                      <option value="empty">
+                        {id === "likes" ? "목록 없음" : "미작성"}
+                      </option>
+                    </S.Select>
+                  </S.Field>
+                ))}
+              </S.PreviewOptions>
             </S.PreviewPanel>
           </S.Content>
         </S.Layout>
