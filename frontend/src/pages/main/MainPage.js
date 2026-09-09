@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   ArrowRight,
@@ -7,19 +7,15 @@ import {
   Calculator,
   CalendarDays,
   CheckCircle2,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
   Eye,
   Heart,
-  LogOut,
   MapPin,
   MessageCircle,
   RefreshCw,
   Sparkles,
-  UserRound,
-  Users,
 } from "lucide-react";
 
 import * as S from "./MainPageCss";
@@ -206,12 +202,6 @@ const REGION_OPTIONS = {
   southern: { label: "전라 · 경상 · 제주", points: 30 },
 };
 
-const PAGE_SECTION_IDS = {
-  roommates: "recommended-roommates",
-  community: "popular-community",
-  calendar: "campus-calendar",
-};
-
 function getCalendarCells(month) {
   return [
     ...Array.from({ length: month.startOffset }, () => null),
@@ -219,49 +209,8 @@ function getCalendarCells(month) {
   ];
 }
 
-function getStoredUser() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const accessToken =
-    window.localStorage.getItem("accessToken") ||
-    window.localStorage.getItem("token");
-
-  if (!accessToken) {
-    return null;
-  }
-
-  try {
-    const storedProfile = JSON.parse(
-      window.localStorage.getItem("user") ||
-        window.localStorage.getItem("profile") ||
-        "{}",
-    );
-
-    return {
-      name: storedProfile.name || storedProfile.nickname || "내 프로필",
-      initial: (storedProfile.name || storedProfile.nickname || "나").slice(
-        0,
-        1,
-      ),
-    };
-  } catch {
-    return {
-      name: "내 프로필",
-      initial: "나",
-    };
-  }
-}
-
-function MainPage({ pageMode = "home", currentUser, onLogout }) {
+function MainPage() {
   const { hash } = useLocation();
-  const authenticatedUser =
-    currentUser === undefined ? getStoredUser() : currentUser;
-
-  const profileMenuRef = useRef(null);
-  const profileButtonRef = useRef(null);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [savedRoommateIds, setSavedRoommateIds] = useState([]);
   const [activeProfileId, setActiveProfileId] = useState(null);
   const [postFilter, setPostFilter] = useState("전체");
@@ -273,7 +222,7 @@ function MainPage({ pageMode = "home", currentUser, onLogout }) {
   const [scoreResult, setScoreResult] = useState(null);
 
   useEffect(() => {
-    const sectionId = hash.slice(1) || PAGE_SECTION_IDS[pageMode];
+    const sectionId = hash.slice(1);
     if (!sectionId) return undefined;
 
     const frameId = window.requestAnimationFrame(() => {
@@ -281,37 +230,7 @@ function MainPage({ pageMode = "home", currentUser, onLogout }) {
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [hash, pageMode]);
-
-  useEffect(() => {
-    if (!isProfileMenuOpen) return undefined;
-
-    const closeOnOutsideClick = (event) => {
-      if (!profileMenuRef.current?.contains(event.target)) {
-        setIsProfileMenuOpen(false);
-      }
-    };
-
-    const closeOnEscape = (event) => {
-      if (event.key === "Escape") {
-        setIsProfileMenuOpen(false);
-        profileButtonRef.current?.focus();
-      }
-    };
-
-    document.addEventListener("pointerdown", closeOnOutsideClick);
-    document.addEventListener("keydown", closeOnEscape);
-
-    return () => {
-      document.removeEventListener("pointerdown", closeOnOutsideClick);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [isProfileMenuOpen]);
-
-  const handleLogout = () => {
-    setIsProfileMenuOpen(false);
-    onLogout?.();
-  };
+  }, [hash]);
 
   const visiblePosts = useMemo(() => {
     const filteredPosts =
@@ -403,651 +322,543 @@ function MainPage({ pageMode = "home", currentUser, onLogout }) {
   };
 
   return (
-    <>
-      <S.PageGlobalStyle />
+    <S.Page>
+      <S.Container>
+        <S.Section
+          $first
+          id="recommended-roommates"
+          aria-labelledby="roommate-title"
+        >
+          <S.SectionHeader>
+            <div>
+              <S.SectionKicker>RECOMMENDED ROOMMATE</S.SectionKicker>
 
-      <S.PageShell>
-        <S.TopBar>
-          <S.TopBarInner>
-            <S.BrandLink as={Link} to="/" aria-label="Roomie 홈">
-              <S.LogoMark>
-                <Users size={20} aria-hidden="true" />
-              </S.LogoMark>
+              <S.SectionTitle id="roommate-title">
+                나와 잘 맞는 룸메이트
+              </S.SectionTitle>
 
-              <span>Roomie</span>
-            </S.BrandLink>
+              <S.SectionDescription>
+                입력한 생활 습관과 선호 조건을 바탕으로 추천했어요.
+              </S.SectionDescription>
+            </div>
 
-            <S.MainNavigation aria-label="주요 메뉴">
-              <S.NavigationLink
-                as={Link}
-                to="/roommates"
-                className={pageMode === "roommates" ? "active" : undefined}
-              >
-                룸메찾기
-              </S.NavigationLink>
+            <S.MoreLink as={Link} to="/roommates">
+              더보기
+              <ArrowRight size={17} aria-hidden="true" />
+            </S.MoreLink>
+          </S.SectionHeader>
 
-              <S.NavigationLink
-                as={Link}
-                to="/community"
-                className={pageMode === "community" ? "active" : undefined}
-              >
-                커뮤니티
-              </S.NavigationLink>
+          <S.ProfileGrid>
+            {ROOMMATES.map((roommate) => {
+              const isSaved = savedRoommateIds.includes(roommate.id);
 
-              <S.NavigationLink
-                as={Link}
-                to="/chat"
-                className={pageMode === "chat" ? "active" : undefined}
-              >
-                채팅
-              </S.NavigationLink>
+              const isProfileOpen = activeProfileId === roommate.id;
 
-              <S.NavigationLink
-                as={Link}
-                to="/calendar#campus-calendar"
-                className={pageMode === "calendar" ? "active" : undefined}
-              >
-                캘린더
-              </S.NavigationLink>
-            </S.MainNavigation>
+              return (
+                <S.ProfileCard key={roommate.id}>
+                  <S.CardTopline>
+                    <S.MatchBadge>
+                      <Sparkles size={14} aria-hidden="true" />
+                      {roommate.matchScore}% 매칭
+                    </S.MatchBadge>
+                  </S.CardTopline>
 
-            <S.AuthNavigation aria-label="계정 메뉴">
-              {authenticatedUser ? (
-                <S.ProfileMenu ref={profileMenuRef}>
-                  <S.AccountMenuButton
-                    ref={profileButtonRef}
-                    type="button"
-                    aria-label={
-                      isProfileMenuOpen
-                        ? "프로필 메뉴 닫기"
-                        : "프로필 메뉴 열기"
-                    }
-                    aria-haspopup="menu"
-                    aria-expanded={isProfileMenuOpen}
-                    aria-controls="profile-dropdown"
-                    onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
-                  >
-                    <S.HeaderAvatar>
-                      {authenticatedUser.initial ||
-                        authenticatedUser.name?.slice(0, 1) ||
-                        "나"}
-                    </S.HeaderAvatar>
+                  <S.ProfileIdentity>
+                    <S.ProfileAvatar $tone={roommate.tone}>
+                      {roommate.initial}
+                    </S.ProfileAvatar>
 
-                    <S.ProfileName>
-                      {authenticatedUser.name || "내 프로필"}
-                    </S.ProfileName>
+                    <S.ProfileNameArea>
+                      <S.ProfileNameRow>
+                        <h3>{roommate.name}</h3>
 
-                    <ChevronDown size={15} aria-hidden="true" />
-                  </S.AccountMenuButton>
+                        <S.VerifiedBadge title="재학생 인증 완료">
+                          <BadgeCheck size={17} aria-hidden="true" />
+                          인증
+                        </S.VerifiedBadge>
+                      </S.ProfileNameRow>
 
-                  {isProfileMenuOpen && (
-                    <S.ProfileDropdown id="profile-dropdown">
-                      <S.ProfileMenuLink
-                        as={Link}
-                        to="/profile"
-                        onClick={() => setIsProfileMenuOpen(false)}
-                      >
-                        <UserRound size={17} aria-hidden="true" />
-                        <span>마이페이지</span>
-                      </S.ProfileMenuLink>
+                      <p>{roommate.major}</p>
+                    </S.ProfileNameArea>
+                  </S.ProfileIdentity>
 
-                      <S.ProfileMenuDivider aria-hidden="true" />
+                  <S.ProfileMeta>
+                    <span>
+                      <MapPin size={15} aria-hidden="true" />
+                      {roommate.dormitory}
+                    </span>
 
-                      <S.LogoutButton type="button" onClick={handleLogout}>
-                        <LogOut size={17} aria-hidden="true" />
-                        <span>로그아웃</span>
-                      </S.LogoutButton>
-                    </S.ProfileDropdown>
+                    <span>
+                      <Clock size={15} aria-hidden="true" />
+                      {roommate.status}
+                    </span>
+                  </S.ProfileMeta>
+
+                  <S.TagList aria-label={`${roommate.name} 님의 생활 습관`}>
+                    {roommate.tags.map((tag) => (
+                      <S.Tag key={tag}>{tag}</S.Tag>
+                    ))}
+                  </S.TagList>
+
+                  <S.MatchNote>
+                    <CheckCircle2 size={17} aria-hidden="true" />
+                    {roommate.matchNote}
+                  </S.MatchNote>
+
+                  {isProfileOpen && (
+                    <S.ProfileDetails aria-live="polite">
+                      <p>{roommate.introduction}</p>
+
+                      <span>{roommate.preference}</span>
+                    </S.ProfileDetails>
                   )}
-                </S.ProfileMenu>
-              ) : (
-                <S.LoginLink as={Link} to="/login">
-                  로그인
-                </S.LoginLink>
-              )}
-            </S.AuthNavigation>
-          </S.TopBarInner>
-        </S.TopBar>
 
-        <S.Page>
-          <S.Container>
-            <S.Section
-              $first
-              id="recommended-roommates"
-              aria-labelledby="roommate-title"
-            >
-              <S.SectionHeader>
+                  <S.ProfileActionRow>
+                    <S.ProfileButton
+                      type="button"
+                      onClick={() => toggleProfile(roommate.id)}
+                      aria-expanded={isProfileOpen}
+                    >
+                      {isProfileOpen
+                        ? "간단 프로필 닫기"
+                        : "간단 프로필 보기"}
+                    </S.ProfileButton>
+
+                    <S.SaveTextButton
+                      type="button"
+                      $active={isSaved}
+                      onClick={() => toggleSavedRoommate(roommate.id)}
+                    >
+                      <Heart size={16} aria-hidden="true" />
+                      {isSaved ? "저장됨" : "관심 저장"}
+                    </S.SaveTextButton>
+                  </S.ProfileActionRow>
+                </S.ProfileCard>
+              );
+            })}
+          </S.ProfileGrid>
+        </S.Section>
+
+        <S.Section id="popular-community" aria-labelledby="community-title">
+          <S.SectionHeader>
+            <div>
+              <S.SectionKicker>COMMUNITY NOW</S.SectionKicker>
+
+              <S.SectionTitle id="community-title">
+                지금 인기 있는 이야기
+              </S.SectionTitle>
+
+              <S.SectionDescription>
+                기숙사 생활에 도움이 되는 정보와 새로운 모임을 확인하세요.
+              </S.SectionDescription>
+            </div>
+
+            <S.FilterList role="group" aria-label="인기 게시글 분류">
+              {POST_FILTERS.map((filter) => (
+                <S.FilterButton
+                  key={filter}
+                  type="button"
+                  $active={postFilter === filter}
+                  aria-pressed={postFilter === filter}
+                  onClick={() => setPostFilter(filter)}
+                >
+                  {filter}
+                </S.FilterButton>
+              ))}
+            </S.FilterList>
+          </S.SectionHeader>
+
+          <S.CommunityCard>
+            {visiblePosts.length > 0 ? (
+              <S.PostList>
+                {visiblePosts.map((post, index) => (
+                  <S.PostItem key={post.id}>
+                    <S.PostRank aria-label={`인기 순위 ${index + 1}위`}>
+                      {index + 1}
+                    </S.PostRank>
+
+                    <S.PostContent>
+                      <S.PostMetaTop>
+                        <S.CategoryBadge $type={post.category}>
+                          {post.category}
+                        </S.CategoryBadge>
+
+                        <span>{post.time}</span>
+                      </S.PostMetaTop>
+
+                      <S.PostTitle>{post.title}</S.PostTitle>
+
+                      <S.PostExcerpt>{post.excerpt}</S.PostExcerpt>
+
+                      <S.PostAuthor>{post.author}</S.PostAuthor>
+                    </S.PostContent>
+
+                    <S.PostStats aria-label="게시글 반응">
+                      <span>
+                        <Eye size={15} aria-hidden="true" />
+                        {post.views}
+                      </span>
+
+                      <span>
+                        <MessageCircle size={15} aria-hidden="true" />
+                        {post.comments}
+                      </span>
+                    </S.PostStats>
+                  </S.PostItem>
+                ))}
+              </S.PostList>
+            ) : (
+              <S.CompactEmpty>
+                <BookOpen size={25} aria-hidden="true" />
+
                 <div>
-                  <S.SectionKicker>RECOMMENDED ROOMMATE</S.SectionKicker>
+                  <h3>이 분류의 인기 글이 아직 없어요</h3>
 
-                  <S.SectionTitle id="roommate-title">
-                    나와 잘 맞는 룸메이트
-                  </S.SectionTitle>
-
-                  <S.SectionDescription>
-                    입력한 생활 습관과 선호 조건을 바탕으로 추천했어요.
-                  </S.SectionDescription>
+                  <p>다른 분류를 선택해 새로운 이야기를 확인해 보세요.</p>
                 </div>
 
-                <S.MoreLink as={Link} to="/roommates">
-                  더보기
-                  <ArrowRight size={17} aria-hidden="true" />
-                </S.MoreLink>
-              </S.SectionHeader>
+                <S.GhostButton
+                  type="button"
+                  onClick={() => setPostFilter("전체")}
+                >
+                  전체 글 보기
+                </S.GhostButton>
+              </S.CompactEmpty>
+            )}
+          </S.CommunityCard>
+        </S.Section>
 
-              <S.ProfileGrid>
-                {ROOMMATES.map((roommate) => {
-                  const isSaved = savedRoommateIds.includes(roommate.id);
+        <S.Section aria-labelledby="campus-tools-title">
+          <S.SectionHeader>
+            <div>
+              <S.SectionKicker>CAMPUS LIVING TOOLS</S.SectionKicker>
 
-                  const isProfileOpen = activeProfileId === roommate.id;
+              <S.SectionTitle id="campus-tools-title">
+                기숙사 생활, 미리 준비하세요
+              </S.SectionTitle>
+
+              <S.SectionDescription>
+                중요한 일정을 챙기고 간단한 예상 점수도 확인할 수 있어요.
+              </S.SectionDescription>
+            </div>
+          </S.SectionHeader>
+
+          <S.UtilityGrid>
+            <S.ToolCard
+              id="campus-calendar"
+              aria-labelledby="calendar-title"
+            >
+              <S.ToolHeader>
+                <S.ToolHeading>
+                  <S.ToolIcon $tone="blue">
+                    <CalendarDays size={21} aria-hidden="true" />
+                  </S.ToolIcon>
+
+                  <div>
+                    <span>생활관 캘린더</span>
+
+                    <h3 id="calendar-title">놓치면 안 되는 일정</h3>
+                  </div>
+                </S.ToolHeading>
+
+                <S.MonthControls>
+                  <button
+                    type="button"
+                    aria-label="이전 달 보기"
+                    disabled={calendarMonthIndex === 0}
+                    onClick={() => changeMonth(-1)}
+                  >
+                    <ChevronLeft size={18} aria-hidden="true" />
+                  </button>
+
+                  <strong>{activeMonth.label}</strong>
+
+                  <button
+                    type="button"
+                    aria-label="다음 달 보기"
+                    disabled={
+                      calendarMonthIndex === CALENDAR_MONTHS.length - 1
+                    }
+                    onClick={() => changeMonth(1)}
+                  >
+                    <ChevronRight size={18} aria-hidden="true" />
+                  </button>
+                </S.MonthControls>
+              </S.ToolHeader>
+
+              <S.CalendarWeekdays aria-hidden="true">
+                {WEEKDAYS.map((weekday) => (
+                  <span key={weekday}>{weekday}</span>
+                ))}
+              </S.CalendarWeekdays>
+
+              <S.CalendarGrid>
+                {calendarCells.map((day, index) => {
+                  if (day === null) {
+                    return <S.CalendarBlank key={`blank-${index}`} />;
+                  }
+
+                  const hasEvent = Boolean(activeMonth.events[day]);
+
+                  const isSelected = selectedDate === day;
+
+                  const weekdayIndex =
+                    (activeMonth.startOffset + day - 1) % 7;
 
                   return (
-                    <S.ProfileCard key={roommate.id}>
-                      <S.CardTopline>
-                        <S.MatchBadge>
-                          <Sparkles size={14} aria-hidden="true" />
-                          {roommate.matchScore}% 매칭
-                        </S.MatchBadge>
-                      </S.CardTopline>
-
-                      <S.ProfileIdentity>
-                        <S.ProfileAvatar $tone={roommate.tone}>
-                          {roommate.initial}
-                        </S.ProfileAvatar>
-
-                        <S.ProfileNameArea>
-                          <S.ProfileNameRow>
-                            <h3>{roommate.name}</h3>
-
-                            <S.VerifiedBadge title="재학생 인증 완료">
-                              <BadgeCheck size={17} aria-hidden="true" />
-                              인증
-                            </S.VerifiedBadge>
-                          </S.ProfileNameRow>
-
-                          <p>{roommate.major}</p>
-                        </S.ProfileNameArea>
-                      </S.ProfileIdentity>
-
-                      <S.ProfileMeta>
-                        <span>
-                          <MapPin size={15} aria-hidden="true" />
-                          {roommate.dormitory}
-                        </span>
-
-                        <span>
-                          <Clock size={15} aria-hidden="true" />
-                          {roommate.status}
-                        </span>
-                      </S.ProfileMeta>
-
-                      <S.TagList aria-label={`${roommate.name} 님의 생활 습관`}>
-                        {roommate.tags.map((tag) => (
-                          <S.Tag key={tag}>{tag}</S.Tag>
-                        ))}
-                      </S.TagList>
-
-                      <S.MatchNote>
-                        <CheckCircle2 size={17} aria-hidden="true" />
-                        {roommate.matchNote}
-                      </S.MatchNote>
-
-                      {isProfileOpen && (
-                        <S.ProfileDetails aria-live="polite">
-                          <p>{roommate.introduction}</p>
-
-                          <span>{roommate.preference}</span>
-                        </S.ProfileDetails>
-                      )}
-
-                      <S.ProfileActionRow>
-                        <S.ProfileButton
-                          type="button"
-                          onClick={() => toggleProfile(roommate.id)}
-                          aria-expanded={isProfileOpen}
-                        >
-                          {isProfileOpen
-                            ? "간단 프로필 닫기"
-                            : "간단 프로필 보기"}
-                        </S.ProfileButton>
-
-                        <S.SaveTextButton
-                          type="button"
-                          $active={isSaved}
-                          onClick={() => toggleSavedRoommate(roommate.id)}
-                        >
-                          <Heart size={16} aria-hidden="true" />
-                          {isSaved ? "저장됨" : "관심 저장"}
-                        </S.SaveTextButton>
-                      </S.ProfileActionRow>
-                    </S.ProfileCard>
+                    <S.CalendarDay
+                      key={day}
+                      type="button"
+                      $selected={isSelected}
+                      $hasEvent={hasEvent}
+                      $dayTone={
+                        weekdayIndex === 0
+                          ? "sunday"
+                          : weekdayIndex === 6
+                            ? "saturday"
+                            : "weekday"
+                      }
+                      aria-pressed={isSelected}
+                      aria-label={`${activeMonth.shortLabel} ${day}일${
+                        hasEvent ? ", 일정 있음" : ""
+                      }`}
+                      onClick={() => setSelectedDate(day)}
+                    >
+                      <span>{day}</span>
+                    </S.CalendarDay>
                   );
                 })}
-              </S.ProfileGrid>
-            </S.Section>
+              </S.CalendarGrid>
 
-            <S.Section id="popular-community" aria-labelledby="community-title">
-              <S.SectionHeader>
-                <div>
-                  <S.SectionKicker>COMMUNITY NOW</S.SectionKicker>
+              <S.EventPreview aria-live="polite">
+                <S.EventPreviewHeader>
+                  <div>
+                    <span>{activeMonth.shortLabel}</span>
 
-                  <S.SectionTitle id="community-title">
-                    지금 인기 있는 이야기
-                  </S.SectionTitle>
+                    <strong>{selectedDate}</strong>
+                  </div>
 
-                  <S.SectionDescription>
-                    기숙사 생활에 도움이 되는 정보와 새로운 모임을 확인하세요.
-                  </S.SectionDescription>
-                </div>
+                  <p>{selectedDate}일 일정</p>
+                </S.EventPreviewHeader>
 
-                <S.FilterList role="group" aria-label="인기 게시글 분류">
-                  {POST_FILTERS.map((filter) => (
-                    <S.FilterButton
-                      key={filter}
-                      type="button"
-                      $active={postFilter === filter}
-                      aria-pressed={postFilter === filter}
-                      onClick={() => setPostFilter(filter)}
-                    >
-                      {filter}
-                    </S.FilterButton>
-                  ))}
-                </S.FilterList>
-              </S.SectionHeader>
-
-              <S.CommunityCard>
-                {visiblePosts.length > 0 ? (
-                  <S.PostList>
-                    {visiblePosts.map((post, index) => (
-                      <S.PostItem key={post.id}>
-                        <S.PostRank aria-label={`인기 순위 ${index + 1}위`}>
-                          {index + 1}
-                        </S.PostRank>
-
-                        <S.PostContent>
-                          <S.PostMetaTop>
-                            <S.CategoryBadge $type={post.category}>
-                              {post.category}
-                            </S.CategoryBadge>
-
-                            <span>{post.time}</span>
-                          </S.PostMetaTop>
-
-                          <S.PostTitle>{post.title}</S.PostTitle>
-
-                          <S.PostExcerpt>{post.excerpt}</S.PostExcerpt>
-
-                          <S.PostAuthor>{post.author}</S.PostAuthor>
-                        </S.PostContent>
-
-                        <S.PostStats aria-label="게시글 반응">
-                          <span>
-                            <Eye size={15} aria-hidden="true" />
-                            {post.views}
-                          </span>
-
-                          <span>
-                            <MessageCircle size={15} aria-hidden="true" />
-                            {post.comments}
-                          </span>
-                        </S.PostStats>
-                      </S.PostItem>
-                    ))}
-                  </S.PostList>
-                ) : (
-                  <S.CompactEmpty>
-                    <BookOpen size={25} aria-hidden="true" />
-
-                    <div>
-                      <h3>이 분류의 인기 글이 아직 없어요</h3>
-
-                      <p>다른 분류를 선택해 새로운 이야기를 확인해 보세요.</p>
-                    </div>
-
-                    <S.GhostButton
-                      type="button"
-                      onClick={() => setPostFilter("전체")}
-                    >
-                      전체 글 보기
-                    </S.GhostButton>
-                  </S.CompactEmpty>
-                )}
-              </S.CommunityCard>
-            </S.Section>
-
-            <S.Section aria-labelledby="campus-tools-title">
-              <S.SectionHeader>
-                <div>
-                  <S.SectionKicker>CAMPUS LIVING TOOLS</S.SectionKicker>
-
-                  <S.SectionTitle id="campus-tools-title">
-                    기숙사 생활, 미리 준비하세요
-                  </S.SectionTitle>
-
-                  <S.SectionDescription>
-                    중요한 일정을 챙기고 간단한 예상 점수도 확인할 수 있어요.
-                  </S.SectionDescription>
-                </div>
-              </S.SectionHeader>
-
-              <S.UtilityGrid>
-                <S.ToolCard
-                  id="campus-calendar"
-                  aria-labelledby="calendar-title"
-                >
-                  <S.ToolHeader>
-                    <S.ToolHeading>
-                      <S.ToolIcon $tone="blue">
-                        <CalendarDays size={21} aria-hidden="true" />
-                      </S.ToolIcon>
-
-                      <div>
-                        <span>생활관 캘린더</span>
-
-                        <h3 id="calendar-title">놓치면 안 되는 일정</h3>
-                      </div>
-                    </S.ToolHeading>
-
-                    <S.MonthControls>
-                      <button
-                        type="button"
-                        aria-label="이전 달 보기"
-                        disabled={calendarMonthIndex === 0}
-                        onClick={() => changeMonth(-1)}
+                {selectedEvents.length > 0 ? (
+                  <S.EventList>
+                    {selectedEvents.map((eventItem) => (
+                      <S.EventItem
+                        key={`${eventItem.title}-${eventItem.type}`}
                       >
-                        <ChevronLeft size={18} aria-hidden="true" />
-                      </button>
-
-                      <strong>{activeMonth.label}</strong>
-
-                      <button
-                        type="button"
-                        aria-label="다음 달 보기"
-                        disabled={
-                          calendarMonthIndex === CALENDAR_MONTHS.length - 1
-                        }
-                        onClick={() => changeMonth(1)}
-                      >
-                        <ChevronRight size={18} aria-hidden="true" />
-                      </button>
-                    </S.MonthControls>
-                  </S.ToolHeader>
-
-                  <S.CalendarWeekdays aria-hidden="true">
-                    {WEEKDAYS.map((weekday) => (
-                      <span key={weekday}>{weekday}</span>
-                    ))}
-                  </S.CalendarWeekdays>
-
-                  <S.CalendarGrid>
-                    {calendarCells.map((day, index) => {
-                      if (day === null) {
-                        return <S.CalendarBlank key={`blank-${index}`} />;
-                      }
-
-                      const hasEvent = Boolean(activeMonth.events[day]);
-
-                      const isSelected = selectedDate === day;
-
-                      const weekdayIndex =
-                        (activeMonth.startOffset + day - 1) % 7;
-
-                      return (
-                        <S.CalendarDay
-                          key={day}
-                          type="button"
-                          $selected={isSelected}
-                          $hasEvent={hasEvent}
-                          $dayTone={
-                            weekdayIndex === 0
-                              ? "sunday"
-                              : weekdayIndex === 6
-                                ? "saturday"
-                                : "weekday"
-                          }
-                          aria-pressed={isSelected}
-                          aria-label={`${activeMonth.shortLabel} ${day}일${
-                            hasEvent ? ", 일정 있음" : ""
-                          }`}
-                          onClick={() => setSelectedDate(day)}
-                        >
-                          <span>{day}</span>
-                        </S.CalendarDay>
-                      );
-                    })}
-                  </S.CalendarGrid>
-
-                  <S.EventPreview aria-live="polite">
-                    <S.EventPreviewHeader>
-                      <div>
-                        <span>{activeMonth.shortLabel}</span>
-
-                        <strong>{selectedDate}</strong>
-                      </div>
-
-                      <p>{selectedDate}일 일정</p>
-                    </S.EventPreviewHeader>
-
-                    {selectedEvents.length > 0 ? (
-                      <S.EventList>
-                        {selectedEvents.map((eventItem) => (
-                          <S.EventItem
-                            key={`${eventItem.title}-${eventItem.type}`}
-                          >
-                            <S.EventMarker />
-
-                            <div>
-                              <S.EventType>{eventItem.type}</S.EventType>
-
-                              <strong>{eventItem.title}</strong>
-
-                              <span>{eventItem.detail}</span>
-                            </div>
-                          </S.EventItem>
-                        ))}
-                      </S.EventList>
-                    ) : (
-                      <S.EventEmpty>
-                        <CalendarDays size={19} aria-hidden="true" />
-                        선택한 날짜에는 등록된 일정이 없어요.
-                      </S.EventEmpty>
-                    )}
-                  </S.EventPreview>
-                </S.ToolCard>
-
-                <S.ToolCard aria-labelledby="calculator-title">
-                  <S.ToolHeader>
-                    <S.ToolHeading>
-                      <S.ToolIcon $tone="mint">
-                        <Calculator size={21} aria-hidden="true" />
-                      </S.ToolIcon>
-
-                      <div>
-                        <span>기숙사 점수 계산기</span>
-
-                        <h3 id="calculator-title">내 예상 점수 알아보기</h3>
-                      </div>
-                    </S.ToolHeading>
-                  </S.ToolHeader>
-
-                  <S.ScoreForm onSubmit={calculateDormitoryScore}>
-                    <S.FormGrid>
-                      <S.FieldGroup>
-                        <label htmlFor="region">지역</label>
-
-                        <S.SelectWrap>
-                          <select
-                            id="region"
-                            name="region"
-                            value={scoreForm.region}
-                            onChange={handleScoreFieldChange}
-                            aria-describedby="region-hint"
-                          >
-                            {Object.entries(REGION_OPTIONS).map(
-                              ([value, option]) => (
-                                <option key={value} value={value}>
-                                  {option.label}
-                                </option>
-                              ),
-                            )}
-                          </select>
-
-                          <ChevronRight size={17} aria-hidden="true" />
-                        </S.SelectWrap>
-
-                        <small id="region-hint">지역 기준 최대 30점 반영</small>
-                      </S.FieldGroup>
-
-                      <S.FieldGroup>
-                        <label htmlFor="grade">직전 학기 설정</label>
-
-                        <S.InputWithSuffix>
-                          <input
-                            id="grade"
-                            name="grade"
-                            type="number"
-                            min="0"
-                            max="4.5"
-                            step="0.1"
-                            value={scoreForm.grade}
-                            onChange={handleScoreFieldChange}
-                            aria-describedby="grade-hint"
-                          />
-
-                          <span>/ 4.5</span>
-                        </S.InputWithSuffix>
-
-                        <small id="grade-hint">최대 55점 반영</small>
-                      </S.FieldGroup>
-
-                      <S.FieldGroup $wide>
-                        <label htmlFor="priority">우선 선발 조건</label>
-
-                        <S.SelectWrap>
-                          <select
-                            id="priority"
-                            name="priority"
-                            value={scoreForm.priority}
-                            onChange={handleScoreFieldChange}
-                          >
-                            <option value="0">해당 없음</option>
-
-                            <option value="8">원거리 특별 기준 (+8점)</option>
-
-                            <option value="15">우선 선발 대상 (+15점)</option>
-                          </select>
-
-                          <ChevronRight size={17} aria-hidden="true" />
-                        </S.SelectWrap>
-                      </S.FieldGroup>
-                    </S.FormGrid>
-
-                    <S.FormActions>
-                      <S.CalculateButton type="submit">
-                        예상 점수 계산하기
-                        <ArrowRight size={17} aria-hidden="true" />
-                      </S.CalculateButton>
-
-                      <S.ResetButton
-                        type="button"
-                        onClick={resetDormitoryScore}
-                      >
-                        <RefreshCw size={16} aria-hidden="true" />
-                        초기화
-                      </S.ResetButton>
-                    </S.FormActions>
-                  </S.ScoreForm>
-
-                  {scoreResult ? (
-                    <S.ScoreResult aria-live="polite">
-                      <S.ScoreSummary>
-                        <S.ScoreRing $score={scoreResult.total}>
-                          <S.ScoreRingInner>
-                            <strong>{scoreResult.total}</strong>
-
-                            <span>점</span>
-                          </S.ScoreRingInner>
-                        </S.ScoreRing>
+                        <S.EventMarker />
 
                         <div>
-                          <S.ResultLabel>나의 예상 총점</S.ResultLabel>
+                          <S.EventType>{eventItem.type}</S.EventType>
 
-                          <S.ResultTitle>{scoreResult.message}</S.ResultTitle>
+                          <strong>{eventItem.title}</strong>
 
-                          <S.ResultDescription>
-                            입력한 조건을 기준으로 간단히 계산했어요.
-                          </S.ResultDescription>
+                          <span>{eventItem.detail}</span>
                         </div>
-                      </S.ScoreSummary>
+                      </S.EventItem>
+                    ))}
+                  </S.EventList>
+                ) : (
+                  <S.EventEmpty>
+                    <CalendarDays size={19} aria-hidden="true" />
+                    선택한 날짜에는 등록된 일정이 없어요.
+                  </S.EventEmpty>
+                )}
+              </S.EventPreview>
+            </S.ToolCard>
 
-                      <S.ScoreBreakdown>
-                        <S.ScoreRow>
-                          <div>
-                            <span>직전 학기 성적</span>
+            <S.ToolCard aria-labelledby="calculator-title">
+              <S.ToolHeader>
+                <S.ToolHeading>
+                  <S.ToolIcon $tone="mint">
+                    <Calculator size={21} aria-hidden="true" />
+                  </S.ToolIcon>
 
-                            <strong>{scoreResult.gradePoints} / 55</strong>
-                          </div>
+                  <div>
+                    <span>기숙사 점수 계산기</span>
 
-                          <S.ScoreBar>
-                            <S.ScoreBarFill
-                              $value={(scoreResult.gradePoints / 55) * 100}
-                            />
-                          </S.ScoreBar>
-                        </S.ScoreRow>
+                    <h3 id="calculator-title">내 예상 점수 알아보기</h3>
+                  </div>
+                </S.ToolHeading>
+              </S.ToolHeader>
 
-                        <S.ScoreRow>
-                          <div>
-                            <span>지역</span>
+              <S.ScoreForm onSubmit={calculateDormitoryScore}>
+                <S.FormGrid>
+                  <S.FieldGroup>
+                    <label htmlFor="region">지역</label>
 
-                            <strong>{scoreResult.regionPoints} / 30</strong>
-                          </div>
+                    <S.SelectWrap>
+                      <select
+                        id="region"
+                        name="region"
+                        value={scoreForm.region}
+                        onChange={handleScoreFieldChange}
+                        aria-describedby="region-hint"
+                      >
+                        {Object.entries(REGION_OPTIONS).map(
+                          ([value, option]) => (
+                            <option key={value} value={value}>
+                              {option.label}
+                            </option>
+                          ),
+                        )}
+                      </select>
 
-                          <S.ScoreBar>
-                            <S.ScoreBarFill
-                              $value={(scoreResult.regionPoints / 30) * 100}
-                            />
-                          </S.ScoreBar>
-                        </S.ScoreRow>
+                      <ChevronRight size={17} aria-hidden="true" />
+                    </S.SelectWrap>
 
-                        <S.ScoreRow>
-                          <div>
-                            <span>우선 조건</span>
+                    <small id="region-hint">지역 기준 최대 30점 반영</small>
+                  </S.FieldGroup>
 
-                            <strong>{scoreResult.priorityPoints}점</strong>
-                          </div>
+                  <S.FieldGroup>
+                    <label htmlFor="grade">직전 학기 설정</label>
 
-                          <S.ScoreBar>
-                            <S.ScoreBarFill
-                              $value={(scoreResult.priorityPoints / 15) * 100}
-                            />
-                          </S.ScoreBar>
-                        </S.ScoreRow>
-                      </S.ScoreBreakdown>
-                    </S.ScoreResult>
-                  ) : (
-                    <S.ScoreEmpty>
-                      <S.EmptyCalculatorIcon>
-                        <Calculator size={23} aria-hidden="true" />
-                      </S.EmptyCalculatorIcon>
+                    <S.InputWithSuffix>
+                      <input
+                        id="grade"
+                        name="grade"
+                        type="number"
+                        min="0"
+                        max="4.5"
+                        step="0.1"
+                        value={scoreForm.grade}
+                        onChange={handleScoreFieldChange}
+                        aria-describedby="grade-hint"
+                      />
 
+                      <span>/ 4.5</span>
+                    </S.InputWithSuffix>
+
+                    <small id="grade-hint">최대 55점 반영</small>
+                  </S.FieldGroup>
+
+                  <S.FieldGroup $wide>
+                    <label htmlFor="priority">우선 선발 조건</label>
+
+                    <S.SelectWrap>
+                      <select
+                        id="priority"
+                        name="priority"
+                        value={scoreForm.priority}
+                        onChange={handleScoreFieldChange}
+                      >
+                        <option value="0">해당 없음</option>
+
+                        <option value="8">원거리 특별 기준 (+8점)</option>
+
+                        <option value="15">우선 선발 대상 (+15점)</option>
+                      </select>
+
+                      <ChevronRight size={17} aria-hidden="true" />
+                    </S.SelectWrap>
+                  </S.FieldGroup>
+                </S.FormGrid>
+
+                <S.FormActions>
+                  <S.CalculateButton type="submit">
+                    예상 점수 계산하기
+                    <ArrowRight size={17} aria-hidden="true" />
+                  </S.CalculateButton>
+
+                  <S.ResetButton
+                    type="button"
+                    onClick={resetDormitoryScore}
+                  >
+                    <RefreshCw size={16} aria-hidden="true" />
+                    초기화
+                  </S.ResetButton>
+                </S.FormActions>
+              </S.ScoreForm>
+
+              {scoreResult ? (
+                <S.ScoreResult aria-live="polite">
+                  <S.ScoreSummary>
+                    <S.ScoreRing $score={scoreResult.total}>
+                      <S.ScoreRingInner>
+                        <strong>{scoreResult.total}</strong>
+
+                        <span>점</span>
+                      </S.ScoreRingInner>
+                    </S.ScoreRing>
+
+                    <div>
+                      <S.ResultLabel>나의 예상 총점</S.ResultLabel>
+
+                      <S.ResultTitle>{scoreResult.message}</S.ResultTitle>
+
+                      <S.ResultDescription>
+                        입력한 조건을 기준으로 간단히 계산했어요.
+                      </S.ResultDescription>
+                    </div>
+                  </S.ScoreSummary>
+
+                  <S.ScoreBreakdown>
+                    <S.ScoreRow>
                       <div>
-                        <h4>아직 계산된 점수가 없어요</h4>
+                        <span>직전 학기 성적</span>
 
-                        <p>위 조건을 확인하고 예상 점수를 계산해 보세요.</p>
+                        <strong>{scoreResult.gradePoints} / 55</strong>
                       </div>
-                    </S.ScoreEmpty>
-                  )}
 
-                  <S.Disclaimer>
-                    학교별 실제 선발 기준과 무관한 UI 확인용 예시 계산입니다.
-                  </S.Disclaimer>
-                </S.ToolCard>
-              </S.UtilityGrid>
-            </S.Section>
-          </S.Container>
-        </S.Page>
-      </S.PageShell>
-    </>
+                      <S.ScoreBar>
+                        <S.ScoreBarFill
+                          $value={(scoreResult.gradePoints / 55) * 100}
+                        />
+                      </S.ScoreBar>
+                    </S.ScoreRow>
+
+                    <S.ScoreRow>
+                      <div>
+                        <span>지역</span>
+
+                        <strong>{scoreResult.regionPoints} / 30</strong>
+                      </div>
+
+                      <S.ScoreBar>
+                        <S.ScoreBarFill
+                          $value={(scoreResult.regionPoints / 30) * 100}
+                        />
+                      </S.ScoreBar>
+                    </S.ScoreRow>
+
+                    <S.ScoreRow>
+                      <div>
+                        <span>우선 조건</span>
+
+                        <strong>{scoreResult.priorityPoints}점</strong>
+                      </div>
+
+                      <S.ScoreBar>
+                        <S.ScoreBarFill
+                          $value={(scoreResult.priorityPoints / 15) * 100}
+                        />
+                      </S.ScoreBar>
+                    </S.ScoreRow>
+                  </S.ScoreBreakdown>
+                </S.ScoreResult>
+              ) : (
+                <S.ScoreEmpty>
+                  <S.EmptyCalculatorIcon>
+                    <Calculator size={23} aria-hidden="true" />
+                  </S.EmptyCalculatorIcon>
+
+                  <div>
+                    <h4>아직 계산된 점수가 없어요</h4>
+
+                    <p>위 조건을 확인하고 예상 점수를 계산해 보세요.</p>
+                  </div>
+                </S.ScoreEmpty>
+              )}
+
+              <S.Disclaimer>
+                학교별 실제 선발 기준과 무관한 UI 확인용 예시 계산입니다.
+              </S.Disclaimer>
+            </S.ToolCard>
+          </S.UtilityGrid>
+        </S.Section>
+      </S.Container>
+    </S.Page>
   );
 }
 
