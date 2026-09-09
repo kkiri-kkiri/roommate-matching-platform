@@ -46,69 +46,10 @@ export const Page = styled.main`
   }
 `;
 export const Content = styled.div`width: min(100%, 1200px); min-width: 0; margin: 0 auto;`;
-export const Breadcrumb = styled.nav`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 28px;
-  color: #747781;
-  font-size: 13px;
-  @media (max-width: 799px) { margin-bottom: 20px; }
-`;
-export const TextLink = styled(Link)`
-  color: #5e616b;
-  text-decoration: none;
-  &:hover { color: #0c3273; text-decoration: underline; }
-  ${focus}
-`;
-export const Intro = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 32px;
-  @media (max-width: 799px) { flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
-`;
-export const Eyebrow = styled.p`
-  margin: 0 0 8px;
-  color: #006a65;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-`;
-export const Title = styled.h1`
-  margin: 0;
-  color: #001d4f;
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 44px;
-  letter-spacing: -0.02em;
-  @media (max-width: 799px) { font-size: 24px; line-height: 32px; }
-`;
-export const Description = styled.p`
-  margin: 10px 0 0;
-  color: #5e616b;
-  font-size: 16px;
-  line-height: 24px;
-  word-break: keep-all;
-  @media (max-width: 799px) { font-size: 14px; }
-`;
-export const UnreadSummary = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  padding: 10px 16px;
-  border-radius: 999px;
-  background: #e7f8f6;
-  color: #006a65;
-  font-size: 13px;
-  strong { font-weight: 700; }
-`;
 export const Workspace = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
-  height: clamp(660px, calc(100dvh - 276px), 800px);
+  height: max(800px, calc(100dvh - 160px));
   overflow: hidden;
   border: 1px solid #e2e2e4;
   border-radius: 16px;
@@ -116,7 +57,7 @@ export const Workspace = styled.div`
   box-shadow: 0 4px 12px rgba(12, 50, 115, 0.05);
   @media (max-width: 799px) {
     grid-template-columns: minmax(0, 1fr);
-    height: clamp(520px, calc(100dvh - 180px), 760px);
+    height: max(640px, calc(100dvh - 160px));
   }
 `;
 export const Sidebar = styled.aside`
@@ -295,23 +236,31 @@ export const IconButton = styled.button`
   color: #5e616b;
   &:hover { background: #f3f3f3; color: #0c3273; }
 `;
-export const ContextBar = styled.div`
+export const SearchBar = styled.div`
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
+  flex-shrink: 0;
   gap: 12px;
-  padding: 16px 24px;
-  border-bottom: 1px solid #e6edef;
-  background: #eef5f6;
-  color: #006a65;
-  @media (max-width: 799px) { padding: 12px 16px; gap: 8px; }
+  padding: 12px 24px;
+  border-bottom: 1px solid #e2e2e4;
+  background: white;
+  color: #747781;
+  @media (max-width: 799px) { padding: 12px 16px; }
 `;
-export const ContextCopy = styled.div`
+export const SearchInput = styled.input`
   flex: 1;
   min-width: 0;
-  strong { display: block; color: #244485; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
-  p { margin: 4px 0 0; color: #5e616b; font-size: 12px; line-height: 20px; word-break: keep-all; overflow-wrap: anywhere; }
+  padding: 10px 12px;
+  border: 1px solid #e2e2e4;
+  border-radius: 8px;
+  background: #f8f9fb;
+  color: #1a1c1c;
+  font-size: 14px;
+  &::placeholder { color: #747781; }
+  ${focus}
+  @media (max-width: 799px) { font-size: 16px; }
 `;
+export const SearchCount = styled.span`flex-shrink: 0; font-size: 12px;`;
 export const ContextLink = styled(Link)`
   display: inline-flex;
   align-items: center;
@@ -335,19 +284,6 @@ export const MessageScroller = styled.div`
   scrollbar-color: #c4c6d2 transparent;
   ${focus}
   @media (max-width: 799px) { padding: 20px 16px; }
-`;
-export const HistoryButton = styled.button`
-  ${button}
-  display: flex;
-  min-height: 36px;
-  margin: 0 auto 24px;
-  padding: 7px 14px;
-  border: 1px solid #e2e2e4;
-  border-radius: 999px;
-  background: white;
-  color: #5e616b;
-  font-size: 12px;
-  &:hover { background: #edf2fc; color: #0c3273; }
 `;
 export const DateDivider = styled.div`
   display: flex;
@@ -424,17 +360,6 @@ export const MessageInput = styled.textarea`
   @media (max-width: 799px) { font-size: 16px; }
 `;
 export const SendButton = styled.button`${primary} flex-shrink: 0; margin: 4px; padding: 10px 14px;`;
-export const ComposerHint = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px 12px;
-  margin-top: 8px;
-  color: #747781;
-  font-size: 12px;
-  line-height: 18px;
-`;
 export const EmptyState = styled.div`
   display: flex;
   flex: 1;
