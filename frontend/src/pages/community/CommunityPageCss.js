@@ -13,7 +13,7 @@ const button = css`
   padding: 8px 14px;
   border: 1px solid transparent;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 20px;
   text-decoration: none;
@@ -132,7 +132,7 @@ export const Navigation = styled.nav`
 export const NavigationTitle = styled.h2`
   margin: 0 10px 8px;
   color: #747781;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
   ${({ $separated }) => $separated && css`margin-top: 12px; padding-top: 12px; border-top: 1px solid #eeeeee;`}
@@ -157,7 +157,7 @@ export const NavLink = styled(Link)`
   border-radius: 12px;
   background: ${({ $active }) => $active ? "#e7f8f6" : "transparent"};
   color: ${({ $active }) => $active ? "#006a65" : "#444650"};
-  font-size: 14px;
+  font-size: 13px;
   font-weight: ${({ $active }) => $active ? 700 : 500};
   text-decoration: none;
   &:hover { background: ${({ $active }) => $active ? "#dbf3ef" : "#f3f3f3"}; }
@@ -171,8 +171,8 @@ export const KindnessNote = styled.div`
   background: #edf4ef;
   color: #426855;
   > svg { width: 20px; height: 20px; margin-bottom: 6px; }
-  strong { display: block; font-size: 13px; }
-  p { margin: 6px 0 0; color: #527060; font-size: 12px; line-height: 19px; }
+  strong { display: block; font-size: 12px; }
+  p { margin: 6px 0 0; color: #527060; font-size: 11px; line-height: 19px; }
   @media (max-width: 600px) {
     padding: 12px 14px;
     > svg { float: left; margin: 0 10px 0 0; }
@@ -197,8 +197,8 @@ export const BoardHeading = styled.div`
   gap: 16px;
   padding: 16px 24px 12px;
   > button { width: 96px; height: 36px; padding: 6px 8px; margin-left: auto; }
-  h2 { margin: 0; color: #001d4f; font-size: 18px; font-weight: 600; line-height: 26px; letter-spacing: 0.015em; }
-  p { margin: 6px 0 0; color: #747781; font-size: 13px; word-break: keep-all; }
+  h2 { margin: 0; color: #001d4f; font-size: 16px; font-weight: 600; line-height: 26px; letter-spacing: 0.015em; }
+  p { margin: 6px 0 0; color: #747781; font-size: 12px; word-break: keep-all; }
   @media (max-width: 600px) { padding: 14px 16px 10px; }
 `;
 export const Controls = styled.div`
@@ -248,7 +248,7 @@ export const SortLabel = styled.label`
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  > span { display: none; color: #747781; font-size: 13px; }
+  > span { display: none; color: #747781; font-size: 12px; }
   @media (max-width: 600px) { > span { display: inline; } }
 `;
 export const SortSelect = styled.select`
@@ -261,7 +261,7 @@ export const SortSelect = styled.select`
   background: white;
   color: #444650;
   cursor: pointer;
-  && { font-size: 14px; }
+  && { font-size: 13px; }
   ${focus}
 `;
 export const SearchSummary = styled.div`
@@ -272,7 +272,7 @@ export const SearchSummary = styled.div`
   padding: 12px 28px;
   background: #f6f9fc;
   color: #444650;
-  font-size: 13px;
+  font-size: 12px;
   overflow-wrap: anywhere;
   @media (max-width: 600px) { padding: 12px 16px; }
 `;
@@ -286,7 +286,7 @@ export const ClearButton = styled.button`
   text-decoration: underline;
   cursor: pointer;
   white-space: nowrap;
-  && { font-size: 12px; }
+  && { font-size: 11px; }
   ${focus}
 `;
 export const PostList = styled.ul`margin: 0; padding: 0; list-style: none;`;
@@ -336,7 +336,7 @@ export const PostTitleLink = styled(Link)`
   max-width: 100%;
   color: #1a1c1c;
   text-decoration: none;
-  h3 { min-width: 0; margin: 0; font-size: 15px; font-weight: 600; line-height: 23px; word-break: keep-all; overflow-wrap: anywhere; }
+  h3 { min-width: 0; margin: 0; font-size: 14px; font-weight: 600; line-height: 23px; word-break: keep-all; overflow-wrap: anywhere; }
   &:hover h3 { color: #0c3273; text-decoration: underline; text-underline-offset: 4px; }
   ${focus}
 `;
@@ -347,7 +347,7 @@ export const Excerpt = styled.p`
   white-space: nowrap;
   text-overflow: ellipsis;
   color: #747781;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 20px;
 `;
 export const PostBottom = styled.div`
@@ -357,7 +357,7 @@ export const PostBottom = styled.div`
   justify-content: space-between;
   gap: 8px 16px;
   color: #747781;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 20px;
 `;
 export const Metadata = styled.div`
@@ -381,9 +381,9 @@ export const CommentTop = styled.div`
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
-  time { color: #747781; font-size: 12px; }
+  time { color: #747781; font-size: 11px; }
 `;
-export const MyComment = styled.p`margin: 16px 0; font-size: 15px; white-space: pre-wrap; overflow-wrap: anywhere;`;
+export const MyComment = styled.p`margin: 16px 0; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere;`;
 export const OriginalPostLink = styled(Link)`
   display: flex;
   align-items: center;
@@ -392,7 +392,7 @@ export const OriginalPostLink = styled(Link)`
   border-radius: 12px;
   background: #f6f7f9;
   color: #0c3273;
-  font-size: 13px;
+  font-size: 12px;
   text-decoration: none;
   span { min-width: 0; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   &:hover { background: #edf2fc; }
@@ -404,8 +404,8 @@ export const EmptyState = styled.div`
   align-items: center;
   padding: 64px 24px;
   text-align: center;
-  h1, h3 { margin: 20px 0 0; color: #001d4f; font-size: 20px; line-height: 28px; }
-  p { max-width: 420px; margin: 12px 0 24px; color: #747781; font-size: 14px; word-break: keep-all; }
+  h1, h3 { margin: 20px 0 0; color: #001d4f; font-size: 16px; line-height: 28px; }
+  p { max-width: 420px; margin: 12px 0 24px; color: #747781; font-size: 13px; word-break: keep-all; }
 `;
 export const EmptyIcon = styled.div`
   display: grid;
@@ -438,7 +438,7 @@ export const PageButton = styled.button`
   color: ${({ $active }) => $active ? "white" : "#444650"};
   background: ${({ $active }) => $active ? "#0c3273" : "transparent"};
   cursor: pointer;
-  && { font-size: 13px; font-weight: ${({ $active }) => $active ? 700 : 500}; }
+  && { font-size: 12px; font-weight: ${({ $active }) => $active ? 700 : 500}; }
   &:hover:not(:disabled) { background: ${({ $active }) => $active ? "#001d4f" : "#f3f3f3"}; }
   &:disabled { opacity: 0.35; cursor: default; }
   ${focus}
@@ -455,5 +455,5 @@ export const Feedback = styled.div`
   border-radius: 12px;
   background: #e7f8f6;
   color: #006a65;
-  font-size: 14px;
+  font-size: 13px;
 `;

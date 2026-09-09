@@ -26,12 +26,12 @@ const button = css`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 44px;
-  padding: 11px 20px;
+  min-height: 36px;
+  padding: 7px 14px;
   border: 1px solid transparent;
   border-radius: 12px;
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 20px;
   cursor: pointer;
@@ -48,7 +48,7 @@ const button = css`
 `;
 
 export const Page = styled.section`
-  width: min(100%, 880px);
+  width: min(100%, 760px);
   margin: 0 auto;
   color: ${colors.text};
 
@@ -138,18 +138,18 @@ export const FormHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 24px 32px;
+  padding: 14px 20px;
   border-bottom: 1px solid ${colors.border};
 
   @media (max-width: 640px) {
-    padding: 20px;
+    padding: 12px 16px;
   }
 `;
 
-export const FormTitle = styled.h2`
+export const FormTitle = styled.h1`
   margin: 0;
   color: ${colors.navyDark};
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 26px;
 `;
@@ -157,7 +157,7 @@ export const FormTitle = styled.h2`
 export const RequiredNote = styled.span`
   flex-shrink: 0;
   color: ${colors.muted};
-  font-size: 12px;
+  font-size: 11px;
   line-height: 18px;
 
   > span {
@@ -167,12 +167,12 @@ export const RequiredNote = styled.span`
 
 export const Fields = styled.div`
   display: grid;
-  gap: 32px;
-  padding: 32px;
+  gap: 16px;
+  padding: 16px 20px;
 
   @media (max-width: 640px) {
-    gap: 28px;
-    padding: 24px 20px;
+    gap: 14px;
+    padding: 14px 16px;
   }
 `;
 
@@ -184,10 +184,10 @@ export const CategoryField = styled.fieldset`
 `;
 
 export const Legend = styled.legend`
-  margin: 0 0 12px;
+  margin: 0 0 8px;
   padding: 0;
   color: ${colors.text};
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 20px;
 `;
@@ -200,7 +200,7 @@ export const RequiredMark = styled.span`
 export const CategoryGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
 
   @media (max-width: 640px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -240,9 +240,9 @@ export const CategoryCard = styled.span`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
-  min-height: 114px;
-  padding: 16px 13px;
+  gap: 4px;
+  min-height: 88px;
+  padding: 10px;
   border: 1px solid ${colors.border};
   border-radius: 12px;
   color: ${colors.secondary};
@@ -253,14 +253,14 @@ export const CategoryCard = styled.span`
   }
 
   > strong {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     line-height: 20px;
   }
 
   > small {
     color: ${colors.secondary};
-    font-size: 12px;
+    font-size: 11px;
     line-height: 17px;
     word-break: keep-all;
   }
@@ -289,19 +289,19 @@ export const FieldHeading = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 `;
 
 export const Label = styled.label`
   color: ${colors.text};
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 20px;
 `;
 
 export const Counter = styled.span`
   color: ${colors.muted};
-  font-size: 12px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
   line-height: 18px;
 `;
@@ -309,14 +309,14 @@ export const Counter = styled.span`
 const input = css`
   display: block;
   width: 100%;
-  padding: 15px 16px;
+  padding: 8px 12px;
   border: 1px solid ${colors.border};
   border-radius: 12px;
   outline: none;
   color: ${colors.text};
   background: #ffffff;
   font: inherit;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 24px;
 
   &::placeholder {
@@ -340,12 +340,12 @@ export const Input = styled.input`
 
 export const Textarea = styled.textarea`
   ${input};
-  min-height: 280px;
+  min-height: 160px;
   resize: vertical;
-  line-height: 28px;
+  line-height: 24px;
 
   @media (max-width: 640px) {
-    min-height: 240px;
+    min-height: 140px;
   }
 `;
 
@@ -355,7 +355,7 @@ export const Error = styled.p`
   gap: 6px;
   margin: 10px 0 0;
   color: ${colors.error};
-  font-size: 13px;
+  font-size: 12px;
   line-height: 20px;
 
   > svg {
@@ -374,15 +374,15 @@ export const ImageField = styled.fieldset`
 export const Optional = styled.span`
   margin-left: 5px;
   color: ${colors.muted};
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 400;
 `;
 
 export const UploadArea = styled.div`
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 24px 20px;
+  gap: 12px;
+  padding: 12px;
   border: 1px dashed #cbd5d6;
   border-radius: 12px;
   background: #fbfcfc;
@@ -393,7 +393,7 @@ export const UploadArea = styled.div`
 
   @media (max-width: 420px) {
     gap: 12px;
-    padding: 20px 16px;
+    padding: 12px;
   }
 `;
 
@@ -402,8 +402,8 @@ export const UploadIcon = styled.span`
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: 12px;
   color: ${colors.mintDark};
   background: #eaf4f2;
@@ -415,14 +415,14 @@ export const UploadCopy = styled.div`
 
   > strong {
     color: ${colors.secondary};
-    font-size: 14px;
+    font-size: 13px;
     line-height: 20px;
   }
 
   > p {
     margin: 6px 0 0;
     color: ${colors.muted};
-    font-size: 12px;
+    font-size: 11px;
     line-height: 19px;
   }
 `;
@@ -430,18 +430,18 @@ export const UploadCopy = styled.div`
 export const UploadButton = styled.button`
   ${button};
   flex-shrink: 0;
-  padding: 10px 14px;
+  padding: 7px 12px;
   border-color: ${colors.mint};
   color: ${colors.mintDark};
   background: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
 
   &:hover:not(:disabled) {
     background: ${colors.mintSoft};
   }
 
   @media (max-width: 720px) {
-    margin-left: 64px;
+    margin-left: 48px;
   }
 
   @media (max-width: 420px) {
@@ -457,7 +457,7 @@ export const FileInput = styled.input`
 export const ImageStatus = styled.p`
   margin: 12px 0 0;
   color: ${colors.mintDark};
-  font-size: 13px;
+  font-size: 12px;
   line-height: 20px;
 `;
 
@@ -471,7 +471,7 @@ export const ImageHint = styled.p`
 export const ImageCount = styled.p`
   margin: 20px 0 12px;
   color: ${colors.secondary};
-  font-size: 12px;
+  font-size: 11px;
   line-height: 18px;
 
   > strong {
@@ -549,7 +549,7 @@ export const ImageName = styled.p`
   overflow: hidden;
   margin: 8px 0 0;
   color: ${colors.secondary};
-  font-size: 12px;
+  font-size: 11px;
   line-height: 18px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -587,16 +587,16 @@ export const Guide = styled.aside`
 export const Actions = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 16px;
-  padding: 24px 32px;
+  padding: 12px 20px;
   border-top: 1px solid ${colors.border};
   background: #fdfdfc;
 
   @media (max-width: 640px) {
     flex-direction: column;
     align-items: stretch;
-    padding: 20px;
+    padding: 12px 16px;
   }
 `;
 
