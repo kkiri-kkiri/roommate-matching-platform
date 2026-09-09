@@ -5,21 +5,47 @@ import interactionPlugin from "@fullcalendar/interaction";
 import koLocale from "@fullcalendar/core/locales/ko";
 import {
   CalendarDays, CalendarPlus, Check, ChevronLeft, ChevronRight,
-  Clock3, Filter, Pencil, Plus, Trash2, X,
+  Clock3, Pencil, Plus, Trash2, X,
 } from "lucide-react";
 
 import * as S from "./CalendarPageCss";
 
-// 분류별 색상은 CalendarPageCss의 CATEGORY_STYLES 한곳에서 변경합니다.
 const CATEGORIES = [
   { id: "school", label: "학교 일정" },
   { id: "dormitory", label: "기숙사 일정" },
   { id: "roommate", label: "룸메찾기 일정" },
   { id: "personal", label: "개인 일정" },
 ];
-const CATEGORY_IDS = CATEGORIES.map(({ id }) => id);
-const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map(({ id, label }) => [id, label]));
+const FIXED_CATEGORY_IDS = ["school", "dormitory"];
 const CALENDAR_PLUGINS = [dayGridPlugin, interactionPlugin];
+const CATEGORY_COLORS_KEY = "calendar-category-colors";
+const CATEGORY_SETTINGS_KEY = "calendar-category-settings";
+
+function loadCategorySettings() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(CATEGORY_COLORS_KEY)) || {}; } catch {}
+  const defaults = CATEGORIES.map((category) => ({ ...category,
+    color: /^#[0-9a-f]{6}$/i.test(saved[category.id]) ? saved[category.id] : S.CATEGORY_STYLES[category.id].color,
+  }));
+  try {
+    const settings = JSON.parse(localStorage.getItem(CATEGORY_SETTINGS_KEY));
+    if (!Array.isArray(settings)) return defaults;
+    const valid = settings.filter((item, index) => item && typeof item.id === "string" &&
+      /^[a-z0-9-]+$/.test(item.id) && typeof item.label === "string" && item.label.trim() &&
+      item.label.length <= 30 && /^#[0-9a-f]{6}$/i.test(item.color) &&
+      settings.findIndex((other) => other?.id === item.id) === index);
+    return [...defaults.filter(({ id }) => FIXED_CATEGORY_IDS.includes(id)).map((item) => ({
+      ...item, color: valid.find(({ id }) => id === item.id)?.color || item.color,
+    })), ...valid.filter(({ id }) => !FIXED_CATEGORY_IDS.includes(id))];
+  } catch { return defaults; }
+}
+
+function colorStyle(color) {
+  const channels = [1, 3, 5].map((offset) => parseInt(color.slice(offset, offset + 2), 16));
+  const background = `rgb(${channels.map((channel) => Math.round(channel * 0.1 + 255 * 0.9)).join(", ")})`;
+  const text = `rgb(${channels.map((channel) => Math.round(channel * 0.6)).join(", ")})`;
+  return { color, background, text };
+}
 
 function dateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -57,7 +83,7 @@ function createSampleEvents(today) {
   ];
 }
 
-function validateDraft(draft) {
+function validateDraft(draft, categoryIds) {
   const errors = {};
   if (!draft.title.trim()) errors.title = "일정 제목을 입력해 주세요.";
   else if (draft.title.trim().length > 80) errors.title = "제목은 80자 이내로 입력해 주세요.";
@@ -69,7 +95,7 @@ function validateDraft(draft) {
   if (!timePattern.test(draft.startTime)) errors.startTime = "시작 시간을 선택해 주세요.";
   if (!timePattern.test(draft.endTime)) errors.endTime = "종료 시간을 선택해 주세요.";
   else if (!errors.startTime && draft.endTime <= draft.startTime) errors.endTime = "종료 시간은 시작 시간보다 늦어야 해요.";
-  if (!CATEGORY_IDS.includes(draft.category)) errors.category = "일정 분류를 선택해 주세요.";
+  if (!categoryIds.includes(draft.category)) errors.category = "일정 분류를 선택해 주세요.";
   if (draft.description.length > 2000) errors.description = "내용은 2,000자 이내로 입력해 주세요.";
   return errors;
 }
@@ -110,10 +136,27 @@ function CalendarDialog({ title, description, onDismiss, children }) {
 
 function CalendarPage() {
   const [initialDate] = useState(() => new Date());
-  const [events, setEvents] = useState(() => createSampleEvents(initialDate));
+  const [categorySettings, setCategorySettings] = useState(loadCategorySettings);
+  const categoryIds = categorySettings.map(({ id }) => id);
+  const categoryLabels = Object.fromEntries(categorySettings.map(({ id, label }) => [id, label]));
+  const [settingsDraft, setSettingsDraft] = useState([]);
+  const [settingsError, setSettingsError] = useState("");
+  const [events, setEvents] = useState(() => createSampleEvents(initialDate).map((event) => (
+    categorySettings.some(({ id }) => id === event.category) ? event : { ...event, category: "school" }
+  )));
   const [selectedDate, setSelectedDate] = useState(() => dateKey(initialDate));
   const [visibleMonth, setVisibleMonth] = useState(() => dateKey(initialDate).slice(0, 7));
-  const [categories, setCategories] = useState(CATEGORY_IDS);
+  const [categories, setCategories] = useState(categoryIds);
+  const categoryStyles = useMemo(() => Object.fromEntries(
+    categorySettings.map(({ id, color }) => [id, colorStyle(color)]),
+  ), [categorySettings]);
+  const categoryVariables = Object.fromEntries(categoryIds.flatMap((id) =>
+    Object.entries(categoryStyles[id]).map(([name, value]) => [`--category-${id}-${name}`, value]),
+  ));
+
+  useEffect(() => {
+    try { localStorage.setItem(CATEGORY_SETTINGS_KEY, JSON.stringify(categorySettings)); } catch {}
+  }, [categorySettings]);
   const [agendaScope, setAgendaScope] = useState("day");
   const [dialog, setDialog] = useState(null);
   const [draft, setDraft] = useState(null);
@@ -132,21 +175,20 @@ function CalendarPage() {
   const dayEvents = filteredEvents.filter((event) => event.date === selectedDate);
   const agendaEvents = agendaScope === "day" ? dayEvents : monthEvents;
   const eventDates = useMemo(() => new Set(filteredEvents.map((event) => event.date)), [filteredEvents]);
-  const totalMonthEvents = events.filter((event) => event.date.startsWith(visibleMonth)).length;
   const activeEvent = dialog?.eventId ? events.find((event) => event.id === dialog.eventId) : null;
   const isFormOpen = dialog?.mode === "create" || dialog?.mode === "edit";
   const calendarEvents = useMemo(() => filteredEvents.map((event) => {
-    const categoryStyle = S.CATEGORY_STYLES[event.category];
+    const categoryStyle = categoryStyles[event.category];
     return {
       id: event.id, title: event.title,
       start: `${event.date}T${event.startTime}:00`, end: `${event.date}T${event.endTime}:00`,
       allDay: false,
       backgroundColor: categoryStyle.background,
       borderColor: categoryStyle.color,
-      textColor: categoryStyle.color,
+      textColor: categoryStyle.text,
       extendedProps: { category: event.category, description: event.description },
     };
-  }), [filteredEvents]);
+  }), [filteredEvents, categoryStyles]);
 
   const handleDatesSet = useCallback(({ view }) => {
     const firstDate = dateKey(view.currentStart);
@@ -187,6 +229,7 @@ function CalendarPage() {
   };
 
   const openDetail = (eventId) => {
+    setStatus("");
     dialogTriggerRef.current = document.activeElement;
     setErrors({});
     setDialog({ mode: "detail", eventId });
@@ -198,6 +241,31 @@ function CalendarPage() {
     setDialog({ mode: "edit", eventId: activeEvent.id });
   };
 
+  const openCategorySettings = () => {
+    dialogTriggerRef.current = document.activeElement;
+    setSettingsDraft(categorySettings.map((item) => ({ ...item })));
+    setSettingsError("");
+    setDialog({ mode: "categories" });
+  };
+
+  const updateCategory = (id, field, value) => {
+    if (field === "label" && FIXED_CATEGORY_IDS.includes(id)) return;
+    setSettingsDraft((current) => current.map((item) => item.id === id ? { ...item, [field]: value } : item));
+    setSettingsError("");
+  };
+
+  const saveCategorySettings = (event) => {
+    event.preventDefault();
+    const next = settingsDraft.map((item) => ({ ...item, label: item.label.trim() }));
+    if (next.some(({ label }) => !label || label.length > 30) || new Set(next.map(({ label }) => label)).size !== next.length) {
+      setSettingsError("카테고리 이름은 중복 없이 1~30자로 입력해 주세요.");
+      return;
+    }
+    setCategorySettings(next);
+    setCategories((current) => next.filter(({ id }) => current.includes(id) || !categoryIds.includes(id)).map(({ id }) => id));
+    closeDialog();
+  };
+
   const updateDraft = (event) => {
     const { name, value } = event.target;
     setDraft((current) => ({ ...current, [name]: value }));
@@ -206,7 +274,7 @@ function CalendarPage() {
 
   const saveEvent = (event) => {
     event.preventDefault();
-    const nextErrors = validateDraft(draft);
+    const nextErrors = validateDraft(draft, categoryIds);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
       event.currentTarget.elements.namedItem(Object.keys(nextErrors)[0])?.focus();
@@ -224,14 +292,13 @@ function CalendarPage() {
     setCategories((current) => current.includes(savedEvent.category) ? current : [...current, savedEvent.category]);
     selectDate(savedEvent.date);
     closeDialog();
-    setStatus(`“${savedEvent.title}” 일정을 ${isEditing ? "수정" : "등록"}했어요.`);
+    setStatus(isEditing ? "" : `“${savedEvent.title}” 일정을 등록했어요.`);
   };
 
   const deleteEvent = () => {
-    const deletedTitle = activeEvent.title;
     setEvents((current) => current.filter((event) => event.id !== activeEvent.id));
     closeDialog();
-    setStatus(`“${deletedTitle}” 일정을 삭제했어요.`);
+    setStatus("");
   };
 
   const fieldProps = (name) => ({
@@ -244,25 +311,8 @@ function CalendarPage() {
     ? <S.FieldError id={`calendar-${name}-error`} role="alert">{errors[name]}</S.FieldError> : null;
 
   return (
-    <S.Page id="campus-calendar">
+    <S.Page id="campus-calendar" style={categoryVariables}>
       <S.Content>
-        <S.Breadcrumb aria-label="현재 위치">
-          <S.TextLink to="/">홈</S.TextLink>
-          <ChevronRight size={14} aria-hidden="true" />
-          <span aria-current="page">캘린더</span>
-        </S.Breadcrumb>
-
-        <S.Intro>
-          <div>
-            <S.Eyebrow>PLAN YOUR CAMPUS LIFE</S.Eyebrow>
-            <S.Title>우리의 일상을 한눈에</S.Title>
-            <S.Description>학교부터 룸메이트와의 약속까지, 소중한 일정을 함께 챙겨요.</S.Description>
-          </div>
-          <S.PrimaryButton ref={addButtonRef} type="button" onClick={() => openCreate()}>
-            <Plus size={18} aria-hidden="true" /> 일정 등록
-          </S.PrimaryButton>
-        </S.Intro>
-
         <S.Status role="status" aria-live="polite" aria-atomic="true">{status}</S.Status>
 
         <S.Workspace>
@@ -279,24 +329,31 @@ function CalendarPage() {
               </S.MonthNavigation>
               <S.SecondaryButton type="button" onClick={goToday}>오늘</S.SecondaryButton>
             </S.Toolbar>
-            <S.MonthSummary>이번 달 일정 <strong>{monthEvents.length}</strong>개 <span>· 전체 {totalMonthEvents}개</span></S.MonthSummary>
 
-            <S.Filters>
-              <legend><Filter size={14} aria-hidden="true" /> 일정 분류 <span>여러 분류를 함께 선택할 수 있어요</span></legend>
-              <S.FilterButton type="button" $active={categories.length === CATEGORY_IDS.length}
-                aria-pressed={categories.length === CATEGORY_IDS.length} onClick={() => setCategories(CATEGORY_IDS)}>
+            <S.Filters aria-label="일정 분류 필터 및 색상 설정">
+              <S.FilterButton type="button" $active={categories.length === categoryIds.length}
+                aria-pressed={categories.length === categoryIds.length} onClick={() => setCategories(categoryIds)}>
                 전체
               </S.FilterButton>
-              {CATEGORIES.map(({ id, label }) => (
+              {categorySettings.map(({ id, label }) => (
                 <S.FilterButton key={id} type="button" $category={id} $active={categories.includes(id)}
                   aria-pressed={categories.includes(id)} onClick={() => toggleCategory(id)}>
                   <S.ColorDot $category={id} aria-hidden="true" />{label}
                   {categories.includes(id) && <Check size={12} aria-hidden="true" />}
                 </S.FilterButton>
               ))}
+              <S.IconButton type="button" aria-label="카테고리 설정" title="카테고리 설정" onClick={openCategorySettings}>
+                <Plus size={20} aria-hidden="true" />
+              </S.IconButton>
             </S.Filters>
 
-            <S.CalendarSurface>
+            <S.CalendarSurface onDoubleClick={(event) => {
+              if (event.target.closest(".fc-event, .fc-daygrid-more-link")) return;
+              const date = event.target.closest(".fc-daygrid-day[data-date]")?.dataset.date;
+              if (!date) return;
+              selectDate(date);
+              openCreate(date);
+            }}>
               <FullCalendar
                 ref={calendarRef}
                 plugins={CALENDAR_PLUGINS}
@@ -322,7 +379,7 @@ function CalendarPage() {
                 dateClick={({ dateStr }) => selectDate(dateStr)}
                 eventClick={({ event, jsEvent }) => { jsEvent.stopPropagation(); openDetail(event.id); }}
                 eventContent={({ event, timeText }) => (
-                  <S.CalendarEvent title={`${CATEGORY_LABELS[event.extendedProps.category]} · ${event.title} · ${timeText}`}>
+                  <S.CalendarEvent title={`${categoryLabels[event.extendedProps.category]} · ${event.title} · ${timeText}`}>
                     <span>{timeText}</span> {event.title}
                   </S.CalendarEvent>
                 )}
@@ -345,7 +402,6 @@ function CalendarPage() {
                 moreLinkClick="popover"
               />
             </S.CalendarSurface>
-            <S.CalendarHint><CalendarDays size={16} aria-hidden="true" /> 날짜를 선택하면 그날의 일정을 확인할 수 있어요.</S.CalendarHint>
             {monthEvents.length === 0 && (
               <S.EmptyState role="status">
                 <strong>{categories.length === 0 ? "조회할 일정 분류를 선택해 주세요" : "이번 달에 표시할 일정이 없어요"}</strong>
@@ -374,9 +430,9 @@ function CalendarPage() {
                 {agendaEvents.map((event) => (
                   <S.AgendaItem key={event.id}>
                     <S.AgendaButton type="button" onClick={() => openDetail(event.id)}
-                      aria-label={`${event.title}, ${formatDate(event.date, false)}, ${event.startTime}부터 ${event.endTime}, ${CATEGORY_LABELS[event.category]}, 상세 보기`}>
+                      aria-label={`${event.title}, ${formatDate(event.date, false)}, ${event.startTime}부터 ${event.endTime}, ${categoryLabels[event.category]}, 상세 보기`}>
                       <S.AgendaMeta>
-                        <S.CategoryBadge $category={event.category}><S.ColorDot $category={event.category} aria-hidden="true" />{CATEGORY_LABELS[event.category]}</S.CategoryBadge>
+                        <S.CategoryBadge $category={event.category}><S.ColorDot $category={event.category} aria-hidden="true" />{categoryLabels[event.category]}</S.CategoryBadge>
                         <ChevronRight size={16} aria-hidden="true" />
                       </S.AgendaMeta>
                       <S.EventTitle>{event.title}</S.EventTitle>
@@ -391,15 +447,62 @@ function CalendarPage() {
                 <S.EmptyIcon><CalendarDays size={28} aria-hidden="true" /></S.EmptyIcon>
                 <strong>{categories.length === 0 ? "선택된 분류가 없어요" : "아직 일정이 없어요"}</strong>
                 <p>{categories.length === 0 ? "원하는 일정 분류를 선택해 주세요." : "여유로운 하루에 새로운 계획을 더해 보세요."}</p>
-                {categories.length === 0 && <S.GhostButton type="button" onClick={() => setCategories(CATEGORY_IDS)}>전체 분류 보기</S.GhostButton>}
+                {categories.length === 0 && <S.GhostButton type="button" onClick={() => setCategories(categoryIds)}>전체 분류 보기</S.GhostButton>}
               </S.EmptyState>
             )}
-            <S.SecondaryButton type="button" onClick={() => openCreate()}>
-              <CalendarPlus size={18} aria-hidden="true" /> 선택한 날짜에 일정 등록
+            <S.SecondaryButton ref={addButtonRef} type="button" onClick={() => openCreate()}>
+              <CalendarPlus size={18} aria-hidden="true" /> 일정 등록
             </S.SecondaryButton>
             <S.FormHint>예시 일정으로 구성된 화면이에요. 변경한 일정은 새로고침하면 초기화돼요.</S.FormHint>
           </S.Sidebar>
         </S.Workspace>
+
+        {dialog?.mode === "categories" && (
+          <CalendarDialog key="categories" title="카테고리 설정" onDismiss={closeDialog}
+            description="학교 일정과 기숙사 일정은 고정 카테고리예요. 색상은 자유롭게 변경할 수 있어요.">
+            <S.Form onSubmit={saveCategorySettings}>
+              <S.SettingsList>
+                {settingsDraft.map(({ id, label, color }) => {
+                  const fixed = FIXED_CATEGORY_IDS.includes(id);
+                  const inUse = events.some((event) => event.category === id);
+                  return (
+                    <S.SettingsRow key={id}>
+                      <S.Field>
+                        <label htmlFor={`category-name-${id}`}>카테고리 이름 {fixed && <span>· 고정</span>}</label>
+                        <S.Input id={`category-name-${id}`} value={label} readOnly={fixed} required maxLength={30}
+                          onChange={(event) => updateCategory(id, "label", event.target.value)} />
+                        {!fixed && inUse && <S.FormHint>사용 중인 카테고리는 삭제할 수 없어요.</S.FormHint>}
+                      </S.Field>
+                      <S.Field>
+                        <label htmlFor={`category-color-${id}`}>색상</label>
+                        <S.ColorPicker id={`category-color-${id}`} type="color" value={color}
+                          aria-label={`${label || "새 카테고리"} 색상 설정`}
+                          onChange={(event) => updateCategory(id, "color", event.target.value)} />
+                      </S.Field>
+                      {!fixed && <S.IconButton type="button" aria-label={`${label || "새 카테고리"} 삭제`} disabled={inUse}
+                        onClick={() => {
+                          if (FIXED_CATEGORY_IDS.includes(id) || events.some((event) => event.category === id)) return;
+                          setSettingsDraft((current) => current.filter((item) => item.id !== id));
+                          setSettingsError("");
+                        }}><Trash2 size={18} aria-hidden="true" /></S.IconButton>}
+                    </S.SettingsRow>
+                  );
+                })}
+              </S.SettingsList>
+              <S.GhostButton type="button" onClick={() => {
+                setSettingsDraft((current) => [...current, {
+                  id: `custom-${Date.now()}-${eventSequence.current++}`, label: "", color: "#006a65",
+                }]);
+                setSettingsError("");
+              }}><Plus size={18} aria-hidden="true" /> 카테고리 추가</S.GhostButton>
+              {settingsError && <S.FieldError role="alert">{settingsError}</S.FieldError>}
+              <S.DialogActions>
+                <S.GhostButton type="button" onClick={closeDialog}>취소</S.GhostButton>
+                <S.PrimaryButton type="submit">설정 저장</S.PrimaryButton>
+              </S.DialogActions>
+            </S.Form>
+          </CalendarDialog>
+        )}
 
         {isFormOpen && draft && (
           <CalendarDialog key={dialog.mode} title={dialog.mode === "edit" ? "일정 수정" : "새 일정 등록"}
@@ -431,11 +534,11 @@ function CalendarPage() {
                   <label htmlFor="calendar-category">일정 분류 *</label>
                   <S.Select {...fieldProps("category")} required>
                     <option value="">분류를 선택해 주세요</option>
-                    {CATEGORIES.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}
+                    {categorySettings.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}
                   </S.Select>
                   {fieldError("category")}
                   {draft.category && <S.CategoryPreview>
-                    <S.CategoryBadge $category={draft.category}><S.ColorDot $category={draft.category} aria-hidden="true" />{CATEGORY_LABELS[draft.category]}</S.CategoryBadge>
+                    <S.CategoryBadge $category={draft.category}><S.ColorDot $category={draft.category} aria-hidden="true" />{categoryLabels[draft.category]}</S.CategoryBadge>
                     <span>이 분류의 색상으로 표시돼요.</span>
                   </S.CategoryPreview>}
                 </S.Field>
@@ -457,7 +560,7 @@ function CalendarPage() {
         {dialog?.mode === "detail" && activeEvent && (
           <CalendarDialog key="detail" title="일정 상세" onDismiss={closeDialog}>
             <S.DialogBody>
-              <S.CategoryBadge $category={activeEvent.category}><S.ColorDot $category={activeEvent.category} aria-hidden="true" />{CATEGORY_LABELS[activeEvent.category]}</S.CategoryBadge>
+              <S.CategoryBadge $category={activeEvent.category}><S.ColorDot $category={activeEvent.category} aria-hidden="true" />{categoryLabels[activeEvent.category]}</S.CategoryBadge>
               <S.DetailTitle>{activeEvent.title}</S.DetailTitle>
               <S.DetailList>
                 <div><dt>날짜</dt><dd>{formatDate(activeEvent.date)}</dd></div>
@@ -466,24 +569,13 @@ function CalendarPage() {
               </S.DetailList>
               <S.DetailDescription><h3>일정 내용</h3><p>{activeEvent.description || "등록된 내용이 없어요."}</p></S.DetailDescription>
               <S.DialogActions>
-                <S.DangerButton type="button" onClick={() => setDialog({ mode: "delete", eventId: activeEvent.id })}><Trash2 size={16} aria-hidden="true" /> 삭제</S.DangerButton>
+                <S.DangerButton type="button" onClick={deleteEvent}><Trash2 size={16} aria-hidden="true" /> 삭제</S.DangerButton>
                 <S.PrimaryButton type="button" onClick={openEdit}><Pencil size={16} aria-hidden="true" /> 일정 수정</S.PrimaryButton>
               </S.DialogActions>
             </S.DialogBody>
           </CalendarDialog>
         )}
 
-        {dialog?.mode === "delete" && activeEvent && (
-          <CalendarDialog key="delete" title="일정을 삭제할까요?" description="삭제한 일정은 되돌릴 수 없어요." onDismiss={closeDialog}>
-            <S.DialogBody>
-              <S.DeleteNotice><strong>{activeEvent.title}</strong><span>{formatDate(activeEvent.date)} · {activeEvent.startTime} – {activeEvent.endTime}</span></S.DeleteNotice>
-              <S.DialogActions>
-                <S.GhostButton type="button" onClick={() => setDialog({ mode: "detail", eventId: activeEvent.id })}>취소</S.GhostButton>
-                <S.DangerButton type="button" onClick={deleteEvent}><Trash2 size={16} aria-hidden="true" /> 일정 삭제</S.DangerButton>
-              </S.DialogActions>
-            </S.DialogBody>
-          </CalendarDialog>
-        )}
       </S.Content>
     </S.Page>
   );
