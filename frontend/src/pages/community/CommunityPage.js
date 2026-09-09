@@ -210,14 +210,7 @@ function CommunityPage({ currentUser }) {
         navigate("/community", { replace: true });
       }} />;
   } else {
-    const title = isMyPosts ? "내가 작성한 게시글" : isMyComments ? "내가 작성한 댓글" : "커뮤니티";
     content = <>
-      <S.Breadcrumb aria-label="현재 위치"><S.TextLink to="/">홈</S.TextLink><ChevronRight size={14} aria-hidden="true" /><span>{title}</span></S.Breadcrumb>
-      <S.Intro>
-        <div><S.Eyebrow>OUR CAMPUS, OUR STORIES</S.Eyebrow><S.Title>{title}</S.Title>
-          <S.Description>{isMyPosts ? "내가 나눈 이야기와 이웃들의 반응을 모아봤어요." : isMyComments ? "함께 나눈 대화, 댓글과 답글을 한곳에서 확인해요." : "같은 공간에서 시작되는 이야기, 우리 함께 나눠요."}</S.Description></div>
-        <S.PrimaryButton type="button" onClick={startPost}><PenLine size={18} aria-hidden="true" />글쓰기</S.PrimaryButton>
-      </S.Intro>
       <S.Layout>
         <S.Sidebar>
           <S.Navigation aria-label="커뮤니티 게시판">
@@ -238,7 +231,10 @@ function CommunityPage({ currentUser }) {
           <S.KindnessNote><ShieldCheck size={23} aria-hidden="true" /><strong>배려가 머무는 커뮤니티</strong><p>서로를 존중하는 말 한마디로<br />더 편안한 생활을 만들어요.</p></S.KindnessNote>
         </S.Sidebar>
         <S.Board aria-labelledby="board-title">
-          <S.BoardHeading><div><h2 id="board-title">{isMyPosts ? "내 게시글" : isMyComments ? "내 댓글" : category === "전체" ? "전체 게시글" : category}</h2><p>{isMyPosts || isMyComments ? "함께 쌓아 온 나의 이야기예요." : categoryInfo.description}</p></div></S.BoardHeading>
+          <S.BoardHeading>
+            <div><h2 id="board-title">{isMyPosts ? "내 게시글" : isMyComments ? "내 댓글" : category === "전체" ? "전체 게시글" : category}</h2><p>{isMyPosts || isMyComments ? "함께 쌓아 온 나의 이야기예요." : categoryInfo.description}</p></div>
+            <S.PrimaryButton type="button" onClick={startPost}><PenLine size={18} aria-hidden="true" />글쓰기</S.PrimaryButton>
+          </S.BoardHeading>
           {!isMyComments && <S.Controls>
             <S.SearchForm role="search" onSubmit={(event) => { event.preventDefault(); updateFilters({ q: searchInput.trim() }); }}>
               <S.SearchField><Search size={19} aria-hidden="true" /><S.SearchInput type="search" aria-label="게시글 제목과 내용 검색" placeholder="제목이나 내용으로 검색해 보세요" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} /></S.SearchField>
@@ -274,7 +270,7 @@ function CommunityPage({ currentUser }) {
     </>;
   }
 
-  return <S.Page><S.Content>{notice && <S.Feedback role="status"><span>{notice}</span><S.ClearButton type="button" aria-label="알림 닫기" onClick={() => setNotice("")}>닫기</S.ClearButton></S.Feedback>}{content}</S.Content></S.Page>;
+  return <S.Page $compactTop={Boolean(postId) || isCreate}><S.Content>{notice && <S.Feedback role="status"><span>{notice}</span><S.ClearButton type="button" aria-label="알림 닫기" onClick={() => setNotice("")}>닫기</S.ClearButton></S.Feedback>}{content}</S.Content></S.Page>;
 }
 
 export default CommunityPage;

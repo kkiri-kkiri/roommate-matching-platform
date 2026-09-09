@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -105,7 +105,7 @@ function CommentComposer({ id, label, onSubmit, onCancel, compact = false }) {
         id={id}
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        placeholder={compact ? "따뜻한 답글을 남겨 주세요." : "이웃에게 전하고 싶은 이야기를 남겨 주세요."}
+        placeholder={compact ? "따뜻한 답글을 남겨 주세요." : "전하고 싶은 이야기를 남겨 주세요."}
         maxLength={COMMENT_LIMIT}
         $compact={compact}
         autoFocus={compact}
@@ -126,7 +126,7 @@ function CommentComposer({ id, label, onSubmit, onCancel, compact = false }) {
   );
 }
 
-function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onReport, onReply, replying }) {
+function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onReport, onReply, replying, onChat }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(entry.content);
   const mine = Boolean(currentUser && currentUser.name === entry.authorId);
@@ -142,6 +142,9 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
           {mine && <S.AuthorBadge>나</S.AuthorBadge>}
           <time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time>
         </div>
+        {!mine && <S.ChatButton type="button" onClick={onChat} aria-label={`${entry.author}님에게 채팅 보내기`}>
+          <MessageCircle size={14} aria-hidden="true" />채팅
+        </S.ChatButton>}
       </S.CommentHeader>
       {editing && mine ? (
         <S.CommentForm $compact onSubmit={(event) => {
@@ -199,6 +202,7 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
 }
 
 function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEdit, onRequireLogin }) {
+  const navigate = useNavigate();
   const [notice, setNotice] = useState("");
   const [replyTarget, setReplyTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -215,6 +219,17 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
     if (currentUser) return true;
     onRequireLogin();
     return false;
+  };
+
+  const startChat = (author, authorId, from) => {
+    if (!requireUser() || authorId === currentUser.name) return;
+    const roomId = `community-${encodeURIComponent(currentUser.name)}-${encodeURIComponent(authorId)}`;
+    navigate(`/chat?room=${encodeURIComponent(roomId)}`, {
+      state: { communityChat: {
+        roomId, recipientId: authorId, nickname: author, ownerId: currentUser.name,
+        sourcePost: { id: post.id, title: post.title, from },
+      } },
+    });
   };
 
   const toggleLike = () => {
@@ -344,6 +359,10 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
               <span><Eye size={13} aria-hidden="true" />조회 {post.views.toLocaleString()}</span>
             </S.Metadata>
           </S.AuthorInfo>
+          {!mine && <S.ChatButton type="button" onClick={() => startChat(post.author, post.authorId, "게시글")}
+            aria-label={`${post.author}님에게 채팅 보내기`}>
+            <MessageCircle size={15} aria-hidden="true" />채팅
+          </S.ChatButton>}
         </S.AuthorRow>
         <S.Content>{post.content}</S.Content>
         {post.images?.length > 0 && (
@@ -358,7 +377,7 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
         )}
         <S.Reactions>
           <S.LikeButton type="button" $active={liked} aria-pressed={liked} onClick={toggleLike}>
-            <Heart size={18} aria-hidden="true" />좋아요 <span>{post.likes.toLocaleString()}</span>
+            <Heart size={16} aria-hidden="true" />좋아요 <span>{post.likes.toLocaleString()}</span>
           </S.LikeButton>
           <S.TextButton type="button" onClick={() => openReport()} disabled={reported}>
             <Flag size={15} aria-hidden="true" />{reported ? "신고 완료" : "게시글 신고"}
@@ -368,7 +387,6 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
 
       <S.CommentsCard aria-labelledby="community-comments-title">
         <S.CommentsHeading id="community-comments-title"><MessageCircle size={21} aria-hidden="true" />댓글 <span>{commentCount}</span></S.CommentsHeading>
-        <S.CommentsHint>작은 공감과 다정한 한마디가 이웃에게 힘이 돼요.</S.CommentsHint>
         {currentUser ? (
           <CommentComposer id="community-new-comment" label={`${currentUser.name}님의 댓글`} onSubmit={(content) => addComment(content)} />
         ) : (
@@ -387,6 +405,7 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
               <S.CommentThread key={comment.id}>
                 <CommentEntry
                   entry={comment}
+                  onChat={() => startChat(comment.author, comment.authorId, "댓글")}
                   currentUser={currentUser}
                   postAuthorId={post.authorId}
                   onSave={(content) => saveComment(comment.id, null, content)}
@@ -401,8 +420,10 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
                   <S.ReplyList aria-label={`${comment.author}님 댓글의 답글`}>
                     {comment.replies.map((reply) => (
                       <li key={reply.id}>
+                        <S.ReplyTarget><Reply size={14} aria-hidden="true" />{comment.author}님에게 답글</S.ReplyTarget>
                         <CommentEntry
                           entry={reply}
+                          onChat={() => startChat(reply.author, reply.authorId, "댓글")}
                           currentUser={currentUser}
                           postAuthorId={post.authorId}
                           onSave={(content) => saveComment(comment.id, reply.id, content)}
