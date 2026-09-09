@@ -1,21 +1,19 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
-  ArrowLeft, ArrowRight, Building2, CheckCheck, ChevronRight,
-  Clock3, LogOut, MessageCircle, MessagesSquare, Send, UserRound, Users, X,
+  ArrowLeft, ArrowRight, CheckCheck,
+  Clock3, LogOut, MessageCircle, MessagesSquare, Search, Send, UserRound, X,
 } from "lucide-react";
 
 import * as S from "./ChatPageCss";
 
 const CATEGORIES = [
   { id: "all", label: "전체" },
-  { id: "dormitory", label: "기숙사" },
   { id: "roommate", label: "룸메찾기" },
   { id: "community", label: "커뮤니티" },
 ];
-const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map(({ id, label }) => [id, label]));
+const CATEGORY_LABELS = { dormitory: "기숙사", ...Object.fromEntries(CATEGORIES.map(({ id, label }) => [id, label])) };
 const SAMPLE_TIME = Date.now() - 10 * 60 * 1000;
-const INITIAL_MESSAGE_COUNT = 5;
 const MAX_MESSAGE_LENGTH = 2000;
 
 function sampleTimestamp(minutesAgo) {
@@ -183,13 +181,12 @@ function ChatPage() {
   const [category, setCategory] = useState("all");
   const [mobileOpen, setMobileOpen] = useState(Boolean(searchParams.get("room")));
   const [drafts, setDrafts] = useState({});
-  const [historyCounts, setHistoryCounts] = useState({});
+  const [messageSearch, setMessageSearch] = useState("");
   const [leaveRoomId, setLeaveRoomId] = useState(null);
   const [status, setStatus] = useState("");
   const scrollerRef = useRef(null);
   const inputRef = useRef(null);
   const listHeadingRef = useRef(null);
-  const scrollRestoreRef = useRef(null);
   const messageSequence = useRef(0);
   const selectedId = searchParams.get("room") ?? INITIAL_ROOMS[0].id;
   const activeRoom = rooms.find((room) => room.id === selectedId);
@@ -199,15 +196,17 @@ function ChatPage() {
   const visibleRooms = rooms
     .filter((room) => category === "all" || room.category === category)
     .sort((first, second) => new Date(lastActivity(second)) - new Date(lastActivity(first)));
-  const unreadCount = rooms.reduce((count, room) => count + room.unread, 0);
   const draft = drafts[selectedId] || "";
   const messages = activeRoom?.messages || [];
-  const visibleCount = historyCounts[selectedId] || INITIAL_MESSAGE_COUNT;
-  const visibleMessages = messages.slice(-visibleCount);
+  const searchQuery = messageSearch.trim().toLocaleLowerCase();
+  const displayedMessages = searchQuery
+    ? messages.filter((item) => item.text.toLocaleLowerCase().includes(searchQuery))
+    : messages;
   const lastMessageId = messages[messages.length - 1]?.id;
   const profileHref = `/chat?room=${encodeURIComponent(selectedId)}&view=profile`;
 
   useEffect(() => {
+    setMessageSearch("");
     setRooms((current) => current.some((room) => room.id === selectedId && room.unread > 0)
       ? current.map((room) => room.id === selectedId ? { ...room, unread: 0 } : room)
       : current);
@@ -216,12 +215,8 @@ function ChatPage() {
   useLayoutEffect(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
-    const previous = scrollRestoreRef.current;
-    scroller.scrollTop = previous?.roomId === selectedId
-      ? previous.top + scroller.scrollHeight - previous.height
-      : scroller.scrollHeight;
-    scrollRestoreRef.current = null;
-  }, [selectedId, lastMessageId, visibleCount, mobileOpen]);
+    scroller.scrollTop = searchQuery ? 0 : scroller.scrollHeight;
+  }, [selectedId, lastMessageId, mobileOpen, searchQuery]);
 
   const selectRoom = (roomId) => {
     setSearchParams({ room: roomId }, { replace: true });
@@ -257,18 +252,9 @@ function ChatPage() {
     };
     setRooms((current) => current.map((room) => room.id === selectedId
       ? { ...room, messages: [...room.messages, nextMessage] } : room));
-    setHistoryCounts((current) => ({ ...current, [selectedId]: visibleCount + 1 }));
     setDrafts((current) => ({ ...current, [selectedId]: "" }));
     setStatus("메시지를 보냈어요.");
     inputRef.current?.focus();
-  };
-
-  const loadHistory = () => {
-    const scroller = scrollerRef.current;
-    if (scroller) scrollRestoreRef.current = {
-      roomId: selectedId, top: scroller.scrollTop, height: scroller.scrollHeight,
-    };
-    setHistoryCounts((current) => ({ ...current, [selectedId]: visibleCount + INITIAL_MESSAGE_COUNT }));
   };
 
   const confirmLeave = () => {
@@ -285,24 +271,6 @@ function ChatPage() {
   return (
     <S.Page>
       <S.Content>
-        <S.Breadcrumb aria-label="현재 위치">
-          <S.TextLink to="/">홈</S.TextLink>
-          <ChevronRight size={14} aria-hidden="true" />
-          <span aria-current="page">채팅</span>
-        </S.Breadcrumb>
-
-        <S.Intro>
-          <div>
-            <S.Eyebrow>STAY CONNECTED</S.Eyebrow>
-            <S.Title>대화로 가까워지는 우리</S.Title>
-            <S.Description>함께할 일상, 편안한 대화로 시작해 보세요.</S.Description>
-          </div>
-          <S.UnreadSummary>
-            <MessageCircle size={18} aria-hidden="true" />
-            읽지 않은 메시지 <strong>{unreadCount}</strong>
-          </S.UnreadSummary>
-        </S.Intro>
-
         <S.Workspace>
           <S.Sidebar $mobileOpen={showMobileRoom} aria-labelledby="chat-list-title">
             <S.ListHeader>
@@ -384,30 +352,19 @@ function ChatPage() {
                   </S.HeaderActions>
                 </S.RoomHeader>
 
-                <S.ContextBar>
-                  {activeRoom.category === "dormitory" ? <Building2 size={21} aria-hidden="true" />
-                    : activeRoom.category === "community" ? <MessagesSquare size={21} aria-hidden="true" />
-                      : <Users size={21} aria-hidden="true" />}
-                  <S.ContextCopy>
-                    <strong>{activeRoom.category === "dormitory" ? `같은 ${activeRoom.dormitory} 생활관 이웃이에요`
-                      : activeRoom.category === "community" ? `커뮤니티 ${activeRoom.sourcePost.from}에서 시작된 대화`
-                        : "룸메찾기 프로필에서 시작된 대화"}</strong>
-                    <p>{activeRoom.category === "dormitory" ? "입사 준비부터 생활관 일상까지, 편하게 이야기해 보세요."
-                      : activeRoom.category === "community" ? activeRoom.sourcePost.title
-                        : `매칭점수 ${activeRoom.matchScore}점 · ${activeRoom.tags.slice(0, 2).join(" · ")}`}</p>
-                  </S.ContextCopy>
-                  <S.ContextLink to={activeRoom.sourcePost ? `/community/posts/${activeRoom.sourcePost.id}` : profileHref}>
-                    {activeRoom.sourcePost ? "게시글 보기" : "프로필 확인"}<ChevronRight size={16} aria-hidden="true" />
-                  </S.ContextLink>
-                </S.ContextBar>
+                <S.SearchBar role="search" aria-label="대화 내역 검색">
+                  <Search size={18} aria-hidden="true" />
+                  <S.SearchInput type="search" value={messageSearch}
+                    aria-label="대화 내용 검색" placeholder="대화 내용을 검색해 보세요"
+                    onChange={(event) => setMessageSearch(event.target.value)} />
+                  {searchQuery && <S.SearchCount role="status">{displayedMessages.length}건</S.SearchCount>}
+                </S.SearchBar>
 
                 <S.MessageScroller ref={scrollerRef} tabIndex={0} aria-label="대화 내용">
-                  {messages.length > visibleCount ? (
-                    <S.HistoryButton type="button" onClick={loadHistory}><Clock3 size={14} aria-hidden="true" />이전 메시지 보기</S.HistoryButton>
-                  ) : messages.length > 0 ? <S.ConversationStart>대화의 시작이에요. 반가운 인사를 나눠보세요.</S.ConversationStart> : null}
+                  {!searchQuery && messages.length > 0 && <S.ConversationStart>대화의 시작이에요. 반가운 인사를 나눠보세요.</S.ConversationStart>}
 
-                  {visibleMessages.length ? visibleMessages.map((item, index) => {
-                    const previous = visibleMessages[index - 1];
+                  {displayedMessages.length ? displayedMessages.map((item, index) => {
+                    const previous = displayedMessages[index - 1];
                     const showDate = !previous || dateKey(previous.sentAt) !== dateKey(item.sentAt);
                     const own = item.sender === "me";
                     return (
@@ -427,7 +384,13 @@ function ChatPage() {
                         </S.MessageRow>
                       </S.MessageGroup>
                     );
-                  }) : (
+                  }) : searchQuery ? (
+                    <S.EmptyState>
+                      <S.EmptyIcon><Search size={32} aria-hidden="true" /></S.EmptyIcon>
+                      <h3>검색 결과가 없어요</h3>
+                      <p>다른 검색어를 입력해 보세요.</p>
+                    </S.EmptyState>
+                  ) : (
                     <S.EmptyState>
                       <S.EmptyIcon><MessageCircle size={32} aria-hidden="true" /></S.EmptyIcon>
                       <h3>{activeRoom.nickname}님에게 첫 인사를 건네보세요</h3>
@@ -441,7 +404,6 @@ function ChatPage() {
                   <S.ComposerField>
                     <S.MessageInput id="chat-message" ref={inputRef} value={draft} rows={2}
                       maxLength={MAX_MESSAGE_LENGTH} placeholder={`${activeRoom.nickname}님에게 메시지를 남겨보세요`}
-                      aria-describedby="chat-composer-hint"
                       onChange={(event) => setDrafts((current) => ({ ...current, [selectedId]: event.target.value }))}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) {
@@ -453,7 +415,6 @@ function ChatPage() {
                       <Send size={18} aria-hidden="true" />전송
                     </S.SendButton>
                   </S.ComposerField>
-                  <S.ComposerHint id="chat-composer-hint"><span>Enter로 전송 · Shift + Enter로 줄바꿈</span><span>{draft.length.toLocaleString()} / 2,000</span></S.ComposerHint>
                 </S.Composer>
               </>
             ) : (
