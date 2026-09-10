@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowRight, ChevronLeft, ChevronRight, Eye, Gift, Heart, LayoutGrid,
-  MessageCircle, MessageSquare, Package, PenLine, Search, ShieldCheck, UserRound,
+  MessageCircle, MessageSquare, Package, PenLine, Search, ShieldCheck, UserRound, X,
 } from "lucide-react";
 
 import CommunityPostPage from "./CommunityPostPage";
@@ -96,6 +96,7 @@ function commentCount(post) {
 }
 
 function CommunityPage({ currentUser }) {
+  const searchInputRef = useRef(null);
   const [posts, setPosts] = useState(() => createPosts(currentUser));
   const [notice, setNotice] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
@@ -237,19 +238,27 @@ function CommunityPage({ currentUser }) {
           </S.BoardHeading>
           {!isMyComments && <S.Controls>
             <S.SearchForm role="search" onSubmit={(event) => { event.preventDefault(); updateFilters({ q: searchInput.trim() }); }}>
-              <S.SearchField><Search size={19} aria-hidden="true" /><S.SearchInput type="search" aria-label="게시글 제목과 내용 검색" placeholder="제목이나 내용으로 검색해 보세요" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} /></S.SearchField>
+              <S.SearchField>
+                <Search size={19} aria-hidden="true" />
+                <S.SearchInput ref={searchInputRef} type="search" aria-label="게시글 제목과 내용 검색" placeholder="제목이나 내용으로 검색해 보세요" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} />
+                <S.SearchClearButton type="button" aria-label="검색어 지우기" onClick={() => {
+                  setSearchInput("");
+                  updateFilters({ q: "" });
+                  searchInputRef.current?.focus();
+                }}><X size={16} aria-hidden="true" /></S.SearchClearButton>
+              </S.SearchField>
               <S.SearchButton type="submit">검색</S.SearchButton>
             </S.SearchForm>
             <S.SortLabel><span>정렬</span><S.SortSelect aria-label="게시글 정렬" value={sort} onChange={(event) => updateFilters({ sort: event.target.value })}>{SORTS.map((value) => <option key={value}>{value}</option>)}</S.SortSelect></S.SortLabel>
           </S.Controls>}
-          {query && !isMyComments && <S.SearchSummary role="status"><span>“{query}” 검색 결과</span><S.ClearButton type="button" onClick={() => updateFilters({ q: "" })}>검색 초기화</S.ClearButton></S.SearchSummary>}
+          {query && !isMyComments && <S.SearchSummary role="status"><span>“{query}” 검색 결과</span></S.SearchSummary>}
           {pageItems.length ? <S.PostList>
             {pageItems.map((item) => isMyComments ? <S.PostRow key={item.id}>
               <S.CommentTop><S.CategoryBadge $category={item.category}>{item.isReply ? "답글" : "댓글"}</S.CategoryBadge><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></S.CommentTop>
               <S.MyComment>{item.content}</S.MyComment>
               <S.OriginalPostLink to={`/community/posts/${item.postId}#comment-${item.id}`}><MessageSquare size={16} aria-hidden="true" /><span>{item.postTitle}</span><ArrowRight size={16} aria-hidden="true" /></S.OriginalPostLink>
             </S.PostRow> : <S.PostRow key={item.id}>
-              <S.PostHeading><S.CategoryBadge $category={item.category}>{item.category.replace("게시판", "")}</S.CategoryBadge><S.DormitoryBadge>{item.dormitory}</S.DormitoryBadge>{currentUser && item.authorId === currentUser.name && <S.OwnBadge>내 글</S.OwnBadge>}</S.PostHeading>
+              <S.PostHeading>{category === "전체" && <S.CategoryBadge $category={item.category}>{item.category.replace("게시판", "")}</S.CategoryBadge>}<S.DormitoryBadge>{item.dormitory}</S.DormitoryBadge>{currentUser && item.authorId === currentUser.name && <S.OwnBadge>내 글</S.OwnBadge>}</S.PostHeading>
               <S.PostTitleLink to={`/community/posts/${item.id}`}><h3>{item.title}</h3>{item.images.length > 0 && <S.ImageLabel>사진</S.ImageLabel>}</S.PostTitleLink>
               <S.Excerpt>{item.content}</S.Excerpt>
               <S.PostBottom><S.Stats><span aria-label={`조회 ${item.views}회`}><Eye size={15} aria-hidden="true" />{item.views}</span><span aria-label={`공감 ${item.likes}개`}><Heart size={15} aria-hidden="true" />{item.likes}</span><span aria-label={`댓글 ${commentCount(item)}개`}><MessageCircle size={15} aria-hidden="true" />{commentCount(item)}</span></S.Stats><S.Metadata><S.Author><UserRound size={14} aria-hidden="true" />{item.author}</S.Author><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></S.Metadata></S.PostBottom>
@@ -257,8 +266,10 @@ function CommunityPage({ currentUser }) {
           </S.PostList> : <S.EmptyState>
             <S.EmptyIcon>{query ? <Search aria-hidden="true" /> : <MessageSquare aria-hidden="true" />}</S.EmptyIcon>
             <h3>{query ? "검색 결과가 없어요" : isMyComments ? "아직 작성한 댓글이 없어요" : isMyPosts ? "아직 작성한 게시글이 없어요" : "아직 이야기가 없어요"}</h3>
-            <p>{query ? "다른 검색어로 찾아보거나 검색 조건을 초기화해 보세요." : isMyComments ? "마음이 닿는 게시글에 첫 댓글을 남겨보세요." : "작은 일상도 좋아요. 첫 이야기를 들려주세요."}</p>
-            {query || category !== "전체" ? <S.SecondaryButton type="button" onClick={() => { setSearchInput(""); setSearchParams({}); }}>검색 조건 초기화</S.SecondaryButton> : isMyComments ? <S.PrimaryLink to="/community">게시글 둘러보기 <ArrowRight size={16} aria-hidden="true" /></S.PrimaryLink> : <S.PrimaryButton type="button" onClick={startPost}><PenLine size={16} aria-hidden="true" />첫 글 작성하기</S.PrimaryButton>}
+            {!query && <>
+              <p>{isMyComments ? "마음이 닿는 게시글에 첫 댓글을 남겨보세요." : "작은 일상도 좋아요. 첫 이야기를 들려주세요."}</p>
+              {category !== "전체" ? <S.SecondaryButton type="button" onClick={() => { setSearchInput(""); setSearchParams({}); }}>검색 조건 초기화</S.SecondaryButton> : isMyComments ? <S.PrimaryLink to="/community">게시글 둘러보기 <ArrowRight size={16} aria-hidden="true" /></S.PrimaryLink> : <S.PrimaryButton type="button" onClick={startPost}><PenLine size={16} aria-hidden="true" />첫 글 작성하기</S.PrimaryButton>}
+            </>}
           </S.EmptyState>}
           {resultCount > 0 && <S.Pagination aria-label="게시글 페이지">
             <S.PageButton type="button" aria-label="이전 페이지" disabled={page === 1} onClick={() => updateFilters({ page: page - 1 })}><ChevronLeft size={18} aria-hidden="true" /></S.PageButton>

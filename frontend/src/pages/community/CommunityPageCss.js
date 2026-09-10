@@ -234,6 +234,24 @@ export const SearchInput = styled.input`
   background: transparent;
   && { font-size: 14px; }
   &::placeholder { color: #747781; }
+  &::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+`;
+export const SearchClearButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  margin-right: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  color: #747781;
+  background: transparent;
+  cursor: pointer;
+  &:hover { color: #0c3273; background: #eef3fa; }
+  ${focus}
 `;
 export const SearchButton = styled.button`
   ${button}
