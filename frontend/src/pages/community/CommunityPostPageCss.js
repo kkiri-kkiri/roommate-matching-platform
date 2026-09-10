@@ -23,7 +23,7 @@ const focusRing = css`
 
 export const Detail = styled.section`
   width: 100%;
-  max-width: 880px;
+  max-width: 760px;
   margin: 0 auto;
   color: ${colors.text};
 
@@ -37,10 +37,10 @@ export const Detail = styled.section`
 export const BackLink = styled.a`
   ${focusRing};
   display: inline-flex;
-  min-height: 44px;
+  min-height: 36px;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   border-radius: 8px;
   color: ${colors.secondary};
   font-size: 14px;
@@ -72,7 +72,7 @@ export const Notice = styled.p`
 `;
 
 export const Article = styled.article`
-  padding: 40px;
+  padding: 14px 18px;
   overflow: hidden;
   border: 1px solid ${colors.border};
   border-radius: 16px;
@@ -80,7 +80,7 @@ export const Article = styled.article`
   box-shadow: 0 4px 12px rgba(12, 50, 115, 0.05);
 
   @media (max-width: 640px) {
-    padding: 24px 20px;
+    padding: 12px 14px;
   }
 `;
 
@@ -136,8 +136,8 @@ export const TextButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 5px;
-  min-height: 40px;
-  padding: 8px;
+  min-height: 32px;
+  padding: 6px 8px;
   border: 0;
   border-radius: 8px;
   color: ${({ $danger }) => ($danger ? colors.error : colors.muted)};
@@ -158,26 +158,26 @@ export const TextButton = styled.button`
 `;
 
 export const Title = styled.h1`
-  margin: 18px 0 24px;
+  margin: 14px 0 16px;
   color: ${colors.navyDark};
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 40px;
+  line-height: 28px;
   letter-spacing: -0.02em;
   overflow-wrap: anywhere;
   word-break: keep-all;
 
   @media (max-width: 640px) {
-    font-size: 24px;
-    line-height: 34px;
+    font-size: 20px;
+    line-height: 28px;
   }
 `;
 
 export const AuthorRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding-bottom: 28px;
+  gap: 8px;
+  padding-bottom: 12px;
   border-bottom: 1px solid ${colors.border};
 `;
 
@@ -186,8 +186,8 @@ export const Avatar = styled.span`
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: ${({ $small }) => ($small ? "34px" : "42px")};
-  height: ${({ $small }) => ($small ? "34px" : "42px")};
+  width: ${({ $small }) => ($small ? "28px" : "34px")};
+  height: ${({ $small }) => ($small ? "28px" : "34px")};
   border-radius: 12px;
   color: ${({ $mine }) => ($mine ? colors.mintDark : colors.navy)};
   background: ${({ $mine }) => ($mine ? colors.mintSoft : "#edf2ff")};
@@ -224,10 +224,10 @@ export const Metadata = styled.div`
 `;
 
 export const Content = styled.div`
-  padding: 32px 0;
+  padding: 12px 0;
   color: ${colors.secondary};
-  font-size: 16px;
-  line-height: 30px;
+  font-size: 14px;
+  line-height: 22px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 `;
@@ -235,7 +235,7 @@ export const Content = styled.div`
 export const Attachments = styled.div`
   display: grid;
   gap: 16px;
-  margin-bottom: 32px;
+  margin-bottom: 12px;
 
   figure {
     margin: 0;
@@ -244,7 +244,7 @@ export const Attachments = styled.div`
   img {
     display: block;
     width: 100%;
-    max-height: 560px;
+    max-height: 260px;
     border: 1px solid ${colors.border};
     border-radius: 12px;
     object-fit: contain;
@@ -266,7 +266,7 @@ export const Reactions = styled.div`
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
-  padding-top: 24px;
+  padding-top: 14px;
   border-top: 1px solid ${colors.border};
 `;
 
@@ -275,14 +275,14 @@ export const LikeButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 18px;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
   border: 1.5px solid ${colors.mint};
   border-radius: 12px;
   color: ${colors.mintDark};
   background: ${({ $active }) => ($active ? colors.mintSoft : colors.white)};
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
 
@@ -296,15 +296,15 @@ export const LikeButton = styled.button`
 `;
 
 export const CommentsCard = styled.section`
-  margin-top: 24px;
-  padding: 32px 40px;
+  margin-top: 12px;
+  padding: 14px 18px;
   border: 1px solid ${colors.border};
   border-radius: 16px;
   background: ${colors.white};
   box-shadow: 0 4px 12px rgba(12, 50, 115, 0.05);
 
   @media (max-width: 640px) {
-    padding: 24px 20px;
+    padding: 12px 14px;
   }
 `;
 
@@ -314,25 +314,18 @@ export const CommentsHeading = styled.h2`
   gap: 8px;
   margin: 0;
   color: ${colors.navyDark};
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
-  line-height: 28px;
+  line-height: 26px;
 
   span {
     color: ${colors.mintDark};
   }
 `;
 
-export const CommentsHint = styled.p`
-  margin: 7px 0 24px;
-  color: ${colors.muted};
-  font-size: 14px;
-  line-height: 22px;
-`;
-
 export const CommentForm = styled.form`
-  margin: ${({ $compact }) => ($compact ? "12px 0 4px" : "24px 0 0")};
-  padding: 16px;
+  margin: ${({ $compact }) => ($compact ? "8px 0 4px" : "12px 0 0")};
+  padding: 12px;
   border: 1px solid ${colors.border};
   border-radius: 12px;
   background: ${({ $compact }) => ($compact ? colors.white : "#fafbfc")};
@@ -350,8 +343,8 @@ export const CommentForm = styled.form`
 export const Textarea = styled.textarea`
   display: block;
   width: 100%;
-  min-height: ${({ $compact }) => ($compact ? "88px" : "104px")};
-  padding: 12px 14px;
+  min-height: ${({ $compact }) => ($compact ? "64px" : "72px")};
+  padding: 8px 12px;
   resize: vertical;
   border: 1px solid ${colors.border};
   border-radius: 12px;
@@ -381,7 +374,7 @@ export const FormFooter = styled.div`
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 8px;
 
   > small {
     color: ${colors.muted};
@@ -403,8 +396,8 @@ export const PrimaryButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-height: 44px;
-  padding: 0 18px;
+  min-height: 36px;
+  padding: 0 14px;
   border: 1px solid ${({ $danger }) => ($danger ? colors.error : colors.navy)};
   border-radius: 12px;
   color: ${colors.white};
@@ -432,13 +425,13 @@ export const SecondaryButton = styled(PrimaryButton)`
 `;
 
 export const CommentList = styled.ol`
-  margin: 24px 0 0;
+  margin: 16px 0 0;
   padding: 0;
   list-style: none;
 `;
 
 export const CommentThread = styled.li`
-  padding: 24px 0;
+  padding: 16px 0;
   border-top: 1px solid ${colors.border};
 
   &:last-child {
@@ -449,6 +442,26 @@ export const CommentThread = styled.li`
 export const CommentItem = styled.div`
   min-width: 0;
   scroll-margin-top: 24px;
+`;
+
+export const ChatButton = styled.button`
+  ${focusRing};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 5px;
+  min-height: 36px;
+  margin-left: auto;
+  padding: 6px 10px;
+  border: 1px solid #c4dcd4;
+  border-radius: 8px;
+  color: ${colors.mintDark};
+  background: #f0f8f5;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover { background: ${colors.mintSoft}; }
 `;
 
 export const CommentHeader = styled.div`
@@ -489,7 +502,7 @@ export const AuthorBadge = styled.span`
 `;
 
 export const CommentText = styled.p`
-  margin: 12px 0 4px;
+  margin: 8px 0 4px;
   color: ${colors.secondary};
   font-size: 14px;
   line-height: 24px;
@@ -499,18 +512,49 @@ export const CommentText = styled.p`
 
 export const ReplyList = styled.ol`
   display: grid;
-  gap: 20px;
-  margin: 16px 0 0 16px;
-  padding: 20px;
-  border-left: 2px solid #dcece9;
-  border-radius: 0 12px 12px 0;
-  background: #f8faf9;
+  gap: 8px;
+  margin: 12px 0 0 36px;
+  padding: 0;
   list-style: none;
 
-  @media (max-width: 480px) {
-    margin-left: 4px;
-    padding: 16px 12px;
+  > li {
+    position: relative;
+    min-width: 0;
+    padding: 12px 16px;
+    border: 1px solid #dfebe7;
+    border-radius: 14px;
+    background: #f5f9f8;
   }
+
+  > li::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: -26px;
+    width: 16px;
+    height: 18px;
+    border-left: 2px solid #c4dcd4;
+    border-bottom: 2px solid #c4dcd4;
+    border-bottom-left-radius: 6px;
+  }
+
+  @media (max-width: 480px) {
+    margin-left: 20px;
+    > li { padding: 10px 12px; }
+    > li::before { left: -17px; width: 10px; }
+  }
+`;
+
+export const ReplyTarget = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  color: ${colors.mintDark};
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+  svg { flex-shrink: 0; }
 `;
 
 export const EmptyComments = styled.div`
@@ -545,7 +589,7 @@ export const EmptyComments = styled.div`
 export const BottomNav = styled.div`
   display: flex;
   justify-content: center;
-  padding-top: 24px;
+  padding-top: 16px;
 `;
 
 export const Dialog = styled.dialog`

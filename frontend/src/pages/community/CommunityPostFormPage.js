@@ -1,15 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft,
   Check,
-  ChevronRight,
   CircleAlert,
   Gift,
   ImagePlus,
-  Lightbulb,
   MessageCircle,
   Package,
-  PencilLine,
   Send,
   ShieldCheck,
   X,
@@ -155,32 +151,9 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
 
   return (
     <S.Page aria-labelledby="community-editor-heading">
-      <S.Breadcrumb aria-label="현재 위치">
-        <S.BackButton type="button" onClick={onCancel}>
-          <ArrowLeft size={17} aria-hidden="true" />
-          {isEditing ? "게시글로 돌아가기" : "커뮤니티로 돌아가기"}
-        </S.BackButton>
-        <ChevronRight size={14} aria-hidden="true" />
-        <span aria-current="page">{isEditing ? "글 수정" : "글쓰기"}</span>
-      </S.Breadcrumb>
-
-      <S.Intro>
-        <S.Eyebrow>
-          <PencilLine size={16} aria-hidden="true" /> 우리의 기숙사 이야기
-        </S.Eyebrow>
-        <S.Title id="community-editor-heading">
-          {isEditing ? "이야기를 다듬어 볼까요?" : "어떤 이야기를 나누고 싶나요?"}
-        </S.Title>
-        <S.Description>
-          {isEditing
-            ? "내용을 수정하고, 이웃들에게 더 정확한 소식을 전해 주세요."
-            : "소소한 일상부터 유용한 정보까지, 기숙사 이웃들과 편하게 나눠요."}
-        </S.Description>
-      </S.Intro>
-
       <S.Form noValidate onSubmit={handleSubmit}>
         <S.FormHeader>
-          <S.FormTitle>{isEditing ? "게시글 수정" : "새 게시글 작성"}</S.FormTitle>
+          <S.FormTitle id="community-editor-heading">{isEditing ? "게시글 수정" : "새 게시글 작성"}</S.FormTitle>
           <S.RequiredNote>
             <span aria-hidden="true">*</span> 필수 입력
           </S.RequiredNote>
@@ -321,7 +294,7 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
               </S.Error>
             )}
 
-            {images.length > 0 ? (
+            {images.length > 0 && (
               <>
                 <S.ImageCount>
                   첨부한 이미지 <strong>{images.length}</strong> / {MAX_IMAGES}
@@ -347,25 +320,12 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
                   ))}
                 </S.ImageGrid>
               </>
-            ) : (
-              <S.ImageHint>이미지 없이 글만 작성해도 괜찮아요.</S.ImageHint>
             )}
           </S.ImageField>
 
-          <S.Guide>
-            <Lightbulb size={20} aria-hidden="true" />
-            <div>
-              <strong>서로에게 편안한 공간을 함께 만들어요</strong>
-              <p>
-                다른 사람의 개인정보와 호실이 드러나지 않도록 확인해 주세요.
-                따뜻하고 존중하는 표현으로 이야기를 나눠 주세요.
-              </p>
-            </div>
-          </S.Guide>
         </S.Fields>
 
         <S.Actions>
-          <S.ActionHint>작성한 글은 커뮤니티 이웃들에게 공개돼요.</S.ActionHint>
           <S.ActionButtons>
             <S.CancelButton type="button" onClick={onCancel}>
               취소
