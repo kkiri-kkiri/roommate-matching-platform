@@ -12,7 +12,7 @@ const CATEGORIES = [
   { id: "roommate", label: "룸메찾기" },
   { id: "community", label: "커뮤니티" },
 ];
-const CATEGORY_LABELS = { dormitory: "기숙사", ...Object.fromEntries(CATEGORIES.map(({ id, label }) => [id, label])) };
+const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map(({ id, label }) => [id, label]));
 const SAMPLE_TIME = Date.now() - 10 * 60 * 1000;
 const MAX_MESSAGE_LENGTH = 2000;
 
@@ -59,7 +59,7 @@ const INITIAL_ROOMS = [
     ],
   },
   {
-    id: "dormitory-afternoon", category: "dormitory", nickname: "느긋한오후",
+    id: "dormitory-afternoon", category: "roommate", nickname: "느긋한오후",
     photo: createAvatar("#fce8ed", "#d8607a", "#4c3028"), dormitory: "나래", year: "24",
     major: "식품영양학전공", introduction: "조용하고 여유로운 분위기에서 각자의 루틴을 지켜요.",
     tags: ["비흡연", "조용한 방", "주말 외출"], unread: 2, createdAt: sampleTimestamp(120),
@@ -354,9 +354,14 @@ function ChatPage() {
 
                 <S.SearchBar role="search" aria-label="대화 내역 검색">
                   <Search size={18} aria-hidden="true" />
-                  <S.SearchInput type="search" value={messageSearch}
-                    aria-label="대화 내용 검색" placeholder="대화 내용을 검색해 보세요"
-                    onChange={(event) => setMessageSearch(event.target.value)} />
+                  <S.SearchField>
+                    <S.SearchInput type="search" value={messageSearch}
+                      aria-label="대화 내용 검색" placeholder="대화 내용을 검색해 보세요"
+                      onChange={(event) => setMessageSearch(event.target.value)} />
+                    <S.SearchClearButton type="button" aria-label="검색어 지우기" onClick={() => setMessageSearch("")}>
+                      <X size={18} aria-hidden="true" />
+                    </S.SearchClearButton>
+                  </S.SearchField>
                   {searchQuery && <S.SearchCount role="status">{displayedMessages.length}건</S.SearchCount>}
                 </S.SearchBar>
 
@@ -377,7 +382,7 @@ function ChatPage() {
                             {own && <S.ScreenReaderOnly>내 메시지</S.ScreenReaderOnly>}
                             <S.MessageBubble $own={own}>{item.text}</S.MessageBubble>
                             <S.MessageMeta $own={own}>
-                              {own && <S.ReadStatus>{item.read && <CheckCheck size={13} aria-hidden="true" />}{item.read ? "읽음" : "안 읽음"}</S.ReadStatus>}
+                              {own && <S.ReadStatus>{item.read && <CheckCheck size={13} aria-hidden="true" />}{item.read ? "읽음" : "1"}</S.ReadStatus>}
                               <time dateTime={item.sentAt}>{formatTime(item.sentAt)}</time>
                             </S.MessageMeta>
                           </S.BubbleColumn>
