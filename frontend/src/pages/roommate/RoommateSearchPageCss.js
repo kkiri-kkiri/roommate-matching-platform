@@ -623,7 +623,42 @@ export const ProfileGrid = styled.div`
   justify-content: center;
 `;
 
+export const ProfileCardOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 18px 16px 14px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(0, 167, 159, 0.12) 0%, rgba(0, 167, 159, 0.76) 42%, rgba(0, 106, 101, 0.9) 100%);
+  color: ${colors.white};
+  opacity: 0;
+  transform: translateY(100%);
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 220ms ease;
+`;
+
+export const ProfileCardOverlayTitle = styled.strong`
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+`;
+
+export const ProfileCardOverlayText = styled.p`
+  margin: 0;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+  word-break: keep-all;
+`;
+
 export const ProfileCard = styled.article`
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -632,6 +667,20 @@ export const ProfileCard = styled.article`
   border-radius: 16px;
   background: ${colors.white};
   box-shadow: 0 4px 12px rgba(12, 50, 115, 0.05);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+
+  &:hover {
+    border-color: rgba(12, 50, 115, 0.12);
+    box-shadow: 0 8px 20px rgba(12, 50, 115, 0.08);
+    transform: translateY(-2px);
+  }
+
+  &:hover ${ProfileCardOverlay} {
+    opacity: 1;
+    transform: translateY(0%);
+  }
 `;
 
 export const CardHeader = styled.div`
@@ -640,7 +689,7 @@ export const CardHeader = styled.div`
   grid-template-columns: 76px minmax(0, 1fr);
   gap: 14px;
   align-items: start;
-
+  padding-right: 36px;
 `;
 
 export const ProfilePhoto = styled.div`
@@ -665,10 +714,9 @@ export const ProfileIdentity = styled.div`
 `;
 
 export const ProfileNameRow = styled.div`
-  padding-right: 76px;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
   min-width: 0;
 `;
@@ -683,21 +731,6 @@ export const ProfileName = styled.h3`
   line-height: 28px;
   text-overflow: ellipsis;
   white-space: nowrap;
-`;
-
-export const VerifiedBadge = styled.span`
-  display: inline-flex;
-  flex: 0 0 auto;
-  gap: 3px;
-  align-items: center;
-  min-height: 22px;
-  padding: 3px 7px;
-  border-radius: 999px;
-  color: ${colors.mintDark};
-  background: ${colors.mintSoft};
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 14px;
 `;
 
 export const ProfileAcademic = styled.p`
@@ -739,9 +772,6 @@ export const Dormitory = styled.span`
 `;
 
 export const MatchBadge = styled.span`
-  position: absolute;
-  top: 0;
-  right: 0;
   display: inline-flex;
   flex: 0 0 auto;
   gap: 4px;
@@ -755,7 +785,29 @@ export const MatchBadge = styled.span`
   font-weight: 500;
   line-height: 14px;
   white-space: nowrap;
+`;
 
+export const LikeButton = styled.button`
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid ${({ $liked }) => ($liked ? "rgba(255, 107, 138, 0.4)" : colors.border)};
+  border-radius: 50%;
+  color: ${({ $liked }) => ($liked ? "#ff4d73" : "#ff6b8a")};
+  background: ${({ $liked }) => ($liked ? "#fff1f5" : colors.white)};
+  box-shadow: none;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+
+  &:focus-visible {
+    outline: 3px solid rgba(255, 107, 138, 0.24);
+    outline-offset: 2px;
+  }
 `;
 
 export const ProfileMessage = styled.div`
