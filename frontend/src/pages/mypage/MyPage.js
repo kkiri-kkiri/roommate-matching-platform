@@ -27,9 +27,7 @@ import * as S from "./MyPageCss";
 const PROFILE_SECTIONS = [
   {
     id: "lifePattern",
-    shortTitle: "수면 패턴",
     title: "수면 패턴",
-    description: "서로 편안한 생활을 위해 수면과 방 사용 습관을 알려주세요.",
     fields: [
       {
         id: "sleepTime",
@@ -91,9 +89,7 @@ const PROFILE_SECTIONS = [
   },
   {
     id: "livingHabits",
-    shortTitle: "생활 습관",
     title: "생활 습관",
-    description: "공용 공간을 함께 사용하는 나의 생활 방식을 선택해주세요.",
     fields: [
       {
         id: "indoorEating",
@@ -153,13 +149,11 @@ const PROFILE_SECTIONS = [
   },
   {
     id: "dormLife",
-    shortTitle: "청소 및 공동생활",
     title: "청소 및 공동생활",
-    description: "룸메이트와 공유하게 될 생활 방식에 대해 알려주세요.",
     fields: [
       {
         id: "cleaningFrequency",
-        label: "청소",
+        label: "청소 주기",
         type: "single",
         options: [
           "안함",
@@ -197,6 +191,17 @@ const PROFILE_SECTIONS = [
         required: true,
       },
       {
+        id: "meal",
+        label: "기숙사 식사",
+        type: "single",
+        options: [
+          "같이 먹고 싶음",
+          "각자 먹고 싶음",
+          "시간 될 때만 같이 먹고 싶음",
+          "상관없음",
+        ],
+      },
+      {
         id: "roommateInteraction",
         label: "룸메이트와의 교류 정도",
         type: "single",
@@ -210,13 +215,7 @@ const PROFILE_SECTIONS = [
         options: ["추위 타요", "더위 타요", "보통"],
         required: true,
       },
-      {
-        id: "bugHandling",
-        label: "벌레",
-        type: "single",
-        options: ["잘 잡음", "못 잡음", "작은 건 잡음"],
-        required: true,
-      },
+
       {
         id: "scentProductUse",
         label: "향수·디퓨저 등 향 제품 사용·허용",
@@ -245,9 +244,7 @@ const PROFILE_SECTIONS = [
 const PREFERENCE_STEPS = [
   {
     id: "basic",
-    shortTitle: "기본·학적",
     title: "기본·학적 정보",
-    description: "함께 생활하고 싶은 룸메이트의 기본 조건을 선택해 주세요.",
     fields: [
       {
         id: "grade",
@@ -278,9 +275,7 @@ const PREFERENCE_STEPS = [
   },
   {
     id: "sleep",
-    shortTitle: "수면 패턴",
     title: "수면 패턴",
-    description: "서로 편안하게 쉴 수 있도록 선호하는 수면 습관을 알려주세요.",
     fields: [
       {
         id: "bedtime",
@@ -288,11 +283,11 @@ const PREFERENCE_STEPS = [
         type: "multi",
         options: [
           "22시 ~ 23시",
-          "23시",
-          "자정",
-          "1시",
-          "2시",
-          "3시 이후",
+          "23시 ~ 24시",
+          "24시 ~ 01시",
+          "01시 ~ 02시",
+          "02시 ~ 03시",
+          "03시 이후",
           "상관없음",
         ],
         exclusiveOptions: ["상관없음"],
@@ -302,12 +297,12 @@ const PREFERENCE_STEPS = [
         label: "선호하는 기상시간",
         type: "multi",
         options: [
-          "7시 이전",
-          "6시 ~ 7시",
-          "7시 ~ 8시",
-          "8시 ~ 9시",
-          "9시",
+          "07시 이전",
+          "07시 ~ 08시",
+          "08시 ~ 09시",
+          "09시 ~ 10시",
           "10시 이후",
+          "수업 시간에 따라 유동적",
           "상관없음",
         ],
         exclusiveOptions: ["상관없음"],
@@ -349,10 +344,7 @@ const PREFERENCE_STEPS = [
   },
   {
     id: "habits",
-    shortTitle: "생활 습관",
     title: "생활 습관",
-    description:
-      "공용 공간을 함께 관리할 룸메이트의 생활 습관을 선택해 주세요.",
     fields: [
       {
         id: "smoking",
@@ -391,9 +383,7 @@ const PREFERENCE_STEPS = [
   },
   {
     id: "dormitory",
-    shortTitle: "청소 및 공동생활",
     title: "청소 및 공동생활",
-    description: "룸메이트와 어느 정도 일상을 나누고 싶은지 알려주세요.",
     fields: [
       {
         id: "cleaningFrequency",
@@ -407,6 +397,7 @@ const PREFERENCE_STEPS = [
           "주 4회",
           "주 5회",
           "매일",
+          "유동적",
           "상관없음",
         ],
         exclusiveOptions: ["상관없음"],
@@ -465,39 +456,6 @@ const PREFERENCE_STEPS = [
           "보통인 사람",
           "상관없음",
         ],
-      },
-    ],
-  },
-  {
-    id: "requirements",
-    shortTitle: "필수조건",
-    title: "필수조건 설정",
-    description:
-      "매칭할 때 반드시 만족해야 하는 조건을 마지막으로 확인해 주세요.",
-    fields: [
-      {
-        id: "requiredConditions",
-        label: "반드시 만족해야 하는 조건",
-        type: "multi",
-        options: [
-          "학과·학부",
-          "나이",
-          "학년",
-          "취침시간",
-          "기상시간",
-          "잠꼬대",
-          "코골이",
-          "이갈이",
-          "청소 주기",
-          "청소 방식",
-          "흡연 여부",
-          "온도 선호",
-          "룸메이트와의 교류 정도",
-          "기숙사 식사",
-          "공용물품 사용",
-          "필수조건 없음",
-        ],
-        exclusiveOptions: ["필수조건 없음"],
       },
     ],
   },
@@ -649,6 +607,7 @@ const PROFILE_DEFAULTS = {
   cleaningFrequency: "주 2회",
   cleaningStyle: "상황에 따라 협의",
   roommateInteraction: "적당히 대화",
+  meal: "시간 될 때만 같이 먹고 싶음",
   mealPlan: ["조식", "석식"],
   dormStayDays: ["월", "화", "수", "목", "금"],
   temperaturePreference: "보통",
@@ -662,12 +621,8 @@ const PREFERENCE_DEFAULTS = {
   department: "상관없음",
   age: ["상관없음"],
   grade: ["상관없음"],
-  mbtiEnergy: "상관없음",
-  mbtiInformation: "상관없음",
-  mbtiDecision: "상관없음",
-  mbtiLifestyle: "상관없음",
-  bedtime: ["23시", "자정"],
-  wakeTime: ["7시 ~ 8시", "8시 ~ 9시"],
+  bedtime: ["23시 ~ 24시", "24시 ~ 01시"],
+  wakeTime: ["07시 ~ 08시", "08시 ~ 09시"],
   sleepTalking: "적음까지 괜찮음",
   snoring: "없음만 가능",
   teethGrinding: "적음까지 괜찮음",
@@ -681,12 +636,7 @@ const PREFERENCE_DEFAULTS = {
   meal: "시간 될 때만 같이 먹고 싶음",
   sharedItems: "일부만 공유하는 사람",
   temperature: "보통인 사람",
-  requiredConditions: ["흡연 여부", "코골이"],
 };
-
-const PREFERENCE_SECTIONS = PREFERENCE_STEPS.filter(
-  (step) => step.id !== "requirements",
-);
 
 const PREFERENCE_WEIGHT_OPTIONS = [
   { value: 1, label: "매우 낮음" },
@@ -696,53 +646,19 @@ const PREFERENCE_WEIGHT_OPTIONS = [
   { value: 5, label: "매우 높음" },
 ];
 
-const PREFERENCE_RECOMMENDED_WEIGHTS = {
-  department: 4,
-  age: 3,
-  grade: 1,
-  bedtime: 3,
-  wakeTime: 3,
-  sleepTalking: 4,
-  snoring: 4,
-  teethGrinding: 4,
-  smoking: 4,
-  lightingPreference: 2,
-  showerTime: 2,
-  showerDuration: 2,
-  cleaningFrequency: 3,
-  cleaningStyle: 3,
-  interaction: 3,
-  meal: 2,
-  sharedItems: 2,
-  temperature: 2,
-};
-
-const getRecommendedPreferenceWeight = (id) =>
-  PREFERENCE_RECOMMENDED_WEIGHTS[id] || 2;
+const DEFAULT_PREFERENCE_WEIGHT = 3;
 
 const getPreferenceWeightLabel = (value) =>
   PREFERENCE_WEIGHT_OPTIONS.find((option) => option.value === value)?.label ||
   "보통";
 
 const getPreferenceWeight = (answers, id) =>
-  answers.weights?.[id] ?? getRecommendedPreferenceWeight(id);
+  answers.weights?.[id] ?? DEFAULT_PREFERENCE_WEIGHT;
 
-const REQUIREMENT_LABELS = {
-  department: "학부·학과",
-  age: "나이",
-  grade: "학년",
-  bedtime: "취침시간",
-  wakeTime: "기상시간",
-  sleepTalking: "잠꼬대",
-  snoring: "코골이",
-  teethGrinding: "이갈이",
-  cleaningFrequency: "청소 주기",
-  cleaningStyle: "청소 방식",
-  smoking: "흡연 여부",
-  temperature: "온도 선호",
-  interaction: "룸메이트와의 교류 정도",
-  meal: "기숙사 식사",
-  sharedItems: "공용물품 사용",
+const getInternationalAge = (birthYear) => {
+  const parsedBirthYear = Number.parseInt(birthYear, 10);
+  if (!Number.isInteger(parsedBirthYear)) return null;
+  return new Date().getFullYear() - parsedBirthYear;
 };
 
 const INITIAL_ACCOUNT = {
@@ -753,6 +669,8 @@ const INITIAL_ACCOUNT = {
   dormitory: "나래",
   faculty: "컴퓨터응용수학부",
   major: "소프트웨어융합전공",
+  birthYear: "2002",
+  studentId: "24",
   grade: "3학년",
   mbtiEnergy: "I",
   mbtiInformation: "N",
@@ -795,25 +713,30 @@ const BASE_LIKED_PROFILES = [
     message: "서로의 공부 시간을 존중하면서 편하게 지내고 싶어요.",
     tags: ["비흡연", "아침형", "주 1회 청소"],
     answers: {
-      mbtiEnergy: "I",
-      mbtiInformation: "N",
-      mbtiDecision: "F",
-      mbtiLifestyle: "J",
-      bedtime: "23시",
-      wakeTime: "7시 ~ 8시",
+      sleepTime: "23시 ~ 24시",
+      wakeTime: "07시 ~ 08시",
       sleepTalking: "없음",
       snoring: "없음",
       teethGrinding: "없음",
+      sleepSensitivity: "보통",
+      indoorEating: "냄새 안나는 음식 가능",
       smoking: "비흡연",
       lightingPreference: "어두움 선호",
+      phoneCall: "항상 밖에서",
+      mediaSound: "항상 이어폰 사용해주세요",
       showerTime: "저녁",
       showerDuration: "20분",
       cleaningFrequency: "주 1회",
-      cleaningStyle: "상황에 따라 협의하는 사람",
-      interaction: "적당히 대화하고 싶은 사람",
+      cleaningStyle: "상황에 따라 협의",
+      roommateInteraction: "적당히 대화",
       meal: "시간 될 때만 같이 먹고 싶음",
-      sharedItems: "일부만 공유하는 사람",
-      temperature: "보통인 사람",
+      dormStayDays: ["월", "화", "수", "목", "금"],
+      mealPlan: ["조식", "석식"],
+      temperaturePreference: "보통",
+      bugHandling: "작은 건 잡음",
+      scentProductUse: "사용 안 함",
+      desktopUse: "사용하지 않아요",
+      sharedItems: "일부만 공유",
     },
   },
   {
@@ -829,25 +752,30 @@ const BASE_LIKED_PROFILES = [
     message: "늦게 자는 편이지만 방에서는 늘 이어폰을 사용해요.",
     tags: ["이어폰 사용", "깔끔해요", "개인 시간"],
     answers: {
-      mbtiEnergy: "I",
-      mbtiInformation: "S",
-      mbtiDecision: "T",
-      mbtiLifestyle: "P",
-      bedtime: "2시",
+      sleepTime: "02시 ~ 03시",
       wakeTime: "10시 이후",
       sleepTalking: "적음",
       snoring: "적음",
       teethGrinding: "없음",
+      sleepSensitivity: "어두움 (잘 깨지 않아요)",
+      indoorEating: "가능",
       smoking: "비흡연",
       lightingPreference: "어두움 선호",
+      phoneCall: "방에서는 짧게만",
+      mediaSound: "항상 이어폰 사용해주세요",
       showerTime: "저녁",
       showerDuration: "30분",
       cleaningFrequency: "주 2회",
-      cleaningStyle: "각자 영역만 청소하는 사람",
-      interaction: "필요한 대화만 하고 싶은 사람",
+      cleaningStyle: "각자 영역만 청소",
+      roommateInteraction: "필요한 대화만",
       meal: "각자 먹고 싶음",
-      sharedItems: "각자 사용하는 사람",
-      temperature: "추위를 타는 사람",
+      dormStayDays: ["월", "화", "수", "목", "금"],
+      mealPlan: ["중식", "석식"],
+      temperaturePreference: "추위 타요",
+      bugHandling: "못 잡음",
+      scentProductUse: "가끔 사용",
+      desktopUse: "사용하지 않아요",
+      sharedItems: "각자 사용",
     },
   },
   {
@@ -863,25 +791,30 @@ const BASE_LIKED_PROFILES = [
     message: "조용하고 여유로운 분위기에서 각자의 루틴을 지켜요.",
     tags: ["비흡연", "조용한 방", "주말 외출"],
     answers: {
-      mbtiEnergy: "I",
-      mbtiInformation: "N",
-      mbtiDecision: "F",
-      mbtiLifestyle: "P",
-      bedtime: "자정",
-      wakeTime: "8시 ~ 9시",
+      sleepTime: "24시 ~ 01시",
+      wakeTime: "08시 ~ 09시",
       sleepTalking: "없음",
       snoring: "없음",
       teethGrinding: "적음",
+      sleepSensitivity: "보통",
+      indoorEating: "냄새 안나는 음식 가능",
       smoking: "비흡연",
       lightingPreference: "밝음 선호",
+      phoneCall: "항상 밖에서",
+      mediaSound: "소리만 작게 해주세요",
       showerTime: "아침",
       showerDuration: "20분",
       cleaningFrequency: "주 1회",
-      cleaningStyle: "상황에 따라 협의하는 사람",
-      interaction: "필요한 대화만 하고 싶은 사람",
+      cleaningStyle: "상황에 따라 협의",
+      roommateInteraction: "필요한 대화만",
       meal: "각자 먹고 싶음",
-      sharedItems: "일부만 공유하는 사람",
-      temperature: "보통인 사람",
+      dormStayDays: ["월", "화", "수", "목", "금"],
+      mealPlan: ["조식", "석식"],
+      temperaturePreference: "보통",
+      bugHandling: "작은 건 잡음",
+      scentProductUse: "사용 안 함",
+      desktopUse: "사용하지 않아요",
+      sharedItems: "일부만 공유",
     },
   },
 ];
@@ -953,25 +886,30 @@ function createGeneratedLikedProfile(index) {
     message: `${nickname}님은 서로의 생활 리듬을 존중하며 편하게 지내고 싶어 해요.`,
     tags: tags[index % tags.length],
     answers: {
-      mbtiEnergy: "I",
-      mbtiInformation: "N",
-      mbtiDecision: "F",
-      mbtiLifestyle: "J",
-      bedtime: "23시",
-      wakeTime: "7시 ~ 8시",
+      sleepTime: "23시 ~ 24시",
+      wakeTime: "07시 ~ 08시",
       smoking: "비흡연",
       sleepTalking: "없음",
       snoring: "없음",
       teethGrinding: "없음",
+      sleepSensitivity: "보통",
+      indoorEating: "냄새 안나는 음식 가능",
       lightingPreference: "상관 없음",
+      phoneCall: "항상 밖에서",
+      mediaSound: "항상 이어폰 사용해주세요",
       showerTime: "저녁",
       showerDuration: "20분",
       cleaningFrequency: "주 1회",
-      cleaningStyle: "상황에 따라 협의하는 사람",
-      interaction: "적당히 대화하고 싶은 사람",
+      cleaningStyle: "상황에 따라 협의",
+      roommateInteraction: "적당히 대화",
       meal: "각자 먹고 싶음",
-      sharedItems: "일부만 공유하는 사람",
-      temperature: "보통인 사람",
+      dormStayDays: ["월", "화", "수", "목", "금"],
+      mealPlan: ["조식", "석식"],
+      temperaturePreference: "보통",
+      bugHandling: "작은 건 잡음",
+      scentProductUse: "사용 안 함",
+      desktopUse: "사용하지 않아요",
+      sharedItems: "일부만 공유",
     },
   };
 }
@@ -1012,8 +950,6 @@ function saveUnlikedProfileIds(ids) {
 const asArray = (value) => (Array.isArray(value) ? value : [value]);
 const hasAnswer = (value) =>
   asArray(value).some((item) => String(item || "").trim());
-const isIndifferent = (value) =>
-  asArray(value).some((item) => String(item).includes("상관"));
 const displayAnswer = (value) =>
   Array.isArray(value) ? value.join(" · ") : value;
 const profileHref = (profile) =>
@@ -1062,15 +998,12 @@ function EmptyState({ type, onStart }) {
 
 function SurveyContent({ type, answers, isEmpty, onSave }) {
   const isPreference = type === "preferences";
-  const sections = isPreference ? PREFERENCE_SECTIONS : PROFILE_SECTIONS;
+  const sections = isPreference ? PREFERENCE_STEPS : PROFILE_SECTIONS;
   const [draft, setDraft] = useState(null);
   const [errors, setErrors] = useState({});
   const formRef = useRef(null);
   const titleRef = useRef(null);
   const values = draft || answers;
-  const requirements = isPreference
-    ? values.requiredConditions.filter((item) => item !== "필수조건 없음")
-    : [];
 
   const updateValue = (field, option) => {
     let value = option;
@@ -1087,13 +1020,6 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
     setDraft((current) => ({
       ...current,
       [field.id]: value,
-      ...(isPreference && (!hasAnswer(value) || isIndifferent(value))
-        ? {
-            requiredConditions: current.requiredConditions.filter(
-              (item) => item !== REQUIREMENT_LABELS[field.id],
-            ),
-          }
-        : {}),
     }));
     setErrors((current) => ({ ...current, [field.id]: undefined }));
   };
@@ -1128,9 +1054,6 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
               ]),
             ),
           ),
-          requiredConditions: requirements.length
-            ? requirements
-            : ["필수조건 없음"],
         }
       : draft;
     onSave(saved);
@@ -1142,7 +1065,7 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
     });
   };
 
-  const startEditing = (focusRequirements = false) => {
+  const startEditing = () => {
     const emptyAnswers = Object.fromEntries(
       sections.flatMap((section) =>
         section.fields.map((field) => [
@@ -1153,19 +1076,14 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
     );
     const defaultWeights = Object.fromEntries(
       sections.flatMap((section) =>
-        section.fields.map((field) => [
-          field.id,
-          getRecommendedPreferenceWeight(field.id),
-        ]),
+        section.fields.map((field) => [field.id, DEFAULT_PREFERENCE_WEIGHT]),
       ),
     );
     setDraft(
       isEmpty
         ? {
             ...emptyAnswers,
-            ...(isPreference
-              ? { requiredConditions: [], weights: defaultWeights }
-              : {}),
+            ...(isPreference ? { weights: defaultWeights } : {}),
           }
         : isPreference
           ? { ...answers, weights: { ...defaultWeights, ...answers.weights } }
@@ -1173,13 +1091,7 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
     );
     setErrors({});
     requestAnimationFrame(() =>
-      formRef.current
-        ?.querySelector(
-          focusRequirements
-            ? "[data-required-conditions] button:not(:disabled)"
-            : "select, button",
-        )
-        ?.focus(),
+      formRef.current?.querySelector("select, input, button")?.focus(),
     );
   };
 
@@ -1191,15 +1103,15 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
             {isPreference ? "선호 룸메 설문" : "내 설문"}
           </S.SectionTitle>
           <S.Description>
-            {isPreference
-              ? "함께하고 싶은 룸메이트의 모습을 정리했어요."
-              : "나의 하루를 담은 생활 습관이에요."}
+            {!isPreference && "나의 하루를 담은 생활 습관이에요."}
           </S.Description>
           {isPreference && (
-            <S.Helper>
-              모든 항목의 중요도를 1~5단계로 설정할 수 있어요. 추천 단계를
-              참고해 나에게 중요한 조건을 조정해 보세요.
-            </S.Helper>
+            <S.WeightNotice>
+              <S.WeightNoticeLabel>가중치 안내</S.WeightNoticeLabel>
+              <span>
+                중요도를 매우 낮음부터 매우 높음까지 설정할 수 있어요.
+              </span>
+            </S.WeightNotice>
           )}
         </div>
         {!isEmpty && !draft && (
@@ -1227,12 +1139,11 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
                         {field.type === "multi" ? (
                           <S.Fieldset>
                             <S.Legend>
-                              {field.label}{" "}
-                              {requirements.includes(
-                                REQUIREMENT_LABELS[field.id],
-                              ) && <S.RequiredBadge>필수</S.RequiredBadge>}
+                              <span>{field.label}</span>
+                              <S.MultiSelectHint>
+                                복수 선택 가능
+                              </S.MultiSelectHint>
                             </S.Legend>
-                            <S.Helper>복수 선택 가능</S.Helper>
                             <S.ChoiceGroup>
                               {field.options.map((option) => (
                                 <S.ChoiceButton
@@ -1261,10 +1172,7 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
                         ) : (
                           <>
                             <S.Label htmlFor={`${type}-${field.id}`}>
-                              {field.label}{" "}
-                              {requirements.includes(
-                                REQUIREMENT_LABELS[field.id],
-                              ) && <S.RequiredBadge>필수</S.RequiredBadge>}
+                              {field.label}
                             </S.Label>
                             <S.Select
                               id={`${type}-${field.id}`}
@@ -1298,6 +1206,7 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
                             <S.WeightSlider
                               type="range"
                               id={`${type}-${field.id}-weight`}
+                              $value={getPreferenceWeight(draft, field.id)}
                               min="1"
                               max="5"
                               step="1"
@@ -1331,12 +1240,7 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
                   <S.SurveyGrid>
                     {section.fields.map((field) => (
                       <S.SurveyRow key={field.id}>
-                        <dt>
-                          {field.label}{" "}
-                          {requirements.includes(
-                            REQUIREMENT_LABELS[field.id],
-                          ) && <S.RequiredBadge>필수</S.RequiredBadge>}
-                        </dt>
+                        <dt>{field.label}</dt>
                         <dd>
                           {displayAnswer(values[field.id])}
                           {isPreference && (
@@ -1353,82 +1257,6 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
                 )}
               </S.Card>
             ))}
-            {isPreference && (
-              <S.Card data-required-conditions>
-                <S.CardHeader>
-                  <S.CardTitle>
-                    <ShieldCheck size={19} aria-hidden="true" /> 필수 조건
-                  </S.CardTitle>
-                  {!draft && (
-                    <S.GhostButton
-                      type="button"
-                      onClick={() => startEditing(true)}
-                    >
-                      <Pencil size={15} aria-hidden="true" /> 조건 수정
-                    </S.GhostButton>
-                  )}
-                </S.CardHeader>
-                <S.Helper>
-                  {draft
-                    ? "구체적인 선호를 선택한 항목만 필수로 지정할 수 있어요. ‘상관없음’인 항목은 제외돼요."
-                    : "이 조건은 추천할 때 꼭 충족해야 해요."}
-                </S.Helper>
-                {draft ? (
-                  <S.ChoiceGroup>
-                    {Object.entries(REQUIREMENT_LABELS).map(([id, label]) => (
-                      <S.ChoiceButton
-                        key={id}
-                        type="button"
-                        disabled={
-                          !hasAnswer(draft[id]) || isIndifferent(draft[id])
-                        }
-                        $selected={requirements.includes(label)}
-                        aria-pressed={requirements.includes(label)}
-                        onClick={() =>
-                          setDraft((current) => ({
-                            ...current,
-                            requiredConditions: requirements.includes(label)
-                              ? requirements.filter((item) => item !== label)
-                              : [...requirements, label],
-                          }))
-                        }
-                      >
-                        {requirements.includes(label) && (
-                          <Check size={14} aria-hidden="true" />
-                        )}
-                        {label}
-                      </S.ChoiceButton>
-                    ))}
-                    <S.ChoiceButton
-                      type="button"
-                      $selected={!requirements.length}
-                      aria-pressed={!requirements.length}
-                      onClick={() =>
-                        setDraft((current) => ({
-                          ...current,
-                          requiredConditions: [],
-                        }))
-                      }
-                    >
-                      필수조건 없음
-                    </S.ChoiceButton>
-                  </S.ChoiceGroup>
-                ) : (
-                  <S.TagRow>
-                    {requirements.length ? (
-                      requirements.map((label) => (
-                        <S.Badge key={label}>
-                          <Check size={13} aria-hidden="true" />
-                          {label} · 필수
-                        </S.Badge>
-                      ))
-                    ) : (
-                      <S.Tag>필수조건 없음</S.Tag>
-                    )}
-                  </S.TagRow>
-                )}
-              </S.Card>
-            )}
             {draft && (
               <S.FormActions>
                 <S.GhostButton
@@ -1571,7 +1399,7 @@ function AccountContent({ account, onSave }) {
   const renderField = (
     id,
     label,
-    { options, readOnly, type = "text", helper } = {},
+    { options, readOnly, type = "text", helper, displayValue } = {},
   ) => {
     const isPassword = type === "password";
     const isEditing = isPassword ? passwordEditing : editingFields[id];
@@ -1584,7 +1412,7 @@ function AccountContent({ account, onSave }) {
         </S.Label>
         {readOnly || !isEditing ? (
           <S.ReadonlyValue>
-            {isPassword ? "••••••••" : draft[id] || "-"}
+            {isPassword ? "••••••••" : (displayValue ?? draft[id]) || "-"}
           </S.ReadonlyValue>
         ) : options ? (
           <S.Select
@@ -1676,11 +1504,15 @@ function AccountContent({ account, onSave }) {
             )}
           </S.SecondaryButton>
         </S.CardHeader>
-        <S.FormGrid>
+        <S.FormGrid $compact>
           {renderField("loginId", "아이디", { readOnly: true })}
           {renderField("nickname", "닉네임")}
           {renderField("schoolEmail", "학교 이메일", { readOnly: true })}
           {renderField("gender", "성별", { readOnly: true })}
+          {renderField("birthYear", "만 나이", {
+            readOnly: true,
+            displayValue: `${getInternationalAge(draft.birthYear || INITIAL_ACCOUNT.birthYear) ?? "-"}세`,
+          })}
         </S.FormGrid>
       </S.Card>
       <S.Card>
@@ -1707,9 +1539,13 @@ function AccountContent({ account, onSave }) {
             )}
           </S.SecondaryButton>
         </S.CardHeader>
-        <S.FormGrid>
+        <S.FormGrid $compact>
           {renderField("dormitory", "생활관", {
             options: ["나래", "호연", "비봉", "창조"],
+          })}
+          {renderField("studentId", "학번", {
+            readOnly: true,
+            displayValue: draft.studentId || INITIAL_ACCOUNT.studentId,
           })}
           {renderField("grade", "학년", {
             options: ["1학년", "2학년", "3학년", "4학년", "5학년"],
@@ -1820,7 +1656,7 @@ function AccountContent({ account, onSave }) {
         {passwordEditing && (
           <>
             <S.Helper>변경을 원할 때만 세 항목을 모두 입력해 주세요.</S.Helper>
-            <S.FormGrid>
+            <S.FormGrid $compact>
               {renderField("currentPassword", "현재 비밀번호", {
                 type: "password",
               })}
@@ -1917,6 +1753,10 @@ function MyPage({ currentUser }) {
   const detailItems = [
     ["닉네임", account.nickname],
     ["성별", account.gender],
+    [
+      "만 나이",
+      `${getInternationalAge(account.birthYear || INITIAL_ACCOUNT.birthYear) ?? "-"}세`,
+    ],
     ["생활관", `${account.dormitory}관`],
     ["학년", account.grade],
     ["나의 학부", account.faculty],

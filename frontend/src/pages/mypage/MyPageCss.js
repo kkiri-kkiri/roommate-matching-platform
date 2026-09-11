@@ -718,13 +718,11 @@ export const SurveyRow = styled.div`
   align-items: start;
   gap: 16px;
   padding: 16px 0;
-  border-bottom: 1px solid ${colors.border};
   &:first-child {
     padding-top: 0;
   }
   &:last-child {
     padding-bottom: 0;
-    border-bottom: 0;
   }
   dt {
     color: ${colors.secondary};
@@ -748,8 +746,16 @@ export const FormGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
-  gap: 24px;
+  gap: ${({ $compact }) => ($compact ? "16px" : "24px")};
   margin-top: 16px;
+  ${({ $compact }) =>
+    $compact &&
+    `
+      margin-top: 10px;
+      > div {
+        padding-bottom: 12px;
+      }
+    `}
   @media (max-width: 1000px) and (min-width: 801px) {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -760,34 +766,50 @@ export const FormGrid = styled.div`
 
 export const Field = styled.div`
   min-width: 0;
+  padding: 4px 0 20px;
 `;
 
 export const WeightControl = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 12px;
+  gap: 8px 14px;
   margin-top: 12px;
-  > label {
-    margin: 0;
+  @media (max-width: 560px) {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 8px 10px;
   }
 `;
 
 export const WeightSlider = styled.input`
+  --weight-progress: ${({ $value }) => `${(($value - 1) / 4) * 100}%`};
+  --weight-color: ${({ $value }) => {
+    if ($value >= 5) return "#138f83";
+    if ($value >= 4) return "#36bdae";
+    if ($value >= 3) return "#66d2c5";
+    if ($value >= 2) return "#9be4dc";
+    return "#e3e9e8";
+  }};
   flex: 1 1 240px;
   min-width: 180px;
   height: 8px;
   margin: 0;
-  accent-color: #36cdbb;
+  accent-color: var(--weight-color);
   appearance: none;
   border-radius: 999px;
-  background: #d9f5f1;
+  background:
+    linear-gradient(to right, #d9f5f1, var(--weight-color)) 0 0 /
+      var(--weight-progress) 100% no-repeat,
+    #e6ebea;
   cursor: pointer;
 
   &::-webkit-slider-runnable-track {
     height: 8px;
     border-radius: 999px;
-    background: #d9f5f1;
+    background:
+      linear-gradient(to right, #d9f5f1, var(--weight-color)) 0 0 /
+        var(--weight-progress) 100% no-repeat,
+      #e6ebea;
   }
 
   &::-webkit-slider-thumb {
@@ -797,20 +819,20 @@ export const WeightSlider = styled.input`
     appearance: none;
     border: 3px solid ${colors.white};
     border-radius: 50%;
-    background: #36cdbb;
+    background: var(--weight-color);
     box-shadow: 0 1px 5px rgba(0, 106, 101, 0.2);
   }
 
   &::-moz-range-track {
     height: 8px;
     border-radius: 999px;
-    background: #d9f5f1;
+    background: #e6ebea;
   }
 
   &::-moz-range-progress {
     height: 8px;
     border-radius: 999px;
-    background: #8be4d8;
+    background: linear-gradient(to right, #d9f5f1, var(--weight-color));
   }
 
   &::-moz-range-thumb {
@@ -818,7 +840,7 @@ export const WeightSlider = styled.input`
     height: 14px;
     border: 3px solid ${colors.white};
     border-radius: 50%;
-    background: #36cdbb;
+    background: var(--weight-color);
     box-shadow: 0 1px 5px rgba(0, 106, 101, 0.2);
   }
 
@@ -829,11 +851,11 @@ export const WeightSlider = styled.input`
 `;
 
 export const WeightValue = styled.span`
-  flex: 0 0 72px;
   color: ${colors.navyDark};
   font-size: 13px;
   font-weight: 700;
   text-align: left;
+  white-space: nowrap;
 `;
 
 export const WeightBadge = styled.span`
@@ -869,9 +891,9 @@ export const Label = styled.label`
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 10px;
-  color: ${colors.secondary};
+  color: ${colors.navyDark};
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 22px;
   > svg {
     color: ${colors.muted};
@@ -910,6 +932,29 @@ export const Helper = styled.p`
   }
 `;
 
+export const WeightNotice = styled.p`
+  max-width: 680px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 12px 0 0;
+  padding-left: 12px;
+  border-left: 3px solid #36cdbb;
+  color: ${colors.secondary};
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 22px;
+  word-break: keep-all;
+`;
+
+export const WeightNoticeLabel = styled.strong`
+  flex: 0 0 auto;
+  color: ${colors.mintDark};
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+`;
+
 export const Fieldset = styled.fieldset`
   min-width: 0;
   margin: 0;
@@ -918,13 +963,32 @@ export const Fieldset = styled.fieldset`
 `;
 
 export const Legend = styled.legend`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   max-width: 100%;
   margin-bottom: 10px;
   padding: 0;
-  color: ${colors.secondary};
-  font-size: 14px;
-  font-weight: 600;
+  color: ${colors.navyDark};
+  font-size: 16px;
+  font-weight: 700;
   line-height: 22px;
+`;
+
+export const MultiSelectHint = styled.span`
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #d9dee6;
+  color: #5d6674;
+  background: #f4f6f8;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  white-space: nowrap;
 `;
 
 export const ChoiceGroup = styled.div`
