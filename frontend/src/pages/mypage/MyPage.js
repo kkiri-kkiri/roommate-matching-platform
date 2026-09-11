@@ -22,9 +22,8 @@ import {
 
 import * as S from "./MyPageCss";
 
-// These page-local definitions follow the existing survey and signup options.
-// No survey, account, or authentication data is sent to a server.
-const PROFILE_SECTIONS = [
+// Search filters share the survey's field names and answer options.
+export const PROFILE_SECTIONS = [
   {
     id: "lifePattern",
     shortTitle: "수면 패턴",
@@ -241,6 +240,28 @@ const PROFILE_SECTIONS = [
     ],
   },
 ];
+
+export const PROFILE_SURVEYS_STORAGE_KEY = "roomieProfileSurveys";
+
+export function getSavedSurveyProfiles() {
+  try {
+    const profiles = JSON.parse(
+      window.localStorage.getItem(PROFILE_SURVEYS_STORAGE_KEY) || "[]",
+    );
+    return Array.isArray(profiles)
+      ? profiles.filter(
+          (profile) =>
+            typeof profile?.id === "string" &&
+            profile.profile &&
+            profile.answers &&
+            typeof profile.answers === "object" &&
+            !Array.isArray(profile.answers),
+        )
+      : [];
+  } catch {
+    return [];
+  }
+}
 
 const PREFERENCE_STEPS = [
   {
@@ -963,7 +984,7 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
             : ["필수조건 없음"],
         }
       : draft;
-    onSave(saved);
+    if (onSave(saved) === false) return;
     setDraft(null);
     setErrors({});
     requestAnimationFrame(() => {
@@ -1615,6 +1636,10 @@ function AccountContent({ account, onSave }) {
 }
 
 function MyPage({ currentUser }) {
+  const surveyProfileId = `survey:${currentUser?.name || INITIAL_ACCOUNT.loginId}`;
+  const [savedSurvey] = useState(() =>
+    getSavedSurveyProfiles().find((profile) => profile.id === surveyProfileId),
+  );
   const [searchParams] = useSearchParams();
   const activeTab = MENU_ITEMS.some(
     (item) => item.id === searchParams.get("tab"),
@@ -1629,8 +1654,12 @@ function MyPage({ currentUser }) {
   const [account, setAccount] = useState(() => ({
     ...INITIAL_ACCOUNT,
     nickname: currentUser?.name || INITIAL_ACCOUNT.nickname,
+    ...savedSurvey?.profile,
   }));
-  const [profileAnswers, setProfileAnswers] = useState(PROFILE_DEFAULTS);
+  const [profileAnswers, setProfileAnswers] = useState(
+    savedSurvey?.answers || PROFILE_DEFAULTS,
+  );
+  const [surveySaveError, setSurveySaveError] = useState("");
   const [preferences, setPreferences] = useState(PREFERENCE_DEFAULTS);
   const [likedIds, setLikedIds] = useState(() =>
     LIKED_PROFILES.map(({ id }) => id),
@@ -1819,6 +1848,10 @@ function MyPage({ currentUser }) {
               </S.Stack>
             )}
             {(activeTab === "survey" || activeTab === "preferences") && (
+              <>
+              {activeTab === "survey" && surveySaveError && (
+                <S.Banner $error role="alert">{surveySaveError}</S.Banner>
+              )}
               <SurveyContent
                 key={`${activeTab}-${preview[activeTab]}`}
                 type={activeTab}
@@ -1826,6 +1859,31 @@ function MyPage({ currentUser }) {
                 isEmpty={preview[activeTab] === "empty"}
                 onSave={(savedAnswers) => {
                   if (activeTab === "survey") {
+                    const savedProfile = {
+                      id: surveyProfileId,
+                      profile: {
+                        nickname: account.nickname,
+                        major: account.major,
+                        dormitory: account.dormitory,
+                        grade: account.grade,
+                      },
+                      answers: savedAnswers,
+                    };
+                    try {
+                      window.localStorage.setItem(
+                        PROFILE_SURVEYS_STORAGE_KEY,
+                        JSON.stringify([
+                          ...getSavedSurveyProfiles().filter(
+                            (profile) => profile.id !== surveyProfileId,
+                          ),
+                          savedProfile,
+                        ]),
+                      );
+                    } catch {
+                      setSurveySaveError("설문을 저장하지 못했어요. 브라우저 저장소 설정을 확인한 뒤 다시 시도해 주세요.");
+                      return false;
+                    }
+                    setSurveySaveError("");
                     setProfileAnswers(savedAnswers);
                   } else {
                     setPreferences(savedAnswers);
@@ -1836,6 +1894,7 @@ function MyPage({ currentUser }) {
                   }));
                 }}
               />
+              </>
             )}
             {activeTab === "likes" && (
               <S.Stack>

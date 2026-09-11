@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BadgeCheck,
   Check,
+  ChevronDown,
   Info,
   MapPin,
   RotateCcw,
@@ -12,32 +13,16 @@ import {
 } from "lucide-react";
 
 import * as S from "./RoommateSearchPageCss";
+import {
+  getSavedSurveyProfiles,
+  PROFILE_SECTIONS,
+  PROFILE_SURVEYS_STORAGE_KEY,
+} from "../mypage/MyPage";
 
-const FILTER_GROUPS = [
-  {
-    id: "dormitory",
-    label: "생활관",
-    options: ["전체", "나래", "호연", "비룡", "창조"],
-  },
-  {
-    id: "rhythm",
-    label: "생활 리듬",
-    options: ["전체", "아침형", "중간형", "야행성"],
-  },
-  {
-    id: "smoking",
-    label: "흡연 여부",
-    options: ["전체", "비흡연", "전자담배", "일반담배"],
-  },
-  {
-    id: "interaction",
-    label: "교류 스타일",
-    options: ["전체", "친하게", "적당히", "개인 시간"],
-  },
-];
+const FILTER_GROUPS = PROFILE_SECTIONS.flatMap((section) => section.fields);
 
 const DEFAULT_FILTERS = FILTER_GROUPS.reduce(
-  (filters, group) => ({ ...filters, [group.id]: "전체" }),
+  (filters, group) => ({ ...filters, [group.id]: [] }),
   {},
 );
 
@@ -91,7 +76,7 @@ const PROFILES = [
     nickname: "민트초코",
     admissionYear: "25",
     major: "시각미디어디자인전공",
-    dormitory: "비룡",
+    dormitory: "비봉",
     rhythm: "중간형",
     smoking: "비흡연",
     interaction: "친하게",
@@ -147,7 +132,7 @@ const PROFILES = [
     nickname: "조용한숲",
     admissionYear: "21",
     major: "조경학전공",
-    dormitory: "비룡",
+    dormitory: "비봉",
     rhythm: "아침형",
     smoking: "비흡연",
     interaction: "개인 시간",
@@ -174,10 +159,28 @@ const PROFILES = [
 
 function RoommateSearchPage() {
   const [activeTab, setActiveTab] = useState("all");
+  const [selectedTag, setSelectedTag] = useState(null);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [draftFilters, setDraftFilters] = useState(DEFAULT_FILTERS);
+  const [expandedCategories, setExpandedCategories] = useState({
+    lifePattern: true,
+    livingHabits: false,
+    dormLife: false,
+  });
+  const [savedProfiles, setSavedProfiles] = useState(getSavedSurveyProfiles);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const tabRefs = useRef({});
   const filterDialogRef = useRef(null);
+
+  useEffect(() => {
+    const refreshProfiles = (event) => {
+      if (event.key === null || event.key === PROFILE_SURVEYS_STORAGE_KEY) {
+        setSavedProfiles(getSavedSurveyProfiles());
+      }
+    };
+    window.addEventListener("storage", refreshProfiles);
+    return () => window.removeEventListener("storage", refreshProfiles);
+  }, []);
 
   useEffect(() => {
     if (!isFilterOpen) return;
@@ -195,42 +198,71 @@ function RoommateSearchPage() {
 
   const activeFilterEntries = useMemo(
     () =>
-      FILTER_GROUPS.flatMap((group) => {
-        const value = filters[group.id];
-
-        return value === "전체" ? [] : [{ id: group.id, label: group.label, value }];
-      }),
+      FILTER_GROUPS.flatMap((group) =>
+        filters[group.id].map((value) => ({ id: group.id, label: group.label, value })),
+      ),
     [filters],
   );
 
   const visibleProfiles = useMemo(() => {
+    const profiles = [
+      ...PROFILES,
+      ...savedProfiles.map(({ id, profile, answers }) => ({
+        ...profile,
+        id,
+        answers,
+        photo: createProfilePhoto("#e8eef9", "#f2c5a7", "#363a46", "#0c3273"),
+        tags: [answers.smoking, answers.sleepTime, answers.cleaningFrequency].filter(Boolean),
+      })),
+    ];
     const profilesForTab =
       activeTab === "recommended"
-        ? PROFILES.filter((profile) => profile.matchScore >= 60)
-        : PROFILES;
+        ? profiles.filter((profile) => profile.matchScore >= 60)
+        : profiles;
 
     return profilesForTab.filter((profile) =>
+      (!selectedTag || profile.tags.includes(selectedTag)) &&
       FILTER_GROUPS.every((group) => {
-        const selectedValue = filters[group.id];
-
-        return selectedValue === "전체" || profile[group.id] === selectedValue;
+        const selectedValues = filters[group.id];
+        if (selectedValues.length === 0) return true;
+        const answer = profile.answers?.[group.id] ?? profile[group.id];
+        const answerValues = Array.isArray(answer) ? answer : [answer];
+        return selectedValues.some((value) => answerValues.includes(value));
       }),
     );
-  }, [activeTab, filters]);
+  }, [activeTab, filters, savedProfiles, selectedTag]);
 
-  const updateFilter = (filterId, value) => {
-    setFilters((currentFilters) => ({
+  const updateDraftFilter = (filterId, value) => {
+    setDraftFilters((currentFilters) => ({
       ...currentFilters,
-      [filterId]: value,
+      [filterId]: currentFilters[filterId].includes(value)
+        ? currentFilters[filterId].filter((selected) => selected !== value)
+        : [...currentFilters[filterId], value],
     }));
+  };
+
+  const openFilters = () => {
+    setDraftFilters(
+      Object.fromEntries(Object.entries(filters).map(([id, values]) => [id, [...values]])),
+    );
+    setIsFilterOpen(true);
+  };
+
+  const applyFilters = () => {
+    setFilters(draftFilters);
+    setIsFilterOpen(false);
   };
 
   const resetFilters = () => {
     setFilters(DEFAULT_FILTERS);
+    setSelectedTag(null);
   };
 
-  const removeFilter = (filterId) => {
-    updateFilter(filterId, "전체");
+  const removeFilter = (filterId, value) => {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      [filterId]: currentFilters[filterId].filter((selected) => selected !== value),
+    }));
   };
 
   const handleTabKeyDown = (event, currentTab) => {
@@ -319,7 +351,7 @@ function RoommateSearchPage() {
                 aria-haspopup="dialog"
                 aria-expanded={isFilterOpen}
                 aria-controls="roommate-filter-panel"
-                onClick={() => setIsFilterOpen(true)}
+                onClick={openFilters}
               >
                 <SlidersHorizontal size={18} aria-hidden="true" />
               </S.FilterToggle>
@@ -327,14 +359,14 @@ function RoommateSearchPage() {
               {activeFilterEntries.length > 0 ? (
                 <S.AppliedFilterList>
                   {activeFilterEntries.map((filter) => (
-                    <S.AppliedFilter key={filter.id}>
+                    <S.AppliedFilter key={`${filter.id}-${filter.value}`}>
                       <span>
                         {filter.label} · {filter.value}
                       </span>
                       <button
                         type="button"
                         aria-label={`${filter.label} ${filter.value} 필터 취소`}
-                        onClick={() => removeFilter(filter.id)}
+                        onClick={() => removeFilter(filter.id, filter.value)}
                       >
                         <X size={13} aria-hidden="true" />
                       </button>
@@ -350,7 +382,7 @@ function RoommateSearchPage() {
               type="button"
               aria-label="필터 초기화"
               title="필터 초기화"
-              disabled={activeFilterEntries.length === 0}
+              disabled={activeFilterEntries.length === 0 && !selectedTag}
               onClick={resetFilters}
             >
               <RotateCcw size={15} aria-hidden="true" />
@@ -387,13 +419,10 @@ function RoommateSearchPage() {
                   필터
                 </S.FilterTitle>
                 <S.FilterDescription>
-                  원하는 생활 조건을 선택해 보세요.
+                  필요한 항목만 복수 선택하세요. 전체는 조건 미적용이에요.
                 </S.FilterDescription>
               </div>
 
-              <S.ActiveFilterCount $active={activeFilterEntries.length > 0}>
-                {activeFilterEntries.length}
-              </S.ActiveFilterCount>
               <S.FilterToggle
                 type="button"
                 aria-label="필터 닫기"
@@ -404,39 +433,72 @@ function RoommateSearchPage() {
             </S.FilterPanelHeader>
 
             <S.FilterGroups>
-              {FILTER_GROUPS.map((group) => (
-                <S.FilterFieldset key={group.id}>
-                  <S.FilterLegend>{group.label}</S.FilterLegend>
-                  <S.FilterChoices>
-                    {group.options.map((option) => {
-                      const selected = filters[group.id] === option;
+              {PROFILE_SECTIONS.map((section) => {
+                const expanded = expandedCategories[section.id];
 
-                      return (
-                        <S.FilterChoice key={option} $selected={selected}>
-                          <S.HiddenInput
-                            type="radio"
-                            name={group.id}
-                            value={option}
-                            checked={selected}
-                            onChange={() => updateFilter(group.id, option)}
-                          />
-                          <S.ChoiceIndicator $selected={selected}>
-                            {selected && <Check size={12} aria-hidden="true" />}
-                          </S.ChoiceIndicator>
-                          <span>{option}</span>
-                        </S.FilterChoice>
-                      );
-                    })}
-                  </S.FilterChoices>
-                </S.FilterFieldset>
-              ))}
+                return (
+                  <S.FilterCategory key={section.id}>
+                    <S.FilterCategoryHeading>
+                      <S.FilterCategoryToggle
+                        type="button"
+                        $expanded={expanded}
+                        aria-expanded={expanded}
+                        aria-controls={`filter-category-${section.id}`}
+                        onClick={() => setExpandedCategories((current) => ({
+                          ...current,
+                          [section.id]: !current[section.id],
+                        }))}
+                      >
+                        <span>{section.title}</span>
+                        <small>{section.fields.length}개 항목</small>
+                        <ChevronDown size={18} aria-hidden="true" />
+                      </S.FilterCategoryToggle>
+                    </S.FilterCategoryHeading>
+                    <div id={`filter-category-${section.id}`} hidden={!expanded}>
+                      {section.fields.map((group) => (
+                        <S.FilterFieldset key={group.id}>
+                          <S.FilterLegend>{group.label}</S.FilterLegend>
+                          <S.FilterChoices>
+                            {group.options.map((option) => {
+                              if (
+                                ["lightingPreference", "phoneCall", "scentProductUse"].includes(group.id) &&
+                                option.replace(/\s/g, "") === "상관없음"
+                              ) {
+                                return null;
+                              }
+
+                              const selected = draftFilters[group.id].includes(option);
+
+                              return (
+                                <S.FilterChoice key={option} $selected={selected}>
+                                  <S.HiddenInput
+                                    type="checkbox"
+                                    name={group.id}
+                                    value={option}
+                                    checked={selected}
+                                    onChange={() => updateDraftFilter(group.id, option)}
+                                  />
+                                  <S.ChoiceIndicator $selected={selected}>
+                                    {selected && <Check size={12} aria-hidden="true" />}
+                                  </S.ChoiceIndicator>
+                                  <span>{option}</span>
+                                </S.FilterChoice>
+                              );
+                            })}
+                          </S.FilterChoices>
+                        </S.FilterFieldset>
+                      ))}
+                    </div>
+                  </S.FilterCategory>
+                );
+              })}
             </S.FilterGroups>
             <S.FilterModalFooter>
-              <S.ResetFilterButton type="button" onClick={resetFilters}>
+              <S.ResetFilterButton type="button" onClick={() => setDraftFilters(DEFAULT_FILTERS)}>
                 <RotateCcw size={15} aria-hidden="true" />
                 초기화
               </S.ResetFilterButton>
-              <S.FilterToggle type="button" onClick={() => setIsFilterOpen(false)}>
+              <S.FilterToggle type="button" onClick={applyFilters}>
                 적용
               </S.FilterToggle>
             </S.FilterModalFooter>
@@ -467,16 +529,18 @@ function RoommateSearchPage() {
                       <S.ProfileIdentity>
                         <S.ProfileNameRow>
                           <S.ProfileName>{profile.nickname}</S.ProfileName>
-                          <S.VerifiedBadge title="재학생 인증 완료">
+                          {!profile.answers && <S.VerifiedBadge title="재학생 인증 완료">
                             <BadgeCheck size={14} aria-hidden="true" />
                             인증
-                          </S.VerifiedBadge>
+                          </S.VerifiedBadge>}
                         </S.ProfileNameRow>
 
                         <S.ProfileAcademic
-                          title={`${profile.admissionYear}학번 · ${profile.major}`}
+                          title={`${profile.admissionYear ? `${profile.admissionYear}학번` : profile.grade} · ${profile.major}`}
                         >
-                          <S.AdmissionYear>{profile.admissionYear}학번</S.AdmissionYear>
+                          <S.AdmissionYear>
+                            {profile.admissionYear ? `${profile.admissionYear}학번` : profile.grade}
+                          </S.AdmissionYear>
                           <span aria-hidden="true">·</span>
                           <span>{profile.major}</span>
                         </S.ProfileAcademic>
@@ -487,20 +551,26 @@ function RoommateSearchPage() {
                         </S.Dormitory>
                       </S.ProfileIdentity>
 
-                      <S.MatchBadge aria-label={`매칭점수 ${profile.matchScore}점`}>
+                      {profile.matchScore != null && <S.MatchBadge aria-label={`매칭점수 ${profile.matchScore}점`}>
                         <Sparkles size={13} aria-hidden="true" />
                         {profile.matchScore}점
-                      </S.MatchBadge>
+                      </S.MatchBadge>}
                     </S.CardHeader>
 
-                    <S.ProfileMessage>
-                      <span>한마디</span>
+                    {profile.message && <S.ProfileMessage>
                       <p>{profile.message}</p>
-                    </S.ProfileMessage>
+                    </S.ProfileMessage>}
 
                     <S.TagList aria-label={`${profile.nickname} 해시태그`}>
                       {profile.tags.map((tag) => (
-                        <S.ProfileTag key={tag}>#{tag}</S.ProfileTag>
+                        <S.ProfileTag
+                          key={tag}
+                          type="button"
+                          aria-pressed={selectedTag === tag}
+                          onClick={() => setSelectedTag((current) => current === tag ? null : tag)}
+                        >
+                          #{tag}
+                        </S.ProfileTag>
                       ))}
                     </S.TagList>
                   </S.ProfileCard>

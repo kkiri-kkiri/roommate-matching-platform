@@ -396,16 +396,22 @@ export const SearchLayout = styled.div`
 `;
 
 export const FilterPanel = styled.dialog`
-  width: min(480px, calc(100vw - 32px));
-  max-height: calc(100dvh - 48px);
+  width: min(840px, calc(100vw - 32px));
+  height: min(820px, calc(100dvh - 32px));
+  max-height: calc(100dvh - 32px);
   margin: auto;
   padding: 0;
-  overflow-y: auto;
+  overflow: hidden;
   border: 1px solid ${colors.border};
-  border-radius: 16px;
+  border-radius: 18px;
   color: ${colors.text};
   background: ${colors.white};
-  box-shadow: 0 20px 60px rgba(12, 50, 115, 0.2);
+  box-shadow: 0 24px 72px rgba(12, 50, 115, 0.22);
+
+  &[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
 
   &::backdrop {
     background: rgba(0, 20, 48, 0.4);
@@ -414,18 +420,27 @@ export const FilterPanel = styled.dialog`
 
 export const FilterModalFooter = styled.div`
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px 16px;
+  border-top: 1px solid ${colors.border};
+  background: ${colors.white};
 `;
 
 export const FilterPanelHeader = styled.div`
   display: flex;
+  flex-shrink: 0;
   gap: 12px;
   align-items: flex-start;
   justify-content: space-between;
   padding: 16px;
   background: linear-gradient(135deg, #ffffff 0%, #fbfcff 100%);
+
+  > div {
+    flex: 1;
+    min-width: 0;
+  }
 `;
 
 export const FilterTitle = styled.h2`
@@ -451,26 +466,52 @@ export const FilterDescription = styled.p`
   word-break: keep-all;
 `;
 
-export const ActiveFilterCount = styled.span`
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  min-width: 28px;
-  height: 28px;
-  padding: 0 7px;
-  border-radius: 999px;
-  border: 1px solid
-    ${({ $active }) => ($active ? "rgba(0, 106, 101, 0.18)" : colors.border)};
-  color: ${({ $active }) => ($active ? colors.mintDark : colors.textSoft)};
-  background: ${({ $active }) => ($active ? colors.mintSoft : "#f1f1f1")};
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 14px;
+export const FilterGroups = styled.div`
+  min-height: 0;
+  padding: 0 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 `;
 
-export const FilterGroups = styled.div`
-  padding: 0 16px;
+export const FilterCategory = styled.section`
+  border-top: 1px solid ${colors.border};
+`;
+
+export const FilterCategoryHeading = styled.h3`
+  margin: 0;
+`;
+
+export const FilterCategoryToggle = styled.button`
+  ${focusRing};
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 0;
+  border: 0;
+  color: ${colors.navyDark};
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+
+  span {
+    flex: 1;
+  }
+
+  small {
+    color: ${colors.textSoft};
+    font-size: 12px;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+
+  svg {
+    flex-shrink: 0;
+    transform: ${({ $expanded }) => ($expanded ? "rotate(180deg)" : "none")};
+  }
 `;
 
 export const FilterFieldset = styled.fieldset`
@@ -492,10 +533,12 @@ export const FilterLegend = styled.legend`
 export const FilterChoices = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 6px 8px;
+  align-items: center;
 `;
 
 export const FilterChoice = styled.label`
+  position: relative;
   display: inline-flex;
   gap: 5px;
   align-items: center;
@@ -530,9 +573,11 @@ export const FilterChoice = styled.label`
 
 export const HiddenInput = styled.input`
   position: absolute;
+  top: 0;
+  left: 0;
   width: 1px;
   height: 1px;
-  margin: -1px;
+  margin: 0;
   padding: 0;
   overflow: hidden;
   border: 0;
@@ -550,7 +595,7 @@ export const ChoiceIndicator = styled.span`
   height: 17px;
   border: 1.5px solid
     ${({ $selected }) => ($selected ? colors.mint : "#a9acb3")};
-  border-radius: 50%;
+  border-radius: 4px;
   color: ${colors.white};
   background: ${({ $selected }) => ($selected ? colors.mint : colors.white)};
 `;
@@ -579,6 +624,8 @@ export const ProfileGrid = styled.div`
 `;
 
 export const ProfileCard = styled.article`
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   padding: 24px;
   border: 1px solid ${colors.border};
@@ -712,22 +759,24 @@ export const MatchBadge = styled.span`
 `;
 
 export const ProfileMessage = styled.div`
+  position: relative;
   margin-top: 20px;
   padding: 16px;
   border-radius: 12px;
   background: #f7f7f6;
 
-  span {
-    display: block;
-    color: ${colors.textSoft};
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 14px;
-    letter-spacing: 0.04em;
+  &::before {
+    content: "";
+    position: absolute;
+    top: -12px;
+    left: 28px;
+    border-right: 10px solid transparent;
+    border-bottom: 12px solid #f7f7f6;
+    border-left: 10px solid transparent;
   }
 
   p {
-    margin: 5px 0 0;
+    margin: 0;
     color: ${colors.textSoft};
     font-size: 14px;
     line-height: 20px;
@@ -739,20 +788,31 @@ export const TagList = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
-  margin-top: 16px;
+  margin-top: auto;
+  padding-top: 16px;
 `;
 
-export const ProfileTag = styled.span`
+export const ProfileTag = styled.button`
+  font-family: inherit;
   display: inline-flex;
   align-items: center;
   min-height: 28px;
   padding: 5px 10px;
+  border: 0;
   border-radius: 999px;
   color: #5f6269;
   background: #f6f6f6;
-  font-size: 12px;
+  && {
+    font-size: 12px;
+  }
   font-weight: 500;
   line-height: 14px;
+  cursor: pointer;
+
+  &[aria-pressed="true"] {
+    color: ${colors.mintDark};
+    background: ${colors.mintSoft};
+  }
 `;
 
 export const EmptyState = styled.div`
