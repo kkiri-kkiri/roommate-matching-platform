@@ -6,7 +6,7 @@ import {
   BookOpen,
   Building2,
   Check,
-  CheckCircle2,
+  ChevronLeft,
   ChevronRight,
   ClipboardList,
   Heart,
@@ -36,7 +36,7 @@ const PROFILE_SECTIONS = [
         label: "취침시간",
         type: "single",
         options: [
-          "22시 이전",
+          "22시 ~ 23시",
           "23시 ~ 24시",
           "24시 ~ 01시",
           "01시 ~ 02시",
@@ -50,7 +50,7 @@ const PROFILE_SECTIONS = [
         label: "기상시간",
         type: "single",
         options: [
-          "06시 이전",
+          "07시 이전",
           "07시 ~ 08시",
           "08시 ~ 09시",
           "09시 ~ 10시",
@@ -287,7 +287,7 @@ const PREFERENCE_STEPS = [
         label: "선호하는 취침시간",
         type: "multi",
         options: [
-          "22시 이전",
+          "22시 ~ 23시",
           "23시",
           "자정",
           "1시",
@@ -302,7 +302,7 @@ const PREFERENCE_STEPS = [
         label: "선호하는 기상시간",
         type: "multi",
         options: [
-          "6시 이전",
+          "7시 이전",
           "6시 ~ 7시",
           "7시 ~ 8시",
           "8시 ~ 9시",
@@ -688,6 +688,45 @@ const PREFERENCE_SECTIONS = PREFERENCE_STEPS.filter(
   (step) => step.id !== "requirements",
 );
 
+const PREFERENCE_WEIGHT_OPTIONS = [
+  { value: 1, label: "매우 낮음" },
+  { value: 2, label: "낮음" },
+  { value: 3, label: "보통" },
+  { value: 4, label: "높음" },
+  { value: 5, label: "매우 높음" },
+];
+
+const PREFERENCE_RECOMMENDED_WEIGHTS = {
+  department: 4,
+  age: 3,
+  grade: 1,
+  bedtime: 3,
+  wakeTime: 3,
+  sleepTalking: 4,
+  snoring: 4,
+  teethGrinding: 4,
+  smoking: 4,
+  lightingPreference: 2,
+  showerTime: 2,
+  showerDuration: 2,
+  cleaningFrequency: 3,
+  cleaningStyle: 3,
+  interaction: 3,
+  meal: 2,
+  sharedItems: 2,
+  temperature: 2,
+};
+
+const getRecommendedPreferenceWeight = (id) =>
+  PREFERENCE_RECOMMENDED_WEIGHTS[id] || 2;
+
+const getPreferenceWeightLabel = (value) =>
+  PREFERENCE_WEIGHT_OPTIONS.find((option) => option.value === value)?.label ||
+  "보통";
+
+const getPreferenceWeight = (answers, id) =>
+  answers.weights?.[id] ?? getRecommendedPreferenceWeight(id);
+
 const REQUIREMENT_LABELS = {
   department: "학부·학과",
   age: "나이",
@@ -725,7 +764,7 @@ const MENU_ITEMS = [
   { id: "profile", label: "프로필", icon: UserRound },
   { id: "survey", label: "내 설문", icon: ClipboardList },
   { id: "preferences", label: "선호 룸메 설문", icon: Users },
-  { id: "likes", label: "좋아요", icon: Heart },
+  { id: "likes", label: "관심 프로필", icon: Heart },
   { id: "account", label: "계정 정보", icon: Settings2 },
 ];
 
@@ -742,7 +781,7 @@ function createAvatar(background, shirt, hair = "#363a46") {
 }
 
 const MY_PHOTO = createAvatar("#e8eef9", "#0c3273");
-const LIKED_PROFILES = [
+const BASE_LIKED_PROFILES = [
   {
     id: "roommate-cloud",
     nickname: "포근한구름",
@@ -846,6 +885,129 @@ const LIKED_PROFILES = [
     },
   },
 ];
+
+const GENERATED_PROFILE_NAMES = [
+  "차분한연필",
+  "햇살가득",
+  "책읽는오후",
+  "푸른산책",
+  "느린호흡",
+  "정돈된하루",
+  "소소한기록",
+  "따뜻한라떼",
+  "고요한밤",
+  "주말여행자",
+  "맑은창가",
+  "성실한새벽",
+  "초록노트",
+  "담백한생활",
+  "함께걷기",
+  "반짝이는별",
+  "편안한방",
+  "오늘도맑음",
+  "작은정원",
+  "구름산책",
+  "다정한공간",
+  "새로운계절",
+  "일상의발견",
+  "푸른책상",
+  "포근한저녁",
+  "차 한잔",
+  "느긋한주말",
+];
+
+const GENERATED_PROFILE_COLORS = [
+  ["#e8f4f1", "#198f83"],
+  ["#fff0df", "#d97732"],
+  ["#edf0ff", "#5268c9"],
+  ["#f8e9f0", "#bd5d83"],
+  ["#eaf4e5", "#5d9b4b"],
+  ["#f1ebff", "#8057bd"],
+];
+
+function createGeneratedLikedProfile(index) {
+  const [background, shirt] =
+    GENERATED_PROFILE_COLORS[index % GENERATED_PROFILE_COLORS.length];
+  const nickname = GENERATED_PROFILE_NAMES[index];
+  const majors = [
+    "컴퓨터공학전공",
+    "경영학전공",
+    "미디어문화전공",
+    "생명공학전공",
+  ];
+  const tags = [
+    ["비흡연", "아침형", "청소 협의"],
+    ["조용한 방", "개인 시간", "주 2회 청소"],
+    ["이어폰 사용", "규칙적인 생활", "비흡연"],
+  ];
+  return {
+    id: `generated-roommate-${index + 1}`,
+    nickname,
+    year: String(22 + (index % 4)),
+    major: majors[index % majors.length],
+    faculty: "융합인재학부",
+    dormitory: index % 2 ? "호연" : "나래",
+    grade: `${2 + (index % 3)}학년`,
+    age: index % 3 === 0 ? "동갑" : "연상",
+    photo: createAvatar(background, shirt),
+    message: `${nickname}님은 서로의 생활 리듬을 존중하며 편하게 지내고 싶어 해요.`,
+    tags: tags[index % tags.length],
+    answers: {
+      mbtiEnergy: "I",
+      mbtiInformation: "N",
+      mbtiDecision: "F",
+      mbtiLifestyle: "J",
+      bedtime: "23시",
+      wakeTime: "7시 ~ 8시",
+      smoking: "비흡연",
+      sleepTalking: "없음",
+      snoring: "없음",
+      teethGrinding: "없음",
+      lightingPreference: "상관 없음",
+      showerTime: "저녁",
+      showerDuration: "20분",
+      cleaningFrequency: "주 1회",
+      cleaningStyle: "상황에 따라 협의하는 사람",
+      interaction: "적당히 대화하고 싶은 사람",
+      meal: "각자 먹고 싶음",
+      sharedItems: "일부만 공유하는 사람",
+      temperature: "보통인 사람",
+    },
+  };
+}
+
+const LIKED_PROFILES = [
+  ...BASE_LIKED_PROFILES,
+  ...GENERATED_PROFILE_NAMES.map((_, index) =>
+    createGeneratedLikedProfile(index),
+  ),
+];
+
+const UNLIKED_PROFILE_IDS_KEY = "roomieUnlikedProfileIds";
+const LIKES_PER_PAGE = 6;
+const MAX_VISIBLE_PAGES = 5;
+
+function loadUnlikedProfileIds() {
+  try {
+    const storedIds = JSON.parse(
+      window.localStorage.getItem(UNLIKED_PROFILE_IDS_KEY) || "[]",
+    );
+    return new Set(Array.isArray(storedIds) ? storedIds : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveUnlikedProfileIds(ids) {
+  try {
+    window.localStorage.setItem(
+      UNLIKED_PROFILE_IDS_KEY,
+      JSON.stringify([...ids]),
+    );
+  } catch {
+    // 저장소를 사용할 수 없어도 현재 화면의 좋아요 상태는 계속 유지합니다.
+  }
+}
 
 const asArray = (value) => (Array.isArray(value) ? value : [value]);
 const hasAnswer = (value) =>
@@ -958,6 +1120,14 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
     const saved = isPreference
       ? {
           ...draft,
+          weights: Object.fromEntries(
+            sections.flatMap((section) =>
+              section.fields.map((field) => [
+                field.id,
+                getPreferenceWeight(draft, field.id),
+              ]),
+            ),
+          ),
           requiredConditions: requirements.length
             ? requirements
             : ["필수조건 없음"],
@@ -981,13 +1151,25 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
         ]),
       ),
     );
+    const defaultWeights = Object.fromEntries(
+      sections.flatMap((section) =>
+        section.fields.map((field) => [
+          field.id,
+          getRecommendedPreferenceWeight(field.id),
+        ]),
+      ),
+    );
     setDraft(
       isEmpty
         ? {
             ...emptyAnswers,
-            ...(isPreference ? { requiredConditions: [] } : {}),
+            ...(isPreference
+              ? { requiredConditions: [], weights: defaultWeights }
+              : {}),
           }
-        : { ...answers },
+        : isPreference
+          ? { ...answers, weights: { ...defaultWeights, ...answers.weights } }
+          : { ...answers },
     );
     setErrors({});
     requestAnimationFrame(() =>
@@ -1013,6 +1195,12 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
               ? "함께하고 싶은 룸메이트의 모습을 정리했어요."
               : "나의 하루를 담은 생활 습관이에요."}
           </S.Description>
+          {isPreference && (
+            <S.Helper>
+              모든 항목의 중요도를 1~5단계로 설정할 수 있어요. 추천 단계를
+              참고해 나에게 중요한 조건을 조정해 보세요.
+            </S.Helper>
+          )}
         </div>
         {!isEmpty && !draft && (
           <S.SecondaryButton onClick={() => startEditing()}>
@@ -1031,7 +1219,6 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
                   <S.CardTitle>
                     {String(index + 1).padStart(2, "0")} · {section.title}
                   </S.CardTitle>
-                  <S.Badge $muted>{section.fields.length}개 항목</S.Badge>
                 </S.CardHeader>
                 {draft ? (
                   <S.FormGrid>
@@ -1101,6 +1288,34 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
                             </S.Select>
                           </>
                         )}
+                        {isPreference && (
+                          <S.WeightControl>
+                            <S.WeightValue>
+                              {getPreferenceWeightLabel(
+                                getPreferenceWeight(draft, field.id),
+                              )}
+                            </S.WeightValue>
+                            <S.WeightSlider
+                              type="range"
+                              id={`${type}-${field.id}-weight`}
+                              min="1"
+                              max="5"
+                              step="1"
+                              aria-label={`${field.label} 가중치`}
+                              value={getPreferenceWeight(draft, field.id)}
+                              onChange={(event) => {
+                                const weight = Number(event.target.value);
+                                setDraft((current) => ({
+                                  ...current,
+                                  weights: {
+                                    ...current.weights,
+                                    [field.id]: weight,
+                                  },
+                                }));
+                              }}
+                            />
+                          </S.WeightControl>
+                        )}
                         {errors[field.id] && (
                           <S.FieldError
                             id={`${type}-${field.id}-error`}
@@ -1122,7 +1337,16 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
                             REQUIREMENT_LABELS[field.id],
                           ) && <S.RequiredBadge>필수</S.RequiredBadge>}
                         </dt>
-                        <dd>{displayAnswer(values[field.id])}</dd>
+                        <dd>
+                          {displayAnswer(values[field.id])}
+                          {isPreference && (
+                            <S.WeightBadge>
+                              {getPreferenceWeightLabel(
+                                getPreferenceWeight(values, field.id),
+                              )}
+                            </S.WeightBadge>
+                          )}
+                        </dd>
                       </S.SurveyRow>
                     ))}
                   </S.SurveyGrid>
@@ -1632,31 +1856,63 @@ function MyPage({ currentUser }) {
   }));
   const [profileAnswers, setProfileAnswers] = useState(PROFILE_DEFAULTS);
   const [preferences, setPreferences] = useState(PREFERENCE_DEFAULTS);
-  const [likedIds, setLikedIds] = useState(() =>
-    LIKED_PROFILES.map(({ id }) => id),
-  );
+  const [unlikedIds, setUnlikedIds] = useState(loadUnlikedProfileIds);
+  const [likedIds, setLikedIds] = useState(() => {
+    const removedIds = loadUnlikedProfileIds();
+    return LIKED_PROFILES.filter(({ id }) => !removedIds.has(id)).map(
+      ({ id }) => id,
+    );
+  });
   const [preview, setPreview] = useState({
     survey: "filled",
     preferences: "filled",
     likes: "filled",
   });
-  const [likeMessage, setLikeMessage] = useState("");
-  const lastRemoved = useRef(null);
+  const [likesPage, setLikesPage] = useState(1);
   const likesTitleRef = useRef(null);
   const likedProfiles =
     preview.likes === "empty"
       ? []
       : LIKED_PROFILES.filter(({ id }) => likedIds.includes(id));
+  const totalLikesPages = Math.ceil(likedProfiles.length / LIKES_PER_PAGE);
+  const visibleLikesPages = Math.min(totalLikesPages, MAX_VISIBLE_PAGES);
+  const firstVisibleLikesPage = Math.min(
+    Math.max(1, likesPage - Math.floor(MAX_VISIBLE_PAGES / 2)),
+    Math.max(1, totalLikesPages - visibleLikesPages + 1),
+  );
+  const likesPageNumbers = Array.from(
+    { length: visibleLikesPages },
+    (_, index) => firstVisibleLikesPage + index,
+  );
+  const pagedLikedProfiles = likedProfiles.slice(
+    (likesPage - 1) * LIKES_PER_PAGE,
+    likesPage * LIKES_PER_PAGE,
+  );
   const completeCount = [preview.survey, preview.preferences].filter(
     (value) => value === "filled",
   ).length;
 
   const removeLike = (profile) => {
-    setLikedIds((current) => current.filter((id) => id !== profile.id));
-    lastRemoved.current = profile.id;
-    setLikeMessage(`${profile.nickname}님의 좋아요를 취소했어요.`);
-    requestAnimationFrame(() => likesTitleRef.current?.focus());
+    setUnlikedIds((current) => {
+      const next = new Set(current);
+      if (next.has(profile.id)) {
+        next.delete(profile.id);
+      } else {
+        next.add(profile.id);
+      }
+      saveUnlikedProfileIds(next);
+      return next;
+    });
+    requestAnimationFrame(() =>
+      likesTitleRef.current?.focus({ preventScroll: true }),
+    );
   };
+
+  useEffect(() => {
+    if (totalLikesPages > 0 && likesPage > totalLikesPages) {
+      setLikesPage(totalLikesPages);
+    }
+  }, [likesPage, totalLikesPages]);
 
   const detailItems = [
     ["닉네임", account.nickname],
@@ -1692,9 +1948,6 @@ function MyPage({ currentUser }) {
                 >
                   <Icon size={19} aria-hidden="true" />
                   <span>{label}</span>
-                  {id === "likes" && (
-                    <S.MenuCount>{likedProfiles.length}</S.MenuCount>
-                  )}
                   {activeTab === id && (
                     <ChevronRight size={16} aria-hidden="true" />
                   )}
@@ -1853,32 +2106,11 @@ function MyPage({ currentUser }) {
                     <ArrowRight size={16} aria-hidden="true" />
                   </S.SubtleLink>
                 </S.SectionHeading>
-                {likeMessage && (
-                  <S.Banner role="status">
-                    <CheckCircle2 size={19} aria-hidden="true" />
-                    <span>{likeMessage}</span>
-                    {lastRemoved.current && (
-                      <S.GhostButton
-                        type="button"
-                        onClick={() => {
-                          const id = lastRemoved.current;
-                          setLikedIds((current) =>
-                            current.includes(id) ? current : [...current, id],
-                          );
-                          lastRemoved.current = null;
-                          setLikeMessage("좋아요를 다시 담았어요.");
-                        }}
-                      >
-                        되돌리기
-                      </S.GhostButton>
-                    )}
-                  </S.Banner>
-                )}
                 {!likedProfiles.length ? (
                   <EmptyState type="likes" />
                 ) : (
                   <S.LikeGrid>
-                    {likedProfiles.map((profile) => (
+                    {pagedLikedProfiles.map((profile) => (
                       <S.LikeCard key={profile.id}>
                         <S.LikeTop>
                           <S.Avatar
@@ -1888,13 +2120,17 @@ function MyPage({ currentUser }) {
                           />
                           <S.IconButton
                             type="button"
-                            aria-label={`${profile.nickname} 좋아요 취소`}
-                            aria-pressed="true"
+                            aria-label={`${profile.nickname} ${unlikedIds.has(profile.id) ? "좋아요 추가" : "좋아요 취소"}`}
+                            aria-pressed={!unlikedIds.has(profile.id)}
                             onClick={() => removeLike(profile)}
                           >
                             <Heart
                               size={20}
-                              fill="currentColor"
+                              fill={
+                                unlikedIds.has(profile.id)
+                                  ? "none"
+                                  : "currentColor"
+                              }
                               aria-hidden="true"
                             />
                           </S.IconButton>
@@ -1922,6 +2158,39 @@ function MyPage({ currentUser }) {
                       </S.LikeCard>
                     ))}
                   </S.LikeGrid>
+                )}
+                {totalLikesPages > 1 && (
+                  <S.Pagination aria-label="좋아요 목록 페이지 이동">
+                    <S.PageButton
+                      type="button"
+                      aria-label="이전 페이지"
+                      disabled={likesPage === 1}
+                      onClick={() => setLikesPage((current) => current - 1)}
+                    >
+                      <ChevronLeft size={17} aria-hidden="true" />
+                    </S.PageButton>
+                    {likesPageNumbers.map((pageNumber) => (
+                      <S.PageButton
+                        key={pageNumber}
+                        type="button"
+                        $active={likesPage === pageNumber}
+                        aria-current={
+                          likesPage === pageNumber ? "page" : undefined
+                        }
+                        onClick={() => setLikesPage(pageNumber)}
+                      >
+                        {pageNumber}
+                      </S.PageButton>
+                    ))}
+                    <S.PageButton
+                      type="button"
+                      aria-label="다음 페이지"
+                      disabled={likesPage === totalLikesPages}
+                      onClick={() => setLikesPage((current) => current + 1)}
+                    >
+                      <ChevronRight size={17} aria-hidden="true" />
+                    </S.PageButton>
+                  </S.Pagination>
                 )}
               </S.Stack>
             )}
@@ -1952,12 +2221,14 @@ function MyPage({ currentUser }) {
                         const value = event.target.value;
                         setPreview((current) => ({ ...current, [id]: value }));
                         if (id === "likes") {
-                          setLikeMessage("");
-                          lastRemoved.current = null;
-                          if (value === "filled")
+                          if (value === "filled") {
+                            setLikesPage(1);
+                            setUnlikedIds(new Set());
+                            saveUnlikedProfileIds(new Set());
                             setLikedIds(
                               LIKED_PROFILES.map((profile) => profile.id),
                             );
+                          }
                         }
                       }}
                     >

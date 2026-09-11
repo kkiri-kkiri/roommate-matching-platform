@@ -762,6 +762,91 @@ export const Field = styled.div`
   min-width: 0;
 `;
 
+export const WeightControl = styled.div`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 12px;
+  > label {
+    margin: 0;
+  }
+`;
+
+export const WeightSlider = styled.input`
+  flex: 1 1 240px;
+  min-width: 180px;
+  height: 8px;
+  margin: 0;
+  accent-color: #36cdbb;
+  appearance: none;
+  border-radius: 999px;
+  background: #d9f5f1;
+  cursor: pointer;
+
+  &::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 999px;
+    background: #d9f5f1;
+  }
+
+  &::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+    margin-top: -6px;
+    appearance: none;
+    border: 3px solid ${colors.white};
+    border-radius: 50%;
+    background: #36cdbb;
+    box-shadow: 0 1px 5px rgba(0, 106, 101, 0.2);
+  }
+
+  &::-moz-range-track {
+    height: 8px;
+    border-radius: 999px;
+    background: #d9f5f1;
+  }
+
+  &::-moz-range-progress {
+    height: 8px;
+    border-radius: 999px;
+    background: #8be4d8;
+  }
+
+  &::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: 3px solid ${colors.white};
+    border-radius: 50%;
+    background: #36cdbb;
+    box-shadow: 0 1px 5px rgba(0, 106, 101, 0.2);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(54, 205, 187, 0.35);
+    outline-offset: 4px;
+  }
+`;
+
+export const WeightValue = styled.span`
+  flex: 0 0 72px;
+  color: ${colors.navyDark};
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+`;
+
+export const WeightBadge = styled.span`
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: ${colors.mintDark};
+  background: ${colors.mintSoft};
+  font-size: 12px;
+  white-space: nowrap;
+`;
+
 export const ReadonlyValue = styled.div`
   display: flex;
   align-items: center;
@@ -946,6 +1031,44 @@ export const LikeGrid = styled.div`
   gap: 24px;
   @media (max-width: 560px) {
     grid-template-columns: minmax(0, 1fr);
+  }
+`;
+
+export const Pagination = styled.nav`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 28px;
+`;
+
+export const PageButton = styled.button`
+  ${focusRing}
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid ${({ $active }) => ($active ? colors.navy : colors.border)};
+  border-radius: 10px;
+  color: ${({ $active }) => ($active ? colors.white : colors.secondary)};
+  background: ${({ $active }) => ($active ? colors.navy : colors.white)};
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease;
+  &:hover:not(:disabled) {
+    border-color: ${colors.navy};
+    color: ${({ $active }) => ($active ? colors.white : colors.navy)};
+  }
+  &:disabled {
+    color: ${colors.muted};
+    background: ${colors.soft};
+    cursor: not-allowed;
   }
 `;
 
