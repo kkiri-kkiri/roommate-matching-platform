@@ -4,7 +4,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 
 import ChatPage from "./pages/chat/ChatPage";
-import CalendarPage from "./pages/CalendarPage";
+import CalendarPage from "./calendar/CalendarPage";
 import CommunityPage from "./pages/community/CommunityPage";
 import FindIdPage from "./pages/auth/FindIdPage";
 import FindPasswordPage from "./pages/auth/FindPasswordPage";
