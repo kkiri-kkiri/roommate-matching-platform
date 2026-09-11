@@ -1,17 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  BadgeCheck,
   Check,
   ChevronDown,
   Info,
-  MapPin,
   RotateCcw,
   SlidersHorizontal,
-  Sparkles,
   UserRoundSearch,
   X,
 } from "lucide-react";
 
+import Pagination from "../../components/common/Pagination/Pagination";
+import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./RoommateSearchPageCss";
 import {
   getSavedSurveyProfiles,
@@ -25,6 +24,17 @@ const DEFAULT_FILTERS = FILTER_GROUPS.reduce(
   (filters, group) => ({ ...filters, [group.id]: [] }),
   {},
 );
+const PAGE_SIZE = 9;
+
+function generateRecommendationReason(profile) {
+  const scoreLabel = profile.matchScore >= 90 ? "매우 높은" : profile.matchScore >= 75 ? "높은" : "보통 수준의";
+  const lifestyleSummary = [profile.rhythm, profile.smoking, profile.interaction]
+    .filter(Boolean)
+    .join(" · ");
+  const tagSummary = profile.tags?.slice(0, 2).join(" / ");
+
+  return `${profile.nickname}님은 ${scoreLabel} 매칭 점수를 보이며, ${lifestyleSummary || "생활 습관"}이 서로 잘 어울릴 가능성이 높습니다. ${profile.dormitory} 생활관 환경과 ${profile.major} 전공 특성을 고려했을 때, 서로의 루틴을 존중하며 편안하게 생활할 확률이 높은 편이에요.${tagSummary ? ` ${tagSummary}와 같은 요소가 추천 이유를 뒷받침합니다.` : ""}`;
+}
 
 function createProfilePhoto(background, skin, hair, shirt) {
   const svg = `
@@ -155,6 +165,524 @@ const PROFILES = [
     tags: ["일반담배", "대화 좋아요", "같이 식사"],
     photo: createProfilePhoto("#fff4d8", "#e8b18c", "#4d3429", "#d9a52e"),
   },
+  {
+    id: 9,
+    nickname: "리드미",
+    admissionYear: "24",
+    major: "정보보호학전공",
+    dormitory: "나래",
+    rhythm: "아침형",
+    smoking: "비흡연",
+    interaction: "적당히",
+    matchScore: 91,
+    message: "시간 관리가 잘 되는 편이라 서로의 생활 루틴을 지키는 데 익숙해요.",
+    tags: ["비흡연", "아침형", "정리정돈 잘함"],
+    photo: createProfilePhoto("#edf8ff", "#efc09e", "#25313d", "#5ca7ff"),
+  },
+  {
+    id: 10,
+    nickname: "코지마루",
+    admissionYear: "22",
+    major: "경제학전공",
+    dormitory: "호연",
+    rhythm: "중간형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 87,
+    message: "가벼운 대화와 서로의 취미를 존중하는 분위기를 좋아해요.",
+    tags: ["비흡연", "대화 좋아요", "룸메 소통"],
+    photo: createProfilePhoto("#f2f9f4", "#f1c29b", "#2f2c2b", "#6bb36d"),
+  },
+  {
+    id: 11,
+    nickname: "밤새미",
+    admissionYear: "26",
+    major: "소프트웨어학부",
+    dormitory: "비봉",
+    rhythm: "야행성",
+    smoking: "전자담배",
+    interaction: "적당히",
+    matchScore: 81,
+    message: "낮에는 공부하고 밤에는 조용히 쉬는 편이라 적당한 조율이 잘 맞아요.",
+    tags: ["전자담배", "야행성", "이어폰 필수"],
+    photo: createProfilePhoto("#eef5ff", "#dca77f", "#322c3d", "#7b8fe0"),
+  },
+  {
+    id: 12,
+    nickname: "달빛인형",
+    admissionYear: "23",
+    major: "도시공학전공",
+    dormitory: "창조",
+    rhythm: "아침형",
+    smoking: "비흡연",
+    interaction: "개인 시간",
+    matchScore: 72,
+    message: "조용한 환경을 선호하지만 필요한 순간에는 자연스럽게 소통하는 편이에요.",
+    tags: ["비흡연", "조용한 분위기", "방 정리"],
+    photo: createProfilePhoto("#fff9ef", "#f0c4a5", "#3f352f", "#ffbf69"),
+  },
+  {
+    id: 13,
+    nickname: "초록머리핀",
+    admissionYear: "25",
+    major: "환경공학전공",
+    dormitory: "나래",
+    rhythm: "중간형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 80,
+    message: "책상 주변을 정리하는 데 신경 쓰고, 방도 서로 편하게 사용할 수 있게 맞춰가고 싶어요.",
+    tags: ["비흡연", "중간형", "깔끔함"],
+    photo: createProfilePhoto("#eefaf6", "#e9b98e", "#2f3b36", "#66bf9a"),
+  },
+  {
+    id: 14,
+    nickname: "코튼바람",
+    admissionYear: "24",
+    major: "수학과",
+    dormitory: "호연",
+    rhythm: "아침형",
+    smoking: "비흡연",
+    interaction: "적당히",
+    matchScore: 78,
+    message: "말은 적지만 서로에게 필요한 부분은 바로 알려주는 편이라 안정감을 느껴요.",
+    tags: ["비흡연", "아침형", "조용한 생활"],
+    photo: createProfilePhoto("#f4f4ff", "#f0bf9b", "#3a2f3d", "#7b7ee6"),
+  },
+  {
+    id: 15,
+    nickname: "감성라떼",
+    admissionYear: "22",
+    major: "경찰행정학전공",
+    dormitory: "창조",
+    rhythm: "중간형",
+    smoking: "일반담배",
+    interaction: "친하게",
+    matchScore: 74,
+    message: "여유로운 하루와 규칙적인 생활을 함께 맞추는 걸 좋아해요.",
+    tags: ["일반담배", "대화 좋아요", "감성적"],
+    photo: createProfilePhoto("#fff2eb", "#efc3a4", "#362b2a", "#d6825c"),
+  },
+  {
+    id: 16,
+    nickname: "소나기꽃",
+    admissionYear: "26",
+    major: "심리학전공",
+    dormitory: "비봉",
+    rhythm: "야행성",
+    smoking: "비흡연",
+    interaction: "개인 시간",
+    matchScore: 86,
+    message: "조용한 밤시간을 중요하게 생각해서, 서로의 공간을 존중하는 룸메가 되고 싶어요.",
+    tags: ["비흡연", "야행성", "혼자 시간"],
+    photo: createProfilePhoto("#f3f8ff", "#efc29a", "#2b3039", "#5a8fe9"),
+  },
+  {
+    id: 17,
+    nickname: "리프하트",
+    admissionYear: "23",
+    major: "생명과학전공",
+    dormitory: "나래",
+    rhythm: "아침형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 83,
+    message: "자연스럽게 정보를 공유하고, 생활 습관도 함께 정리하는 편이에요.",
+    tags: ["비흡연", "아침형", "잘 챙김"],
+    photo: createProfilePhoto("#edf9f0", "#f1c39b", "#3b312e", "#73ae72"),
+  },
+  {
+    id: 18,
+    nickname: "모래시계",
+    admissionYear: "21",
+    major: "법학전공",
+    dormitory: "창조",
+    rhythm: "중간형",
+    smoking: "비흡연",
+    interaction: "적당히",
+    matchScore: 77,
+    message: "생활 패턴이 안정적이라서 서로의 루틴을 잘 맞추는 편이에요.",
+    tags: ["비흡연", "정리 잘함", "중간형"],
+    photo: createProfilePhoto("#fff5e7", "#eab58b", "#45372f", "#dca15c"),
+  },
+  {
+    id: 19,
+    nickname: "은빛바람",
+    admissionYear: "25",
+    major: "화학공학전공",
+    dormitory: "호연",
+    rhythm: "중간형",
+    smoking: "전자담배",
+    interaction: "친하게",
+    matchScore: 89,
+    message: "실험과 공부 일정이 겹치더라도 조용한 협업 스타일을 선호해요.",
+    tags: ["전자담배", "중간형", "소통 원활"],
+    photo: createProfilePhoto("#eef7ff", "#e7b28f", "#2d2b30", "#7aa5da"),
+  },
+  {
+    id: 20,
+    nickname: "맑은하늘",
+    admissionYear: "24",
+    major: "국어국문학전공",
+    dormitory: "비봉",
+    rhythm: "아침형",
+    smoking: "비흡연",
+    interaction: "개인 시간",
+    matchScore: 70,
+    message: "외향적이진 않지만 필요한 대화는 꼭 하고, 방 안은 조용하게 유지하고 싶어요.",
+    tags: ["비흡연", "아침형", "조용함"],
+    photo: createProfilePhoto("#eaf7ff", "#ebc3a2", "#334856", "#62b7d9"),
+  },
+  {
+    id: 21,
+    nickname: "신선한환기",
+    admissionYear: "26",
+    major: "기계공학전공",
+    dormitory: "창조",
+    rhythm: "아침형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 84,
+    message: "규칙적인 시간표와 쾌적한 공간을 함께 만들고 싶어요.",
+    tags: ["비흡연", "아침형", "환기 자주"],
+    photo: createProfilePhoto("#ebfaf6", "#f0c29a", "#2f3630", "#68b392"),
+  },
+  {
+    id: 22,
+    nickname: "라이트체인지",
+    admissionYear: "23",
+    major: "산업디자인전공",
+    dormitory: "나래",
+    rhythm: "중간형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 92,
+    message: "예민하지 않고 각자의 스타일을 존중하면서도 편하게 소통하는 편이에요.",
+    tags: ["비흡연", "중간형", "대화 환영"],
+    photo: createProfilePhoto("#f4f0ff", "#efc09d", "#342b40", "#8d7ce5"),
+  },
+  {
+    id: 23,
+    nickname: "솔방울",
+    admissionYear: "24",
+    major: "산업경영학전공",
+    dormitory: "호연",
+    rhythm: "야행성",
+    smoking: "비흡연",
+    interaction: "적당히",
+    matchScore: 75,
+    message: "여유롭게 쉬는 시간도 중요해서, 서로를 방해하지 않는 배려를 좋아해요.",
+    tags: ["비흡연", "야행성", "조용히"],
+    photo: createProfilePhoto("#eef9f1", "#efc39a", "#2c372e", "#6abf8f"),
+  },
+  {
+    id: 24,
+    nickname: "다정한나무",
+    admissionYear: "22",
+    major: "미디어커뮤니케이션전공",
+    dormitory: "비봉",
+    rhythm: "중간형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 88,
+    message: "서로의 취미와 감정을 존중하는 분위기에서 편하게 지내고 싶어요.",
+    tags: ["비흡연", "중간형", "친근함"],
+    photo: createProfilePhoto("#f3f8ee", "#e9ba8d", "#313225", "#91ba64"),
+  },
+  {
+    id: 25,
+    nickname: "포카리스웨트",
+    admissionYear: "21",
+    major: "스포츠과학전공",
+    dormitory: "창조",
+    rhythm: "아침형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 95,
+    message: "운동 루틴도 있고 생활 리듬도 규칙적이라서, 같이 관리하는 느낌이 좋아요.",
+    tags: ["비흡연", "아침형", "규칙적"],
+    photo: createProfilePhoto("#fef6ee", "#e9b391", "#2f322d", "#f3af55"),
+  },
+  {
+    id: 26,
+    nickname: "트리플초코",
+    admissionYear: "23",
+    major: "디지털미디어전공",
+    dormitory: "호연",
+    rhythm: "중간형",
+    smoking: "비흡연",
+    interaction: "적당히",
+    matchScore: 68,
+    message: "개인 공간을 소중히 여기면서도 필요한 순간에는 편하게 이야기할 수 있으면 좋겠어요.",
+    tags: ["비흡연", "적당히", "방 정리"],
+    photo: createProfilePhoto("#fdf4ff", "#efc39d", "#332d3d", "#d687cf"),
+  },
+  {
+    id: 27,
+    nickname: "라이트달",
+    admissionYear: "24",
+    major: "전자통신전공",
+    dormitory: "나래",
+    rhythm: "야행성",
+    smoking: "전자담배",
+    interaction: "친하게",
+    matchScore: 71,
+    message: "밤에는 조용하게 쉬고 낮에는 서로 배려하는 분위기라면 잘 맞을 것 같아요.",
+    tags: ["전자담배", "야행성", "배려형"],
+    photo: createProfilePhoto("#edf7ff", "#f0bd9d", "#2e3946", "#77a5d8"),
+  },
+  {
+    id: 28,
+    nickname: "비온뒤햇살",
+    admissionYear: "23",
+    major: "통계학전공",
+    dormitory: "호연",
+    rhythm: "중간형",
+    smoking: "비흡연",
+    interaction: "적당히",
+    matchScore: 76,
+    message: "서로의 생활 패턴을 지켜가며 안정적인 분위기를 만드는 걸 좋아해요.",
+    tags: ["비흡연", "중간형", "규칙적"],
+    photo: createProfilePhoto("#edf8f4", "#efc2a1", "#2f3937", "#68b39a"),
+  },
+  {
+    id: 29,
+    nickname: "마시멜로우",
+    admissionYear: "22",
+    major: "국제통상학전공",
+    dormitory: "나래",
+    rhythm: "아침형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 85,
+    message: "가벼운 대화와 분리된 공간을 모두 중요하게 생각해요.",
+    tags: ["비흡연", "아침형", "대화 좋아요"],
+    photo: createProfilePhoto("#f5f2ff", "#eec2a1", "#342733", "#b28ae8"),
+  },
+  {
+    id: 30,
+    nickname: "새벽보리",
+    admissionYear: "26",
+    major: "전자전기공학전공",
+    dormitory: "비봉",
+    rhythm: "야행성",
+    smoking: "전자담배",
+    interaction: "개인 시간",
+    matchScore: 70,
+    message: "밤에 조용히 쉬고 낮에는 각자 공부를 하며 루틴을 지키는 편이에요.",
+    tags: ["전자담배", "야행성", "개인 시간"],
+    photo: createProfilePhoto("#edf7ff", "#e9b78d", "#2f3449", "#6f95d8"),
+  },
+  {
+    id: 31,
+    nickname: "오로라지기",
+    admissionYear: "24",
+    major: "중어중문학전공",
+    dormitory: "창조",
+    rhythm: "중간형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 90,
+    message: "대화는 자연스럽게 나누고, 서로의 일정을 배려하는 분위기를 좋아해요.",
+    tags: ["비흡연", "중간형", "배려형"],
+    photo: createProfilePhoto("#eef9ff", "#edc3a3", "#2a3039", "#76b7d9"),
+  },
+  {
+    id: 32,
+    nickname: "스카이브리즈",
+    admissionYear: "25",
+    major: "화학전공",
+    dormitory: "호연",
+    rhythm: "아침형",
+    smoking: "비흡연",
+    interaction: "적당히",
+    matchScore: 79,
+    message: "생활 규칙을 미리 정해두면 훨씬 편하게 생활할 수 있어요.",
+    tags: ["비흡연", "아침형", "생활 규칙"],
+    photo: createProfilePhoto("#edf9f5", "#efc39d", "#2f3532", "#74a293"),
+  },
+  {
+    id: 33,
+    nickname: "라벤더휴식",
+    admissionYear: "21",
+    major: "식물자원학전공",
+    dormitory: "나래",
+    rhythm: "중간형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 84,
+    message: "조용하게 지내되, 필요한 순간에는 서로 편하게 이야기할 수 있으면 좋아요.",
+    tags: ["비흡연", "친근함", "정리 잘함"],
+    photo: createProfilePhoto("#f2efff", "#ebc7a4", "#372d3e", "#9b87d9"),
+  },
+  {
+    id: 34,
+    nickname: "강한마루",
+    admissionYear: "23",
+    major: "철학전공",
+    dormitory: "창조",
+    rhythm: "아침형",
+    smoking: "일반담배",
+    interaction: "적당히",
+    matchScore: 66,
+    message: "생활 스타일을 잘 맞추면 서로 편하게 지낼 수 있을 것 같아요.",
+    tags: ["일반담배", "아침형", "정리배려"],
+    photo: createProfilePhoto("#f4efe8", "#d7a27d", "#3c2d29", "#cb8d5d"),
+  },
+  {
+    id: 35,
+    nickname: "모던베리",
+    admissionYear: "24",
+    major: "신소재공학전공",
+    dormitory: "비봉",
+    rhythm: "아침형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 88,
+    message: "공부와 휴식 시간을 서로 존중하며 편안하게 생활하고 싶어요.",
+    tags: ["비흡연", "아침형", "깔끔함"],
+    photo: createProfilePhoto("#f7f4ff", "#f0bf9e", "#342f42", "#8f7de0"),
+  },
+  {
+    id: 36,
+    nickname: "숲속책상",
+    admissionYear: "22",
+    major: "생태환경공학전공",
+    dormitory: "호연",
+    rhythm: "중간형",
+    smoking: "비흡연",
+    interaction: "개인 시간",
+    matchScore: 73,
+    message: "개인 시간이 중요하지만, 필요한 순간에는 충분히 소통하는 편이에요.",
+    tags: ["비흡연", "개인 시간", "조용함"],
+    photo: createProfilePhoto("#edf7ef", "#eabf8b", "#2f382d", "#7bb976"),
+  },
+  {
+    id: 37,
+    nickname: "달콤한벽",
+    admissionYear: "25",
+    major: "디자인학전공",
+    dormitory: "나래",
+    rhythm: "야행성",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 82,
+    message: "서로의 취향을 존중하는 분위기라면 편하게 생활할 수 있을 것 같아요.",
+    tags: ["비흡연", "야행성", "취향 존중"],
+    photo: createProfilePhoto("#fff4f8", "#f0bd9f", "#382f39", "#d688a8"),
+  },
+  {
+    id: 38,
+    nickname: "티끌모음",
+    admissionYear: "23",
+    major: "경제통계학전공",
+    dormitory: "창조",
+    rhythm: "중간형",
+    smoking: "전자담배",
+    interaction: "친하게",
+    matchScore: 92,
+    message: "생활 습관을 잘 맞춰서 서로 부담 없이 지낼 수 있을 것 같아요.",
+    tags: ["전자담배", "중간형", "생활 습관"],
+    photo: createProfilePhoto("#f4f8ff", "#e6b18b", "#2e3643", "#7a96d0"),
+  },
+  {
+    id: 39,
+    nickname: "새벽청소",
+    admissionYear: "24",
+    major: "토목공학전공",
+    dormitory: "비봉",
+    rhythm: "아침형",
+    smoking: "비흡연",
+    interaction: "적당히",
+    matchScore: 77,
+    message: "규칙적인 생활과 깔끔한 공간을 좋아하는 편이라 잘 맞을 것 같아요.",
+    tags: ["비흡연", "아침형", "청결"],
+    photo: createProfilePhoto("#ecf8f5", "#ebc3a0", "#2d342f", "#6fc0aa"),
+  },
+  {
+    id: 40,
+    nickname: "하양바람",
+    admissionYear: "26",
+    major: "미디어아트전공",
+    dormitory: "나래",
+    rhythm: "중간형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 81,
+    message: "서로 말을 많이 하지 않아도 자연스럽게 맞춰가는 것이 편해요.",
+    tags: ["비흡연", "중간형", "편한 분위기"],
+    photo: createProfilePhoto("#f4f8ff", "#f0c39e", "#303541", "#7ea4d7"),
+  },
+  {
+    id: 41,
+    nickname: "멜로디풀",
+    admissionYear: "22",
+    major: "철학·심리학복합전공",
+    dormitory: "창조",
+    rhythm: "야행성",
+    smoking: "비흡연",
+    interaction: "적당히",
+    matchScore: 74,
+    message: "각자 개인 시간을 존중하면서도 필요한 대화는 자연스럽게 나누고 싶어요.",
+    tags: ["비흡연", "야행성", "배려"],
+    photo: createProfilePhoto("#f8f3ff", "#edc2a2", "#392f3d", "#b88fe8"),
+  },
+  {
+    id: 42,
+    nickname: "코알라루틴",
+    admissionYear: "25",
+    major: "수학교육전공",
+    dormitory: "호연",
+    rhythm: "아침형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 86,
+    message: "생활 루틴을 정해두면 서로 편하고 안정적인 분위기를 만들 수 있어요.",
+    tags: ["비흡연", "아침형", "안정적"],
+    photo: createProfilePhoto("#f0f9f3", "#efc4a2", "#2c382f", "#73b789"),
+  },
+  {
+    id: 43,
+    nickname: "뷰티오후",
+    admissionYear: "24",
+    major: "패션디자인전공",
+    dormitory: "비봉",
+    rhythm: "중간형",
+    smoking: "일반담배",
+    interaction: "친하게",
+    matchScore: 69,
+    message: "사소한 습관도 자연스럽게 말할 수 있는 룸메를 찾고 있어요.",
+    tags: ["일반담배", "중간형", "소통"],
+    photo: createProfilePhoto("#fff4f0", "#e9b791", "#3a2c29", "#d66558"),
+  },
+  {
+    id: 44,
+    nickname: "루미너스",
+    admissionYear: "23",
+    major: "소프트웨어공학전공",
+    dormitory: "나래",
+    rhythm: "아침형",
+    smoking: "비흡연",
+    interaction: "적당히",
+    matchScore: 93,
+    message: "서로의 시간을 존중하면서도 필요한 안내는 자연스럽게 주고받고 싶어요.",
+    tags: ["비흡연", "아침형", "배려"],
+    photo: createProfilePhoto("#edf9ff", "#eec9a7", "#2a313e", "#6fa9de"),
+  },
+  {
+    id: 45,
+    nickname: "민트웨이브",
+    admissionYear: "26",
+    major: "환경학과",
+    dormitory: "창조",
+    rhythm: "중간형",
+    smoking: "비흡연",
+    interaction: "친하게",
+    matchScore: 80,
+    message: "서로의 생활 루틴을 토대로 가장 편안한 조화를 찾고 싶어요.",
+    tags: ["비흡연", "중간형", "청결"],
+    photo: createProfilePhoto("#eefaf6", "#edc5a4", "#2a3633", "#6ec3a1"),
+  },
 ];
 
 function RoommateSearchPage() {
@@ -169,6 +697,8 @@ function RoommateSearchPage() {
   });
   const [savedProfiles, setSavedProfiles] = useState(getSavedSurveyProfiles);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [likedProfileIds, setLikedProfileIds] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
   const tabRefs = useRef({});
   const filterDialogRef = useRef(null);
 
@@ -204,7 +734,7 @@ function RoommateSearchPage() {
     [filters],
   );
 
-  const visibleProfiles = useMemo(() => {
+  const filteredProfiles = useMemo(() => {
     const profiles = [
       ...PROFILES,
       ...savedProfiles.map(({ id, profile, answers }) => ({
@@ -215,9 +745,10 @@ function RoommateSearchPage() {
         tags: [answers.smoking, answers.sleepTime, answers.cleaningFrequency].filter(Boolean),
       })),
     ];
+    const rankedProfiles = [...profiles].sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0));
     const profilesForTab =
       activeTab === "recommended"
-        ? profiles.filter((profile) => profile.matchScore >= 60)
+        ? rankedProfiles.filter((profile) => profile.matchScore >= 60).slice(0, 9)
         : profiles;
 
     return profilesForTab.filter((profile) =>
@@ -231,6 +762,23 @@ function RoommateSearchPage() {
       }),
     );
   }, [activeTab, filters, savedProfiles, selectedTag]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, selectedTag, filters, savedProfiles]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const visibleProfiles = useMemo(
+    () => filteredProfiles.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [currentPage, filteredProfiles],
+  );
 
   const updateDraftFilter = (filterId, value) => {
     setDraftFilters((currentFilters) => ({
@@ -258,6 +806,13 @@ function RoommateSearchPage() {
     setSelectedTag(null);
   };
 
+  const toggleLike = (profileId) => {
+    setLikedProfileIds((current) => ({
+      ...current,
+      [profileId]: !current[profileId],
+    }));
+  };
+
   const removeFilter = (filterId, value) => {
     setFilters((currentFilters) => ({
       ...currentFilters,
@@ -281,6 +836,11 @@ function RoommateSearchPage() {
     event.preventDefault();
     setActiveTab(nextTab);
     tabRefs.current[nextTab]?.focus();
+  };
+
+  const handlePageChange = (nextPage) => {
+    setCurrentPage(nextPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -515,67 +1075,27 @@ function RoommateSearchPage() {
             }
           >
             {visibleProfiles.length > 0 ? (
-              <S.ProfileGrid>
-                {visibleProfiles.map((profile) => (
-                  <S.ProfileCard key={profile.id}>
-                    <S.CardHeader>
-                      <S.ProfilePhoto>
-                        <img
-                          src={profile.photo}
-                          alt={`${profile.nickname} 프로필 사진`}
-                        />
-                      </S.ProfilePhoto>
+              <>
+                <S.ProfileGrid>
+                  {visibleProfiles.map((profile) => (
+                    <ProfileCard
+                      key={profile.id}
+                      profile={profile}
+                      activeTab={activeTab}
+                      likedProfileIds={likedProfileIds}
+                      onToggleLike={toggleLike}
+                      overlayText={generateRecommendationReason(profile)}
+                      showOverlay={activeTab === "recommended"}
+                    />
+                  ))}
+                </S.ProfileGrid>
 
-                      <S.ProfileIdentity>
-                        <S.ProfileNameRow>
-                          <S.ProfileName>{profile.nickname}</S.ProfileName>
-                          {!profile.answers && <S.VerifiedBadge title="재학생 인증 완료">
-                            <BadgeCheck size={14} aria-hidden="true" />
-                            인증
-                          </S.VerifiedBadge>}
-                        </S.ProfileNameRow>
-
-                        <S.ProfileAcademic
-                          title={`${profile.admissionYear ? `${profile.admissionYear}학번` : profile.grade} · ${profile.major}`}
-                        >
-                          <S.AdmissionYear>
-                            {profile.admissionYear ? `${profile.admissionYear}학번` : profile.grade}
-                          </S.AdmissionYear>
-                          <span aria-hidden="true">·</span>
-                          <span>{profile.major}</span>
-                        </S.ProfileAcademic>
-
-                        <S.Dormitory>
-                          <MapPin size={14} aria-hidden="true" />
-                          {profile.dormitory} 생활관
-                        </S.Dormitory>
-                      </S.ProfileIdentity>
-
-                      {profile.matchScore != null && <S.MatchBadge aria-label={`매칭점수 ${profile.matchScore}점`}>
-                        <Sparkles size={13} aria-hidden="true" />
-                        {profile.matchScore}점
-                      </S.MatchBadge>}
-                    </S.CardHeader>
-
-                    {profile.message && <S.ProfileMessage>
-                      <p>{profile.message}</p>
-                    </S.ProfileMessage>}
-
-                    <S.TagList aria-label={`${profile.nickname} 해시태그`}>
-                      {profile.tags.map((tag) => (
-                        <S.ProfileTag
-                          key={tag}
-                          type="button"
-                          aria-pressed={selectedTag === tag}
-                          onClick={() => setSelectedTag((current) => current === tag ? null : tag)}
-                        >
-                          #{tag}
-                        </S.ProfileTag>
-                      ))}
-                    </S.TagList>
-                  </S.ProfileCard>
-                ))}
-              </S.ProfileGrid>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </>
             ) : (
               <S.EmptyState>
                 <S.EmptyIcon>
