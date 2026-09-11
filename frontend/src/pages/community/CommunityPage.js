@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
-  ArrowRight, ChevronLeft, ChevronRight, Eye, Gift, Heart, Image, LayoutGrid,
+  ArrowRight, Eye, Gift, Heart, Image, LayoutGrid,
   MessageCircle, MessageSquare, Package, PenLine, Search, ShieldCheck, UserRound, X,
 } from "lucide-react";
 
+import Pagination from "../../components/common/Pagination/Pagination";
 import CommunityPostPage from "./CommunityPostPage";
 import CommunityPostFormPage from "./CommunityPostFormPage";
 import * as S from "./CommunityPageCss";
@@ -147,8 +148,6 @@ function CommunityPage({ currentUser }) {
   const totalPages = Math.max(1, Math.ceil(resultCount / PAGE_SIZE));
   const requestedPage = Number(searchParams.get("page"));
   const page = Number.isInteger(requestedPage) && requestedPage > 0 ? Math.min(requestedPage, totalPages) : 1;
-  const pageStart = Math.max(1, Math.min(page - 2, totalPages - 4));
-  const pageNumbers = Array.from({ length: Math.min(5, totalPages) }, (_, index) => pageStart + index);
   const pageItems = (isMyComments ? myComments : filteredPosts).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const updateFilters = (changes) => {
@@ -169,10 +168,12 @@ function CommunityPage({ currentUser }) {
     const id = isEdit ? post.id : window.crypto?.randomUUID?.() || `post-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     setPosts((previous) => isEdit
       ? previous.map((item) => item.id === id ? { ...item, ...values } : item)
-      : [{ ...values, id, author: currentUser.name, authorId: currentUser.name,
-          dormitory: "나래관",
-          createdAt: new Date().toISOString(), views: 0, likes: 0,
-          likedBy: [], reportedBy: [], comments: [] }, ...previous]);
+      : [{
+        ...values, id, author: currentUser.name, authorId: currentUser.name,
+        dormitory: "나래관",
+        createdAt: new Date().toISOString(), views: 0, likes: 0,
+        likedBy: [], reportedBy: [], comments: []
+      }, ...previous]);
     navigate(`/community/posts/${id}`, { replace: true });
   };
 
@@ -268,11 +269,16 @@ function CommunityPage({ currentUser }) {
               {category !== "전체" ? <S.SecondaryButton type="button" onClick={() => { setSearchInput(""); setSearchParams({}); }}>검색 조건 초기화</S.SecondaryButton> : isMyComments ? <S.PrimaryLink to="/community">게시글 둘러보기 <ArrowRight size={16} aria-hidden="true" /></S.PrimaryLink> : <S.PrimaryButton type="button" onClick={startPost}><PenLine size={16} aria-hidden="true" />첫 글 작성하기</S.PrimaryButton>}
             </>}
           </S.EmptyState>}
-          {resultCount > 0 && <S.Pagination aria-label="게시글 페이지">
-            <S.PageButton type="button" aria-label="이전 페이지" disabled={page === 1} onClick={() => updateFilters({ page: page - 1 })}><ChevronLeft size={18} aria-hidden="true" /></S.PageButton>
-            {pageNumbers.map((number) => <S.PageButton key={number} type="button" $active={number === page} aria-label={`${number}페이지`} aria-current={number === page ? "page" : undefined} onClick={() => updateFilters({ page: number })}>{number}</S.PageButton>)}
-            <S.PageButton type="button" aria-label="다음 페이지" disabled={page === totalPages} onClick={() => updateFilters({ page: page + 1 })}><ChevronRight size={18} aria-hidden="true" /></S.PageButton>
-          </S.Pagination>}
+          {resultCount > 0 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={(nextPage) => {
+                updateFilters({ page: nextPage });
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+          )}
         </S.Board>
       </S.Layout>
     </>;

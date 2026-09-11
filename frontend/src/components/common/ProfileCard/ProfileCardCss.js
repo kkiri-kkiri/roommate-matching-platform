@@ -12,6 +12,40 @@ const colors = {
     border: "#e2e2e4",
 };
 
+export const ProfileCardOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 18px 16px 14px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(0, 167, 159, 0.12) 0%, rgba(0, 167, 159, 0.76) 42%, rgba(0, 106, 101, 0.9) 100%);
+  color: ${colors.white};
+  opacity: 0;
+  transform: translateY(100%);
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 220ms ease;
+`;
+
+export const ProfileCardOverlayTitle = styled.strong`
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+`;
+
+export const ProfileCardOverlayText = styled.p`
+  margin: 0;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+  word-break: keep-all;
+`;
+
 export const ProfileCard = styled.article`
   position: relative;
   display: flex;
@@ -30,6 +64,11 @@ export const ProfileCard = styled.article`
     border-color: rgba(12, 50, 115, 0.12);
     box-shadow: 0 8px 20px rgba(12, 50, 115, 0.08);
     transform: translateY(-2px);
+  }
+
+  &:hover ${ProfileCardOverlay} {
+    opacity: 1;
+    transform: translateY(0%);
   }
 `;
 
@@ -185,36 +224,3 @@ export const ProfileMessage = styled.div`
   }
 `;
 
-export const ProfileCardOverlay = styled.div`
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 18px 16px 14px;
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(0, 167, 159, 0.12) 0%, rgba(0, 167, 159, 0.76) 42%, rgba(0, 106, 101, 0.9) 100%);
-  color: ${colors.white};
-  opacity: 0;
-  transform: translateY(100%);
-  pointer-events: none;
-  transition: opacity 220ms ease, transform 220ms ease;
-`;
-
-export const ProfileCardOverlayTitle = styled.strong`
-  margin-bottom: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.9);
-`;
-
-export const ProfileCardOverlayText = styled.p`
-  margin: 0;
-  color: rgba(255, 255, 255, 0.96);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.6;
-  word-break: keep-all;
-`;

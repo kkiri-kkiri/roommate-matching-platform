@@ -2,22 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   ArrowRight,
-  BadgeCheck,
   BookOpen,
   Calculator,
   CalendarDays,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Clock,
   Eye,
-  Heart,
-  MapPin,
   MessageCircle,
   RefreshCw,
-  Sparkles,
 } from "lucide-react";
 
+import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./MainPageCss";
 
 const ROOMMATES = [
@@ -211,8 +206,6 @@ function getCalendarCells(month) {
 
 function MainPage() {
   const { hash } = useLocation();
-  const [savedRoommateIds, setSavedRoommateIds] = useState([]);
-  const [activeProfileId, setActiveProfileId] = useState(null);
   const [postFilter, setPostFilter] = useState("전체");
   const [calendarMonthIndex, setCalendarMonthIndex] = useState(1);
   const [selectedDate, setSelectedDate] = useState(
@@ -249,20 +242,6 @@ function MainPage() {
   );
 
   const selectedEvents = activeMonth.events[selectedDate] || [];
-
-  const toggleSavedRoommate = (roommateId) => {
-    setSavedRoommateIds((currentIds) =>
-      currentIds.includes(roommateId)
-        ? currentIds.filter((id) => id !== roommateId)
-        : [...currentIds, roommateId],
-    );
-  };
-
-  const toggleProfile = (roommateId) => {
-    setActiveProfileId((currentId) =>
-      currentId === roommateId ? null : roommateId,
-    );
-  };
 
   const changeMonth = (direction) => {
     const nextIndex = calendarMonthIndex + direction;
@@ -349,93 +328,25 @@ function MainPage() {
           </S.SectionHeader>
 
           <S.ProfileGrid>
-            {ROOMMATES.map((roommate) => {
-              const isSaved = savedRoommateIds.includes(roommate.id);
-
-              const isProfileOpen = activeProfileId === roommate.id;
-
-              return (
-                <S.ProfileCard key={roommate.id}>
-                  <S.CardTopline>
-                    <S.MatchBadge>
-                      <Sparkles size={14} aria-hidden="true" />
-                      {roommate.matchScore}% 매칭
-                    </S.MatchBadge>
-                  </S.CardTopline>
-
-                  <S.ProfileIdentity>
-                    <S.ProfileAvatar $tone={roommate.tone}>
-                      {roommate.initial}
-                    </S.ProfileAvatar>
-
-                    <S.ProfileNameArea>
-                      <S.ProfileNameRow>
-                        <h3>{roommate.name}</h3>
-
-                        <S.VerifiedBadge title="재학생 인증 완료">
-                          <BadgeCheck size={17} aria-hidden="true" />
-                          인증
-                        </S.VerifiedBadge>
-                      </S.ProfileNameRow>
-
-                      <p>{roommate.major}</p>
-                    </S.ProfileNameArea>
-                  </S.ProfileIdentity>
-
-                  <S.ProfileMeta>
-                    <span>
-                      <MapPin size={15} aria-hidden="true" />
-                      {roommate.dormitory}
-                    </span>
-
-                    <span>
-                      <Clock size={15} aria-hidden="true" />
-                      {roommate.status}
-                    </span>
-                  </S.ProfileMeta>
-
-                  <S.TagList aria-label={`${roommate.name} 님의 생활 습관`}>
-                    {roommate.tags.map((tag) => (
-                      <S.Tag key={tag}>{tag}</S.Tag>
-                    ))}
-                  </S.TagList>
-
-                  <S.MatchNote>
-                    <CheckCircle2 size={17} aria-hidden="true" />
-                    {roommate.matchNote}
-                  </S.MatchNote>
-
-                  {isProfileOpen && (
-                    <S.ProfileDetails aria-live="polite">
-                      <p>{roommate.introduction}</p>
-
-                      <span>{roommate.preference}</span>
-                    </S.ProfileDetails>
-                  )}
-
-                  <S.ProfileActionRow>
-                    <S.ProfileButton
-                      type="button"
-                      onClick={() => toggleProfile(roommate.id)}
-                      aria-expanded={isProfileOpen}
-                    >
-                      {isProfileOpen
-                        ? "간단 프로필 닫기"
-                        : "간단 프로필 보기"}
-                    </S.ProfileButton>
-
-                    <S.SaveTextButton
-                      type="button"
-                      $active={isSaved}
-                      onClick={() => toggleSavedRoommate(roommate.id)}
-                    >
-                      <Heart size={16} aria-hidden="true" />
-                      {isSaved ? "저장됨" : "관심 저장"}
-                    </S.SaveTextButton>
-                  </S.ProfileActionRow>
-                </S.ProfileCard>
-              );
-            })}
+            {ROOMMATES.map((roommate) => (
+              <div key={roommate.id}>
+                <ProfileCard
+                  profile={{
+                    ...roommate,
+                    nickname: roommate.name,
+                    photo: roommate.photo,
+                    admissionYear: roommate.admissionYear,
+                    major: roommate.major,
+                    dormitory: roommate.dormitory,
+                    matchScore: roommate.matchScore,
+                    message: roommate.introduction,
+                  }}
+                  activeTab="recommended"
+                  overlayText={roommate.matchNote}
+                  showOverlay={false}
+                />
+              </div>
+            ))}
           </S.ProfileGrid>
         </S.Section>
 
@@ -619,9 +530,8 @@ function MainPage() {
                             : "weekday"
                       }
                       aria-pressed={isSelected}
-                      aria-label={`${activeMonth.shortLabel} ${day}일${
-                        hasEvent ? ", 일정 있음" : ""
-                      }`}
+                      aria-label={`${activeMonth.shortLabel} ${day}일${hasEvent ? ", 일정 있음" : ""
+                        }`}
                       onClick={() => setSelectedDate(day)}
                     >
                       <span>{day}</span>

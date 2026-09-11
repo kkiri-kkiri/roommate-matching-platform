@@ -6,7 +6,6 @@ import {
   BookOpen,
   Building2,
   Check,
-  ChevronLeft,
   ChevronRight,
   ClipboardList,
   Heart,
@@ -20,6 +19,8 @@ import {
   Users,
 } from "lucide-react";
 
+import Pagination from "../../components/common/Pagination/Pagination";
+import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./MyPageCss";
 
 // Search filters share the survey's field names and answer options.
@@ -249,13 +250,13 @@ export function getSavedSurveyProfiles() {
     );
     return Array.isArray(profiles)
       ? profiles.filter(
-          (profile) =>
-            typeof profile?.id === "string" &&
-            profile.profile &&
-            profile.answers &&
-            typeof profile.answers === "object" &&
-            !Array.isArray(profile.answers),
-        )
+        (profile) =>
+          typeof profile?.id === "string" &&
+          profile.profile &&
+          profile.answers &&
+          typeof profile.answers === "object" &&
+          !Array.isArray(profile.answers),
+      )
       : [];
   } catch {
     return [];
@@ -944,7 +945,6 @@ const LIKED_PROFILES = [
 
 const UNLIKED_PROFILE_IDS_KEY = "roomieUnlikedProfileIds";
 const LIKES_PER_PAGE = 6;
-const MAX_VISIBLE_PAGES = 5;
 
 function loadUnlikedProfileIds() {
   try {
@@ -973,8 +973,6 @@ const hasAnswer = (value) =>
   asArray(value).some((item) => String(item || "").trim());
 const displayAnswer = (value) =>
   Array.isArray(value) ? value.join(" · ") : value;
-const profileHref = (profile) =>
-  `/chat?room=${encodeURIComponent(profile.id)}&view=profile`;
 const getMbti = (account) =>
   MBTI_DIMENSIONS.map(({ id }) => account[id]).join("");
 
@@ -1066,16 +1064,16 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
     }
     const saved = isPreference
       ? {
-          ...draft,
-          weights: Object.fromEntries(
-            sections.flatMap((section) =>
-              section.fields.map((field) => [
-                field.id,
-                getPreferenceWeight(draft, field.id),
-              ]),
-            ),
+        ...draft,
+        weights: Object.fromEntries(
+          sections.flatMap((section) =>
+            section.fields.map((field) => [
+              field.id,
+              getPreferenceWeight(draft, field.id),
+            ]),
           ),
-        }
+        ),
+      }
       : draft;
     if (onSave(saved) === false) return;
     setDraft(null);
@@ -1103,9 +1101,9 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
     setDraft(
       isEmpty
         ? {
-            ...emptyAnswers,
-            ...(isPreference ? { weights: defaultWeights } : {}),
-          }
+          ...emptyAnswers,
+          ...(isPreference ? { weights: defaultWeights } : {}),
+        }
         : isPreference
           ? { ...answers, weights: { ...defaultWeights, ...answers.weights } }
           : { ...answers },
@@ -1328,12 +1326,12 @@ function AccountContent({ account, onSave }) {
       [id]: value,
       ...(id === "faculty"
         ? {
-            major:
-              FACULTY_OPTIONS.find((item) => item.name === value)?.majors
-                .length === 0
-                ? "세부전공 없음"
-                : "",
-          }
+          major:
+            FACULTY_OPTIONS.find((item) => item.name === value)?.majors
+              .length === 0
+              ? "세부전공 없음"
+              : "",
+        }
         : {}),
     }));
     setErrors((current) => ({
@@ -1738,17 +1736,10 @@ function MyPage({ currentUser }) {
   const likedProfiles =
     preview.likes === "empty"
       ? []
-      : LIKED_PROFILES.filter(({ id }) => likedIds.includes(id));
+      : LIKED_PROFILES.filter(
+        ({ id }) => likedIds.includes(id) && !unlikedIds.has(id),
+      );
   const totalLikesPages = Math.ceil(likedProfiles.length / LIKES_PER_PAGE);
-  const visibleLikesPages = Math.min(totalLikesPages, MAX_VISIBLE_PAGES);
-  const firstVisibleLikesPage = Math.min(
-    Math.max(1, likesPage - Math.floor(MAX_VISIBLE_PAGES / 2)),
-    Math.max(1, totalLikesPages - visibleLikesPages + 1),
-  );
-  const likesPageNumbers = Array.from(
-    { length: visibleLikesPages },
-    (_, index) => firstVisibleLikesPage + index,
-  );
   const pagedLikedProfiles = likedProfiles.slice(
     (likesPage - 1) * LIKES_PER_PAGE,
     likesPage * LIKES_PER_PAGE,
@@ -1942,51 +1933,51 @@ function MyPage({ currentUser }) {
             )}
             {(activeTab === "survey" || activeTab === "preferences") && (
               <>
-              {activeTab === "survey" && surveySaveError && (
-                <S.Banner $error role="alert">{surveySaveError}</S.Banner>
-              )}
-              <SurveyContent
-                key={`${activeTab}-${preview[activeTab]}`}
-                type={activeTab}
-                answers={activeTab === "survey" ? profileAnswers : preferences}
-                isEmpty={preview[activeTab] === "empty"}
-                onSave={(savedAnswers) => {
-                  if (activeTab === "survey") {
-                    const savedProfile = {
-                      id: surveyProfileId,
-                      profile: {
-                        nickname: account.nickname,
-                        major: account.major,
-                        dormitory: account.dormitory,
-                        grade: account.grade,
-                      },
-                      answers: savedAnswers,
-                    };
-                    try {
-                      window.localStorage.setItem(
-                        PROFILE_SURVEYS_STORAGE_KEY,
-                        JSON.stringify([
-                          ...getSavedSurveyProfiles().filter(
-                            (profile) => profile.id !== surveyProfileId,
-                          ),
-                          savedProfile,
-                        ]),
-                      );
-                    } catch {
-                      setSurveySaveError("설문을 저장하지 못했어요. 브라우저 저장소 설정을 확인한 뒤 다시 시도해 주세요.");
-                      return false;
+                {activeTab === "survey" && surveySaveError && (
+                  <S.Banner $error role="alert">{surveySaveError}</S.Banner>
+                )}
+                <SurveyContent
+                  key={`${activeTab}-${preview[activeTab]}`}
+                  type={activeTab}
+                  answers={activeTab === "survey" ? profileAnswers : preferences}
+                  isEmpty={preview[activeTab] === "empty"}
+                  onSave={(savedAnswers) => {
+                    if (activeTab === "survey") {
+                      const savedProfile = {
+                        id: surveyProfileId,
+                        profile: {
+                          nickname: account.nickname,
+                          major: account.major,
+                          dormitory: account.dormitory,
+                          grade: account.grade,
+                        },
+                        answers: savedAnswers,
+                      };
+                      try {
+                        window.localStorage.setItem(
+                          PROFILE_SURVEYS_STORAGE_KEY,
+                          JSON.stringify([
+                            ...getSavedSurveyProfiles().filter(
+                              (profile) => profile.id !== surveyProfileId,
+                            ),
+                            savedProfile,
+                          ]),
+                        );
+                      } catch {
+                        setSurveySaveError("설문을 저장하지 못했어요. 브라우저 저장소 설정을 확인한 뒤 다시 시도해 주세요.");
+                        return false;
+                      }
+                      setSurveySaveError("");
+                      setProfileAnswers(savedAnswers);
+                    } else {
+                      setPreferences(savedAnswers);
                     }
-                    setSurveySaveError("");
-                    setProfileAnswers(savedAnswers);
-                  } else {
-                    setPreferences(savedAnswers);
-                  }
-                  setPreview((current) => ({
-                    ...current,
-                    [activeTab]: "filled",
-                  }));
-                }}
-              />
+                    setPreview((current) => ({
+                      ...current,
+                      [activeTab]: "filled",
+                    }));
+                  }}
+                />
               </>
             )}
             {activeTab === "likes" && (
@@ -2008,88 +1999,34 @@ function MyPage({ currentUser }) {
                 {!likedProfiles.length ? (
                   <EmptyState type="likes" />
                 ) : (
-                  <S.LikeGrid>
-                    {pagedLikedProfiles.map((profile) => (
-                      <S.LikeCard key={profile.id}>
-                        <S.LikeTop>
-                          <S.Avatar
-                            $large
-                            src={profile.photo}
-                            alt={`${profile.nickname} 프로필`}
-                          />
-                          <S.IconButton
-                            type="button"
-                            aria-label={`${profile.nickname} ${unlikedIds.has(profile.id) ? "좋아요 추가" : "좋아요 취소"}`}
-                            aria-pressed={!unlikedIds.has(profile.id)}
-                            onClick={() => removeLike(profile)}
-                          >
-                            <Heart
-                              size={20}
-                              fill={
-                                unlikedIds.has(profile.id)
-                                  ? "none"
-                                  : "currentColor"
-                              }
-                              aria-hidden="true"
-                            />
-                          </S.IconButton>
-                        </S.LikeTop>
-                        <S.LikeName>{profile.nickname}</S.LikeName>
-                        <S.LikeMeta>
-                          {profile.year}학번 · {profile.major}
-                        </S.LikeMeta>
-                        <S.LikeMessage>{profile.message}</S.LikeMessage>
-                        <S.TagRow>
-                          {profile.tags.map((tag) => (
-                            <S.Tag key={tag}>#{tag}</S.Tag>
-                          ))}
-                        </S.TagRow>
-                        <S.LikeFooter>
-                          <S.SecondaryButton
-                            as={Link}
-                            to={profileHref(profile)}
-                            aria-label={`${profile.nickname} 프로필 보기`}
-                          >
-                            프로필 보기{" "}
-                            <ArrowRight size={16} aria-hidden="true" />
-                          </S.SecondaryButton>
-                        </S.LikeFooter>
-                      </S.LikeCard>
-                    ))}
-                  </S.LikeGrid>
-                )}
-                {totalLikesPages > 1 && (
-                  <S.Pagination aria-label="좋아요 목록 페이지 이동">
-                    <S.PageButton
-                      type="button"
-                      aria-label="이전 페이지"
-                      disabled={likesPage === 1}
-                      onClick={() => setLikesPage((current) => current - 1)}
-                    >
-                      <ChevronLeft size={17} aria-hidden="true" />
-                    </S.PageButton>
-                    {likesPageNumbers.map((pageNumber) => (
-                      <S.PageButton
-                        key={pageNumber}
-                        type="button"
-                        $active={likesPage === pageNumber}
-                        aria-current={
-                          likesPage === pageNumber ? "page" : undefined
-                        }
-                        onClick={() => setLikesPage(pageNumber)}
-                      >
-                        {pageNumber}
-                      </S.PageButton>
-                    ))}
-                    <S.PageButton
-                      type="button"
-                      aria-label="다음 페이지"
-                      disabled={likesPage === totalLikesPages}
-                      onClick={() => setLikesPage((current) => current + 1)}
-                    >
-                      <ChevronRight size={17} aria-hidden="true" />
-                    </S.PageButton>
-                  </S.Pagination>
+                  <>
+                    <S.LikeGrid>
+                      {pagedLikedProfiles.map((profile) => (
+                        <ProfileCard
+                          key={profile.id}
+                          profile={profile}
+                          activeTab="all"
+                          likedProfileIds={Object.fromEntries(
+                            likedProfiles.map((item) => [item.id, true]),
+                          )}
+                          onToggleLike={(profileId) => {
+                            const target = likedProfiles.find((item) => item.id === profileId);
+                            if (target) removeLike(target);
+                          }}
+                          showOverlay={false}
+                        />
+                      ))}
+                    </S.LikeGrid>
+
+                    <Pagination
+                      currentPage={likesPage}
+                      totalPages={totalLikesPages}
+                      onPageChange={(nextPage) => {
+                        setLikesPage(nextPage);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                    />
+                  </>
                 )}
               </S.Stack>
             )}
