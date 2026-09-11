@@ -100,9 +100,10 @@ function CommentComposer({ id, label, onSubmit, onCancel, compact = false }) {
 
   return (
     <S.CommentForm $compact={compact} onSubmit={handleSubmit}>
-      <label htmlFor={id}>{label}</label>
       <S.Textarea
         id={id}
+        rows={1}
+        aria-label={label}
         value={value}
         onChange={(event) => setValue(event.target.value)}
         placeholder={compact ? "따뜻한 답글을 남겨 주세요." : "전하고 싶은 이야기를 남겨 주세요."}
@@ -126,14 +127,31 @@ function CommentComposer({ id, label, onSubmit, onCancel, compact = false }) {
   );
 }
 
-function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onReport, onReply, replying, onChat }) {
+function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onReport, onReply, replying, onChat, replyAuthor, onLike }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(entry.content);
   const mine = Boolean(currentUser && currentUser.name === entry.authorId);
   const reported = Boolean(currentUser && entry.reportedBy?.includes(currentUser.name));
+  const liked = Boolean(currentUser && entry.likedBy?.includes(currentUser.name));
+  const likeCount = entry.likedBy?.length || 0;
+  const editActions = mine && !editing && (
+    <S.ActionGroup>
+      <S.TextButton type="button" onClick={() => {
+        setDraft(entry.content);
+        setEditing(true);
+      }}>수정</S.TextButton>
+      <S.TextButton type="button" $danger onClick={onDelete}>삭제</S.TextButton>
+    </S.ActionGroup>
+  );
 
   return (
     <S.CommentItem id={`comment-${entry.id}`}>
+      {replyAuthor != null && (
+        <S.ReplyHeading>
+          <S.ReplyTarget><Reply size={14} aria-hidden="true" />{replyAuthor}님에게 답글</S.ReplyTarget>
+          {editActions}
+        </S.ReplyHeading>
+      )}
       <S.CommentHeader>
         <S.Avatar $small $mine={mine} aria-hidden="true">{entry.author.slice(0, 1)}</S.Avatar>
         <div>
@@ -142,6 +160,7 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
           {mine && <S.AuthorBadge>나</S.AuthorBadge>}
           <time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time>
         </div>
+        {replyAuthor == null && editActions}
         {!mine && <S.ChatButton type="button" onClick={onChat} aria-label={`${entry.author}님에게 채팅 보내기`}>
           <MessageCircle size={14} aria-hidden="true" />채팅
         </S.ChatButton>}
@@ -175,19 +194,13 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
         <>
           <S.CommentText>{entry.content}</S.CommentText>
           <S.ActionGroup>
+            <S.LikeButton type="button" $active={liked} aria-pressed={liked} aria-label={`댓글 좋아요 ${likeCount.toLocaleString()}개`} onClick={onLike}>
+              <Heart size={14} aria-hidden="true" /><span>{likeCount.toLocaleString()}</span>
+            </S.LikeButton>
             {onReply && (
               <S.TextButton type="button" aria-expanded={replying} onClick={onReply}>
                 <Reply size={14} aria-hidden="true" />답글
               </S.TextButton>
-            )}
-            {mine && (
-              <>
-                <S.TextButton type="button" onClick={() => {
-                  setDraft(entry.content);
-                  setEditing(true);
-                }}>수정</S.TextButton>
-                <S.TextButton type="button" $danger onClick={onDelete}>삭제</S.TextButton>
-              </>
             )}
             {onReport && !mine && (
               <S.TextButton type="button" onClick={onReport} disabled={reported}>
@@ -245,6 +258,28 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
     });
   };
 
+  const toggleCommentLike = (commentId, replyId) => {
+    if (!requireUser()) return;
+    const toggleEntry = (entry) => {
+      const likedBy = entry.likedBy || [];
+      return {
+        ...entry,
+        likedBy: likedBy.includes(currentUser.name)
+          ? likedBy.filter((name) => name !== currentUser.name)
+          : [...likedBy, currentUser.name],
+      };
+    };
+    onUpdatePost((previous) => ({
+      ...previous,
+      comments: (previous.comments || []).map((comment) => {
+        if (comment.id !== commentId) return comment;
+        return replyId
+          ? { ...comment, replies: (comment.replies || []).map((reply) => reply.id === replyId ? toggleEntry(reply) : reply) }
+          : toggleEntry(comment);
+      }),
+    }));
+  };
+
   const addComment = (content, commentId) => {
     if (!requireUser()) return;
     const entry = {
@@ -264,7 +299,6 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
         : [...previous.comments, { ...entry, replies: [] }],
     }));
     if (commentId) setReplyTarget(null);
-    setNotice(commentId ? "답글을 등록했어요." : "댓글을 등록했어요.");
   };
 
   const saveComment = (commentId, replyId, content) => {
@@ -282,7 +316,6 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
         return comment.authorId === currentUser.name ? { ...comment, content } : comment;
       }),
     }));
-    setNotice(replyId ? "답글을 수정했어요." : "댓글을 수정했어요.");
   };
 
   const confirmDelete = () => {
@@ -303,13 +336,11 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
     }));
     if (replyTarget === commentId && !replyId) setReplyTarget(null);
     setDeleteTarget(null);
-    setNotice(replyId ? "답글을 삭제했어요." : "댓글을 삭제했어요.");
   };
 
   const openReport = (comment) => {
     if (!requireUser()) return;
     if ((comment || post).reportedBy?.includes(currentUser.name)) {
-      setNotice("이미 신고한 내용이에요. 같은 내용은 한 번만 신고할 수 있어요.");
       return;
     }
     setReportReason("");
@@ -369,15 +400,14 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
           <S.Attachments aria-label="첨부 이미지">
             {post.images.map((attachment, index) => (
               <figure key={attachment.id}>
-                <img src={attachment.src} alt={attachment.name || `${post.title} 첨부 이미지 ${index + 1}`} loading="lazy" />
-                <figcaption>{attachment.name || `첨부 이미지 ${index + 1}`}</figcaption>
+                <img src={attachment.src} alt={`${post.title} 첨부 이미지 ${index + 1}`} loading="lazy" />
               </figure>
             ))}
           </S.Attachments>
         )}
         <S.Reactions>
-          <S.LikeButton type="button" $active={liked} aria-pressed={liked} onClick={toggleLike}>
-            <Heart size={16} aria-hidden="true" />좋아요 <span>{post.likes.toLocaleString()}</span>
+          <S.LikeButton type="button" $active={liked} aria-pressed={liked} aria-label={`좋아요 ${post.likes.toLocaleString()}개`} onClick={toggleLike}>
+            <Heart size={16} aria-hidden="true" /><span>{post.likes.toLocaleString()}</span>
           </S.LikeButton>
           <S.TextButton type="button" onClick={() => openReport()} disabled={reported}>
             <Flag size={15} aria-hidden="true" />{reported ? "신고 완료" : "게시글 신고"}
@@ -387,24 +417,13 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
 
       <S.CommentsCard aria-labelledby="community-comments-title">
         <S.CommentsHeading id="community-comments-title"><MessageCircle size={21} aria-hidden="true" />댓글 <span>{commentCount}</span></S.CommentsHeading>
-        {currentUser ? (
-          <CommentComposer id="community-new-comment" label={`${currentUser.name}님의 댓글`} onSubmit={(content) => addComment(content)} />
-        ) : (
-          <S.CommentForm onSubmit={(event) => event.preventDefault()}>
-            <label htmlFor="community-guest-comment">댓글 남기기</label>
-            <S.Textarea id="community-guest-comment" placeholder="로그인 후 이웃과 이야기를 나눠 보세요." disabled />
-            <S.FormFooter><small>로그인하면 댓글을 작성할 수 있어요.</small><div>
-              <S.PrimaryButton type="button" onClick={onRequireLogin}><LogIn size={16} aria-hidden="true" />로그인하고 댓글 쓰기</S.PrimaryButton>
-            </div></S.FormFooter>
-          </S.CommentForm>
-        )}
-
         {comments.length ? (
           <S.CommentList>
             {comments.map((comment) => (
               <S.CommentThread key={comment.id}>
                 <CommentEntry
                   entry={comment}
+                  onLike={() => toggleCommentLike(comment.id)}
                   onChat={() => startChat(comment.author, comment.authorId, "댓글")}
                   currentUser={currentUser}
                   postAuthorId={post.authorId}
@@ -420,9 +439,10 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
                   <S.ReplyList aria-label={`${comment.author}님 댓글의 답글`}>
                     {comment.replies.map((reply) => (
                       <li key={reply.id}>
-                        <S.ReplyTarget><Reply size={14} aria-hidden="true" />{comment.author}님에게 답글</S.ReplyTarget>
                         <CommentEntry
                           entry={reply}
+                          replyAuthor={comment.author}
+                          onLike={() => toggleCommentLike(comment.id, reply.id)}
                           onChat={() => startChat(reply.author, reply.authorId, "댓글")}
                           currentUser={currentUser}
                           postAuthorId={post.authorId}
@@ -451,6 +471,18 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
             <strong>아직 댓글이 없어요</strong>
             <p>첫 번째 댓글로 이야기를 시작해 보세요.</p>
           </S.EmptyComments>
+        )}
+
+        {currentUser ? (
+          <CommentComposer id="community-new-comment" label={`${currentUser.name}님의 댓글`} onSubmit={(content) => addComment(content)} />
+        ) : (
+          <S.CommentForm onSubmit={(event) => event.preventDefault()}>
+            <label htmlFor="community-guest-comment">댓글 남기기</label>
+            <S.Textarea id="community-guest-comment" rows={1} placeholder="로그인 후 이웃과 이야기를 나눠 보세요." disabled />
+            <S.FormFooter><small>로그인하면 댓글을 작성할 수 있어요.</small><div>
+              <S.PrimaryButton type="button" onClick={onRequireLogin}><LogIn size={16} aria-hidden="true" />로그인하고 댓글 쓰기</S.PrimaryButton>
+            </div></S.FormFooter>
+          </S.CommentForm>
         )}
       </S.CommentsCard>
       <S.BottomNav><S.BackLink as={Link} to="/community"><ArrowLeft size={17} aria-hidden="true" />목록으로 돌아가기</S.BackLink></S.BottomNav>
