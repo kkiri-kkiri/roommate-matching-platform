@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
-  ArrowRight, ChevronLeft, ChevronRight, Eye, Gift, Heart, LayoutGrid,
+  ArrowRight, ChevronLeft, ChevronRight, Eye, Gift, Heart, Image, LayoutGrid,
   MessageCircle, MessageSquare, Package, PenLine, Search, ShieldCheck, UserRound, X,
 } from "lucide-react";
 
@@ -98,13 +98,12 @@ function commentCount(post) {
 function CommunityPage({ currentUser }) {
   const searchInputRef = useRef(null);
   const [posts, setPosts] = useState(() => createPosts(currentUser));
-  const [notice, setNotice] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const { postId } = useParams();
   const location = useLocation();
   const pathname = location.pathname.replace(/\/+$/, "");
   const navigate = useNavigate();
-  const query = searchParams.get("q") || "";
+  const query = pathname === "/community/my-posts" ? "" : searchParams.get("q") || "";
   const [searchInput, setSearchInput] = useState(query);
   const category = CATEGORIES.some(({ name }) => name === searchParams.get("category"))
     ? searchParams.get("category") : "전체";
@@ -174,7 +173,6 @@ function CommunityPage({ currentUser }) {
           dormitory: "나래관",
           createdAt: new Date().toISOString(), views: 0, likes: 0,
           likedBy: [], reportedBy: [], comments: [] }, ...previous]);
-    setNotice(isEdit ? "게시글을 수정했어요." : "새로운 이야기를 등록했어요.");
     navigate(`/community/posts/${id}`, { replace: true });
   };
 
@@ -207,7 +205,6 @@ function CommunityPage({ currentUser }) {
       onDeletePost={() => {
         if (!currentUser || post.authorId !== currentUser.name) return;
         setPosts((previous) => previous.filter((item) => item.id !== post.id));
-        setNotice("게시글을 삭제했어요.");
         navigate("/community", { replace: true });
       }} />;
   } else {
@@ -232,12 +229,12 @@ function CommunityPage({ currentUser }) {
           <S.KindnessNote><ShieldCheck size={23} aria-hidden="true" /><strong>배려가 머무는 커뮤니티</strong><p>서로를 존중하는 말 한마디로<br />더 편안한 생활을 만들어요.</p></S.KindnessNote>
         </S.Sidebar>
         <S.Board aria-labelledby="board-title">
-          <S.BoardHeading>
-            <div><h2 id="board-title">{isMyPosts ? "내 게시글" : isMyComments ? "내 댓글" : category === "전체" ? "전체 게시글" : category}</h2><p>{isMyPosts || isMyComments ? "함께 쌓아 온 나의 이야기예요." : categoryInfo.description}</p></div>
-            <S.PrimaryButton type="button" onClick={startPost}><PenLine size={18} aria-hidden="true" />글쓰기</S.PrimaryButton>
+          <S.BoardHeading $separated={isMyPosts || isMyComments}>
+            <div><h2 id="board-title">{isMyPosts ? "내 게시글" : isMyComments ? "내 댓글" : category === "전체" ? "전체 게시글" : category}</h2>{!isMyPosts && !isMyComments && <p>{categoryInfo.description}</p>}</div>
+            {!isMyPosts && !isMyComments && <S.PrimaryButton type="button" onClick={startPost}><PenLine size={18} aria-hidden="true" />글쓰기</S.PrimaryButton>}
           </S.BoardHeading>
-          {!isMyComments && <S.Controls>
-            <S.SearchForm role="search" onSubmit={(event) => { event.preventDefault(); updateFilters({ q: searchInput.trim() }); }}>
+          {!isMyPosts && !isMyComments && <S.Controls>
+            {!isMyPosts && <S.SearchForm role="search" onSubmit={(event) => { event.preventDefault(); updateFilters({ q: searchInput.trim() }); }}>
               <S.SearchField>
                 <Search size={19} aria-hidden="true" />
                 <S.SearchInput ref={searchInputRef} type="search" aria-label="게시글 제목과 내용 검색" placeholder="제목이나 내용으로 검색해 보세요" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} />
@@ -248,20 +245,20 @@ function CommunityPage({ currentUser }) {
                 }}><X size={16} aria-hidden="true" /></S.SearchClearButton>
               </S.SearchField>
               <S.SearchButton type="submit">검색</S.SearchButton>
-            </S.SearchForm>
+            </S.SearchForm>}
             <S.SortLabel><span>정렬</span><S.SortSelect aria-label="게시글 정렬" value={sort} onChange={(event) => updateFilters({ sort: event.target.value })}>{SORTS.map((value) => <option key={value}>{value}</option>)}</S.SortSelect></S.SortLabel>
           </S.Controls>}
           {query && !isMyComments && <S.SearchSummary role="status"><span>“{query}” 검색 결과</span></S.SearchSummary>}
           {pageItems.length ? <S.PostList>
             {pageItems.map((item) => isMyComments ? <S.PostRow key={item.id}>
-              <S.CommentTop><S.CategoryBadge $category={item.category}>{item.isReply ? "답글" : "댓글"}</S.CategoryBadge><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></S.CommentTop>
+              <S.CommentTop><S.CategoryBadge>{item.isReply ? "대댓글" : "댓글"}</S.CategoryBadge><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></S.CommentTop>
               <S.MyComment>{item.content}</S.MyComment>
               <S.OriginalPostLink to={`/community/posts/${item.postId}#comment-${item.id}`}><MessageSquare size={16} aria-hidden="true" /><span>{item.postTitle}</span><ArrowRight size={16} aria-hidden="true" /></S.OriginalPostLink>
             </S.PostRow> : <S.PostRow key={item.id}>
               <S.PostHeading>{category === "전체" && <S.CategoryBadge $category={item.category}>{item.category.replace("게시판", "")}</S.CategoryBadge>}<S.DormitoryBadge>{item.dormitory}</S.DormitoryBadge>{currentUser && item.authorId === currentUser.name && <S.OwnBadge>내 글</S.OwnBadge>}</S.PostHeading>
-              <S.PostTitleLink to={`/community/posts/${item.id}`}><h3>{item.title}</h3>{item.images.length > 0 && <S.ImageLabel>사진</S.ImageLabel>}</S.PostTitleLink>
+              <S.PostTitleLink to={`/community/posts/${item.id}`}><h3>{item.title}</h3>{item.images.length > 0 && <S.ImageLabel role="img" aria-label="사진 첨부" title="사진 첨부"><Image size={16} aria-hidden="true" /></S.ImageLabel>}</S.PostTitleLink>
               <S.Excerpt>{item.content}</S.Excerpt>
-              <S.PostBottom><S.Stats><span aria-label={`조회 ${item.views}회`}><Eye size={15} aria-hidden="true" />{item.views}</span><span aria-label={`공감 ${item.likes}개`}><Heart size={15} aria-hidden="true" />{item.likes}</span><span aria-label={`댓글 ${commentCount(item)}개`}><MessageCircle size={15} aria-hidden="true" />{commentCount(item)}</span></S.Stats><S.Metadata><S.Author><UserRound size={14} aria-hidden="true" />{item.author}</S.Author><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></S.Metadata></S.PostBottom>
+              <S.PostBottom><S.Metadata><S.Author><UserRound size={14} aria-hidden="true" />{item.author}</S.Author><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></S.Metadata><S.Stats><span aria-label={`조회 ${item.views}회`}><Eye size={15} aria-hidden="true" />{item.views}</span><span aria-label={`공감 ${item.likes}개`}><Heart size={15} aria-hidden="true" />{item.likes}</span><span aria-label={`댓글 ${commentCount(item)}개`}><MessageCircle size={15} aria-hidden="true" />{commentCount(item)}</span></S.Stats></S.PostBottom>
             </S.PostRow>)}
           </S.PostList> : <S.EmptyState>
             <S.EmptyIcon>{query ? <Search aria-hidden="true" /> : <MessageSquare aria-hidden="true" />}</S.EmptyIcon>
@@ -281,7 +278,7 @@ function CommunityPage({ currentUser }) {
     </>;
   }
 
-  return <S.Page $compactTop={Boolean(postId) || isCreate}><S.Content>{notice && <S.Feedback role="status"><span>{notice}</span><S.ClearButton type="button" aria-label="알림 닫기" onClick={() => setNotice("")}>닫기</S.ClearButton></S.Feedback>}{content}</S.Content></S.Page>;
+  return <S.Page $compactTop={Boolean(postId) || isCreate}><S.Content>{content}</S.Content></S.Page>;
 }
 
 export default CommunityPage;

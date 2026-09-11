@@ -30,7 +30,7 @@ const primary = css`
 
 export const Page = styled.main`
   min-height: 100vh;
-  padding: ${({ $compactTop }) => $compactTop ? "12px" : "20px"} 20px 48px;
+  padding: ${({ $compactTop }) => $compactTop ? "8px 20px 80px" : "24px 20px 80px"};
   color: #1a1c1c;
   background: #faf9f6;
   font-family: "Plus Jakarta Sans", Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -39,13 +39,13 @@ export const Page = styled.main`
   button, input, textarea, select { font-family: inherit; }
   button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
   svg { flex-shrink: 0; }
-  @media (max-width: 700px) { padding: 12px 16px 32px; }
+  @media (max-width: 700px) { padding: ${({ $compactTop }) => $compactTop ? "8px 16px 56px" : "16px 16px 56px"}; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
   }
 `;
 export const Content = styled.div`
-  width: min(100%, 1080px);
+  width: min(100%, 1180px);
   margin: 0 auto;
   min-width: 0;
 `;
@@ -109,12 +109,12 @@ export const Layout = styled.div`
   display: grid;
   grid-template-columns: 196px minmax(0, 1fr);
   align-items: start;
-  gap: 16px;
+  gap: 24px;
   @media (max-width: 900px) { grid-template-columns: minmax(0, 1fr); }
 `;
 export const Sidebar = styled.aside`
   display: grid;
-  gap: 12px;
+  gap: 16px;
   min-width: 0;
   @media (min-width: 601px) and (max-width: 900px) {
     grid-template-columns: minmax(0, 1fr) 220px;
@@ -122,7 +122,7 @@ export const Sidebar = styled.aside`
   }
 `;
 export const Navigation = styled.nav`
-  padding: 14px 8px 10px;
+  padding: 16px;
   border: 1px solid #e2e2e4;
   border-radius: 16px;
   background: white;
@@ -196,6 +196,7 @@ export const BoardHeading = styled.div`
   justify-content: space-between;
   gap: 16px;
   padding: 16px 24px 12px;
+  ${({ $separated }) => $separated && css`border-bottom: 1px solid #e2e2e4;`}
   > button { width: 96px; height: 36px; padding: 6px 8px; margin-left: auto; }
   h2 { margin: 0; color: #001d4f; font-size: 16px; font-weight: 600; line-height: 26px; letter-spacing: 0.015em; }
   p { margin: 6px 0 0; color: #747781; font-size: 12px; word-break: keep-all; }
@@ -270,13 +271,20 @@ export const SortLabel = styled.label`
   @media (max-width: 600px) { > span { display: inline; } }
 `;
 export const SortSelect = styled.select`
+  appearance: none;
   width: 96px;
   height: 36px;
   min-height: 36px;
-  padding: 6px 8px;
+  padding: 6px 16px 6px 8px;
   border: 1px solid #e2e2e4;
   border-radius: 12px;
   background: white;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23444650' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px 12px;
+  text-align: center;
+  text-align-last: center;
   color: #444650;
   cursor: pointer;
   && { font-size: 13px; }
@@ -348,7 +356,7 @@ export const DormitoryBadge = styled.span`
 export const OwnBadge = styled.span`color: #747781; font-size: 11px;`;
 export const PostTitleLink = styled(Link)`
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 8px;
   width: fit-content;
   max-width: 100%;
@@ -358,7 +366,7 @@ export const PostTitleLink = styled(Link)`
   &:hover h3 { color: #0c3273; text-decoration: underline; text-underline-offset: 4px; }
   ${focus}
 `;
-export const ImageLabel = styled.span`flex-shrink: 0; color: #747781; font-size: 11px;`;
+export const ImageLabel = styled.span`display: inline-flex; align-items: center; height: 23px; flex-shrink: 0; color: #747781; font-size: 11px;`;
 export const Excerpt = styled.p`
   margin: 8px 0 10px;
   overflow: hidden;
@@ -381,16 +389,16 @@ export const PostBottom = styled.div`
 export const Metadata = styled.div`
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 4px 12px;
   align-items: center;
-  margin-left: auto;
-  text-align: right;
+  text-align: left;
   time { font-variant-numeric: tabular-nums; }
 `;
 export const Author = styled.span`display: flex; gap: 4px; align-items: center; color: #444650; overflow-wrap: anywhere;`;
 export const Stats = styled.div`
   display: flex;
+  margin-left: auto;
   gap: 16px;
   span { display: inline-flex; align-items: center; gap: 5px; }
 `;

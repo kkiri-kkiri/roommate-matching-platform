@@ -23,7 +23,7 @@ const focusRing = css`
 
 export const Detail = styled.section`
   width: 100%;
-  max-width: 760px;
+  max-width: 860px;
   margin: 0 auto;
   color: ${colors.text};
 
@@ -37,13 +37,13 @@ export const Detail = styled.section`
 export const BackLink = styled.a`
   ${focusRing};
   display: inline-flex;
-  min-height: 36px;
+  min-height: 28px;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   border-radius: 8px;
   color: ${colors.secondary};
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   text-decoration: none;
 
@@ -62,7 +62,7 @@ export const Notice = styled.p`
   border-radius: 12px;
   color: ${colors.mintDark};
   background: ${colors.mintSoft};
-  font-size: 14px;
+  font-size: 13px;
   line-height: 22px;
 
   svg {
@@ -72,7 +72,7 @@ export const Notice = styled.p`
 `;
 
 export const Article = styled.article`
-  padding: 14px 18px;
+  padding: 20px 24px;
   overflow: hidden;
   border: 1px solid ${colors.border};
   border-radius: 16px;
@@ -80,7 +80,7 @@ export const Article = styled.article`
   box-shadow: 0 4px 12px rgba(12, 50, 115, 0.05);
 
   @media (max-width: 640px) {
-    padding: 12px 14px;
+    padding: 16px 18px;
   }
 `;
 
@@ -115,7 +115,7 @@ export const Category = styled.span`
   display: inline-flex;
   align-items: center;
   min-height: 28px;
-  padding: 4px 11px;
+  padding: 4px 12px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
@@ -136,13 +136,13 @@ export const TextButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 5px;
-  min-height: 32px;
-  padding: 6px 8px;
+  min-height: 34px;
+  padding: 7px 10px;
   border: 0;
   border-radius: 8px;
   color: ${({ $danger }) => ($danger ? colors.error : colors.muted)};
   background: transparent;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 20px;
   cursor: pointer;
@@ -158,18 +158,18 @@ export const TextButton = styled.button`
 `;
 
 export const Title = styled.h1`
-  margin: 14px 0 16px;
+  margin: 12px 0 16px;
   color: ${colors.navyDark};
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
-  line-height: 28px;
+  line-height: 24px;
   letter-spacing: -0.02em;
   overflow-wrap: anywhere;
   word-break: keep-all;
 
   @media (max-width: 640px) {
-    font-size: 20px;
-    line-height: 28px;
+    font-size: 16px;
+    line-height: 24px;
   }
 `;
 
@@ -177,7 +177,7 @@ export const AuthorRow = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-bottom: 12px;
+  padding-bottom: 8px;
   border-bottom: 1px solid ${colors.border};
 `;
 
@@ -186,12 +186,12 @@ export const Avatar = styled.span`
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: ${({ $small }) => ($small ? "28px" : "34px")};
-  height: ${({ $small }) => ($small ? "28px" : "34px")};
+  width: ${({ $small }) => ($small ? "30px" : "36px")};
+  height: ${({ $small }) => ($small ? "30px" : "36px")};
   border-radius: 12px;
   color: ${({ $mine }) => ($mine ? colors.mintDark : colors.navy)};
   background: ${({ $mine }) => ($mine ? colors.mintSoft : "#edf2ff")};
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
 `;
 
@@ -200,7 +200,7 @@ export const AuthorInfo = styled.div`
 
   > strong {
     color: ${colors.secondary};
-    font-size: 14px;
+    font-size: 13px;
     line-height: 22px;
     overflow-wrap: anywhere;
   }
@@ -211,7 +211,7 @@ export const Metadata = styled.div`
   align-items: center;
   flex-wrap: wrap;
   gap: 5px 12px;
-  margin-top: 4px;
+  margin-top: 2px;
   color: ${colors.muted};
   font-size: 12px;
   line-height: 18px;
@@ -224,18 +224,18 @@ export const Metadata = styled.div`
 `;
 
 export const Content = styled.div`
-  padding: 12px 0;
+  padding: 14px 0;
   color: ${colors.secondary};
-  font-size: 14px;
-  line-height: 22px;
+  font-size: 13px;
+  line-height: 20px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 `;
 
 export const Attachments = styled.div`
   display: grid;
-  gap: 16px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 8px;
 
   figure {
     margin: 0;
@@ -244,7 +244,7 @@ export const Attachments = styled.div`
   img {
     display: block;
     width: 100%;
-    max-height: 260px;
+    max-height: 240px;
     border: 1px solid ${colors.border};
     border-radius: 12px;
     object-fit: contain;
@@ -252,7 +252,7 @@ export const Attachments = styled.div`
   }
 
   figcaption {
-    margin-top: 8px;
+    margin-top: 4px;
     color: ${colors.muted};
     font-size: 12px;
     line-height: 18px;
@@ -266,7 +266,7 @@ export const Reactions = styled.div`
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 16px;
-  padding-top: 14px;
+  padding-top: 6px;
   border-top: 1px solid ${colors.border};
 `;
 
@@ -276,13 +276,13 @@ export const LikeButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 32px;
-  padding: 0 10px;
-  border: 1.5px solid ${colors.mint};
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0;
   border-radius: 12px;
   color: ${colors.mintDark};
   background: ${({ $active }) => ($active ? colors.mintSoft : colors.white)};
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 
@@ -296,15 +296,15 @@ export const LikeButton = styled.button`
 `;
 
 export const CommentsCard = styled.section`
-  margin-top: 12px;
-  padding: 14px 18px;
+  margin-top: 14px;
+  padding: 20px 24px;
   border: 1px solid ${colors.border};
   border-radius: 16px;
   background: ${colors.white};
   box-shadow: 0 4px 12px rgba(12, 50, 115, 0.05);
 
   @media (max-width: 640px) {
-    padding: 12px 14px;
+    padding: 16px 18px;
   }
 `;
 
@@ -314,9 +314,9 @@ export const CommentsHeading = styled.h2`
   gap: 8px;
   margin: 0;
   color: ${colors.navyDark};
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 26px;
+  line-height: 24px;
 
   span {
     color: ${colors.mintDark};
@@ -324,8 +324,8 @@ export const CommentsHeading = styled.h2`
 `;
 
 export const CommentForm = styled.form`
-  margin: ${({ $compact }) => ($compact ? "8px 0 4px" : "12px 0 0")};
-  padding: 12px;
+  margin: ${({ $compact }) => ($compact ? "6px 0 4px" : "8px 0 0")};
+  padding: 16px;
   border: 1px solid ${colors.border};
   border-radius: 12px;
   background: ${({ $compact }) => ($compact ? colors.white : "#fafbfc")};
@@ -334,7 +334,7 @@ export const CommentForm = styled.form`
     display: block;
     margin-bottom: 10px;
     color: ${colors.secondary};
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     line-height: 22px;
   }
@@ -343,16 +343,16 @@ export const CommentForm = styled.form`
 export const Textarea = styled.textarea`
   display: block;
   width: 100%;
-  min-height: ${({ $compact }) => ($compact ? "64px" : "72px")};
-  padding: 8px 12px;
+  min-height: ${({ $compact, rows }) => (rows === 1 ? "34px" : $compact ? "48px" : "52px")};
+  padding: 6px 10px;
   resize: vertical;
   border: 1px solid ${colors.border};
   border-radius: 12px;
   outline: none;
   color: ${colors.text};
   background: ${colors.white};
-  font-size: 14px;
-  line-height: 24px;
+  font-size: 13px;
+  line-height: 20px;
 
   &::placeholder {
     color: ${colors.muted};
@@ -397,12 +397,12 @@ export const PrimaryButton = styled.button`
   justify-content: center;
   gap: 7px;
   min-height: 36px;
-  padding: 0 14px;
+  padding: 0 16px;
   border: 1px solid ${({ $danger }) => ($danger ? colors.error : colors.navy)};
   border-radius: 12px;
   color: ${colors.white};
   background: ${({ $danger }) => ($danger ? colors.error : colors.navy)};
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 
@@ -425,13 +425,13 @@ export const SecondaryButton = styled(PrimaryButton)`
 `;
 
 export const CommentList = styled.ol`
-  margin: 16px 0 0;
+  margin: 8px 0 0;
   padding: 0;
   list-style: none;
 `;
 
 export const CommentThread = styled.li`
-  padding: 16px 0;
+  padding: 14px 0;
   border-top: 1px solid ${colors.border};
 
   &:last-child {
@@ -451,9 +451,9 @@ export const ChatButton = styled.button`
   justify-content: center;
   flex-shrink: 0;
   gap: 5px;
-  min-height: 36px;
+  min-height: 34px;
   margin-left: auto;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border: 1px solid #c4dcd4;
   border-radius: 8px;
   color: ${colors.mintDark};
@@ -477,9 +477,16 @@ export const CommentHeader = styled.div`
     min-width: 0;
   }
 
+  > ${ActionGroup} {
+    margin-left: auto;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+
   strong {
     color: ${colors.secondary};
-    font-size: 14px;
+    font-size: 13px;
     line-height: 20px;
     overflow-wrap: anywhere;
   }
@@ -502,28 +509,28 @@ export const AuthorBadge = styled.span`
 `;
 
 export const CommentText = styled.p`
-  margin: 8px 0 4px;
+  margin: 6px 0 2px;
   color: ${colors.secondary};
-  font-size: 14px;
-  line-height: 24px;
+  font-size: 13px;
+  line-height: 20px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 `;
 
 export const ReplyList = styled.ol`
   display: grid;
-  gap: 8px;
-  margin: 12px 0 0 36px;
+  gap: 6px;
+  margin: 8px 0 0 36px;
   padding: 0;
   list-style: none;
 
   > li {
     position: relative;
     min-width: 0;
-    padding: 12px 16px;
+    padding: 8px 12px;
     border: 1px solid #dfebe7;
     border-radius: 14px;
-    background: #f5f9f8;
+    background: transparent;
   }
 
   > li::before {
@@ -540,8 +547,21 @@ export const ReplyList = styled.ol`
 
   @media (max-width: 480px) {
     margin-left: 20px;
-    > li { padding: 10px 12px; }
+    > li { padding: 6px 10px; }
     > li::before { left: -17px; width: 10px; }
+  }
+`;
+
+export const ReplyHeading = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+
+  > ${ActionGroup} {
+    flex-shrink: 0;
+    flex-wrap: nowrap;
   }
 `;
 
@@ -549,7 +569,6 @@ export const ReplyTarget = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 8px;
   color: ${colors.mintDark};
   font-size: 12px;
   line-height: 18px;
@@ -562,8 +581,8 @@ export const EmptyComments = styled.div`
   align-items: center;
   flex-direction: column;
   gap: 8px;
-  margin-top: 24px;
-  padding: 32px 16px;
+  margin-top: 16px;
+  padding: 20px 16px;
   border-top: 1px solid ${colors.border};
   color: ${colors.muted};
   text-align: center;
@@ -575,13 +594,13 @@ export const EmptyComments = styled.div`
 
   strong {
     color: ${colors.secondary};
-    font-size: 15px;
+    font-size: 14px;
     line-height: 22px;
   }
 
   p {
     margin: 0;
-    font-size: 14px;
+    font-size: 13px;
     line-height: 22px;
   }
 `;
