@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BadgeCheck,
   Check,
@@ -177,6 +177,21 @@ function RoommateSearchPage() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const tabRefs = useRef({});
+  const filterDialogRef = useRef(null);
+
+  useEffect(() => {
+    if (!isFilterOpen) return;
+
+    const dialog = filterDialogRef.current;
+    const previousOverflow = document.body.style.overflow;
+    dialog.showModal();
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      dialog.close();
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isFilterOpen]);
 
   const activeFilterEntries = useMemo(
     () =>
@@ -241,20 +256,6 @@ function RoommateSearchPage() {
       <S.PageReset />
 
       <S.Content>
-        <S.Intro>
-          <S.Eyebrow>
-            <Sparkles size={15} aria-hidden="true" />
-            FIND YOUR ROOMMATE
-          </S.Eyebrow>
-
-          <S.PageTitle>나와 잘 맞는 룸메이트를 찾아보세요</S.PageTitle>
-
-          <S.PageDescription>
-            생활관과 생활 습관을 살펴보고, 함께 편안한 일상을 만들 룸메이트를
-            만나보세요.
-          </S.PageDescription>
-        </S.Intro>
-
         <S.DiscoveryControls>
           <S.TabsRow>
             <S.TabsArea>
@@ -307,24 +308,21 @@ function RoommateSearchPage() {
               </S.TabList>
             </S.TabsArea>
 
-            <S.FilterToggle
-              type="button"
-              aria-expanded={isFilterOpen}
-              aria-controls="roommate-filter-panel"
-              onClick={() => setIsFilterOpen((isOpen) => !isOpen)}
-            >
-              {isFilterOpen ? (
-                <X size={17} aria-hidden="true" />
-              ) : (
-                <SlidersHorizontal size={17} aria-hidden="true" />
-              )}
-              {isFilterOpen ? "필터 닫기" : "필터 열기"}
-            </S.FilterToggle>
           </S.TabsRow>
 
           <S.FilterStatus aria-live="polite">
             <S.FilterStatusContent>
-              <S.FilterStatusLabel>적용된 필터</S.FilterStatusLabel>
+              <S.FilterToggle
+                type="button"
+                aria-label="필터 열기"
+                title="필터 열기"
+                aria-haspopup="dialog"
+                aria-expanded={isFilterOpen}
+                aria-controls="roommate-filter-panel"
+                onClick={() => setIsFilterOpen(true)}
+              >
+                <SlidersHorizontal size={18} aria-hidden="true" />
+              </S.FilterToggle>
 
               {activeFilterEntries.length > 0 ? (
                 <S.AppliedFilterList>
@@ -350,24 +348,41 @@ function RoommateSearchPage() {
 
             <S.ResetFilterButton
               type="button"
+              aria-label="필터 초기화"
+              title="필터 초기화"
               disabled={activeFilterEntries.length === 0}
               onClick={resetFilters}
             >
               <RotateCcw size={15} aria-hidden="true" />
-              필터링 취소
             </S.ResetFilterButton>
           </S.FilterStatus>
         </S.DiscoveryControls>
 
         <S.SearchLayout>
           <S.FilterPanel
+            ref={filterDialogRef}
             id="roommate-filter-panel"
-            $open={isFilterOpen}
-            aria-label="프로필 필터"
+            aria-labelledby="roommate-filter-title"
+            onCancel={(event) => {
+              event.preventDefault();
+              setIsFilterOpen(false);
+            }}
+            onClick={(event) => {
+              if (event.target !== event.currentTarget) return;
+              const bounds = event.currentTarget.getBoundingClientRect();
+              if (
+                event.clientX < bounds.left ||
+                event.clientX > bounds.right ||
+                event.clientY < bounds.top ||
+                event.clientY > bounds.bottom
+              ) {
+                setIsFilterOpen(false);
+              }
+            }}
           >
             <S.FilterPanelHeader>
               <div>
-                <S.FilterTitle>
+                <S.FilterTitle id="roommate-filter-title">
                   <SlidersHorizontal size={18} aria-hidden="true" />
                   필터
                 </S.FilterTitle>
@@ -379,6 +394,13 @@ function RoommateSearchPage() {
               <S.ActiveFilterCount $active={activeFilterEntries.length > 0}>
                 {activeFilterEntries.length}
               </S.ActiveFilterCount>
+              <S.FilterToggle
+                type="button"
+                aria-label="필터 닫기"
+                onClick={() => setIsFilterOpen(false)}
+              >
+                <X size={18} aria-hidden="true" />
+              </S.FilterToggle>
             </S.FilterPanelHeader>
 
             <S.FilterGroups>
@@ -409,6 +431,15 @@ function RoommateSearchPage() {
                 </S.FilterFieldset>
               ))}
             </S.FilterGroups>
+            <S.FilterModalFooter>
+              <S.ResetFilterButton type="button" onClick={resetFilters}>
+                <RotateCcw size={15} aria-hidden="true" />
+                초기화
+              </S.ResetFilterButton>
+              <S.FilterToggle type="button" onClick={() => setIsFilterOpen(false)}>
+                적용
+              </S.FilterToggle>
+            </S.FilterModalFooter>
           </S.FilterPanel>
 
           <S.ProfileResults
@@ -421,25 +452,6 @@ function RoommateSearchPage() {
                 : "all-profile-tab"
             }
           >
-            <S.ResultsHeader>
-              <div>
-                <S.ResultsTitle>
-                  {activeTab === "recommended"
-                    ? "추천 룸메이트"
-                    : "전체 룸메이트"}
-                </S.ResultsTitle>
-                <S.ResultsDescription>
-                  {activeTab === "recommended"
-                    ? "내 선호 조건과 매칭점수가 높은 순서로 살펴보세요."
-                    : "등록된 프로필을 한눈에 살펴보세요."}
-                </S.ResultsDescription>
-              </div>
-
-              <S.ResultCount aria-live="polite" aria-atomic="true">
-                <strong>{visibleProfiles.length}</strong>명
-              </S.ResultCount>
-            </S.ResultsHeader>
-
             {visibleProfiles.length > 0 ? (
               <S.ProfileGrid>
                 {visibleProfiles.map((profile) => (
@@ -461,7 +473,9 @@ function RoommateSearchPage() {
                           </S.VerifiedBadge>
                         </S.ProfileNameRow>
 
-                        <S.ProfileAcademic>
+                        <S.ProfileAcademic
+                          title={`${profile.admissionYear}학번 · ${profile.major}`}
+                        >
                           <S.AdmissionYear>{profile.admissionYear}학번</S.AdmissionYear>
                           <span aria-hidden="true">·</span>
                           <span>{profile.major}</span>

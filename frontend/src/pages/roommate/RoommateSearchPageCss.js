@@ -32,7 +32,7 @@ export const PageReset = createGlobalStyle`
 
 export const Page = styled.main`
   min-height: 100vh;
-  padding: 56px 20px 80px;
+  padding: 24px 20px 80px;
   color: ${colors.text};
   background: ${colors.warm};
   font-family:
@@ -57,66 +57,14 @@ export const Page = styled.main`
   }
 
   @media (max-width: 700px) {
-    padding: 36px 16px 56px;
+    padding: 16px 16px 56px;
   }
 `;
 
 export const Content = styled.div`
-  width: min(100%, 1200px);
+  width: min(100%, 1180px);
   margin: 0 auto;
-`;
 
-export const Intro = styled.header`
-  max-width: 760px;
-  margin-bottom: 40px;
-
-  @media (max-width: 700px) {
-    margin-bottom: 28px;
-  }
-`;
-
-export const Eyebrow = styled.span`
-  display: inline-flex;
-  gap: 7px;
-  align-items: center;
-  min-height: 30px;
-  padding: 0 11px;
-  border-radius: 999px;
-  color: ${colors.mintDark};
-  background: ${colors.mintSoft};
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 14px;
-  letter-spacing: 0.04em;
-`;
-
-export const PageTitle = styled.h1`
-  margin: 16px 0 0;
-  color: ${colors.navyDark};
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 44px;
-  letter-spacing: -0.02em;
-  word-break: keep-all;
-
-  @media (max-width: 700px) {
-    font-size: 24px;
-    line-height: 32px;
-  }
-`;
-
-export const PageDescription = styled.p`
-  max-width: 680px;
-  margin: 13px 0 0;
-  color: ${colors.textSoft};
-  font-size: 16px;
-  line-height: 24px;
-  word-break: keep-all;
-
-  @media (max-width: 700px) {
-    font-size: 14px;
-    line-height: 20px;
-  }
 `;
 
 export const DiscoveryControls = styled.div`
@@ -126,6 +74,7 @@ export const DiscoveryControls = styled.div`
   border-radius: 16px;
   background: ${colors.white};
   box-shadow: 0 4px 12px rgba(12, 50, 115, 0.05);
+
 `;
 
 export const TabsRow = styled.div`
@@ -133,19 +82,19 @@ export const TabsRow = styled.div`
   gap: 16px;
   align-items: center;
   justify-content: space-between;
-  min-height: 68px;
-  padding: 0 20px;
+  min-height: 52px;
+  padding: 0 12px;
   border-bottom: 1px solid ${colors.border};
 
   @media (max-width: 640px) {
     gap: 10px;
-    min-height: 64px;
-    padding: 0 14px;
+    min-height: 48px;
+    padding: 0 8px;
   }
 
   @media (max-width: 520px) {
     gap: 8px;
-    padding: 0 10px;
+    padding: 0 6px;
   }
 `;
 
@@ -178,7 +127,7 @@ export const TabButton = styled.button`
   width: 100%;
   min-width: 0;
   min-height: 100%;
-  padding: 0 20px;
+  padding: 0 12px;
   border: 0;
   color: ${({ $active }) => ($active ? colors.navy : colors.textSoft)};
   background: transparent;
@@ -308,7 +257,7 @@ export const Tooltip = styled.span`
 
 export const FilterToggle = styled.button`
   ${focusRing};
-  display: none;
+  display: inline-flex;
   flex: 0 0 auto;
   gap: 7px;
   align-items: center;
@@ -324,15 +273,6 @@ export const FilterToggle = styled.button`
   line-height: 16px;
   cursor: pointer;
 
-  @media (max-width: 1024px) {
-    display: inline-flex;
-  }
-
-  @media (max-width: 520px) {
-    width: 44px;
-    padding: 0;
-    font-size: 0;
-  }
 `;
 
 export const FilterStatus = styled.div`
@@ -366,13 +306,6 @@ export const FilterStatusContent = styled.div`
   @media (max-width: 480px) {
     width: 100%;
   }
-`;
-
-export const FilterStatusLabel = styled.span`
-  color: ${colors.textSoft};
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 14px;
 `;
 
 export const AppliedFilterList = styled.div`
@@ -457,37 +390,41 @@ export const ResetFilterButton = styled.button`
 
 export const SearchLayout = styled.div`
   display: grid;
-  grid-template-columns: 264px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   align-items: start;
+`;
 
-  @media (max-width: 1024px) {
-    grid-template-columns: minmax(0, 1fr);
+export const FilterPanel = styled.dialog`
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid ${colors.border};
+  border-radius: 16px;
+  color: ${colors.text};
+  background: ${colors.white};
+  box-shadow: 0 20px 60px rgba(12, 50, 115, 0.2);
+
+  &::backdrop {
+    background: rgba(0, 20, 48, 0.4);
   }
 `;
 
-export const FilterPanel = styled.aside`
-  position: sticky;
-  top: 92px;
-  overflow: hidden;
-  border: 1px solid ${colors.border};
-  border-radius: 16px;
-  background: ${colors.white};
-  box-shadow: 0 4px 12px rgba(12, 50, 115, 0.05);
-
-  @media (max-width: 1024px) {
-    position: static;
-    display: ${({ $open }) => ($open ? "block" : "none")};
-  }
+export const FilterModalFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 16px;
 `;
 
 export const FilterPanelHeader = styled.div`
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 20px;
-  border-bottom: 1px solid ${colors.border};
+  padding: 16px;
   background: linear-gradient(135deg, #ffffff 0%, #fbfcff 100%);
 `;
 
@@ -533,46 +470,18 @@ export const ActiveFilterCount = styled.span`
 `;
 
 export const FilterGroups = styled.div`
-  padding: 0 20px;
-
-  @media (max-width: 1024px) {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 24px;
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: minmax(0, 1fr);
-    padding: 0 16px;
-  }
+  padding: 0 16px;
 `;
 
 export const FilterFieldset = styled.fieldset`
   min-width: 0;
   margin: 0;
-  padding: 20px 0;
+  padding: 12px 0;
   border: 0;
-  border-bottom: 1px solid ${colors.border};
-
-  &:last-child {
-    border-bottom: 0;
-  }
-
-  @media (max-width: 1024px) {
-    &:nth-last-child(-n + 2) {
-      border-bottom: 0;
-    }
-  }
-
-  @media (max-width: 640px) {
-    &:nth-last-child(2) {
-      border-bottom: 1px solid ${colors.border};
-    }
-  }
 `;
 
 export const FilterLegend = styled.legend`
-  margin: 0 0 12px;
+  margin: 0 0 8px;
   padding: 0;
   color: ${colors.text};
   font-size: 14px;
@@ -583,15 +492,15 @@ export const FilterLegend = styled.legend`
 export const FilterChoices = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 `;
 
 export const FilterChoice = styled.label`
   display: inline-flex;
   gap: 5px;
   align-items: center;
-  min-height: 44px;
-  padding: 8px 12px;
+  min-height: 36px;
+  padding: 6px 10px;
   border: 1px solid
     ${({ $selected }) => ($selected ? colors.mint : colors.border)};
   border-radius: 999px;
@@ -660,52 +569,13 @@ export const ProfileResults = styled.section`
   }
 `;
 
-export const ResultsHeader = styled.header`
-  display: flex;
-  gap: 20px;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 20px;
-`;
-
-export const ResultsTitle = styled.h2`
-  margin: 0;
-  color: ${colors.navyDark};
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28px;
-  letter-spacing: -0.01em;
-`;
-
-export const ResultsDescription = styled.p`
-  margin: 5px 0 0;
-  color: ${colors.textSoft};
-  font-size: 14px;
-  line-height: 20px;
-  word-break: keep-all;
-`;
-
-export const ResultCount = styled.span`
-  flex: 0 0 auto;
-  color: ${colors.textSoft};
-  font-size: 14px;
-  line-height: 20px;
-
-  strong {
-    margin-right: 2px;
-    color: ${colors.navy};
-    font-size: 18px;
-  }
-`;
-
 export const ProfileGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, 380px);
+  grid-auto-rows: 1fr;
   gap: 20px;
-
-  @media (max-width: 680px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  align-items: stretch;
+  justify-content: center;
 `;
 
 export const ProfileCard = styled.article`
@@ -715,21 +585,15 @@ export const ProfileCard = styled.article`
   border-radius: 16px;
   background: ${colors.white};
   box-shadow: 0 4px 12px rgba(12, 50, 115, 0.05);
-  @media (max-width: 480px) {
-    padding: 16px;
-  }
 `;
 
 export const CardHeader = styled.div`
+  position: relative;
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr) auto;
+  grid-template-columns: 76px minmax(0, 1fr);
   gap: 14px;
   align-items: start;
 
-  @media (max-width: 430px) {
-    grid-template-columns: 68px minmax(0, 1fr);
-    gap: 12px;
-  }
 `;
 
 export const ProfilePhoto = styled.div`
@@ -747,9 +611,6 @@ export const ProfilePhoto = styled.div`
     object-fit: cover;
   }
 
-  @media (max-width: 430px) {
-    width: 68px;
-  }
 `;
 
 export const ProfileIdentity = styled.div`
@@ -757,6 +618,7 @@ export const ProfileIdentity = styled.div`
 `;
 
 export const ProfileNameRow = styled.div`
+  padding-right: 76px;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -793,9 +655,10 @@ export const VerifiedBadge = styled.span`
 
 export const ProfileAcademic = styled.p`
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 4px;
   align-items: center;
+  min-width: 0;
   margin: 6px 0 0;
   color: ${colors.textSoft};
   font-size: 14px;
@@ -803,8 +666,6 @@ export const ProfileAcademic = styled.p`
 
   > span:last-child {
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
   }
 `;
@@ -831,6 +692,9 @@ export const Dormitory = styled.span`
 `;
 
 export const MatchBadge = styled.span`
+  position: absolute;
+  top: 0;
+  right: 0;
   display: inline-flex;
   flex: 0 0 auto;
   gap: 4px;
@@ -845,10 +709,6 @@ export const MatchBadge = styled.span`
   line-height: 14px;
   white-space: nowrap;
 
-  @media (max-width: 430px) {
-    grid-column: 2;
-    justify-self: start;
-  }
 `;
 
 export const ProfileMessage = styled.div`
