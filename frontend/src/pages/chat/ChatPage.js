@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, ArrowRight, CheckCheck,
-  Clock3, LogOut, MessageCircle, MessagesSquare, Search, Send, UserRound, X,
+  BellOff, Clock3, LogOut, MessageCircle, MessagesSquare, MoreHorizontal, Pin, Search, Send, X,
 } from "lucide-react";
 
 import * as S from "./ChatPageCss";
@@ -12,7 +12,7 @@ const CATEGORIES = [
   { id: "roommate", label: "룸메찾기" },
   { id: "community", label: "커뮤니티" },
 ];
-const CATEGORY_LABELS = { dormitory: "기숙사", ...Object.fromEntries(CATEGORIES.map(({ id, label }) => [id, label])) };
+const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map(({ id, label }) => [id, label]));
 const SAMPLE_TIME = Date.now() - 10 * 60 * 1000;
 const MAX_MESSAGE_LENGTH = 2000;
 
@@ -59,7 +59,7 @@ const INITIAL_ROOMS = [
     ],
   },
   {
-    id: "dormitory-afternoon", category: "dormitory", nickname: "느긋한오후",
+    id: "dormitory-afternoon", category: "roommate", nickname: "느긋한오후",
     photo: createAvatar("#fce8ed", "#d8607a", "#4c3028"), dormitory: "나래", year: "24",
     major: "식품영양학전공", introduction: "조용하고 여유로운 분위기에서 각자의 루틴을 지켜요.",
     tags: ["비흡연", "조용한 방", "주말 외출"], unread: 2, createdAt: sampleTimestamp(120),
@@ -176,13 +176,44 @@ function ChatDialog({ title, description, onDismiss, children }) {
 }
 
 function ChatPage() {
+  const navigate = useNavigate();
+  const [isAuthenticated] = useState(() => {
+    try {
+      const storedUser = JSON.parse(window.localStorage.getItem("roomieAuthenticatedUser") || "null");
+      return Boolean(storedUser?.name || window.localStorage.getItem("accessToken") || window.localStorage.getItem("token"));
+    } catch {
+      return false;
+    }
+  });
   const [searchParams, setSearchParams] = useSearchParams();
   const [rooms, setRooms] = useState(INITIAL_ROOMS);
   const [category, setCategory] = useState("all");
+  const [roomSearch, setRoomSearch] = useState("");
   const [mobileOpen, setMobileOpen] = useState(Boolean(searchParams.get("room")));
   const [drafts, setDrafts] = useState({});
   const [messageSearch, setMessageSearch] = useState("");
   const [leaveRoomId, setLeaveRoomId] = useState(null);
+  const [optionsRoomId, setOptionsRoomId] = useState(null);
+  const optionsRef = useRef(null);
+
+  useEffect(() => {
+    if (!optionsRoomId) return;
+    const closeOnOutsideClick = (event) => {
+      if (!optionsRef.current?.contains(event.target)) setOptionsRoomId(null);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        optionsRef.current?.querySelector("button[aria-expanded]")?.focus({ preventScroll: true });
+        setOptionsRoomId(null);
+      }
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [optionsRoomId]);
   const [status, setStatus] = useState("");
   const scrollerRef = useRef(null);
   const inputRef = useRef(null);
@@ -193,9 +224,16 @@ function ChatPage() {
   const showMobileRoom = mobileOpen && Boolean(activeRoom);
   const leaveRoom = rooms.find((room) => room.id === leaveRoomId);
   const profileOpen = searchParams.get("view") === "profile" && Boolean(activeRoom);
+  const roomSearchQuery = roomSearch.trim().toLocaleLowerCase();
+  const pinnedCount = rooms.filter((room) => room.pinned).length;
+  const categoryCounts = Object.fromEntries(CATEGORIES.map(({ id }) => [
+    id, rooms.filter((room) => id === "all" || room.category === id).length,
+  ]));
   const visibleRooms = rooms
     .filter((room) => category === "all" || room.category === category)
-    .sort((first, second) => new Date(lastActivity(second)) - new Date(lastActivity(first)));
+    .filter((room) => room.nickname.toLocaleLowerCase().includes(roomSearchQuery))
+    .sort((first, second) => Number(Boolean(second.pinned)) - Number(Boolean(first.pinned))
+      || new Date(lastActivity(second)) - new Date(lastActivity(first)));
   const draft = drafts[selectedId] || "";
   const messages = activeRoom?.messages || [];
   const searchQuery = messageSearch.trim().toLocaleLowerCase();
@@ -233,6 +271,20 @@ function ChatPage() {
     }
   };
 
+  const togglePin = (roomId) => {
+    setRooms((current) => {
+      const target = current.find((room) => room.id === roomId);
+      if (!target || (!target.pinned && current.filter((room) => room.pinned).length >= 2)) return current;
+      return current.map((room) => room.id === roomId ? { ...room, pinned: !room.pinned } : room);
+    });
+  };
+
+  const toggleMute = (roomId) => {
+    setRooms((current) => current.map((room) => room.id === roomId
+      ? { ...room, muted: !room.muted }
+      : room));
+  };
+
   const closeProfile = () => {
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
@@ -261,28 +313,54 @@ function ChatPage() {
     if (!leaveRoom) return;
     setRooms((current) => current.filter((room) => room.id !== leaveRoom.id));
     setDrafts((current) => { const next = { ...current }; delete next[leaveRoom.id]; return next; });
-    setSearchParams({ room: "" }, { replace: true });
-    setMobileOpen(false);
+    if (leaveRoom.id === selectedId) {
+      setSearchParams({ room: "" }, { replace: true });
+      setMobileOpen(false);
+    }
     setLeaveRoomId(null);
     setStatus(`${leaveRoom.nickname}님과의 채팅방에서 나왔어요.`);
     requestAnimationFrame(() => listHeadingRef.current?.focus());
   };
 
+  if (!isAuthenticated) {
+    return (
+      <S.Page>
+        <ChatDialog title="로그인 후 이용해주세요" onDismiss={() => navigate("/", { replace: true })}>
+          <S.DialogActions>
+            <S.SecondaryButton type="button" onClick={() => navigate("/", { replace: true })}>닫기</S.SecondaryButton>
+            <S.PrimaryLink to="/login" replace>로그인</S.PrimaryLink>
+          </S.DialogActions>
+        </ChatDialog>
+      </S.Page>
+    );
+  }
+
   return (
-    <S.Page>
+    <S.Page $fullscreen>
+      <S.ChatGlobalStyle />
       <S.Content>
         <S.Workspace>
           <S.Sidebar $mobileOpen={showMobileRoom} aria-labelledby="chat-list-title">
             <S.ListHeader>
-              <S.ListTitle id="chat-list-title" ref={listHeadingRef} tabIndex={-1}>
-                채팅 <span>{rooms.length}</span>
-              </S.ListTitle>
-              <S.ListMeta>나의 이웃과 나누는 이야기</S.ListMeta>
+              <S.HomeLink to="/" aria-label="메인페이지로 이동">
+                <img src="/img/kkiri-kkiri.png" alt="끼리끼리 로고" />
+              </S.HomeLink>
+              <S.ListHeadingRow>
+                <S.ScreenReaderOnly as="h2" id="chat-list-title" ref={listHeadingRef} tabIndex={-1}>채팅 목록</S.ScreenReaderOnly>
+                <S.RoomSearchField>
+                  <Search size={15} aria-hidden="true" />
+                  <S.RoomSearchInput type="search" aria-label="채팅방 검색" placeholder="이름 검색"
+                    value={roomSearch} onChange={(event) => setRoomSearch(event.target.value)} />
+                  <S.RoomSearchClearButton type="button" aria-label="채팅방 검색어 지우기" onClick={() => setRoomSearch("")}>
+                    <X size={15} aria-hidden="true" />
+                  </S.RoomSearchClearButton>
+                </S.RoomSearchField>
+              </S.ListHeadingRow>
               <S.FilterList role="group" aria-label="채팅 분류 필터">
                 {CATEGORIES.map((filter) => (
                   <S.FilterButton key={filter.id} type="button" $active={category === filter.id}
                     aria-pressed={category === filter.id} onClick={() => selectCategory(filter.id)}>
-                    {filter.label}
+                    {filter.label} <span>{categoryCounts[filter.id]}</span>
                   </S.FilterButton>
                 ))}
               </S.FilterList>
@@ -293,14 +371,19 @@ function ChatPage() {
                 {visibleRooms.map((room) => {
                   const recentMessage = room.messages[room.messages.length - 1];
                   return (
-                    <S.ConversationItem key={room.id}>
+                    <S.ConversationItem key={room.id} ref={optionsRoomId === room.id ? optionsRef : null}>
+                      <S.ConversationSummary>
                       <S.ConversationButton type="button" $active={selectedId === room.id}
                         $unread={room.unread > 0} aria-pressed={selectedId === room.id}
                         aria-controls="chat-room-panel" onClick={() => selectRoom(room.id)}>
                         <S.Avatar src={room.photo} alt={`${room.nickname} 프로필`} />
                         <S.ConversationDetails>
                           <S.ConversationTop>
-                            <S.Nickname>{room.nickname}</S.Nickname>
+                            <S.NicknameGroup>
+                              <S.Nickname>{room.nickname}</S.Nickname>
+                              {room.pinned && <Pin size={14} role="img" aria-label="고정된 채팅방" />}
+                              {room.muted && <BellOff size={14} role="img" aria-label="알림 꺼짐" />}
+                            </S.NicknameGroup>
                             <S.Timestamp dateTime={lastActivity(room)}>{formatListTime(lastActivity(room))}</S.Timestamp>
                           </S.ConversationTop>
                           <S.ConversationPreview>
@@ -312,10 +395,39 @@ function ChatPage() {
                           <S.CategoryBadge $category={room.category}>{CATEGORY_LABELS[room.category]}</S.CategoryBadge>
                         </S.ConversationDetails>
                       </S.ConversationButton>
+                      <S.RoomOptionsButton type="button" $pinned={Boolean(room.pinned)}
+                        aria-label={`${room.nickname} 채팅방 옵션${room.pinned ? " (고정됨)" : ""}`}
+                        aria-expanded={optionsRoomId === room.id} aria-controls={`room-options-${room.id}`}
+                        title="채팅방 옵션" onClick={() => setOptionsRoomId((current) => current === room.id ? null : room.id)}>
+                        <MoreHorizontal size={18} aria-hidden="true" />
+                      </S.RoomOptionsButton>
+                      </S.ConversationSummary>
+                      {optionsRoomId === room.id && (
+                        <S.RoomOptionsPanel id={`room-options-${room.id}`} role="group" aria-label={`${room.nickname} 채팅방 옵션`}>
+                          <S.SecondaryButton type="button" disabled={!room.pinned && pinnedCount >= 2}
+                            title="채팅방은 최대 2개까지 고정할 수 있어요."
+                            onClick={() => { togglePin(room.id); setOptionsRoomId(null); }}>
+                            <Pin size={16} aria-hidden="true" />{room.pinned ? "고정 해제" : "채팅방 고정"}
+                          </S.SecondaryButton>
+                          <S.SecondaryButton type="button" onClick={() => { toggleMute(room.id); setOptionsRoomId(null); }}>
+                            <BellOff size={16} aria-hidden="true" />{room.muted ? "알림 켜기" : "알림 끄기"}
+                          </S.SecondaryButton>
+                          <S.DangerButton type="button" onClick={() => { setLeaveRoomId(room.id); setOptionsRoomId(null); }}>
+                            <LogOut size={16} aria-hidden="true" />방 나가기
+                          </S.DangerButton>
+                        </S.RoomOptionsPanel>
+                      )}
                     </S.ConversationItem>
                   );
                 })}
               </S.ConversationList>
+            ) : roomSearchQuery ? (
+              <S.EmptyState $compact>
+                <S.EmptyIcon><Search size={28} aria-hidden="true" /></S.EmptyIcon>
+                <h3>검색 결과가 없어요</h3>
+                <p>다른 이름으로 검색해 보세요.</p>
+                <S.SecondaryButton type="button" onClick={() => setRoomSearch("")}>검색 초기화</S.SecondaryButton>
+              </S.EmptyState>
             ) : (
               <S.EmptyState $compact>
                 <S.EmptyIcon><MessagesSquare size={28} aria-hidden="true" /></S.EmptyIcon>
@@ -326,7 +438,6 @@ function ChatPage() {
                   : <S.ContextLink to="/roommates">룸메이트 둘러보기 <ArrowRight size={15} aria-hidden="true" /></S.ContextLink>}
               </S.EmptyState>
             )}
-            <S.ListFooter><Clock3 size={14} aria-hidden="true" />최근 메시지 순 · {visibleRooms.length}개의 대화</S.ListFooter>
           </S.Sidebar>
 
           <S.RoomPanel id="chat-room-panel" $mobileOpen={showMobileRoom} aria-label={activeRoom ? `${activeRoom.nickname}님과의 대화` : "채팅방"}>
@@ -340,23 +451,26 @@ function ChatPage() {
                   <S.ParticipantButton as={Link} to={profileHref} aria-label={`${activeRoom.nickname}님 프로필 보기`}>
                     <S.Avatar src={activeRoom.photo} alt="" />
                     <div>
-                      <S.ParticipantName>{activeRoom.nickname}</S.ParticipantName>
+                      <S.ParticipantName>
+                        <span>{activeRoom.nickname}</span>
+                        {activeRoom.pinned && <Pin size={15} aria-hidden="true" />}
+                        {activeRoom.muted && <BellOff size={15} aria-label="알림 끔" />}
+                      </S.ParticipantName>
                       <S.ParticipantMeta>{activeRoom.dormitory} 생활관 · {activeRoom.year}학번</S.ParticipantMeta>
                     </div>
                   </S.ParticipantButton>
-                  <S.HeaderActions>
-                    <S.SecondaryButton as={Link} to={profileHref}><UserRound size={16} aria-hidden="true" />프로필 보기</S.SecondaryButton>
-                    <S.IconButton type="button" aria-label="채팅방 나가기" title="채팅방 나가기" onClick={() => setLeaveRoomId(activeRoom.id)}>
-                      <LogOut size={19} aria-hidden="true" />
-                    </S.IconButton>
-                  </S.HeaderActions>
                 </S.RoomHeader>
 
                 <S.SearchBar role="search" aria-label="대화 내역 검색">
                   <Search size={18} aria-hidden="true" />
-                  <S.SearchInput type="search" value={messageSearch}
-                    aria-label="대화 내용 검색" placeholder="대화 내용을 검색해 보세요"
-                    onChange={(event) => setMessageSearch(event.target.value)} />
+                  <S.SearchField>
+                    <S.SearchInput type="search" value={messageSearch}
+                      aria-label="대화 내용 검색" placeholder="대화 내용을 검색해 보세요"
+                      onChange={(event) => setMessageSearch(event.target.value)} />
+                    <S.SearchClearButton type="button" aria-label="검색어 지우기" onClick={() => setMessageSearch("")}>
+                      <X size={18} aria-hidden="true" />
+                    </S.SearchClearButton>
+                  </S.SearchField>
                   {searchQuery && <S.SearchCount role="status">{displayedMessages.length}건</S.SearchCount>}
                 </S.SearchBar>
 
@@ -377,7 +491,7 @@ function ChatPage() {
                             {own && <S.ScreenReaderOnly>내 메시지</S.ScreenReaderOnly>}
                             <S.MessageBubble $own={own}>{item.text}</S.MessageBubble>
                             <S.MessageMeta $own={own}>
-                              {own && <S.ReadStatus>{item.read && <CheckCheck size={13} aria-hidden="true" />}{item.read ? "읽음" : "안 읽음"}</S.ReadStatus>}
+                              {own && <S.ReadStatus>{item.read && <CheckCheck size={13} aria-hidden="true" />}{item.read ? "읽음" : "1"}</S.ReadStatus>}
                               <time dateTime={item.sentAt}>{formatTime(item.sentAt)}</time>
                             </S.MessageMeta>
                           </S.BubbleColumn>
@@ -400,9 +514,9 @@ function ChatPage() {
                 </S.MessageScroller>
 
                 <S.Composer onSubmit={sendMessage}>
-                  <S.ComposerLabel htmlFor="chat-message">메시지 보내기</S.ComposerLabel>
+                  <S.ScreenReaderOnly as="label" htmlFor="chat-message">메시지 보내기</S.ScreenReaderOnly>
                   <S.ComposerField>
-                    <S.MessageInput id="chat-message" ref={inputRef} value={draft} rows={2}
+                    <S.MessageInput id="chat-message" ref={inputRef} value={draft} rows={1}
                       maxLength={MAX_MESSAGE_LENGTH} placeholder={`${activeRoom.nickname}님에게 메시지를 남겨보세요`}
                       onChange={(event) => setDrafts((current) => ({ ...current, [selectedId]: event.target.value }))}
                       onKeyDown={(event) => {
