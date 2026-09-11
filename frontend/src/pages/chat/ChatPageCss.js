@@ -1,5 +1,11 @@
-import styled, { css } from "styled-components";
+import styled, { createGlobalStyle, css } from "styled-components";
 import { Link } from "react-router-dom";
+import { TopBar } from "../../components/common/Header/HeaderCss";
+
+export const ChatGlobalStyle = createGlobalStyle`
+  ${TopBar} { display: none; }
+  body { overflow: hidden; }
+`;
 
 const focus = css`
   &:focus-visible { outline: 3px solid rgba(0, 167, 159, 0.45); outline-offset: 3px; }
@@ -30,8 +36,15 @@ const primary = css`
 `;
 
 export const Page = styled.main`
-  min-height: 100vh;
-  padding: 24px 20px 32px;
+  ${({ $fullscreen }) => $fullscreen && css`
+    position: fixed;
+    inset: 0;
+    width: 100%;
+  `}
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
   color: #1a1c1c;
   background: #faf9f6;
   font-family: "Plus Jakarta Sans", Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -40,27 +53,28 @@ export const Page = styled.main`
   button, input, textarea { font-family: inherit; }
   button, a, textarea { -webkit-tap-highlight-color: transparent; }
   svg { flex-shrink: 0; }
-  @media (max-width: 799px) { padding: 16px 12px 24px; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
   }
 `;
-export const Content = styled.div`width: min(100%, 1200px); min-width: 0; margin: 0 auto;`;
+export const Content = styled.div`display: flex; flex-direction: column; width: 100%; height: 100%; min-width: 0; min-height: 0;`;
 export const Workspace = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
-  height: max(560px, calc(100dvh - 56px));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  flex: 1;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
   border: 1px solid #e2e2e4;
-  border-radius: 16px;
+  border-radius: 0;
   background: white;
   box-shadow: 0 4px 12px rgba(12, 50, 115, 0.05);
   @media (max-width: 799px) {
     grid-template-columns: minmax(0, 1fr);
-    height: max(480px, calc(100dvh - 40px));
   }
 `;
 export const Sidebar = styled.aside`
+  overflow: auto;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -68,8 +82,17 @@ export const Sidebar = styled.aside`
   border-right: 1px solid #e2e2e4;
   @media (max-width: 799px) { display: ${({ $mobileOpen }) => $mobileOpen ? "none" : "flex"}; border-right: 0; }
 `;
-export const ListHeader = styled.div`padding: 16px 16px 12px; border-bottom: 1px solid #eeeeee;`;
+export const ListHeader = styled.div`flex-shrink: 0; padding: 16px 16px 12px; border-bottom: 1px solid #eeeeee;`;
+export const HomeLink = styled(Link)`
+  ${button}
+  max-width: 100%;
+  margin-bottom: 8px;
+  padding: 0;
+  background: transparent;
+  img { display: block; width: 148px; max-width: 100%; height: auto; object-fit: contain; }
+`;
 export const ListTitle = styled.h2`
+  flex-shrink: 0;
   margin: 0;
   color: #001d4f;
   font-size: 18px;
@@ -79,6 +102,33 @@ export const ListTitle = styled.h2`
   ${focus}
 `;
 export const ListMeta = styled.p`margin: 4px 0 12px; color: #747781; font-size: 12px;`;
+export const ListHeadingRow = styled.div`display: flex; align-items: center; gap: 12px; min-width: 0; margin-bottom: 12px;`;
+export const RoomSearchField = styled.div`
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid #e2e2e4;
+  border-radius: 8px;
+  color: #747781;
+  background: #f8f9fb;
+  &:focus-within { border-color: #00a79f; }
+`;
+export const RoomSearchInput = styled.input`
+  &::-webkit-search-cancel-button { -webkit-appearance: none; }
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #1a1c1c;
+  font-size: 13px;
+  line-height: 22px;
+  ${focus}
+  @media (max-width: 799px) { font-size: 16px; }
+`;
 export const FilterList = styled.div`display: flex; flex-wrap: wrap; gap: 6px;`;
 export const FilterButton = styled.button`
   ${button}
@@ -101,7 +151,49 @@ export const ConversationList = styled.ul`
   scrollbar-width: thin;
   scrollbar-color: #c4c6d2 transparent;
 `;
-export const ConversationItem = styled.li`margin: 0; padding: 0;`;
+export const ConversationItem = styled.li`position: relative; margin: 0; padding: 0;`;
+export const ConversationSummary = styled.div`position: relative;`;
+export const RoomOptionsPanel = styled.div`
+  position: absolute;
+  top: calc(100% - 4px);
+  right: 8px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: 160px;
+  max-width: calc(100% - 16px);
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid #e2e2e4;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 6px 20px rgba(12, 50, 115, 0.15);
+  > button { justify-content: flex-start; border: 0; background: transparent; color: #1a1c1c; }
+  > button:last-child { color: #ba1a1a; }
+  > button:hover:not(:disabled) { background: #f3f3f3; }
+`;
+export const RoomSearchClearButton = styled.button`
+  ${button}
+  flex-shrink: 0;
+  width: 24px;
+  min-height: 24px;
+  padding: 3px;
+  background: transparent;
+  color: #747781;
+  &:hover { background: #e2e2e4; }
+`;
+export const RoomOptionsButton = styled.button`
+  ${button}
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  width: 32px;
+  min-height: 32px;
+  padding: 6px;
+  background: ${({ $pinned }) => $pinned ? "#d5eeea" : "transparent"};
+  color: ${({ $pinned }) => $pinned ? "#006a65" : "#747781"};
+  &:hover:not(:disabled) { background: #e2f3ee; }
+`;
 export const ConversationButton = styled.button`
   display: flex;
   align-items: flex-start;
@@ -133,6 +225,13 @@ export const Avatar = styled.img`
 export const ConversationDetails = styled.span`display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 4px;`;
 export const ConversationTop = styled.span`display: flex; justify-content: space-between; align-items: center; gap: 8px; min-width: 0;`;
 export const Nickname = styled.strong`min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px;`;
+export const NicknameGroup = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  svg { flex-shrink: 0; color: #006a65; }
+`;
 export const Timestamp = styled.time`flex-shrink: 0; color: #747781; font-size: 12px; font-variant-numeric: tabular-nums;`;
 export const ConversationPreview = styled.span`display: flex; align-items: center; gap: 8px; min-width: 0;`;
 export const PreviewText = styled.span`flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #5e616b; font-size: 13px; line-height: 18px;`;
@@ -151,6 +250,7 @@ export const UnreadBadge = styled.span`
   font-weight: 700;
 `;
 export const CategoryBadge = styled.span`
+  margin-right: 32px;
   display: inline-flex;
   align-items: center;
   align-self: flex-start;
@@ -166,6 +266,7 @@ export const CategoryBadge = styled.span`
 `;
 export const ListFooter = styled.div`display: flex; align-items: center; gap: 6px; padding: 10px 16px; border-top: 1px solid #eeeeee; color: #747781; font-size: 12px; line-height: 18px;`;
 export const RoomPanel = styled.section`
+  overflow: auto;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -175,6 +276,7 @@ export const RoomPanel = styled.section`
 `;
 export const RoomHeader = styled.div`
   display: flex;
+  flex-shrink: 0;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
@@ -195,6 +297,7 @@ export const MobileBackButton = styled.button`
 `;
 export const ParticipantButton = styled.button`
   display: flex;
+  flex: 1;
   align-items: center;
   gap: 12px;
   min-width: 0;
@@ -211,7 +314,18 @@ export const ParticipantButton = styled.button`
   ${focus}
   @media (max-width: 799px) { flex: 1; gap: 8px; }
 `;
-export const ParticipantName = styled.h2`margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #001d4f; font-size: 16px; font-weight: 600; line-height: 22px;`;
+export const ParticipantName = styled.h2`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  margin: 0;
+  color: #001d4f;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 22px;
+  > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+`;
 export const ParticipantMeta = styled.p`margin: 3px 0 0; color: #747781; font-size: 12px; line-height: 18px;`;
 export const HeaderActions = styled.div`
   display: flex;
@@ -238,6 +352,7 @@ export const IconButton = styled.button`
 `;
 export const SearchBar = styled.div`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   flex-shrink: 0;
   gap: 12px;
@@ -281,7 +396,8 @@ export const ContextLink = styled(Link)`
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
   &:hover { text-decoration: underline; }
   ${focus}
 `;
@@ -335,6 +451,7 @@ export const MessageMeta = styled.div`
 export const ReadStatus = styled.span`display: inline-flex; align-items: center; gap: 3px; color: #006a65; font-weight: 600;`;
 export const ConversationStart = styled.p`margin: 0 0 16px; color: #747781; font-size: 12px; text-align: center;`;
 export const Composer = styled.form`
+  flex-shrink: 0;
   padding: 12px 16px;
   border-top: 1px solid #e2e2e4;
   background: white;
@@ -343,7 +460,7 @@ export const Composer = styled.form`
 export const ComposerLabel = styled.label`display: block; margin-bottom: 8px; color: #444650; font-size: 12px; font-weight: 600;`;
 export const ComposerField = styled.div`
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 8px;
   padding: 4px;
   border: 1px solid #e2e2e4;
@@ -356,8 +473,9 @@ export const MessageInput = styled.textarea`
   flex: 1;
   width: 100%;
   min-width: 0;
-  min-height: 48px;
-  max-height: 160px;
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
   padding: 8px;
   resize: none;
   border: 0;
@@ -377,7 +495,9 @@ export const EmptyState = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 180px;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
   padding: ${({ $compact }) => $compact ? "24px 16px" : "32px 20px"};
   text-align: center;
   h2, h3 { margin: 20px 0 0; color: #001d4f; font-size: ${({ $compact }) => $compact ? "16px" : "20px"}; line-height: 28px; }
@@ -385,7 +505,7 @@ export const EmptyState = styled.div`
 `;
 export const EmptyIcon = styled.div`display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #e7f8f6; color: #006a65; svg { width: 24px; height: 24px; }`;
 export const PrimaryLink = styled(Link)`${primary}`;
-export const StatusMessage = styled.p`margin: 12px 0 0; color: #006a65; font-size: 12px; line-height: 20px; &:empty { margin: 0; }`;
+export const StatusMessage = styled.p`flex-shrink: 0; margin: 0; padding: 4px 12px; color: #006a65; font-size: 12px; line-height: 20px; &:empty { padding: 0; }`;
 export const Dialog = styled.dialog`
   width: min(400px, calc(100vw - 32px));
   max-height: calc(100dvh - 32px);
