@@ -348,11 +348,12 @@ function RoommateSearchPage() {
 
             <S.ResetFilterButton
               type="button"
+              aria-label="필터 초기화"
+              title="필터 초기화"
               disabled={activeFilterEntries.length === 0}
               onClick={resetFilters}
             >
               <RotateCcw size={15} aria-hidden="true" />
-              필터링 취소
             </S.ResetFilterButton>
           </S.FilterStatus>
         </S.DiscoveryControls>
