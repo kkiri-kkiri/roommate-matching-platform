@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, ArrowRight, CheckCheck,
-  BellOff, Clock3, LogOut, MessageCircle, MessagesSquare, MoreHorizontal, Pin, Search, Send, X,
+  BellOff, LogOut, MessageCircle, MessagesSquare, MoreHorizontal, Pin, Search, Send, X,
 } from "lucide-react";
 
 import * as S from "./ChatPageCss";
@@ -373,34 +373,34 @@ function ChatPage() {
                   return (
                     <S.ConversationItem key={room.id} ref={optionsRoomId === room.id ? optionsRef : null}>
                       <S.ConversationSummary>
-                      <S.ConversationButton type="button" $active={selectedId === room.id}
-                        $unread={room.unread > 0} aria-pressed={selectedId === room.id}
-                        aria-controls="chat-room-panel" onClick={() => selectRoom(room.id)}>
-                        <S.Avatar src={room.photo} alt={`${room.nickname} 프로필`} />
-                        <S.ConversationDetails>
-                          <S.ConversationTop>
-                            <S.NicknameGroup>
-                              <S.Nickname>{room.nickname}</S.Nickname>
-                              {room.pinned && <Pin size={14} role="img" aria-label="고정된 채팅방" />}
-                              {room.muted && <BellOff size={14} role="img" aria-label="알림 꺼짐" />}
-                            </S.NicknameGroup>
-                            <S.Timestamp dateTime={lastActivity(room)}>{formatListTime(lastActivity(room))}</S.Timestamp>
-                          </S.ConversationTop>
-                          <S.ConversationPreview>
-                            <S.PreviewText>{recentMessage
-                              ? `${recentMessage.sender === "me" ? "나: " : ""}${recentMessage.text}`
-                              : "첫 인사를 건네보세요"}</S.PreviewText>
-                            {room.unread > 0 && <S.UnreadBadge aria-label={`읽지 않은 메시지 ${room.unread}개`}>{room.unread}</S.UnreadBadge>}
-                          </S.ConversationPreview>
-                          <S.CategoryBadge $category={room.category}>{CATEGORY_LABELS[room.category]}</S.CategoryBadge>
-                        </S.ConversationDetails>
-                      </S.ConversationButton>
-                      <S.RoomOptionsButton type="button" $pinned={Boolean(room.pinned)}
-                        aria-label={`${room.nickname} 채팅방 옵션${room.pinned ? " (고정됨)" : ""}`}
-                        aria-expanded={optionsRoomId === room.id} aria-controls={`room-options-${room.id}`}
-                        title="채팅방 옵션" onClick={() => setOptionsRoomId((current) => current === room.id ? null : room.id)}>
-                        <MoreHorizontal size={18} aria-hidden="true" />
-                      </S.RoomOptionsButton>
+                        <S.ConversationButton type="button" $active={selectedId === room.id}
+                          $unread={room.unread > 0} aria-pressed={selectedId === room.id}
+                          aria-controls="chat-room-panel" onClick={() => selectRoom(room.id)}>
+                          <S.Avatar src={room.photo} alt={`${room.nickname} 프로필`} />
+                          <S.ConversationDetails>
+                            <S.ConversationTop>
+                              <S.NicknameGroup>
+                                <S.Nickname>{room.nickname}</S.Nickname>
+                                {room.pinned && <Pin size={14} role="img" aria-label="고정된 채팅방" />}
+                                {room.muted && <BellOff size={14} role="img" aria-label="알림 꺼짐" />}
+                              </S.NicknameGroup>
+                              <S.Timestamp dateTime={lastActivity(room)}>{formatListTime(lastActivity(room))}</S.Timestamp>
+                            </S.ConversationTop>
+                            <S.ConversationPreview>
+                              <S.PreviewText>{recentMessage
+                                ? `${recentMessage.sender === "me" ? "나: " : ""}${recentMessage.text}`
+                                : "첫 인사를 건네보세요"}</S.PreviewText>
+                              {room.unread > 0 && <S.UnreadBadge aria-label={`읽지 않은 메시지 ${room.unread}개`}>{room.unread}</S.UnreadBadge>}
+                            </S.ConversationPreview>
+                            <S.CategoryBadge $category={room.category}>{CATEGORY_LABELS[room.category]}</S.CategoryBadge>
+                          </S.ConversationDetails>
+                        </S.ConversationButton>
+                        <S.RoomOptionsButton type="button" $pinned={Boolean(room.pinned)}
+                          aria-label={`${room.nickname} 채팅방 옵션${room.pinned ? " (고정됨)" : ""}`}
+                          aria-expanded={optionsRoomId === room.id} aria-controls={`room-options-${room.id}`}
+                          title="채팅방 옵션" onClick={() => setOptionsRoomId((current) => current === room.id ? null : room.id)}>
+                          <MoreHorizontal size={18} aria-hidden="true" />
+                        </S.RoomOptionsButton>
                       </S.ConversationSummary>
                       {optionsRoomId === room.id && (
                         <S.RoomOptionsPanel id={`room-options-${room.id}`} role="group" aria-label={`${room.nickname} 채팅방 옵션`}>

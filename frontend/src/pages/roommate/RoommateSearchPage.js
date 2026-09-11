@@ -893,7 +893,7 @@ function RoommateSearchPage() {
                       <Info size={17} />
                     </S.TooltipIcon>
                     <S.Tooltip id="recommendation-tooltip" role="tooltip">
-                      매칭점수 60점 이상 프로필로 구성
+                      매칭 점수 상위 9명
                     </S.Tooltip>
                   </S.TooltipHost>
                 </S.TabButton>
