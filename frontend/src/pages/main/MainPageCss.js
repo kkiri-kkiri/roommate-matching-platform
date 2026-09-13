@@ -99,7 +99,7 @@ export const SectionHeader = styled.div`
   gap: 24px;
   align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 
   @media (max-width: 760px) {
     align-items: flex-start;
@@ -411,21 +411,22 @@ export const ProfileButton = styled.button`
 export const FilterList = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   justify-content: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 0;
 `;
 
 export const FilterButton = styled.button`
   ${focusRing};
-  min-height: 44px;
-  padding: 0 12px;
+  min-height: 32px;
+  padding: 0 10px;
   border: 1px solid ${({ $active }) => ($active ? colors.navy : colors.border)};
   border-radius: 999px;
   color: ${({ $active }) => ($active ? colors.white : colors.textSoft)};
   background: ${({ $active }) => ($active ? colors.navy : colors.white)};
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
+  line-height: 1;
   cursor: pointer;
   transition:
     border-color 160ms ease,
@@ -656,6 +657,18 @@ export const UtilityGrid = styled.div`
   gap: 24px;
   align-items: start;
 
+  @media (min-width: 981px) {
+    row-gap: 0;
+
+    > div {
+      display: grid;
+      grid-template-rows: subgrid;
+      grid-row: span 2;
+      align-self: stretch;
+      align-items: start;
+    }
+  }
+
   @media (max-width: 980px) {
     grid-template-columns: 1fr;
   }
@@ -677,17 +690,28 @@ export const ToolCard = styled.article`
 
 export const ToolHeader = styled.header`
   display: flex;
-  gap: 16px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   min-height: 52px;
   margin-bottom: 22px;
 
   @media (max-width: 520px) {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 12px;
-    align-items: start;
+    display: flex;
+    justify-content: center;
+  }
+`;
+
+export const OutsideToolTitle = styled.h3`
+  margin: 0;
+  color: ${colors.navyDark};
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 36px;
+  letter-spacing: -0.02em;
+
+  @media (max-width: 640px) {
+    font-size: 24px;
+    line-height: 32px;
   }
 `;
 
@@ -763,7 +787,7 @@ export const MonthControls = styled.div`
   gap: 6px;
   align-items: center;
   width: 204px;
-  margin-left: auto;
+  margin: 0 auto;
 
   button {
     ${focusRing};
@@ -1087,6 +1111,12 @@ export const InputWithSuffix = styled.div`
     font-size: 12px;
     line-height: 16px;
   }
+`;
+
+export const RegionSelectRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 `;
 
 export const SelectWrap = styled.div`

@@ -6,6 +6,7 @@ import DetailedProfile from "./components/common/ProfileCard/DetailedProfile";
 
 import ChatPage from "./pages/chat/ChatPage";
 import CalendarPage from "./calendar/CalendarPage";
+import { CalendarDataProvider } from "./calendar/CalendarDataContext";
 import CommunityPage from "./pages/community/CommunityPage";
 import FindIdPage from "./pages/auth/FindIdPage";
 import FindPasswordPage from "./pages/auth/FindPasswordPage";
@@ -81,61 +82,63 @@ function App() {
   };
 
   return (
-    <Routes>
-      <Route
-        element={
-          <MainLayout currentUser={currentUser} onLogout={handleLogout} />
-        }
-      >
-        <Route index element={<MainPage />} />
+    <CalendarDataProvider>
+      <Routes>
         <Route
-          path="/roommates"
-          element={<><RoommateSearchPage /><Outlet /></>}
+          element={
+            <MainLayout currentUser={currentUser} onLogout={handleLogout} />
+          }
         >
-          <Route path=":profileId" element={<DetailedProfile />} />
+          <Route index element={<MainPage />} />
+          <Route
+            path="/roommates"
+            element={<><RoommateSearchPage /><Outlet /></>}
+          >
+            <Route path=":profileId" element={<DetailedProfile />} />
+          </Route>
+          <Route
+            path="/community"
+            element={<CommunityPage currentUser={currentUser} />}
+          />
+          <Route
+            path="/community/posts/new"
+            element={<CommunityPage currentUser={currentUser} />}
+          />
+          <Route
+            path="/community/posts/:postId"
+            element={<CommunityPage currentUser={currentUser} />}
+          />
+          <Route
+            path="/community/posts/:postId/edit"
+            element={<CommunityPage currentUser={currentUser} />}
+          />
+          <Route
+            path="/community/my-posts"
+            element={<CommunityPage currentUser={currentUser} />}
+          />
+          <Route
+            path="/community/my-comments"
+            element={<CommunityPage currentUser={currentUser} />}
+          />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/profile" element={<MyPage currentUser={currentUser} />} />
+          <Route
+            path="/profile-survey"
+            element={<Navigate to="/profile?tab=survey" replace />}
+          />
+          <Route
+            path="/roommate-preference-survey"
+            element={<Navigate to="/profile?tab=preferences" replace />}
+          />
         </Route>
-        <Route
-          path="/community"
-          element={<CommunityPage currentUser={currentUser} />}
-        />
-        <Route
-          path="/community/posts/new"
-          element={<CommunityPage currentUser={currentUser} />}
-        />
-        <Route
-          path="/community/posts/:postId"
-          element={<CommunityPage currentUser={currentUser} />}
-        />
-        <Route
-          path="/community/posts/:postId/edit"
-          element={<CommunityPage currentUser={currentUser} />}
-        />
-        <Route
-          path="/community/my-posts"
-          element={<CommunityPage currentUser={currentUser} />}
-        />
-        <Route
-          path="/community/my-comments"
-          element={<CommunityPage currentUser={currentUser} />}
-        />
-        <Route path="/chat" element={<ChatPage />} />
-        <Route path="/calendar" element={<CalendarPage />} />
-        <Route path="/profile" element={<MyPage currentUser={currentUser} />} />
-        <Route
-          path="/profile-survey"
-          element={<Navigate to="/profile?tab=survey" replace />}
-        />
-        <Route
-          path="/roommate-preference-survey"
-          element={<Navigate to="/profile?tab=preferences" replace />}
-        />
-      </Route>
-      <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/find-id" element={<FindIdPage />} />
-      <Route path="/find-password" element={<FindPasswordPage />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/find-id" element={<FindIdPage />} />
+        <Route path="/find-password" element={<FindPasswordPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </CalendarDataProvider>
   );
 }
 
