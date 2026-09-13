@@ -20,7 +20,8 @@ import {
 } from "lucide-react";
 
 import Pagination from "../../components/common/Pagination/Pagination";
-import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
+import ProfileImage from "../../components/common/ProfileImage";
+import ProfileCard, { getProfileKey, useProfileLikes } from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./MyPageCss";
 
 // Search filters share the survey's field names and answer options.
@@ -936,37 +937,14 @@ function createGeneratedLikedProfile(index) {
   };
 }
 
-const LIKED_PROFILES = [
+export const LIKED_PROFILES = [
   ...BASE_LIKED_PROFILES,
   ...GENERATED_PROFILE_NAMES.map((_, index) =>
     createGeneratedLikedProfile(index),
   ),
 ];
 
-const UNLIKED_PROFILE_IDS_KEY = "roomieUnlikedProfileIds";
 const LIKES_PER_PAGE = 6;
-
-function loadUnlikedProfileIds() {
-  try {
-    const storedIds = JSON.parse(
-      window.localStorage.getItem(UNLIKED_PROFILE_IDS_KEY) || "[]",
-    );
-    return new Set(Array.isArray(storedIds) ? storedIds : []);
-  } catch {
-    return new Set();
-  }
-}
-
-function saveUnlikedProfileIds(ids) {
-  try {
-    window.localStorage.setItem(
-      UNLIKED_PROFILE_IDS_KEY,
-      JSON.stringify([...ids]),
-    );
-  } catch {
-    // 저장소를 사용할 수 없어도 현재 화면의 좋아요 상태는 계속 유지합니다.
-  }
-}
 
 const asArray = (value) => (Array.isArray(value) ? value : [value]);
 const hasAnswer = (value) =>
@@ -1719,13 +1697,7 @@ function MyPage({ currentUser }) {
   );
   const [surveySaveError, setSurveySaveError] = useState("");
   const [preferences, setPreferences] = useState(PREFERENCE_DEFAULTS);
-  const [unlikedIds, setUnlikedIds] = useState(loadUnlikedProfileIds);
-  const [likedIds, setLikedIds] = useState(() => {
-    const removedIds = loadUnlikedProfileIds();
-    return LIKED_PROFILES.filter(({ id }) => !removedIds.has(id)).map(
-      ({ id }) => id,
-    );
-  });
+  const { likes, isLiked, updateLikes } = useProfileLikes();
   const [preview, setPreview] = useState({
     survey: "filled",
     preferences: "filled",
@@ -1733,12 +1705,13 @@ function MyPage({ currentUser }) {
   });
   const [likesPage, setLikesPage] = useState(1);
   const likesTitleRef = useRef(null);
-  const likedProfiles =
-    preview.likes === "empty"
-      ? []
-      : LIKED_PROFILES.filter(
-        ({ id }) => likedIds.includes(id) && !unlikedIds.has(id),
-      );
+  const profileMap = new Map(LIKED_PROFILES.map((profile) => [getProfileKey(profile), profile]));
+  Object.values(likes).forEach(({ profile }) => {
+    const key = getProfileKey(profile);
+    const previous = profileMap.get(key);
+    profileMap.set(key, { ...previous, ...profile, answers: profile.answers ?? previous?.answers });
+  });
+  const likedProfiles = preview.likes === "empty" ? [] : [...profileMap.values()].filter(isLiked);
   const totalLikesPages = Math.ceil(likedProfiles.length / LIKES_PER_PAGE);
   const pagedLikedProfiles = likedProfiles.slice(
     (likesPage - 1) * LIKES_PER_PAGE,
@@ -1748,17 +1721,7 @@ function MyPage({ currentUser }) {
     (value) => value === "filled",
   ).length;
 
-  const removeLike = (profile) => {
-    setUnlikedIds((current) => {
-      const next = new Set(current);
-      if (next.has(profile.id)) {
-        next.delete(profile.id);
-      } else {
-        next.add(profile.id);
-      }
-      saveUnlikedProfileIds(next);
-      return next;
-    });
+  const handleLikeChange = () => {
     requestAnimationFrame(() =>
       likesTitleRef.current?.focus({ preventScroll: true }),
     );
@@ -1790,7 +1753,7 @@ function MyPage({ currentUser }) {
         <S.Layout>
           <S.Sidebar>
             <S.SidebarProfile>
-              <S.Avatar src={MY_PHOTO} alt="" />
+              <ProfileImage as={S.Avatar} major={account.major} fallbackSrc={MY_PHOTO} alt="" />
               <div>
                 <S.SidebarName>{account.nickname}</S.SidebarName>
                 <S.Muted>
@@ -1840,9 +1803,11 @@ function MyPage({ currentUser }) {
                 </S.SectionHeading>
                 <S.Card>
                   <S.ProfileHero>
-                    <S.Avatar
+                    <ProfileImage
+                      as={S.Avatar}
+                      major={account.major}
                       $large
-                      src={MY_PHOTO}
+                      fallbackSrc={MY_PHOTO}
                       alt={`${account.nickname} 프로필`}
                     />
                     <div>
@@ -2006,13 +1971,7 @@ function MyPage({ currentUser }) {
                           key={profile.id}
                           profile={profile}
                           activeTab="all"
-                          likedProfileIds={Object.fromEntries(
-                            likedProfiles.map((item) => [item.id, true]),
-                          )}
-                          onToggleLike={(profileId) => {
-                            const target = likedProfiles.find((item) => item.id === profileId);
-                            if (target) removeLike(target);
-                          }}
+                          onToggleLike={handleLikeChange}
                           showOverlay={false}
                         />
                       ))}
@@ -2039,8 +1998,8 @@ function MyPage({ currentUser }) {
                 <span>예시 데이터</span>
               </summary>
               <S.Helper>
-                데이터가 있는 화면과 없는 화면을 확인할 수 있어요. 수정한 내용은
-                이 페이지를 벗어나면 초기화돼요.
+                데이터가 있는 화면과 없는 화면을 확인할 수 있어요.
+                좋아요는 이 브라우저에 저장되며, 미리보기 설정은 페이지를 벗어나면 초기화돼요.
               </S.Helper>
               <S.PreviewOptions>
                 {[
@@ -2059,11 +2018,7 @@ function MyPage({ currentUser }) {
                         if (id === "likes") {
                           if (value === "filled") {
                             setLikesPage(1);
-                            setUnlikedIds(new Set());
-                            saveUnlikedProfileIds(new Set());
-                            setLikedIds(
-                              LIKED_PROFILES.map((profile) => profile.id),
-                            );
+                            updateLikes(LIKED_PROFILES, true);
                           }
                         }
                       }}

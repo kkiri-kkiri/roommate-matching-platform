@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
+import DetailedProfile from "./components/common/ProfileCard/DetailedProfile";
 
 import ChatPage from "./pages/chat/ChatPage";
 import CalendarPage from "./calendar/CalendarPage";
@@ -87,7 +88,12 @@ function App() {
         }
       >
         <Route index element={<MainPage />} />
-        <Route path="/roommates" element={<RoommateSearchPage />} />
+        <Route
+          path="/roommates"
+          element={<><RoommateSearchPage /><Outlet /></>}
+        >
+          <Route path=":profileId" element={<DetailedProfile />} />
+        </Route>
         <Route
           path="/community"
           element={<CommunityPage currentUser={currentUser} />}

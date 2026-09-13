@@ -1,11 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, ArrowRight, CheckCheck,
   BellOff, LogOut, MessageCircle, MessagesSquare, MoreHorizontal, Pin, Search, Send, X,
 } from "lucide-react";
 
 import * as S from "./ChatPageCss";
+import ProfileImage from "../../components/common/ProfileImage";
+import { getProfileKey } from "../../components/common/ProfileCard/ProfileCard";
 
 const CATEGORIES = [
   { id: "all", label: "전체" },
@@ -15,6 +17,7 @@ const CATEGORIES = [
 const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map(({ id, label }) => [id, label]));
 const SAMPLE_TIME = Date.now() - 10 * 60 * 1000;
 const MAX_MESSAGE_LENGTH = 2000;
+const ROOMS_STORAGE_KEY = "roomieChatRooms";
 
 function sampleTimestamp(minutesAgo) {
   return new Date(SAMPLE_TIME - minutesAgo * 60 * 1000).toISOString();
@@ -116,6 +119,21 @@ const INITIAL_ROOMS = [
   },
 ];
 
+function loadRooms() {
+  try {
+    const saved = JSON.parse(window.sessionStorage.getItem(ROOMS_STORAGE_KEY) || "null");
+    if (Array.isArray(saved) && saved.every((room) =>
+      typeof room?.id === "string" && typeof room.nickname === "string"
+      && Array.isArray(room.tags) && Array.isArray(room.messages)
+      && room.messages.every((item) => typeof item?.id === "string"
+        && typeof item.text === "string" && typeof item.sentAt === "string"),
+    )) return saved;
+  } catch {
+    // 저장소를 사용할 수 없는 환경에서도 현재 화면의 대화는 유지합니다.
+  }
+  return INITIAL_ROOMS;
+}
+
 function lastActivity(room) {
   return room.messages[room.messages.length - 1]?.sentAt || room.createdAt;
 }
@@ -177,6 +195,7 @@ function ChatDialog({ title, description, onDismiss, children }) {
 
 function ChatPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isAuthenticated] = useState(() => {
     try {
       const storedUser = JSON.parse(window.localStorage.getItem("roomieAuthenticatedUser") || "null");
@@ -186,7 +205,7 @@ function ChatPage() {
     }
   });
   const [searchParams, setSearchParams] = useSearchParams();
-  const [rooms, setRooms] = useState(INITIAL_ROOMS);
+  const [rooms, setRooms] = useState(loadRooms);
   const [category, setCategory] = useState("all");
   const [roomSearch, setRoomSearch] = useState("");
   const [mobileOpen, setMobileOpen] = useState(Boolean(searchParams.get("room")));
@@ -219,7 +238,7 @@ function ChatPage() {
   const inputRef = useRef(null);
   const listHeadingRef = useRef(null);
   const messageSequence = useRef(0);
-  const selectedId = searchParams.get("room") ?? INITIAL_ROOMS[0].id;
+  const selectedId = searchParams.get("room") ?? rooms[0]?.id ?? "";
   const activeRoom = rooms.find((room) => room.id === selectedId);
   const showMobileRoom = mobileOpen && Boolean(activeRoom);
   const leaveRoom = rooms.find((room) => room.id === leaveRoomId);
@@ -242,6 +261,42 @@ function ChatPage() {
     : messages;
   const lastMessageId = messages[messages.length - 1]?.id;
   const profileHref = `/chat?room=${encodeURIComponent(selectedId)}&view=profile`;
+
+  const incomingProfile = location.state?.roommateProfile;
+  useEffect(() => {
+    if (!isAuthenticated || incomingProfile?.id == null || !incomingProfile.nickname) return;
+    const profileKey = getProfileKey(incomingProfile);
+    const existingRoom = rooms.find((room) =>
+      (room.profileId || getProfileKey(room)) === profileKey,
+    );
+    const roomId = existingRoom?.id || `roommate:${profileKey}`;
+    if (!existingRoom) {
+      const newRoom = {
+        id: roomId, profileId: profileKey, category: "roommate",
+        nickname: incomingProfile.nickname,
+        photo: incomingProfile.photo || createAvatar("#e7f8f6", "#00a79f"),
+        dormitory: incomingProfile.dormitory || "미등록", year: incomingProfile.admissionYear || incomingProfile.year || "미등록",
+        major: incomingProfile.major || "전공 미등록", matchScore: incomingProfile.matchScore,
+        introduction: incomingProfile.message || "아직 한마디를 작성하지 않았어요.",
+        tags: incomingProfile.tags || [], unread: 0, createdAt: new Date().toISOString(), messages: [],
+      };
+      setRooms((current) => current.some((room) => room.id === roomId) ? current : [...current, newRoom]);
+    }
+    setCategory("all");
+    setRoomSearch("");
+    setMobileOpen(true);
+    // 처리한 Router state를 지워 나가기나 새로고침 때 같은 방을 다시 만들지 않습니다.
+    setSearchParams({ room: roomId }, { replace: true, state: null });
+  }, [incomingProfile, isAuthenticated, rooms, setSearchParams]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    try {
+      window.sessionStorage.setItem(ROOMS_STORAGE_KEY, JSON.stringify(rooms));
+    } catch {
+      // 저장소가 막혀 있어도 새 채팅방과 메시지는 현재 화면에서 동작합니다.
+    }
+  }, [isAuthenticated, rooms]);
 
   useEffect(() => {
     setMessageSearch("");
@@ -376,7 +431,7 @@ function ChatPage() {
                         <S.ConversationButton type="button" $active={selectedId === room.id}
                           $unread={room.unread > 0} aria-pressed={selectedId === room.id}
                           aria-controls="chat-room-panel" onClick={() => selectRoom(room.id)}>
-                          <S.Avatar src={room.photo} alt={`${room.nickname} 프로필`} />
+                          <ProfileImage as={S.Avatar} major={room.major} fallbackSrc={room.photo} alt={`${room.nickname} 프로필`} />
                           <S.ConversationDetails>
                             <S.ConversationTop>
                               <S.NicknameGroup>
@@ -449,7 +504,7 @@ function ChatPage() {
                     requestAnimationFrame(() => listHeadingRef.current?.focus());
                   }}><ArrowLeft size={21} aria-hidden="true" /></S.MobileBackButton>
                   <S.ParticipantButton as={Link} to={profileHref} aria-label={`${activeRoom.nickname}님 프로필 보기`}>
-                    <S.Avatar src={activeRoom.photo} alt="" />
+                    <ProfileImage as={S.Avatar} major={activeRoom.major} fallbackSrc={activeRoom.photo} alt="" />
                     <div>
                       <S.ParticipantName>
                         <span>{activeRoom.nickname}</span>
@@ -485,7 +540,7 @@ function ChatPage() {
                       <S.MessageGroup key={item.id}>
                         {showDate && <S.DateDivider><span><time dateTime={dateKey(item.sentAt)}>{formatDate(item.sentAt)}</time></span></S.DateDivider>}
                         <S.MessageRow $own={own}>
-                          {!own && <S.Avatar $small src={activeRoom.photo} alt="" />}
+                          {!own && <ProfileImage as={S.Avatar} $small major={activeRoom.major} fallbackSrc={activeRoom.photo} alt="" />}
                           <S.BubbleColumn>
                             {!own && <S.MessageAuthor>{activeRoom.nickname}</S.MessageAuthor>}
                             {own && <S.ScreenReaderOnly>내 메시지</S.ScreenReaderOnly>}
@@ -547,7 +602,7 @@ function ChatPage() {
       {profileOpen && (
         <ChatDialog title="상대방 프로필" onDismiss={closeProfile}>
           <S.ProfileSummary>
-            <S.Avatar $large src={activeRoom.photo} alt={`${activeRoom.nickname} 프로필`} />
+            <ProfileImage as={S.Avatar} $large major={activeRoom.major} fallbackSrc={activeRoom.photo} alt={`${activeRoom.nickname} 프로필`} />
             <div><S.ParticipantName>{activeRoom.nickname}</S.ParticipantName><S.ParticipantMeta>{activeRoom.major} · {activeRoom.year}학번</S.ParticipantMeta></div>
           </S.ProfileSummary>
           <S.DialogDescription>{activeRoom.introduction}</S.DialogDescription>

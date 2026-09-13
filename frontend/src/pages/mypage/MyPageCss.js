@@ -240,7 +240,7 @@ export const Avatar = styled.img`
   width: ${({ $large }) => ($large ? "96px" : "48px")};
   height: ${({ $large }) => ($large ? "96px" : "48px")};
   aspect-ratio: 1;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 12px;
   background: ${colors.navySoft};
 `;
