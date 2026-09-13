@@ -220,7 +220,7 @@ export const Avatar = styled.img`
   height: ${({ $small, $large }) => $large ? "64px" : $small ? "28px" : "40px"};
   border-radius: ${({ $small }) => $small ? "8px" : "12px"};
   background: #edf2fc;
-  object-fit: cover;
+  object-fit: contain;
 `;
 export const ConversationDetails = styled.span`display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 4px;`;
 export const ConversationTop = styled.span`display: flex; justify-content: space-between; align-items: center; gap: 8px; min-width: 0;`;

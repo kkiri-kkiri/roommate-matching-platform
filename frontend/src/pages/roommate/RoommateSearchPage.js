@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Check,
   ChevronDown,
@@ -52,7 +53,7 @@ function createProfilePhoto(background, skin, hair, shirt) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
-const PROFILES = [
+export const PROFILES = [
   {
     id: 1,
     nickname: "포근한구름",
@@ -686,7 +687,16 @@ const PROFILES = [
 ];
 
 function RoommateSearchPage() {
-  const [activeTab, setActiveTab] = useState("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") === "recommended" ? "recommended" : "all";
+  const setActiveTab = (tab) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      if (tab === "recommended") next.set("tab", "recommended");
+      else next.delete("tab");
+      return next;
+    }, { replace: true });
+  };
   const [selectedTag, setSelectedTag] = useState(null);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [draftFilters, setDraftFilters] = useState(DEFAULT_FILTERS);
@@ -697,7 +707,6 @@ function RoommateSearchPage() {
   });
   const [savedProfiles, setSavedProfiles] = useState(getSavedSurveyProfiles);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [likedProfileIds, setLikedProfileIds] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const tabRefs = useRef({});
   const filterDialogRef = useRef(null);
@@ -804,13 +813,6 @@ function RoommateSearchPage() {
   const resetFilters = () => {
     setFilters(DEFAULT_FILTERS);
     setSelectedTag(null);
-  };
-
-  const toggleLike = (profileId) => {
-    setLikedProfileIds((current) => ({
-      ...current,
-      [profileId]: !current[profileId],
-    }));
   };
 
   const removeFilter = (filterId, value) => {
@@ -1082,8 +1084,6 @@ function RoommateSearchPage() {
                       key={profile.id}
                       profile={profile}
                       activeTab={activeTab}
-                      likedProfileIds={likedProfileIds}
-                      onToggleLike={toggleLike}
                       overlayText={generateRecommendationReason(profile)}
                       showOverlay={activeTab === "recommended"}
                     />
