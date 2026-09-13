@@ -9,46 +9,15 @@ import {
 } from "lucide-react";
 
 import * as S from "./CalendarPageCss";
+import { dateKey, FIXED_CATEGORY_IDS, useCalendarData } from "./CalendarDataContext";
 
-const CATEGORIES = [
-  { id: "school", label: "학교 일정" },
-  { id: "dormitory", label: "기숙사 일정" },
-  { id: "roommate", label: "룸메찾기 일정" },
-  { id: "personal", label: "개인 일정" },
-];
-const FIXED_CATEGORY_IDS = ["school", "dormitory"];
 const CALENDAR_PLUGINS = [dayGridPlugin, interactionPlugin];
-const CATEGORY_COLORS_KEY = "calendar-category-colors";
-const CATEGORY_SETTINGS_KEY = "calendar-category-settings";
-
-function loadCategorySettings() {
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem(CATEGORY_COLORS_KEY)) || {}; } catch {}
-  const defaults = CATEGORIES.map((category) => ({ ...category,
-    color: /^#[0-9a-f]{6}$/i.test(saved[category.id]) ? saved[category.id] : S.CATEGORY_STYLES[category.id].color,
-  }));
-  try {
-    const settings = JSON.parse(localStorage.getItem(CATEGORY_SETTINGS_KEY));
-    if (!Array.isArray(settings)) return defaults;
-    const valid = settings.filter((item, index) => item && typeof item.id === "string" &&
-      /^[a-z0-9-]+$/.test(item.id) && typeof item.label === "string" && item.label.trim() &&
-      item.label.length <= 30 && /^#[0-9a-f]{6}$/i.test(item.color) &&
-      settings.findIndex((other) => other?.id === item.id) === index);
-    return [...defaults.filter(({ id }) => FIXED_CATEGORY_IDS.includes(id)).map((item) => ({
-      ...item, color: valid.find(({ id }) => id === item.id)?.color || item.color,
-    })), ...valid.filter(({ id }) => !FIXED_CATEGORY_IDS.includes(id))];
-  } catch { return defaults; }
-}
 
 function colorStyle(color) {
   const channels = [1, 3, 5].map((offset) => parseInt(color.slice(offset, offset + 2), 16));
   const background = `rgb(${channels.map((channel) => Math.round(channel * 0.1 + 255 * 0.9)).join(", ")})`;
   const text = `rgb(${channels.map((channel) => Math.round(channel * 0.6)).join(", ")})`;
   return { color, background, text };
-}
-
-function dateKey(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 function localDate(value) {
@@ -65,22 +34,6 @@ function formatDate(value, includeYear = true) {
 
 function monthTitle(value) {
   return localDate(`${value}-01`).toLocaleDateString("ko-KR", { year: "numeric", month: "long" });
-}
-
-function createSampleEvents(today) {
-  const sampleDate = (day, offset = 0) => dateKey(new Date(today.getFullYear(), today.getMonth() + offset, day));
-  return [
-    { id: "sample-1", title: "학기 일정 확인", date: sampleDate(2), startTime: "09:00", endTime: "10:00", category: "school", description: "이번 학기 수업과 학사 일정을 확인해요." },
-    { id: "sample-2", title: "생활관 정기 점검", date: sampleDate(8), startTime: "18:00", endTime: "19:00", category: "dormitory", description: "공용 공간과 생활관 시설을 함께 점검해요.\n점검 전에 개인 물품을 정리해 주세요." },
-    { id: "sample-3", title: "룸메이트와 첫 만남", date: dateKey(today), startTime: "12:00", endTime: "13:00", category: "roommate", description: "학생회관 1층에서 만나 함께 점심을 먹어요.\n서로의 생활 패턴과 공용 물품에 대해 이야기해요." },
-    { id: "sample-4", title: "도서관에서 과제하기", date: dateKey(today), startTime: "15:00", endTime: "17:00", category: "personal", description: "중앙도서관에서 이번 주 과제를 정리해요." },
-    { id: "sample-5", title: "학과 진로 특강", date: sampleDate(16), startTime: "14:00", endTime: "16:00", category: "school", description: "전공과 관련된 진로를 알아보는 시간이에요. 필기 도구를 준비해요." },
-    { id: "sample-6", title: "룸메이트 생활 규칙 정하기", date: sampleDate(21), startTime: "19:00", endTime: "20:00", category: "roommate", description: "청소 순서와 취침 시간, 공용 물품 사용 규칙을 함께 정해요." },
-    { id: "sample-7", title: "생활관 소방 대피 훈련", date: sampleDate(24), startTime: "18:30", endTime: "19:00", category: "dormitory", description: "생활관 앞 지정 장소에 모여 대피 경로를 확인해요." },
-    { id: "sample-8", title: "한 달 생활비 정리", date: sampleDate(27), startTime: "20:00", endTime: "20:30", category: "personal", description: "이번 달 지출을 돌아보고 다음 달 예산을 정해요." },
-    { id: "sample-9", title: "생활관 입사 준비", date: sampleDate(26, -1), startTime: "10:00", endTime: "11:00", category: "dormitory", description: "입사에 필요한 물품과 준비 서류를 확인해요." },
-    { id: "sample-10", title: "다음 달 학습 계획", date: sampleDate(3, 1), startTime: "16:00", endTime: "17:00", category: "personal", description: "수업별 학습 목표를 세우고 달력에 정리해요." },
-  ];
 }
 
 function validateDraft(draft, categoryIds) {
@@ -136,14 +89,11 @@ function CalendarDialog({ title, description, onDismiss, children }) {
 
 function CalendarPage() {
   const [initialDate] = useState(() => new Date());
-  const [categorySettings, setCategorySettings] = useState(loadCategorySettings);
+  const { events, setEvents, categorySettings, setCategorySettings } = useCalendarData();
   const categoryIds = categorySettings.map(({ id }) => id);
   const categoryLabels = Object.fromEntries(categorySettings.map(({ id, label }) => [id, label]));
   const [settingsDraft, setSettingsDraft] = useState([]);
   const [settingsError, setSettingsError] = useState("");
-  const [events, setEvents] = useState(() => createSampleEvents(initialDate).map((event) => (
-    categorySettings.some(({ id }) => id === event.category) ? event : { ...event, category: "school" }
-  )));
   const [selectedDate, setSelectedDate] = useState(() => dateKey(initialDate));
   const [visibleMonth, setVisibleMonth] = useState(() => dateKey(initialDate).slice(0, 7));
   const [categories, setCategories] = useState(categoryIds);
@@ -154,9 +104,6 @@ function CalendarPage() {
     Object.entries(categoryStyles[id]).map(([name, value]) => [`--category-${id}-${name}`, value]),
   ));
 
-  useEffect(() => {
-    try { localStorage.setItem(CATEGORY_SETTINGS_KEY, JSON.stringify(categorySettings)); } catch {}
-  }, [categorySettings]);
   const [agendaScope, setAgendaScope] = useState("day");
   const [dialog, setDialog] = useState(null);
   const [draft, setDraft] = useState(null);

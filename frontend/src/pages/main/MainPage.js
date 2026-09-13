@@ -12,8 +12,10 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+import { KOREA_REGIONS } from "../../data/koreaRegions";
 import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./MainPageCss";
+import { dateKey, useCalendarData } from "../../calendar/CalendarDataContext";
 
 const ROOMMATES = [
   {
@@ -97,105 +99,26 @@ const COMMUNITY_POSTS = [
   },
 ];
 
-const POST_FILTERS = ["전체", "자유", "택배", "나눔", "민원"];
-
-const CALENDAR_MONTHS = [
-  {
-    label: "2026년 8월",
-    shortLabel: "8월",
-    days: 31,
-    startOffset: 6,
-    defaultDate: 25,
-    events: {
-      25: [
-        {
-          title: "2학기 생활관비 납부 시작",
-          detail: "오전 10:00 · 생활관 포털",
-          type: "납부",
-        },
-      ],
-      30: [
-        {
-          title: "입사 전 온라인 교육 마감",
-          detail: "오후 11:59까지",
-          type: "마감",
-        },
-      ],
-    },
-  },
-  {
-    label: "2026년 9월",
-    shortLabel: "9월",
-    days: 30,
-    startOffset: 2,
-    defaultDate: 7,
-    events: {
-      2: [
-        {
-          title: "2학기 생활관 정규 입사",
-          detail: "오전 09:00 · 각 생활관 로비",
-          type: "입사",
-        },
-      ],
-      7: [
-        {
-          title: "추가 입사 신청 마감",
-          detail: "오후 06:00 · 생활관 포털",
-          type: "신청",
-        },
-        {
-          title: "룸메이트 생활 규칙 워크숍",
-          detail: "오후 07:30 · 학생회관 2층",
-          type: "행사",
-        },
-      ],
-      21: [
-        {
-          title: "생활관 정기 소방 점검",
-          detail: "오후 02:00부터",
-          type: "점검",
-        },
-      ],
-    },
-  },
-  {
-    label: "2026년 10월",
-    shortLabel: "10월",
-    days: 31,
-    startOffset: 4,
-    defaultDate: 6,
-    events: {
-      6: [
-        {
-          title: "중간고사 응원 간식 배부",
-          detail: "오후 06:00 · 생활관 로비",
-          type: "행사",
-        },
-      ],
-      19: [
-        {
-          title: "동계방학 잔류 신청 시작",
-          detail: "오전 10:00 · 생활관 포털",
-          type: "신청",
-        },
-      ],
-    },
-  },
-];
+const POST_FILTERS = ["전체", "자유", "나눔", "택배", "민원"];
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
+const REGION_GROUPS = {
+  capital: { label: "수도권", points: 10 },
+  central: { label: "중부권", points: 20 },
+  southern: { label: "남부권", points: 30 },
+};
+
 const INITIAL_SCORE_FORM = {
-  region: "capital",
+  province: "seoul",
+  city: "gangnam",
   grade: "4.1",
   priority: "0",
 };
 
-const REGION_OPTIONS = {
-  capital: { label: "서울 · 경기 · 인천", points: 10 },
-  central: { label: "충청 · 강원", points: 20 },
-  southern: { label: "전라 · 경상 · 제주", points: 30 },
-};
+const REGION_OPTIONS = Object.fromEntries(
+  KOREA_REGIONS.map((province) => [province.value, { label: province.label, points: REGION_GROUPS[province.group].points }]),
+);
 
 function getCalendarCells(month) {
   return [
@@ -207,10 +130,12 @@ function getCalendarCells(month) {
 function MainPage() {
   const { hash } = useLocation();
   const [postFilter, setPostFilter] = useState("전체");
-  const [calendarMonthIndex, setCalendarMonthIndex] = useState(1);
-  const [selectedDate, setSelectedDate] = useState(
-    CALENDAR_MONTHS[1].defaultDate,
+  const { events, categorySettings } = useCalendarData();
+  const [initialDate] = useState(() => new Date());
+  const [calendarMonth, setCalendarMonth] = useState(
+    () => new Date(initialDate.getFullYear(), initialDate.getMonth(), 1),
   );
+  const [selectedDate, setSelectedDate] = useState(initialDate.getDate());
   const [scoreForm, setScoreForm] = useState(INITIAL_SCORE_FORM);
   const [scoreResult, setScoreResult] = useState(null);
 
@@ -234,33 +159,55 @@ function MainPage() {
     return filteredPosts.slice(0, 3);
   }, [postFilter]);
 
-  const activeMonth = CALENDAR_MONTHS[calendarMonthIndex];
+  const activeMonth = useMemo(() => ({
+    label: calendarMonth.toLocaleDateString("ko-KR", { year: "numeric", month: "long" }),
+    shortLabel: calendarMonth.toLocaleDateString("ko-KR", { month: "long" }),
+    days: new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0).getDate(),
+    startOffset: calendarMonth.getDay(),
+  }), [calendarMonth]);
+  const monthEvents = useMemo(() => {
+    const monthKey = dateKey(calendarMonth).slice(0, 7);
+    return events.filter((event) => event.date.startsWith(monthKey))
+      .sort((first, second) => first.startTime.localeCompare(second.startTime))
+      .reduce((days, event) => {
+        const day = Number(event.date.slice(8));
+        (days[day] ||= []).push(event);
+        return days;
+      }, {});
+  }, [events, calendarMonth]);
+  const categoryLabels = Object.fromEntries(categorySettings.map(({ id, label }) => [id, label]));
 
   const calendarCells = useMemo(
     () => getCalendarCells(activeMonth),
     [activeMonth],
   );
 
-  const selectedEvents = activeMonth.events[selectedDate] || [];
+  const selectedEvents = monthEvents[selectedDate] || [];
 
   const changeMonth = (direction) => {
-    const nextIndex = calendarMonthIndex + direction;
-
-    if (nextIndex < 0 || nextIndex >= CALENDAR_MONTHS.length) {
-      return;
-    }
-
-    setCalendarMonthIndex(nextIndex);
-    setSelectedDate(CALENDAR_MONTHS[nextIndex].defaultDate);
+    setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() + direction, 1));
+    setSelectedDate(1);
   };
+
+  const selectedProvince =
+    KOREA_REGIONS.find((province) => province.value === scoreForm.province) || KOREA_REGIONS[0];
+  const selectedCity =
+    selectedProvince.cities.find((city) => city.value === scoreForm.city) || selectedProvince.cities[0];
 
   const handleScoreFieldChange = (event) => {
     const { name, value } = event.target;
 
-    setScoreForm((currentForm) => ({
-      ...currentForm,
-      [name]: value,
-    }));
+    setScoreForm((currentForm) => {
+      const nextForm = { ...currentForm, [name]: value };
+
+      if (name === "province") {
+        const selected = KOREA_REGIONS.find((province) => province.value === value);
+        const nextCity = selected?.cities[0]?.value || "";
+        return { ...nextForm, city: nextCity };
+      }
+
+      return nextForm;
+    });
 
     setScoreResult(null);
   };
@@ -269,8 +216,9 @@ function MainPage() {
     event.preventDefault();
 
     const grade = Math.min(4.5, Math.max(0, Number(scoreForm.grade) || 0));
-
-    const regionPoints = REGION_OPTIONS[scoreForm.region]?.points || 0;
+    const province =
+      KOREA_REGIONS.find((item) => item.value === scoreForm.province) || KOREA_REGIONS[0];
+    const regionPoints = REGION_OPTIONS[province.value]?.points || 0;
 
     const priorityPoints = Number(scoreForm.priority);
 
@@ -292,6 +240,7 @@ function MainPage() {
       regionPoints,
       priorityPoints,
       message,
+      regionLabel: `${province.label} · ${selectedCity.label}`,
     });
   };
 
@@ -356,7 +305,7 @@ function MainPage() {
               <S.SectionKicker>COMMUNITY NOW</S.SectionKicker>
 
               <S.SectionTitle id="community-title">
-                지금 인기 있는 이야기
+                지금 인기 있는 기숙사 이야기
               </S.SectionTitle>
 
               <S.SectionDescription>
@@ -440,331 +389,337 @@ function MainPage() {
         </S.Section>
 
         <S.Section aria-labelledby="campus-tools-title">
-          <S.SectionHeader>
-            <div>
-              <S.SectionKicker>CAMPUS LIVING TOOLS</S.SectionKicker>
-
-              <S.SectionTitle id="campus-tools-title">
-                기숙사 생활, 미리 준비하세요
-              </S.SectionTitle>
-
-              <S.SectionDescription>
-                중요한 일정을 챙기고 간단한 예상 점수도 확인할 수 있어요.
-              </S.SectionDescription>
-            </div>
-          </S.SectionHeader>
-
           <S.UtilityGrid>
-            <S.ToolCard
-              id="campus-calendar"
-              aria-labelledby="calendar-title"
-            >
-              <S.ToolHeader>
-                <S.ToolHeading>
-                  <S.ToolIcon $tone="blue">
-                    <CalendarDays size={21} aria-hidden="true" />
-                  </S.ToolIcon>
+            <div>
+              <S.SectionHeader>
+                <div>
+                  <S.SectionKicker>CAMPUS LIVING TOOLS</S.SectionKicker>
 
-                  <div>
-                    <span>생활관 캘린더</span>
+                  <S.SectionTitle id="campus-tools-title">
+                    학교생활에 필요한 모든 일정을 한눈에
+                  </S.SectionTitle>
 
-                    <h3 id="calendar-title">놓치면 안 되는 일정</h3>
-                  </div>
-                </S.ToolHeading>
+                  <S.SectionDescription>
+                    학사 일정부터 기숙사 일정까지 필요한 일정을 한 번에 확인해보세요.
+                  </S.SectionDescription>
+                </div>
+              </S.SectionHeader>
 
-                <S.MonthControls>
-                  <button
-                    type="button"
-                    aria-label="이전 달 보기"
-                    disabled={calendarMonthIndex === 0}
-                    onClick={() => changeMonth(-1)}
-                  >
-                    <ChevronLeft size={18} aria-hidden="true" />
-                  </button>
-
-                  <strong>{activeMonth.label}</strong>
-
-                  <button
-                    type="button"
-                    aria-label="다음 달 보기"
-                    disabled={
-                      calendarMonthIndex === CALENDAR_MONTHS.length - 1
-                    }
-                    onClick={() => changeMonth(1)}
-                  >
-                    <ChevronRight size={18} aria-hidden="true" />
-                  </button>
-                </S.MonthControls>
-              </S.ToolHeader>
-
-              <S.CalendarWeekdays aria-hidden="true">
-                {WEEKDAYS.map((weekday) => (
-                  <span key={weekday}>{weekday}</span>
-                ))}
-              </S.CalendarWeekdays>
-
-              <S.CalendarGrid>
-                {calendarCells.map((day, index) => {
-                  if (day === null) {
-                    return <S.CalendarBlank key={`blank-${index}`} />;
-                  }
-
-                  const hasEvent = Boolean(activeMonth.events[day]);
-
-                  const isSelected = selectedDate === day;
-
-                  const weekdayIndex =
-                    (activeMonth.startOffset + day - 1) % 7;
-
-                  return (
-                    <S.CalendarDay
-                      key={day}
+              <S.ToolCard
+                id="campus-calendar"
+                aria-label="캘린더"
+              >
+                <S.ToolHeader>
+                  <S.MonthControls>
+                    <button
                       type="button"
-                      $selected={isSelected}
-                      $hasEvent={hasEvent}
-                      $dayTone={
-                        weekdayIndex === 0
-                          ? "sunday"
-                          : weekdayIndex === 6
-                            ? "saturday"
-                            : "weekday"
-                      }
-                      aria-pressed={isSelected}
-                      aria-label={`${activeMonth.shortLabel} ${day}일${hasEvent ? ", 일정 있음" : ""
-                        }`}
-                      onClick={() => setSelectedDate(day)}
+                      aria-label="이전 달 보기"
+                      onClick={() => changeMonth(-1)}
                     >
-                      <span>{day}</span>
-                    </S.CalendarDay>
-                  );
-                })}
-              </S.CalendarGrid>
+                      <ChevronLeft size={18} aria-hidden="true" />
+                    </button>
 
-              <S.EventPreview aria-live="polite">
-                <S.EventPreviewHeader>
-                  <div>
-                    <span>{activeMonth.shortLabel}</span>
+                    <strong>{activeMonth.label}</strong>
 
-                    <strong>{selectedDate}</strong>
-                  </div>
+                    <button
+                      type="button"
+                      aria-label="다음 달 보기"
+                      onClick={() => changeMonth(1)}
+                    >
+                      <ChevronRight size={18} aria-hidden="true" />
+                    </button>
+                  </S.MonthControls>
+                </S.ToolHeader>
 
-                  <p>{selectedDate}일 일정</p>
-                </S.EventPreviewHeader>
+                <S.CalendarWeekdays aria-hidden="true">
+                  {WEEKDAYS.map((weekday) => (
+                    <span key={weekday}>{weekday}</span>
+                  ))}
+                </S.CalendarWeekdays>
 
-                {selectedEvents.length > 0 ? (
-                  <S.EventList>
-                    {selectedEvents.map((eventItem) => (
-                      <S.EventItem
-                        key={`${eventItem.title}-${eventItem.type}`}
+                <S.CalendarGrid>
+                  {calendarCells.map((day, index) => {
+                    if (day === null) {
+                      return <S.CalendarBlank key={`blank-${index}`} />;
+                    }
+
+                    const hasEvent = Boolean(monthEvents[day]);
+
+                    const isSelected = selectedDate === day;
+
+                    const weekdayIndex =
+                      (activeMonth.startOffset + day - 1) % 7;
+
+                    return (
+                      <S.CalendarDay
+                        key={day}
+                        type="button"
+                        $selected={isSelected}
+                        $hasEvent={hasEvent}
+                        $dayTone={
+                          weekdayIndex === 0
+                            ? "sunday"
+                            : weekdayIndex === 6
+                              ? "saturday"
+                              : "weekday"
+                        }
+                        aria-pressed={isSelected}
+                        aria-label={`${activeMonth.shortLabel} ${day}일${hasEvent ? ", 일정 있음" : ""
+                          }`}
+                        onClick={() => setSelectedDate(day)}
                       >
-                        <S.EventMarker />
+                        <span>{day}</span>
+                      </S.CalendarDay>
+                    );
+                  })}
+                </S.CalendarGrid>
 
+                <S.EventPreview aria-live="polite">
+                  <S.EventPreviewHeader>
+                    <div>
+                      <span>{activeMonth.shortLabel}</span>
+
+                      <strong>{selectedDate}</strong>
+                    </div>
+
+                    <p>{selectedDate}일 일정</p>
+                  </S.EventPreviewHeader>
+
+                  {selectedEvents.length > 0 ? (
+                    <S.EventList>
+                      {selectedEvents.map((eventItem) => (
+                        <S.EventItem
+                          key={eventItem.id}
+                        >
+                          <S.EventMarker />
+
+                          <div>
+                            <S.EventType>{categoryLabels[eventItem.category]}</S.EventType>
+
+                            <strong>{eventItem.title}</strong>
+
+                            <span>{eventItem.startTime} ~ {eventItem.endTime}</span>
+                          </div>
+                        </S.EventItem>
+                      ))}
+                    </S.EventList>
+                  ) : (
+                    <S.EventEmpty>
+                      <CalendarDays size={19} aria-hidden="true" />
+                      선택한 날짜에는 등록된 일정이 없어요.
+                    </S.EventEmpty>
+                  )}
+                </S.EventPreview>
+              </S.ToolCard>
+            </div>
+
+            <div>
+              <S.SectionHeader>
+                <div>
+                  <S.SectionKicker>DORMITORY SCORE CALCULATOR</S.SectionKicker>
+
+                  <S.OutsideToolTitle id="calculator-title">
+                    내 기숙사 예상 점수 계산기
+                  </S.OutsideToolTitle>
+
+                  <S.SectionDescription>
+                    지역과 조건을 선택하고 기숙사 배점 기준에 따른 예상 점수를 확인해보세요.
+                  </S.SectionDescription>
+                </div>
+              </S.SectionHeader>
+
+              <S.ToolCard aria-labelledby="calculator-title">
+                <S.ScoreForm onSubmit={calculateDormitoryScore}>
+                  <S.FormGrid>
+                    <S.FieldGroup $wide>
+                      <label htmlFor="province">지역</label>
+
+                      <S.RegionSelectRow>
+                        <S.SelectWrap>
+                          <select
+                            id="province"
+                            name="province"
+                            value={scoreForm.province}
+                            onChange={handleScoreFieldChange}
+                            aria-describedby="region-hint"
+                          >
+                            {KOREA_REGIONS.map((province) => (
+                              <option key={province.value} value={province.value}>
+                                {province.label}
+                              </option>
+                            ))}
+                          </select>
+
+                          <ChevronRight size={17} aria-hidden="true" />
+                        </S.SelectWrap>
+
+                        <S.SelectWrap>
+                          <select
+                            id="city"
+                            name="city"
+                            value={scoreForm.city}
+                            onChange={handleScoreFieldChange}
+                            aria-label="세부 지역"
+                          >
+                            {selectedProvince.cities.map((city) => (
+                              <option key={city.value} value={city.value}>
+                                {city.label}
+                              </option>
+                            ))}
+                          </select>
+
+                          <ChevronRight size={17} aria-hidden="true" />
+                        </S.SelectWrap>
+                      </S.RegionSelectRow>
+
+                      <small id="region-hint">시·도를 고른 뒤 세부 지역을 선택해 주세요.</small>
+                    </S.FieldGroup>
+
+                    <S.FieldGroup>
+                      <label htmlFor="grade">직전 학기 성적</label>
+
+                      <S.InputWithSuffix>
+                        <input
+                          id="grade"
+                          name="grade"
+                          type="number"
+                          min="0"
+                          max="4.5"
+                          step="0.1"
+                          value={scoreForm.grade}
+                          onChange={handleScoreFieldChange}
+                          aria-describedby="grade-hint"
+                        />
+
+                        <span>/ 4.5</span>
+                      </S.InputWithSuffix>
+
+                      <small id="grade-hint">최대 55점 반영</small>
+                    </S.FieldGroup>
+
+                    <S.FieldGroup>
+                      <label htmlFor="priority">가산점</label>
+
+                      <S.SelectWrap>
+                        <select
+                          id="priority"
+                          name="priority"
+                          value={scoreForm.priority}
+                          onChange={handleScoreFieldChange}
+                        >
+                          <option value="0">해당 없음</option>
+
+                          <option value="3">봉사활동 이수자 (+3점)</option>
+
+                          <option value="3">사회봉사 이수자 (+3점)</option>
+                        </select>
+
+                        <ChevronRight size={17} aria-hidden="true" />
+                      </S.SelectWrap>
+                    </S.FieldGroup>
+                  </S.FormGrid>
+
+                  <S.FormActions>
+                    <S.CalculateButton type="submit">
+                      예상 점수 계산하기
+                      <ArrowRight size={17} aria-hidden="true" />
+                    </S.CalculateButton>
+
+                    <S.ResetButton
+                      type="button"
+                      onClick={resetDormitoryScore}
+                    >
+                      <RefreshCw size={16} aria-hidden="true" />
+                      초기화
+                    </S.ResetButton>
+                  </S.FormActions>
+                </S.ScoreForm>
+
+                {scoreResult ? (
+                  <S.ScoreResult aria-live="polite">
+                    <S.ScoreSummary>
+                      <S.ScoreRing $score={scoreResult.total}>
+                        <S.ScoreRingInner>
+                          <strong>{scoreResult.total}</strong>
+
+                          <span>점</span>
+                        </S.ScoreRingInner>
+                      </S.ScoreRing>
+
+                      <div>
+                        <S.ResultLabel>나의 예상 총점</S.ResultLabel>
+
+                        <S.ResultTitle>{scoreResult.message}</S.ResultTitle>
+
+                        <S.ResultDescription>
+                          입력한 조건을 기준으로 간단히 계산했어요.
+                        </S.ResultDescription>
+                      </div>
+                    </S.ScoreSummary>
+
+                    <S.ScoreBreakdown>
+                      <S.ScoreRow>
                         <div>
-                          <S.EventType>{eventItem.type}</S.EventType>
+                          <span>직전 학기 성적</span>
 
-                          <strong>{eventItem.title}</strong>
-
-                          <span>{eventItem.detail}</span>
+                          <strong>{scoreResult.gradePoints} / 55</strong>
                         </div>
-                      </S.EventItem>
-                    ))}
-                  </S.EventList>
+
+                        <S.ScoreBar>
+                          <S.ScoreBarFill
+                            $value={(scoreResult.gradePoints / 55) * 100}
+                          />
+                        </S.ScoreBar>
+                      </S.ScoreRow>
+
+                      <S.ScoreRow>
+                        <div>
+                          <span>지역</span>
+
+                          <strong>{scoreResult.regionLabel}</strong>
+                        </div>
+
+                        <S.ScoreBar>
+                          <S.ScoreBarFill
+                            $value={(scoreResult.regionPoints / 30) * 100}
+                          />
+                        </S.ScoreBar>
+                      </S.ScoreRow>
+
+                      <S.ScoreRow>
+                        <div>
+                          <span>우선 조건</span>
+
+                          <strong>{scoreResult.priorityPoints}점</strong>
+                        </div>
+
+                        <S.ScoreBar>
+                          <S.ScoreBarFill
+                            $value={(scoreResult.priorityPoints / 15) * 100}
+                          />
+                        </S.ScoreBar>
+                      </S.ScoreRow>
+                    </S.ScoreBreakdown>
+                  </S.ScoreResult>
                 ) : (
-                  <S.EventEmpty>
-                    <CalendarDays size={19} aria-hidden="true" />
-                    선택한 날짜에는 등록된 일정이 없어요.
-                  </S.EventEmpty>
-                )}
-              </S.EventPreview>
-            </S.ToolCard>
-
-            <S.ToolCard aria-labelledby="calculator-title">
-              <S.ToolHeader>
-                <S.ToolHeading>
-                  <S.ToolIcon $tone="mint">
-                    <Calculator size={21} aria-hidden="true" />
-                  </S.ToolIcon>
-
-                  <div>
-                    <span>기숙사 점수 계산기</span>
-
-                    <h3 id="calculator-title">내 예상 점수 알아보기</h3>
-                  </div>
-                </S.ToolHeading>
-              </S.ToolHeader>
-
-              <S.ScoreForm onSubmit={calculateDormitoryScore}>
-                <S.FormGrid>
-                  <S.FieldGroup>
-                    <label htmlFor="region">지역</label>
-
-                    <S.SelectWrap>
-                      <select
-                        id="region"
-                        name="region"
-                        value={scoreForm.region}
-                        onChange={handleScoreFieldChange}
-                        aria-describedby="region-hint"
-                      >
-                        {Object.entries(REGION_OPTIONS).map(
-                          ([value, option]) => (
-                            <option key={value} value={value}>
-                              {option.label}
-                            </option>
-                          ),
-                        )}
-                      </select>
-
-                      <ChevronRight size={17} aria-hidden="true" />
-                    </S.SelectWrap>
-
-                    <small id="region-hint">지역 기준 최대 30점 반영</small>
-                  </S.FieldGroup>
-
-                  <S.FieldGroup>
-                    <label htmlFor="grade">직전 학기 설정</label>
-
-                    <S.InputWithSuffix>
-                      <input
-                        id="grade"
-                        name="grade"
-                        type="number"
-                        min="0"
-                        max="4.5"
-                        step="0.1"
-                        value={scoreForm.grade}
-                        onChange={handleScoreFieldChange}
-                        aria-describedby="grade-hint"
-                      />
-
-                      <span>/ 4.5</span>
-                    </S.InputWithSuffix>
-
-                    <small id="grade-hint">최대 55점 반영</small>
-                  </S.FieldGroup>
-
-                  <S.FieldGroup $wide>
-                    <label htmlFor="priority">우선 선발 조건</label>
-
-                    <S.SelectWrap>
-                      <select
-                        id="priority"
-                        name="priority"
-                        value={scoreForm.priority}
-                        onChange={handleScoreFieldChange}
-                      >
-                        <option value="0">해당 없음</option>
-
-                        <option value="8">원거리 특별 기준 (+8점)</option>
-
-                        <option value="15">우선 선발 대상 (+15점)</option>
-                      </select>
-
-                      <ChevronRight size={17} aria-hidden="true" />
-                    </S.SelectWrap>
-                  </S.FieldGroup>
-                </S.FormGrid>
-
-                <S.FormActions>
-                  <S.CalculateButton type="submit">
-                    예상 점수 계산하기
-                    <ArrowRight size={17} aria-hidden="true" />
-                  </S.CalculateButton>
-
-                  <S.ResetButton
-                    type="button"
-                    onClick={resetDormitoryScore}
-                  >
-                    <RefreshCw size={16} aria-hidden="true" />
-                    초기화
-                  </S.ResetButton>
-                </S.FormActions>
-              </S.ScoreForm>
-
-              {scoreResult ? (
-                <S.ScoreResult aria-live="polite">
-                  <S.ScoreSummary>
-                    <S.ScoreRing $score={scoreResult.total}>
-                      <S.ScoreRingInner>
-                        <strong>{scoreResult.total}</strong>
-
-                        <span>점</span>
-                      </S.ScoreRingInner>
-                    </S.ScoreRing>
+                  <S.ScoreEmpty>
+                    <S.EmptyCalculatorIcon>
+                      <Calculator size={23} aria-hidden="true" />
+                    </S.EmptyCalculatorIcon>
 
                     <div>
-                      <S.ResultLabel>나의 예상 총점</S.ResultLabel>
+                      <h4>아직 계산된 점수가 없어요</h4>
 
-                      <S.ResultTitle>{scoreResult.message}</S.ResultTitle>
-
-                      <S.ResultDescription>
-                        입력한 조건을 기준으로 간단히 계산했어요.
-                      </S.ResultDescription>
+                      <p>위 조건을 확인하고 예상 점수를 계산해 보세요.</p>
                     </div>
-                  </S.ScoreSummary>
+                  </S.ScoreEmpty>
+                )}
 
-                  <S.ScoreBreakdown>
-                    <S.ScoreRow>
-                      <div>
-                        <span>직전 학기 성적</span>
-
-                        <strong>{scoreResult.gradePoints} / 55</strong>
-                      </div>
-
-                      <S.ScoreBar>
-                        <S.ScoreBarFill
-                          $value={(scoreResult.gradePoints / 55) * 100}
-                        />
-                      </S.ScoreBar>
-                    </S.ScoreRow>
-
-                    <S.ScoreRow>
-                      <div>
-                        <span>지역</span>
-
-                        <strong>{scoreResult.regionPoints} / 30</strong>
-                      </div>
-
-                      <S.ScoreBar>
-                        <S.ScoreBarFill
-                          $value={(scoreResult.regionPoints / 30) * 100}
-                        />
-                      </S.ScoreBar>
-                    </S.ScoreRow>
-
-                    <S.ScoreRow>
-                      <div>
-                        <span>우선 조건</span>
-
-                        <strong>{scoreResult.priorityPoints}점</strong>
-                      </div>
-
-                      <S.ScoreBar>
-                        <S.ScoreBarFill
-                          $value={(scoreResult.priorityPoints / 15) * 100}
-                        />
-                      </S.ScoreBar>
-                    </S.ScoreRow>
-                  </S.ScoreBreakdown>
-                </S.ScoreResult>
-              ) : (
-                <S.ScoreEmpty>
-                  <S.EmptyCalculatorIcon>
-                    <Calculator size={23} aria-hidden="true" />
-                  </S.EmptyCalculatorIcon>
-
-                  <div>
-                    <h4>아직 계산된 점수가 없어요</h4>
-
-                    <p>위 조건을 확인하고 예상 점수를 계산해 보세요.</p>
-                  </div>
-                </S.ScoreEmpty>
-              )}
-
-              <S.Disclaimer>
-                학교별 실제 선발 기준과 무관한 UI 확인용 예시 계산입니다.
-              </S.Disclaimer>
-            </S.ToolCard>
+                <S.Disclaimer>
+                  학교별 실제 선발 기준과 무관한 UI 확인용 예시 계산입니다.
+                </S.Disclaimer>
+              </S.ToolCard>
+            </div>
           </S.UtilityGrid>
         </S.Section>
       </S.Container>
