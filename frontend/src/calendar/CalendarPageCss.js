@@ -140,25 +140,6 @@ export const Content = styled.div`
   min-width: 0;
   margin: 0 auto;
 `;
-export const Intro = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 24px;
-  margin-bottom: 32px;
-  > div {
-    min-width: 0;
-  }
-  > button {
-    flex-shrink: 0;
-  }
-  @media (max-width: 600px) {
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-bottom: 24px;
-  }
-`;
 export const Eyebrow = styled.p`
   margin: 0 0 10px;
   color: #006a65;
@@ -258,19 +239,6 @@ export const MonthTitle = styled.h2`
     min-width: 120px;
     margin: 0;
     font-size: 18px;
-  }
-`;
-export const MonthSummary = styled.p`
-  margin: 0;
-  padding: 0 24px 20px;
-  color: #747781;
-  font-size: 13px;
-  strong {
-    color: #0c3273;
-    font-weight: 600;
-  }
-  @media (max-width: 600px) {
-    padding: 0 16px 16px;
   }
 `;
 export const Filters = styled.fieldset`
@@ -566,21 +534,6 @@ export const CalendarEvent = styled.span`
     > span {
       display: none;
     }
-  }
-`;
-export const CalendarHint = styled.p`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  padding: 16px 24px 20px;
-  color: #747781;
-  font-size: 12px;
-  line-height: 20px;
-  word-break: keep-all;
-  @media (max-width: 600px) {
-    padding: 12px 16px 16px;
-    font-size: 11px;
   }
 `;
 export const Sidebar = styled.aside`

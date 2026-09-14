@@ -91,17 +91,6 @@ export const HomeLink = styled(Link)`
   background: transparent;
   img { display: block; width: 148px; max-width: 100%; height: auto; object-fit: contain; }
 `;
-export const ListTitle = styled.h2`
-  flex-shrink: 0;
-  margin: 0;
-  color: #001d4f;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 24px;
-  span { margin-left: 6px; color: #006a65; font-size: 16px; }
-  ${focus}
-`;
-export const ListMeta = styled.p`margin: 4px 0 12px; color: #747781; font-size: 12px;`;
 export const ListHeadingRow = styled.div`display: flex; align-items: center; gap: 12px; min-width: 0; margin-bottom: 12px;`;
 export const RoomSearchField = styled.div`
   display: flex;
@@ -264,7 +253,6 @@ export const CategoryBadge = styled.span`
   line-height: 16px;
   white-space: nowrap;
 `;
-export const ListFooter = styled.div`display: flex; align-items: center; gap: 6px; padding: 10px 16px; border-top: 1px solid #eeeeee; color: #747781; font-size: 12px; line-height: 18px;`;
 export const RoomPanel = styled.section`
   overflow: auto;
   display: flex;
@@ -327,13 +315,6 @@ export const ParticipantName = styled.h2`
   > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 `;
 export const ParticipantMeta = styled.p`margin: 3px 0 0; color: #747781; font-size: 12px; line-height: 18px;`;
-export const HeaderActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  @media (max-width: 480px) { > a { display: none; } }
-`;
 export const SecondaryButton = styled.button`
   ${button}
   border: 1.5px solid #00a79f;
@@ -457,7 +438,6 @@ export const Composer = styled.form`
   background: white;
   @media (max-width: 799px) { padding: 12px; }
 `;
-export const ComposerLabel = styled.label`display: block; margin-bottom: 8px; color: #444650; font-size: 12px; font-weight: 600;`;
 export const ComposerField = styled.div`
   display: flex;
   align-items: center;
