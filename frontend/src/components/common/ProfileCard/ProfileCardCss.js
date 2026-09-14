@@ -1,15 +1,15 @@
 import styled from "styled-components";
 
 const colors = {
-    white: "#ffffff",
-    navy: "#0c3273",
-    navyDark: "#001d4f",
-    navySoft: "#eef3ff",
-    mint: "#00a79f",
-    mintDark: "#006a65",
-    mintSoft: "#e7f8f6",
-    textSoft: "#444650",
-    border: "#e2e2e4",
+  white: "#ffffff",
+  navy: "#0c3273",
+  navyDark: "#001d4f",
+  navySoft: "#eef3ff",
+  mint: "#00a79f",
+  mintDark: "#006a65",
+  mintSoft: "#e7f8f6",
+  textSoft: "#444650",
+  border: "#e2e2e4",
 };
 
 export const ProfileCardOverlay = styled.div`
@@ -20,12 +20,19 @@ export const ProfileCardOverlay = styled.div`
   justify-content: flex-end;
   padding: 18px 16px 14px;
   border-radius: 16px;
-  background: linear-gradient(180deg, rgba(0, 167, 159, 0.12) 0%, rgba(0, 167, 159, 0.76) 42%, rgba(0, 106, 101, 0.9) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 167, 159, 0.12) 0%,
+    rgba(0, 167, 159, 0.76) 42%,
+    rgba(0, 106, 101, 0.9) 100%
+  );
   color: ${colors.white};
   opacity: 0;
   transform: translateY(100%);
   pointer-events: none;
-  transition: opacity 220ms ease, transform 220ms ease;
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
 `;
 
 export const ProfileCardOverlayTitle = styled.strong`
@@ -58,7 +65,10 @@ export const ProfileCard = styled.article`
   box-shadow: 0 4px 12px rgba(12, 50, 115, 0.05);
   cursor: pointer;
   overflow: hidden;
-  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    border-color 150ms ease;
 
   &:hover {
     border-color: rgba(12, 50, 115, 0.12);
@@ -93,7 +103,7 @@ export const ProfilePhoto = styled.div`
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
   }
 `;
 
@@ -184,13 +194,16 @@ export const LikeButton = styled.button`
   justify-content: center;
   width: 32px;
   height: 32px;
-  border: 1px solid ${({ $liked }) => ($liked ? "rgba(255, 107, 138, 0.4)" : colors.border)};
+  border: 1px solid
+    ${({ $liked }) => ($liked ? "rgba(255, 107, 138, 0.4)" : colors.border)};
   border-radius: 50%;
   color: ${({ $liked }) => ($liked ? "#ff4d73" : "#ff6b8a")};
   background: ${({ $liked }) => ($liked ? "#fff1f5" : colors.white)};
   box-shadow: none;
   cursor: pointer;
-  transition: background 150ms ease, border-color 150ms ease;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
 
   &:focus-visible {
     outline: 3px solid rgba(255, 107, 138, 0.24);
@@ -223,4 +236,3 @@ export const ProfileMessage = styled.div`
     word-break: keep-all;
   }
 `;
-
