@@ -110,14 +110,29 @@ const REGION_GROUPS = {
 };
 
 const INITIAL_SCORE_FORM = {
-  province: "seoul",
-  city: "gangnam",
-  grade: "4.1",
-  priority: "0",
+  province: "",
+  city: "",
+  grade: "",
+  priority: "",
 };
 
+const GRADE_OPTIONS = [
+  { value: "4.38", label: "4.26 ~ 4.50" },
+  { value: "4.13", label: "4.01 ~ 4.25" },
+  { value: "3.88", label: "3.76 ~ 4.00" },
+  { value: "3.63", label: "3.51 ~ 3.75" },
+  { value: "3.38", label: "3.26 ~ 3.50" },
+  { value: "3.13", label: "3.01 ~ 3.25" },
+  { value: "2.88", label: "2.76 ~ 3.00" },
+  { value: "2.63", label: "2.51 ~ 2.75" },
+  { value: "2.50", label: "2.50 이하" },
+];
+
 const REGION_OPTIONS = Object.fromEntries(
-  KOREA_REGIONS.map((province) => [province.value, { label: province.label, points: REGION_GROUPS[province.group].points }]),
+  KOREA_REGIONS.map((province) => [
+    province.value,
+    { label: province.label, points: REGION_GROUPS[province.group].points },
+  ]),
 );
 
 function getCalendarCells(month) {
@@ -159,15 +174,26 @@ function MainPage() {
     return filteredPosts.slice(0, 3);
   }, [postFilter]);
 
-  const activeMonth = useMemo(() => ({
-    label: calendarMonth.toLocaleDateString("ko-KR", { year: "numeric", month: "long" }),
-    shortLabel: calendarMonth.toLocaleDateString("ko-KR", { month: "long" }),
-    days: new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0).getDate(),
-    startOffset: calendarMonth.getDay(),
-  }), [calendarMonth]);
+  const activeMonth = useMemo(
+    () => ({
+      label: calendarMonth.toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "long",
+      }),
+      shortLabel: calendarMonth.toLocaleDateString("ko-KR", { month: "long" }),
+      days: new Date(
+        calendarMonth.getFullYear(),
+        calendarMonth.getMonth() + 1,
+        0,
+      ).getDate(),
+      startOffset: calendarMonth.getDay(),
+    }),
+    [calendarMonth],
+  );
   const monthEvents = useMemo(() => {
     const monthKey = dateKey(calendarMonth).slice(0, 7);
-    return events.filter((event) => event.date.startsWith(monthKey))
+    return events
+      .filter((event) => event.date.startsWith(monthKey))
       .sort((first, second) => first.startTime.localeCompare(second.startTime))
       .reduce((days, event) => {
         const day = Number(event.date.slice(8));
@@ -175,7 +201,9 @@ function MainPage() {
         return days;
       }, {});
   }, [events, calendarMonth]);
-  const categoryLabels = Object.fromEntries(categorySettings.map(({ id, label }) => [id, label]));
+  const categoryLabels = Object.fromEntries(
+    categorySettings.map(({ id, label }) => [id, label]),
+  );
 
   const calendarCells = useMemo(
     () => getCalendarCells(activeMonth),
@@ -185,14 +213,19 @@ function MainPage() {
   const selectedEvents = monthEvents[selectedDate] || [];
 
   const changeMonth = (direction) => {
-    setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() + direction, 1));
+    setCalendarMonth(
+      (current) =>
+        new Date(current.getFullYear(), current.getMonth() + direction, 1),
+    );
     setSelectedDate(1);
   };
 
   const selectedProvince =
-    KOREA_REGIONS.find((province) => province.value === scoreForm.province) || KOREA_REGIONS[0];
+    KOREA_REGIONS.find((province) => province.value === scoreForm.province) ||
+    KOREA_REGIONS[0];
   const selectedCity =
-    selectedProvince.cities.find((city) => city.value === scoreForm.city) || selectedProvince.cities[0];
+    selectedProvince.cities.find((city) => city.value === scoreForm.city) ||
+    selectedProvince.cities[0];
 
   const handleScoreFieldChange = (event) => {
     const { name, value } = event.target;
@@ -201,7 +234,9 @@ function MainPage() {
       const nextForm = { ...currentForm, [name]: value };
 
       if (name === "province") {
-        const selected = KOREA_REGIONS.find((province) => province.value === value);
+        const selected = KOREA_REGIONS.find(
+          (province) => province.value === value,
+        );
         const nextCity = selected?.cities[0]?.value || "";
         return { ...nextForm, city: nextCity };
       }
@@ -216,9 +251,12 @@ function MainPage() {
     event.preventDefault();
 
     const grade = Math.min(4.5, Math.max(0, Number(scoreForm.grade) || 0));
-    const province =
-      KOREA_REGIONS.find((item) => item.value === scoreForm.province) || KOREA_REGIONS[0];
-    const regionPoints = REGION_OPTIONS[province.value]?.points || 0;
+    const province = KOREA_REGIONS.find(
+      (item) => item.value === scoreForm.province,
+    );
+    const regionPoints = province
+      ? REGION_OPTIONS[province.value]?.points || 0
+      : 0;
 
     const priorityPoints = Number(scoreForm.priority);
 
@@ -240,7 +278,9 @@ function MainPage() {
       regionPoints,
       priorityPoints,
       message,
-      regionLabel: `${province.label} · ${selectedCity.label}`,
+      regionLabel: province
+        ? `${province.label} · ${selectedCity.label}`
+        : "지역 미선택",
     });
   };
 
@@ -400,15 +440,13 @@ function MainPage() {
                   </S.SectionTitle>
 
                   <S.SectionDescription>
-                    학사 일정부터 기숙사 일정까지 필요한 일정을 한 번에 확인해보세요.
+                    학사 일정부터 기숙사 일정까지 필요한 일정을 한 번에
+                    확인해보세요.
                   </S.SectionDescription>
                 </div>
               </S.SectionHeader>
 
-              <S.ToolCard
-                id="campus-calendar"
-                aria-label="캘린더"
-              >
+              <S.ToolCard id="campus-calendar" aria-label="캘린더">
                 <S.ToolHeader>
                   <S.MonthControls>
                     <button
@@ -464,8 +502,9 @@ function MainPage() {
                               : "weekday"
                         }
                         aria-pressed={isSelected}
-                        aria-label={`${activeMonth.shortLabel} ${day}일${hasEvent ? ", 일정 있음" : ""
-                          }`}
+                        aria-label={`${activeMonth.shortLabel} ${day}일${
+                          hasEvent ? ", 일정 있음" : ""
+                        }`}
                         onClick={() => setSelectedDate(day)}
                       >
                         <span>{day}</span>
@@ -488,17 +527,19 @@ function MainPage() {
                   {selectedEvents.length > 0 ? (
                     <S.EventList>
                       {selectedEvents.map((eventItem) => (
-                        <S.EventItem
-                          key={eventItem.id}
-                        >
+                        <S.EventItem key={eventItem.id}>
                           <S.EventMarker />
 
                           <div>
-                            <S.EventType>{categoryLabels[eventItem.category]}</S.EventType>
+                            <S.EventType>
+                              {categoryLabels[eventItem.category]}
+                            </S.EventType>
 
                             <strong>{eventItem.title}</strong>
 
-                            <span>{eventItem.startTime} ~ {eventItem.endTime}</span>
+                            <span>
+                              {eventItem.startTime} ~ {eventItem.endTime}
+                            </span>
                           </div>
                         </S.EventItem>
                       ))}
@@ -523,7 +564,8 @@ function MainPage() {
                   </S.OutsideToolTitle>
 
                   <S.SectionDescription>
-                    지역과 조건을 선택하고 기숙사 배점 기준에 따른 예상 점수를 확인해보세요.
+                    지역과 조건을 선택하고 기숙사 배점 기준에 따른 예상 점수를
+                    확인해보세요.
                   </S.SectionDescription>
                 </div>
               </S.SectionHeader>
@@ -543,8 +585,14 @@ function MainPage() {
                             onChange={handleScoreFieldChange}
                             aria-describedby="region-hint"
                           >
+                            <option value="" disabled>
+                              선택해주세요
+                            </option>
                             {KOREA_REGIONS.map((province) => (
-                              <option key={province.value} value={province.value}>
+                              <option
+                                key={province.value}
+                                value={province.value}
+                              >
                                 {province.label}
                               </option>
                             ))}
@@ -560,7 +608,11 @@ function MainPage() {
                             value={scoreForm.city}
                             onChange={handleScoreFieldChange}
                             aria-label="세부 지역"
+                            disabled={!scoreForm.province}
                           >
+                            <option value="" disabled>
+                              선택해주세요
+                            </option>
                             {selectedProvince.cities.map((city) => (
                               <option key={city.value} value={city.value}>
                                 {city.label}
@@ -572,29 +624,38 @@ function MainPage() {
                         </S.SelectWrap>
                       </S.RegionSelectRow>
 
-                      <small id="region-hint">시·도를 고른 뒤 세부 지역을 선택해 주세요.</small>
+                      <small id="region-hint">
+                        시·도를 고른 뒤 세부 지역을 선택해 주세요.
+                      </small>
                     </S.FieldGroup>
 
                     <S.FieldGroup>
                       <label htmlFor="grade">직전 학기 성적</label>
 
-                      <S.InputWithSuffix>
-                        <input
+                      <S.SelectWrap>
+                        <select
                           id="grade"
                           name="grade"
-                          type="number"
-                          min="0"
-                          max="4.5"
-                          step="0.1"
                           value={scoreForm.grade}
                           onChange={handleScoreFieldChange}
                           aria-describedby="grade-hint"
-                        />
+                        >
+                          <option value="" disabled>
+                            선택해주세요
+                          </option>
+                          {GRADE_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
 
-                        <span>/ 4.5</span>
-                      </S.InputWithSuffix>
+                        <ChevronRight size={17} aria-hidden="true" />
+                      </S.SelectWrap>
 
-                      <small id="grade-hint">최대 55점 반영</small>
+                      <small id="grade-hint">
+                        성적 구간의 대표값으로 최대 55점 반영
+                      </small>
                     </S.FieldGroup>
 
                     <S.FieldGroup>
@@ -607,6 +668,9 @@ function MainPage() {
                           value={scoreForm.priority}
                           onChange={handleScoreFieldChange}
                         >
+                          <option value="" disabled>
+                            선택해주세요
+                          </option>
                           <option value="0">해당 없음</option>
 
                           <option value="3">봉사활동 이수자 (+3점)</option>
@@ -625,10 +689,7 @@ function MainPage() {
                       <ArrowRight size={17} aria-hidden="true" />
                     </S.CalculateButton>
 
-                    <S.ResetButton
-                      type="button"
-                      onClick={resetDormitoryScore}
-                    >
+                    <S.ResetButton type="button" onClick={resetDormitoryScore}>
                       <RefreshCw size={16} aria-hidden="true" />
                       초기화
                     </S.ResetButton>
