@@ -361,26 +361,3 @@ export const LogoutButton = styled.button`
     }
   }
 `;
-
-export const AuthDivider = styled.span`
-  color: ${colors.border};
-  font-size: 13px;
-`;
-
-export const SignUpLink = styled.a`
-  ${authLinkStyle};
-  padding: 0 14px;
-  color: ${colors.white};
-  background: ${colors.navy};
-  transition: background-color 160ms ease;
-
-  @media (hover: hover) {
-    &:hover {
-      background: ${colors.navyDark};
-    }
-  }
-
-  @media (max-width: 380px) {
-    padding: 0 10px;
-  }
-`;

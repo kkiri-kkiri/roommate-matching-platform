@@ -165,37 +165,6 @@ export const Container = styled.div`
   margin: 0 auto;
 `;
 
-export const Intro = styled.div`
-  margin-bottom: 40px;
-  @media (max-width: 640px) {
-    margin-bottom: 28px;
-  }
-`;
-
-export const Eyebrow = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: ${colors.mintDark};
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 18px;
-  letter-spacing: 0.1em;
-`;
-
-export const PageTitle = styled.h1`
-  margin: 12px 0 8px;
-  color: ${colors.navyDark};
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 44px;
-  letter-spacing: -0.02em;
-  @media (max-width: 640px) {
-    font-size: 28px;
-    line-height: 36px;
-  }
-`;
-
 export const Description = styled.p`
   margin: 8px 0 0;
   color: ${colors.secondary};
@@ -327,20 +296,6 @@ export const MenuLink = styled(Link)`
   }
 `;
 
-export const MenuCount = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 23px;
-  height: 23px;
-  padding: 0 6px;
-  border-radius: 999px;
-  color: ${colors.mintDark};
-  background: ${colors.mintSoft};
-  font-size: 12px;
-  font-weight: 700;
-`;
-
 export const SideNote = styled.div`
   margin-top: 32px;
   padding: 20px 14px;
@@ -429,20 +384,6 @@ export const GhostButton = styled.button`
   }
 `;
 
-export const IconButton = styled.button`
-  ${button}
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  color: ${colors.mintDark};
-  background: ${colors.mintSoft};
-  &:hover:not(:disabled) {
-    color: ${colors.navy};
-    background: ${colors.navySoft};
-  }
-`;
-
 export const Badge = styled.span`
   display: inline-flex;
   align-items: center;
@@ -459,20 +400,6 @@ export const Badge = styled.span`
   svg {
     flex-shrink: 0;
   }
-`;
-
-export const RequiredBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  margin-left: 6px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  color: ${colors.mintDark};
-  background: ${colors.mintSoft};
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 16px;
-  vertical-align: middle;
 `;
 
 export const Card = styled.section`
@@ -914,13 +841,6 @@ export const FieldError = styled.p`
   line-height: 21px;
 `;
 
-export const ValidMessage = styled.p`
-  margin: 8px 0 0;
-  color: ${colors.mintDark};
-  font-size: 13px;
-  line-height: 21px;
-`;
-
 export const Helper = styled.p`
   margin: 8px 0 0;
   color: ${colors.muted};
@@ -1096,148 +1016,6 @@ export const LikeGrid = styled.div`
   @media (max-width: 560px) {
     grid-template-columns: minmax(0, 1fr);
   }
-`;
-
-export const Pagination = styled.nav`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  margin-top: 28px;
-`;
-
-export const PageButton = styled.button`
-  ${focusRing}
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  padding: 0;
-  border: 1px solid ${({ $active }) => ($active ? colors.navy : colors.border)};
-  border-radius: 10px;
-  color: ${({ $active }) => ($active ? colors.white : colors.secondary)};
-  background: ${({ $active }) => ($active ? colors.navy : colors.white)};
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background 150ms ease,
-    color 150ms ease,
-    border-color 150ms ease;
-  &:hover:not(:disabled) {
-    border-color: ${colors.navy};
-    color: ${({ $active }) => ($active ? colors.white : colors.navy)};
-  }
-  &:disabled {
-    color: ${colors.muted};
-    background: ${colors.soft};
-    cursor: not-allowed;
-  }
-`;
-
-export const LikeCard = styled.article`
-  ${surface}
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding: 24px;
-  transition: box-shadow 150ms ease;
-  &:hover {
-    box-shadow: 0 8px 20px rgba(12, 50, 115, 0.08);
-  }
-  @media (max-width: 1000px) and (min-width: 801px) {
-    padding: 20px;
-  }
-`;
-
-export const LikeTop = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-`;
-
-export const LikeName = styled.h3`
-  margin: 0;
-  color: ${colors.navyDark};
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28px;
-`;
-
-export const LikeMeta = styled.p`
-  margin: 6px 0 0;
-  color: ${colors.muted};
-  font-size: 13px;
-  line-height: 22px;
-`;
-
-export const LikeMessage = styled.p`
-  margin: 20px 0 0;
-  color: ${colors.secondary};
-  font-size: 14px;
-  line-height: 24px;
-  word-break: keep-all;
-`;
-
-export const LikeFooter = styled.div`
-  padding-top: 24px;
-  margin-top: auto;
-  > a {
-    width: 100%;
-  }
-`;
-
-export const MatchList = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-top: 20px;
-`;
-
-export const MatchRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 0;
-  border-bottom: 1px solid ${colors.border};
-  &:last-child {
-    padding-bottom: 0;
-    border-bottom: 0;
-  }
-  > div {
-    flex: 1;
-    min-width: 0;
-  }
-  > span {
-    flex-shrink: 0;
-    max-width: 140px;
-  }
-  @media (max-width: 480px) {
-    flex-wrap: wrap;
-    > div {
-      min-width: calc(100% - 64px);
-    }
-    > span {
-      margin-left: 60px;
-    }
-  }
-`;
-
-export const MatchName = styled.strong`
-  display: block;
-  color: ${colors.navyDark};
-  font-size: 14px;
-  line-height: 22px;
-`;
-
-export const MatchDescription = styled.span`
-  display: block;
-  margin-top: 4px;
-  color: ${colors.muted};
-  font-size: 12px;
-  line-height: 20px;
 `;
 
 export const ProgressTrack = styled.div`

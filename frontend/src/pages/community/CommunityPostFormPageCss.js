@@ -57,74 +57,6 @@ export const Page = styled.section`
   }
 `;
 
-export const Breadcrumb = styled.nav`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 24px;
-  color: ${colors.muted};
-  font-size: 13px;
-  line-height: 20px;
-
-  > span {
-    color: ${colors.secondary};
-  }
-`;
-
-export const BackButton = styled.button`
-  ${button};
-  min-height: 40px;
-  padding: 6px 0;
-  color: ${colors.secondary};
-  background: transparent;
-  font-size: 13px;
-  font-weight: 500;
-
-  &:hover {
-    color: ${colors.navy};
-  }
-`;
-
-export const Intro = styled.header`
-  margin-bottom: 32px;
-`;
-
-export const Eyebrow = styled.p`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 12px;
-  color: ${colors.mintDark};
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 20px;
-`;
-
-export const Title = styled.h1`
-  margin: 0;
-  color: ${colors.navyDark};
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 38px;
-  letter-spacing: -0.02em;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-
-  @media (max-width: 640px) {
-    font-size: 24px;
-    line-height: 34px;
-  }
-`;
-
-export const Description = styled.p`
-  margin: 12px 0 0;
-  color: ${colors.secondary};
-  font-size: 14px;
-  line-height: 23px;
-  word-break: keep-all;
-`;
-
 export const Form = styled.form`
   overflow: hidden;
   border: 1px solid ${colors.border};
@@ -461,13 +393,6 @@ export const ImageStatus = styled.p`
   line-height: 20px;
 `;
 
-export const ImageHint = styled.p`
-  margin: 12px 0 0;
-  color: ${colors.muted};
-  font-size: 12px;
-  line-height: 19px;
-`;
-
 export const ImageCount = styled.p`
   margin: 20px 0 12px;
   color: ${colors.secondary};
@@ -555,35 +480,6 @@ export const ImageName = styled.p`
   white-space: nowrap;
 `;
 
-export const Guide = styled.aside`
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 20px;
-  border-radius: 12px;
-  color: ${colors.mintDark};
-  background: #f1f8f6;
-
-  > svg {
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-
-  strong {
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 20px;
-  }
-
-  p {
-    margin: 6px 0 0;
-    color: #566963;
-    font-size: 12px;
-    line-height: 21px;
-    word-break: keep-all;
-  }
-`;
-
 export const Actions = styled.div`
   display: flex;
   align-items: center;
@@ -597,17 +493,6 @@ export const Actions = styled.div`
     flex-direction: column;
     align-items: stretch;
     padding: 12px 16px;
-  }
-`;
-
-export const ActionHint = styled.p`
-  margin: 0;
-  color: ${colors.muted};
-  font-size: 12px;
-  line-height: 20px;
-
-  @media (max-width: 640px) {
-    text-align: center;
   }
 `;
 

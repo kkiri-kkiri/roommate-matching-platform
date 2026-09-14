@@ -233,12 +233,6 @@ export const Input = styled.input`
   ${reduceMotion}
 `;
 
-export const FieldHint = styled.span`
-  color: #8e8e93;
-  font-size: 12px;
-  line-height: 18px;
-`;
-
 export const PrimaryButton = styled.button`
   display: inline-flex;
   width: 100%;

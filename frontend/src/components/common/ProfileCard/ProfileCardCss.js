@@ -170,21 +170,6 @@ export const AdmissionYear = styled.span`
   font-weight: 600;
 `;
 
-export const Dormitory = styled.span`
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  margin-top: 6px;
-  color: ${colors.textSoft};
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
-
-  svg {
-    color: ${colors.mint};
-  }
-`;
-
 export const LikeButton = styled.button`
   position: absolute;
   top: 0;

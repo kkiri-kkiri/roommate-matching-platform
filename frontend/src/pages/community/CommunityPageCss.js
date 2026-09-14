@@ -49,53 +49,6 @@ export const Content = styled.div`
   margin: 0 auto;
   min-width: 0;
 `;
-export const Breadcrumb = styled.nav`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 32px;
-  color: #747781;
-  font-size: 13px;
-`;
-export const TextLink = styled(Link)`
-  color: #747781;
-  text-decoration: none;
-  &:hover { color: #0c3273; text-decoration: underline; }
-  ${focus}
-`;
-export const Intro = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 40px;
-  @media (max-width: 600px) { align-items: flex-start; flex-wrap: wrap; gap: 20px; margin-bottom: 28px; }
-`;
-export const Eyebrow = styled.p`
-  margin: 0 0 12px;
-  color: #006a65;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-`;
-export const Title = styled.h1`
-  margin: 0;
-  color: #001d4f;
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 44px;
-  letter-spacing: -0.02em;
-  word-break: keep-all;
-  @media (max-width: 700px) { font-size: 24px; line-height: 32px; }
-`;
-export const Description = styled.p`
-  margin: 12px 0 0;
-  color: #444650;
-  font-size: 16px;
-  line-height: 24px;
-  word-break: keep-all;
-  @media (max-width: 700px) { font-size: 14px; }
-`;
 export const PrimaryButton = styled.button`${primary} flex-shrink: 0;`;
 export const PrimaryLink = styled(Link)`${primary}`;
 export const SecondaryButton = styled.button`
@@ -302,19 +255,6 @@ export const SearchSummary = styled.div`
   overflow-wrap: anywhere;
   @media (max-width: 600px) { padding: 12px 16px; }
 `;
-export const ClearButton = styled.button`
-  min-height: 36px;
-  padding: 4px 8px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: #006a65;
-  text-decoration: underline;
-  cursor: pointer;
-  white-space: nowrap;
-  && { font-size: 11px; }
-  ${focus}
-`;
 export const PostList = styled.ul`margin: 0; padding: 0; list-style: none;`;
 export const PostRow = styled.li`
   padding: 12px 24px;
@@ -442,44 +382,4 @@ export const EmptyIcon = styled.div`
   background: #e7f8f6;
   color: #006a65;
   svg { width: 28px; height: 28px; }
-`;
-export const Pagination = styled.nav`
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  padding: 24px 16px;
-  border-top: 1px solid #eeeeee;
-  @media (max-width: 400px) { gap: 2px; padding: 20px 8px; }
-`;
-export const PageButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  min-height: 40px;
-  border: 0;
-  border-radius: 10px;
-  color: ${({ $active }) => $active ? "white" : "#444650"};
-  background: ${({ $active }) => $active ? "#0c3273" : "transparent"};
-  cursor: pointer;
-  && { font-size: 12px; font-weight: ${({ $active }) => $active ? 700 : 500}; }
-  &:hover:not(:disabled) { background: ${({ $active }) => $active ? "#001d4f" : "#f3f3f3"}; }
-  &:disabled { opacity: 0.35; cursor: default; }
-  ${focus}
-  @media (max-width: 400px) { width: 32px; }
-`;
-export const Feedback = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding: 12px 20px;
-  border: 1px solid #bce3d9;
-  border-radius: 12px;
-  background: #e7f8f6;
-  color: #006a65;
-  font-size: 13px;
 `;
