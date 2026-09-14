@@ -5,6 +5,7 @@ import MainLayout from "./layouts/MainLayout";
 import DetailedProfile from "./components/common/ProfileCard/DetailedProfile";
 
 import ChatPage from "./pages/chat/ChatPage";
+import AdminPage from "./pages/admin/AdminPage";
 import CalendarPage from "./calendar/CalendarPage";
 import { CalendarDataProvider } from "./calendar/CalendarDataContext";
 import CommunityPage from "./pages/community/CommunityPage";
@@ -90,6 +91,7 @@ function App() {
           }
         >
           <Route index element={<MainPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route
             path="/roommates"
             element={<><RoommateSearchPage /><Outlet /></>}
