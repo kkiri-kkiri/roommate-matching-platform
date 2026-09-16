@@ -1,6 +1,6 @@
 # Spring Boot 레이어별 Codex 재사용 프롬프트
 
-아래 프롬프트는 팀원들이 각자 담당 레이어를 작업할 때 `{}` 부분만 바꿔서 사용한다.
+아래 프롬프트는 팀원들이 각자 담당 레이어를 작업할 때 `{레이어}` 부분만 바꿔서 사용한다.
 
 모든 프롬프트는 프로젝트 루트의 `agent.md`를 공통 작업 지침으로 참고하도록 구성한다.
 
@@ -9,18 +9,18 @@
 ## 1. Entity
 
 ```text
-현재 Spring Boot 프로젝트에서 `survey`의 Entity 레이어를 구현해줘.
+현재 Spring Boot 프로젝트에서 `{community}`의 Entity 레이어를 구현해줘.
 
 파일 경로
-- C:\dev\project\roommate-matching-platform\backend\agent.md
-- C:\dev\project\roommate-matching-platform\backend\ERD.md
-- C:\dev\project\roommate-matching-platform\backend\API.md
-- C:\dev\project\roommate-matching-platform\backend\src\main\java\com\kkirikkiri\survey\entity
+- C:\dev\roommate-matching-platform\backend\agent.md
+- C:\dev\roommate-matching-platform\backend\ERD.md
+- C:\dev\roommate-matching-platform\backend\API.md
+- C:\dev\roommate-matching-platform\backend\src\main\java\com\kkirikkiri\community\entity
 
 작업 기준:
 - 프로젝트의 `agent.md`를 먼저 참고
-- `ERD.md`에서 `survey` 관련 테이블만 확인
-- 기존 `survey` 패키지와 관련 Entity 확인
+- `ERD.md`에서 `{community}` 관련 테이블만 확인
+- 기존 `{community}` 패키지와 관련 Entity 확인
 - 기존 BaseEntity, enum, 연관 Entity가 있으면 재사용
 
 작업 내용:
@@ -43,17 +43,17 @@
 ## 2. Repository
 
 ```text
-현재 Spring Boot 프로젝트에서 `{도메인명}`의 Repository 레이어를 구현해줘.
+현재 Spring Boot 프로젝트에서 `{community}`의 Repository 레이어를 구현해줘.
 
 파일 경로
-- C:\dev\project\roommate-matching-platform\backend\agent.md
-- C:\dev\project\roommate-matching-platform\backend\ERD.md
-- C:\dev\project\roommate-matching-platform\backend\API.md
-- C:\dev\project\roommate-matching-platform\backend\src\main\java\com\kkirikkiri\member
+- C:\dev\roommate-matching-platform\backend\agent.md
+- C:\dev\roommate-matching-platform\backend\ERD.md
+- C:\dev\roommate-matching-platform\backend\API.md
+- C:\dev\roommate-matching-platform\backend\src\main\java\com\kkirikkiri\community\repository
 
 작업 기준:
 - 프로젝트의 `agent.md`를 먼저 참고
-- 기존 `{도메인명}` Entity 확인
+- 기존 `{community}` Entity 확인
 - 해당 기능에서 실제로 필요한 조회 조건 확인
 - 기존 Repository 작성 방식을 유지
 
@@ -78,7 +78,7 @@
 ## 3. DTO
 
 ```text
-현재 Spring Boot 프로젝트에서 `{도메인명}`의 `{기능명}`에 필요한 DTO 레이어를 구현해줘.
+현재 Spring Boot 프로젝트에서 `{community}`의 `{기능명}`에 필요한 DTO 레이어를 구현해줘.
 
 파일 경로
 - C:\dev\project\roommate-matching-platform\backend\agent.md
