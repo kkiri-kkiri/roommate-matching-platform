@@ -9,18 +9,18 @@
 ## 1. Entity
 
 ```text
-현재 Spring Boot 프로젝트에서 `{도메인명}`의 Entity 레이어를 구현해줘.
+현재 Spring Boot 프로젝트에서 `survey`의 Entity 레이어를 구현해줘.
 
 파일 경로
 - C:\dev\project\roommate-matching-platform\backend\agent.md
 - C:\dev\project\roommate-matching-platform\backend\ERD.md
 - C:\dev\project\roommate-matching-platform\backend\API.md
-- C:\dev\project\roommate-matching-platform\backend\src\main\java\com\kkirikkiri\도메인명
+- C:\dev\project\roommate-matching-platform\backend\src\main\java\com\kkirikkiri\survey\entity
 
 작업 기준:
 - 프로젝트의 `agent.md`를 먼저 참고
-- `ERD.md`에서 `{도메인명}` 관련 테이블만 확인
-- 기존 `{도메인명}` 패키지와 관련 Entity 확인
+- `ERD.md`에서 `survey` 관련 테이블만 확인
+- 기존 `survey` 패키지와 관련 Entity 확인
 - 기존 BaseEntity, enum, 연관 Entity가 있으면 재사용
 
 작업 내용:
