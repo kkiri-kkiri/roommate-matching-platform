@@ -11,6 +11,12 @@
 ```text
 현재 Spring Boot 프로젝트에서 `{도메인명}`의 Entity 레이어를 구현해줘.
 
+파일 경로
+- C:\dev\project\roommate-matching-platform\backend\agent.md
+- C:\dev\project\roommate-matching-platform\backend\ERD.md
+- C:\dev\project\roommate-matching-platform\backend\API.md
+- C:\dev\project\roommate-matching-platform\backend\src\main\java\com\kkirikkiri\도메인명
+
 작업 기준:
 - 프로젝트의 `agent.md`를 먼저 참고
 - `ERD.md`에서 `{도메인명}` 관련 테이블만 확인
@@ -38,6 +44,12 @@
 
 ```text
 현재 Spring Boot 프로젝트에서 `{도메인명}`의 Repository 레이어를 구현해줘.
+
+파일 경로
+- C:\dev\project\roommate-matching-platform\backend\agent.md
+- C:\dev\project\roommate-matching-platform\backend\ERD.md
+- C:\dev\project\roommate-matching-platform\backend\API.md
+- C:\dev\project\roommate-matching-platform\backend\src\main\java\com\kkirikkiri\member
 
 작업 기준:
 - 프로젝트의 `agent.md`를 먼저 참고
@@ -68,6 +80,12 @@
 ```text
 현재 Spring Boot 프로젝트에서 `{도메인명}`의 `{기능명}`에 필요한 DTO 레이어를 구현해줘.
 
+파일 경로
+- C:\dev\project\roommate-matching-platform\backend\agent.md
+- C:\dev\project\roommate-matching-platform\backend\ERD.md
+- C:\dev\project\roommate-matching-platform\backend\API.md
+- C:\dev\project\roommate-matching-platform\backend\src\main\java\com\kkirikkiri\member
+
 작업 기준:
 - 프로젝트의 `agent.md`를 먼저 참고
 - `API.md`에서 `{기능명}` 관련 Request/Response만 확인
@@ -96,6 +114,12 @@
 
 ```text
 현재 Spring Boot 프로젝트에서 `{도메인명}`의 `{기능명}` Service를 구현해줘.
+
+파일 경로
+- C:\dev\project\roommate-matching-platform\backend\agent.md
+- C:\dev\project\roommate-matching-platform\backend\ERD.md
+- C:\dev\project\roommate-matching-platform\backend\API.md
+- C:\dev\project\roommate-matching-platform\backend\src\main\java\com\kkirikkiri\member
 
 작업 기준:
 - 프로젝트의 `agent.md`를 먼저 참고
@@ -127,6 +151,12 @@
 ```text
 현재 Spring Boot 프로젝트에서 `{도메인명}`의 `{기능명}` Controller를 구현해줘.
 
+파일 경로
+- C:\dev\project\roommate-matching-platform\backend\agent.md
+- C:\dev\project\roommate-matching-platform\backend\ERD.md
+- C:\dev\project\roommate-matching-platform\backend\API.md
+- C:\dev\project\roommate-matching-platform\backend\src\main\java\com\kkirikkiri\member
+
 작업 기준:
 - 프로젝트의 `agent.md`를 먼저 참고
 - `API.md`에서 `{기능명}` Endpoint만 확인
@@ -149,49 +179,3 @@
 
 완료 후 구현한 Endpoint와 연결된 Service 메서드만 간단히 알려줘.
 ```
-
----
-
-# 사용 예시
-
-## Entity 담당자
-
-```text
-현재 Spring Boot 프로젝트에서 `member`의 Entity 레이어를 구현해줘.
-
-작업 기준:
-- 프로젝트의 `agent.md`를 먼저 참고
-- `ERD.md`에서 `member` 관련 테이블만 확인
-- 기존 `member` 패키지와 관련 Entity 확인
-
-나머지는 Entity 공통 프롬프트 기준으로 작업해줘.
-```
-
-## Service 담당자
-
-```text
-현재 Spring Boot 프로젝트에서 `community`의 `게시글 작성` Service를 구현해줘.
-
-프로젝트의 `agent.md`를 먼저 참고하고,
-`API.md`의 게시글 작성 API와 기존 Entity, Repository, DTO만 확인해서 작업해줘.
-
-요청 범위 밖 수정은 하지 말고 완료 후 변경 파일과 핵심 처리 흐름만 알려줘.
-```
-
----
-
-# 팀 사용 방법
-
-각 팀원은 자신이 담당한 레이어의 프롬프트만 복사하여 사용한다.
-
-예:
-
-```text
-Entity 담당자     → Entity 프롬프트
-Repository 담당자 → Repository 프롬프트
-DTO 담당자        → DTO 프롬프트
-Service 담당자    → Service 프롬프트
-Controller 담당자 → Controller 프롬프트
-```
-
-`agent.md`는 모든 팀원이 공통으로 참고하는 규칙이므로 각 프롬프트에 규칙을 반복해서 길게 작성하지 않는다.
