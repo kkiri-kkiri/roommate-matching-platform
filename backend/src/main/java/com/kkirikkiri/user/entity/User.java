@@ -1,4 +1,4 @@
-package com.kkirikkiri.member.entity;
+package com.kkirikkiri.user.entity;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "USER")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member {
+public class User {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,11 +42,11 @@ public class Member {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
-	private MemberRole role;
+	private UserRole role;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
-	private MemberStatus status;
+	private UserStatus status;
 
 	@Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "DATETIME")
 	private LocalDateTime createdAt;
@@ -57,31 +57,19 @@ public class Member {
 	/**
 	 * encodedPassword에는 외부에서 단방향 해시 처리한 비밀번호를 전달한다.
 	 */
-	public Member(String loginId, String encodedPassword, String schoolEmail) {
+	public User(String loginId, String encodedPassword, String schoolEmail) {
 		this.loginId = Objects.requireNonNull(loginId, "loginId");
 		this.password = Objects.requireNonNull(encodedPassword, "encodedPassword");
 		this.schoolEmail = Objects.requireNonNull(schoolEmail, "schoolEmail");
-		this.role = MemberRole.USER;
-		this.status = MemberStatus.ACTIVE;
-	}
-
-	public void verifyEmail() {
-		this.emailVerified = true;
+		this.role = UserRole.USER;
+		this.status = UserStatus.ACTIVE;
 	}
 
 	/**
-	 * encodedPassword에는 외부에서 단방향 해시 처리한 비밀번호를 전달한다.
+	 * 현재 비밀번호 검증과 새 비밀번호 해시는 서비스에서 처리한다.
 	 */
 	public void changePassword(String encodedPassword) {
 		this.password = Objects.requireNonNull(encodedPassword, "encodedPassword");
-	}
-
-	public void changeStatus(MemberStatus status) {
-		Objects.requireNonNull(status, "status");
-		if (this.status == MemberStatus.WITHDRAWN && status != MemberStatus.WITHDRAWN) {
-			throw new IllegalStateException("탈퇴 회원의 상태는 변경할 수 없습니다.");
-		}
-		this.status = status;
 	}
 
 	@PrePersist
