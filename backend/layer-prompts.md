@@ -88,7 +88,7 @@
 
 작업 기준:
 - 프로젝트의 `agent.md`를 먼저 참고
-- `API.md`에서 `{기능명}` 관련 Request/Response만 확인
+- `API.md`에서 `{내 정보 조회, 내 정보 수정, 비밀번호 변경}` 관련 Request/Response만 확인
 - 관련 Entity와 기존 DTO 확인
 - 기존 DTO 네이밍과 패키지 규칙 유지
 
