@@ -19,18 +19,14 @@ import com.kkirikkiri.matching.dto.RoommateDetailResponse;
 import com.kkirikkiri.matching.dto.RoommateFilterRequest;
 import com.kkirikkiri.matching.dto.RoommatePageResponse;
 import com.kkirikkiri.matching.dto.RoommateProfileResponse;
-import com.kkirikkiri.matching.entity.ProfileLike;
 import com.kkirikkiri.matching.entity.RoommateMatch;
-import com.kkirikkiri.matching.repository.ProfileLikeRepository;
 import com.kkirikkiri.matching.repository.RoommateMatchRepository;
 import com.kkirikkiri.survey.entity.ProfileSurvey;
 import com.kkirikkiri.survey.entity.ProfileSurveyFieldCode;
 import com.kkirikkiri.survey.entity.ProfileSurveyOption;
 import com.kkirikkiri.survey.repository.ProfileSurveyRepository;
-import com.kkirikkiri.user.entity.User;
 import com.kkirikkiri.user.entity.UserProfile;
 import com.kkirikkiri.user.repository.UserProfileRepository;
-import com.kkirikkiri.user.repository.UserRepository;
 
 /**
  * userId에는 인증된 사용자의 ID를 전달한다.
@@ -44,8 +40,6 @@ public class RoommateMatchingService {
 	private static final int RECOMMENDED_MAX_PAGE_SIZE = 9;
 
 	private final RoommateMatchRepository roommateMatchRepository;
-	private final ProfileLikeRepository profileLikeRepository;
-	private final UserRepository userRepository;
 	private final UserProfileRepository userProfileRepository;
 	private final ProfileSurveyRepository profileSurveyRepository;
 	private final Validator validator;
@@ -63,7 +57,7 @@ public class RoommateMatchingService {
 			matches = roommateMatchRepository.findAllByRequesterUser_UserId(userId, pageable);
 		}
 
-		return RoommatePageResponse.from(matches.map(match -> toProfileResponse(userId, match)));
+		return RoommatePageResponse.from(matches.map(this::toProfileResponse));
 	}
 
 	public RoommatePageResponse<RoommateProfileResponse> getRecommendedRoommates(
@@ -75,7 +69,7 @@ public class RoommateMatchingService {
 		Page<RoommateProfileResponse> profiles = roommateMatchRepository
 				.findAllByRequesterUser_UserIdAndMatchScoreGreaterThanEqualAndRequiredConditionsMetTrueOrderByMatchScoreDesc(
 						userId, RECOMMENDED_MINIMUM_SCORE, limitedPageable)
-				.map(match -> toProfileResponse(userId, match));
+				.map(this::toProfileResponse);
 		return RoommatePageResponse.from(profiles);
 	}
 
@@ -85,59 +79,17 @@ public class RoommateMatchingService {
 		RoommateMatch match = findMatch(userId, targetUserId);
 		UserProfile profile = findProfile(targetUserId);
 		ProfileSurvey survey = findSurvey(targetUserId);
-		boolean liked = profileLikeRepository
-				.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId);
 
 		return RoommateDetailResponse.from(
-				profile, survey, createTags(survey), match.getMatchScore(), liked);
+				profile, survey, createTags(survey), match.getMatchScore(), false);
 	}
 
-	@Transactional
-	public void addProfileLike(Long userId, Long targetUserId) {
-		validateDifferentUserIds(userId, targetUserId);
-		if (profileLikeRepository.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId)) {
-			return;
-		}
-
-		User user = findUser(userId);
-		User targetUser = findUser(targetUserId);
-		profileLikeRepository.save(new ProfileLike(user, targetUser));
-	}
-
-	@Transactional
-	public void cancelProfileLike(Long userId, Long targetUserId) {
-		validateDifferentUserIds(userId, targetUserId);
-		profileLikeRepository.deleteByUser_UserIdAndTargetUser_UserId(userId, targetUserId);
-	}
-
-	public RoommatePageResponse<RoommateProfileResponse> getLikedRoommates(
-			Long userId, Pageable pageable) {
-		validateUserId(userId);
-		validatePageable(pageable);
-
-		Page<RoommateProfileResponse> profiles = profileLikeRepository
-				.findAllByUser_UserId(userId, pageable)
-				.map(profileLike -> toLikedProfileResponse(userId, profileLike));
-		return RoommatePageResponse.from(profiles);
-	}
-
-	private RoommateProfileResponse toProfileResponse(Long userId, RoommateMatch match) {
+	private RoommateProfileResponse toProfileResponse(RoommateMatch match) {
 		Long targetUserId = match.getTargetUser().getUserId();
 		UserProfile profile = findProfile(targetUserId);
 		ProfileSurvey survey = findSurvey(targetUserId);
-		boolean liked = profileLikeRepository
-				.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId);
 		return RoommateProfileResponse.from(
-				profile, createTags(survey), match.getMatchScore(), liked);
-	}
-
-	private RoommateProfileResponse toLikedProfileResponse(Long userId, ProfileLike profileLike) {
-		Long targetUserId = profileLike.getTargetUser().getUserId();
-		RoommateMatch match = findMatch(userId, targetUserId);
-		UserProfile profile = findProfile(targetUserId);
-		ProfileSurvey survey = findSurvey(targetUserId);
-		return RoommateProfileResponse.from(
-				profile, createTags(survey), match.getMatchScore(), true);
+				profile, createTags(survey), match.getMatchScore(), false);
 	}
 
 	private List<String> createTags(ProfileSurvey survey) {
@@ -246,11 +198,6 @@ public class RoommateMatchingService {
 		}
 		return PageRequest.of(
 				pageable.getPageNumber(), RECOMMENDED_MAX_PAGE_SIZE, pageable.getSort());
-	}
-
-	private User findUser(Long userId) {
-		return userRepository.findById(userId)
-				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
 	}
 
 	private UserProfile findProfile(Long userId) {
