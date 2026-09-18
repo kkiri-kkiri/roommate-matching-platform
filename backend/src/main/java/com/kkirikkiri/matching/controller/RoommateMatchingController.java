@@ -5,11 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kkirikkiri.global.response.ApiResponse;
@@ -51,27 +49,4 @@ public class RoommateMatchingController {
 				roommateMatchingService.getRoommateDetail(user.userId(), userId));
 	}
 
-	@PostMapping("/api/roommates/{userId}/likes")
-	public ApiResponse<Void> addProfileLike(
-			@AuthenticationPrincipal AuthenticatedUser user,
-			@PathVariable Long userId) {
-		roommateMatchingService.addProfileLike(user.userId(), userId);
-		return ApiResponse.successWithoutData();
-	}
-
-	@DeleteMapping("/api/roommates/{userId}/likes")
-	public ApiResponse<Void> cancelProfileLike(
-			@AuthenticationPrincipal AuthenticatedUser user,
-			@PathVariable Long userId) {
-		roommateMatchingService.cancelProfileLike(user.userId(), userId);
-		return ApiResponse.successWithoutData();
-	}
-
-	@GetMapping("/api/users/me/liked-roommates")
-	public ApiResponse<RoommatePageResponse<RoommateProfileResponse>> getLikedRoommates(
-			@AuthenticationPrincipal AuthenticatedUser user,
-			@PageableDefault(size = 6) Pageable pageable) {
-		return ApiResponse.success(
-				roommateMatchingService.getLikedRoommates(user.userId(), pageable));
-	}
 }
