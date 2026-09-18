@@ -31,7 +31,7 @@ const MBTI_DIMENSIONS = [
 ];
 
 const GENDER_OPTIONS = ["남자", "여자"];
-const DORMITORY_OPTIONS = ["나래", "호연", "비룡", "창조"];
+const DORMITORY_OPTIONS = ["나래", "호연", "비봉", "창조"];
 const GRADE_OPTIONS = ["1학년", "2학년", "3학년", "4학년", "5학년"];
 
 const INITIAL_FORM = {
