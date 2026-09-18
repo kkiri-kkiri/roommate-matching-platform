@@ -7,23 +7,19 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import tools.jackson.databind.ObjectMapper;
 
-import com.kkirikkiri.auth.service.AuthService;
 import com.kkirikkiri.global.exception.ErrorCode;
 import com.kkirikkiri.global.response.ApiResponse;
-import com.kkirikkiri.global.security.BearerAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
 
 	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http, AuthService authService,
-			ObjectMapper objectMapper) throws Exception {
+	SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper objectMapper) throws Exception {
 		return http
 				.cors(Customizer.withDefaults())
-				// 인증은 쿠키나 세션을 사용하지 않고 Authorization 헤더로만 전달한다.
+				// 인증 필터는 auth Service 구현 단계에서 연결한다.
 				.csrf(csrf -> csrf.disable())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.requestCache(cache -> cache.disable())
@@ -44,8 +40,6 @@ public class SecurityConfig {
 							response.setContentType("application/json;charset=UTF-8");
 							objectMapper.writeValue(response.getWriter(), ApiResponse.failure(ErrorCode.FORBIDDEN));
 						}))
-				.addFilterBefore(new BearerAuthenticationFilter(authService, objectMapper),
-						UsernamePasswordAuthenticationFilter.class)
 				.build();
 	}
 }
