@@ -72,13 +72,6 @@ public class User {
 		this.password = Objects.requireNonNull(encodedPassword, "encodedPassword");
 	}
 
-	/**
-	 * 서비스에서 학교 이메일 인증 증명을 검증한 뒤 호출한다.
-	 */
-	public void verifyEmail() {
-		this.emailVerified = true;
-	}
-
 	@PrePersist
 	protected void onCreate() {
 		LocalDateTime now = LocalDateTime.now();
