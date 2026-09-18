@@ -87,7 +87,7 @@ const INITIAL_ROOMS = [
   },
   {
     id: "roommate-mint", category: "roommate", nickname: "민트초코",
-    photo: createAvatar("#fff0e1", "#ff9f4a", "#71452f"), dormitory: "비룡", year: "25",
+    photo: createAvatar("#fff0e1", "#ff9f4a", "#71452f"), dormitory: "비봉", year: "25",
     major: "시각미디어디자인전공", matchScore: 82,
     introduction: "같이 밥도 먹고 소소한 이야기를 나누는 룸메를 찾아요.",
     tags: ["향 제품 안 써요", "중간형", "같이 청소"], unread: 0, createdAt: sampleTimestamp(1600),
@@ -111,7 +111,7 @@ const INITIAL_ROOMS = [
   },
   {
     id: "roommate-forest", category: "roommate", nickname: "조용한숲",
-    photo: createAvatar("#e8f3e7", "#5d8e62", "#3c312c"), dormitory: "비룡", year: "21",
+    photo: createAvatar("#e8f3e7", "#5d8e62", "#3c312c"), dormitory: "비봉", year: "21",
     major: "조경학전공", matchScore: 57,
     introduction: "말수는 적지만 필요한 일은 바로바로 소통하는 편이에요.",
     tags: ["아침형", "환기 자주", "각자 청소"], unread: 0,
