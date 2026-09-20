@@ -39,6 +39,8 @@ public class CommunityPost {
 	@JoinColumn(name = "author_id", nullable = false)
 	private User author;
 
+	// 내가 작성한 게시글 관련 Entity
+	// 내가 작성한 게시글은 삭제되더라도, 작성자와 연결된 신고 참조를 보존하기 위해 nullable = true로 설정
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "dormitory_id", nullable = true)
 	private Dormitory dormitory;
