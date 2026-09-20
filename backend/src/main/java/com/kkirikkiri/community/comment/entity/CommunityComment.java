@@ -74,8 +74,12 @@ public class CommunityComment {
 			}
 		}
 		this.parentComment = parentComment;
-		this.content = Objects.requireNonNull(content, "content");
+		updateContent(content);
 		this.status = CommunityContentStatus.ACTIVE;
+	}
+
+	public void updateContent(String content) {
+		this.content = Objects.requireNonNull(content, "content");
 	}
 
 	public void delete() {
