@@ -6,12 +6,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Lock;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.repository.query.Param;
 
 import com.kkirikkiri.community.common.entity.CommunityContentStatus;
 import com.kkirikkiri.community.post.entity.CommunityPost;
 
 public interface CommunityPostRepository extends JpaRepository<CommunityPost, Long> {
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select p from CommunityPost p where p.postId = :postId and p.status = :status")
+	Optional<CommunityPost> findDetailForUpdate(@Param("postId") Long postId,
+			@Param("status") CommunityContentStatus status);
 
 	/**
 	 * category와 keyword가 null 또는 빈 문자열이면 해당 필터를 적용하지 않는다.
