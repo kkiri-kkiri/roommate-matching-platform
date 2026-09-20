@@ -29,4 +29,11 @@ public interface CommunityPostRepository extends JpaRepository<CommunityPost, Lo
 			@Param("category") String category, @Param("keyword") String keyword, Pageable pageable);
 
 	Optional<CommunityPost> findByPostIdAndStatus(Long postId, CommunityContentStatus status);
+
+	/**
+	 * 인증 사용자의 ID와 ACTIVE 상태로 내가 작성한 게시글을 조회한다.
+	 * 최신순은 Pageable의 createdAt 내림차순으로 지정한다.
+	 */
+	Page<CommunityPost> findAllByAuthor_UserIdAndStatus(Long userId, CommunityContentStatus status,
+			Pageable pageable);
 }
