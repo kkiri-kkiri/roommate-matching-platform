@@ -1113,7 +1113,7 @@ Response item:
 
 최근 메시지 순
 
-10.2 채팅방 생성 또는 기존 방 조회
+### 10.2 채팅방 생성 또는 기존 방 조회
 
 POST /api/chat/rooms
 
@@ -1121,26 +1121,64 @@ Auth
 
 룸메이트 프로필에서 시작:
 
+```json
 {
-"targetUserId": 2,
-"category": "ROOMMATE"
+  "targetUserId": 2,
+  "category": "ROOMMATE"
 }
+```
 
-커뮤니티에서 시작:
+커뮤니티 게시글에서 시작:
 
+```json
 {
-"targetUserId": 7,
-"category": "COMMUNITY",
-"sourcePostId": 31,
-"sourceFrom": "POST"
+  "targetUserId": 7,
+  "category": "COMMUNITY",
+  "sourcePostId": 31,
+  "sourceCommentId": null,
+  "sourceFrom": "POST"
 }
+```
+
+커뮤니티 댓글에서 시작:
+
+```json
+{
+  "targetUserId": 7,
+  "category": "COMMUNITY",
+  "sourcePostId": 31,
+  "sourceCommentId": 52,
+  "sourceFrom": "COMMENT"
+}
+```
 
 sourceFrom:
 
-POST
-COMMENT
+* POST
+* COMMENT
+
+필드 기준:
+
+* `targetUserId`: 채팅을 시작할 상대 사용자 ID
+* `category`: `ROOMMATE` 또는 `COMMUNITY`
+* `sourcePostId`: 커뮤니티에서 시작한 경우 원 게시글 ID
+* `sourceCommentId`: 댓글에서 시작한 경우 원 댓글 ID
+* `sourceFrom`: 커뮤니티 채팅의 시작 위치 (`POST` 또는 `COMMENT`)
+
+Validation:
+
+* `ROOMMATE` 채팅에서는 `sourcePostId`, `sourceCommentId`, `sourceFrom`을 사용하지 않는다.
+* `COMMUNITY` 채팅에서는 `sourceFrom`이 필수이다.
+* `sourceFrom = POST`인 경우 `sourcePostId`가 필수이며 `sourceCommentId`는 사용하지 않는다.
+* `sourceFrom = COMMENT`인 경우 `sourcePostId`, `sourceCommentId`가 모두 필수이다.
+* `sourceCommentId`는 해당 `sourcePostId`에 속한 댓글이어야 한다.
+* `targetUserId`는 채팅 시작 대상 게시글 또는 댓글의 작성자와 일치하는지 서버에서 검증한다.
+* 자기 자신을 대상으로 채팅방을 생성할 수 없다.
 
 동일 사용자 쌍의 기존 채팅방이 있으면 새 방을 중복 생성하지 않고 기존 방을 반환하는 것을 권장한다.
+
+기존 방 판별 기준은 ERD의 구조에 따라 사용자 쌍 + category를 기준으로 한다.
+
 
 10.3 메시지 목록
 
