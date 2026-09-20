@@ -4,7 +4,6 @@ import java.util.Objects;
 
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +38,7 @@ public class UserService {
 	private final FacultyRepository facultyRepository;
 	private final MajorRepository majorRepository;
 	private final Validator validator;
-	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+	private final PasswordEncoder passwordEncoder;
 
 	public UserResponse getMyInfo(Long userId) {
 		return UserResponse.from(findProfile(userId));

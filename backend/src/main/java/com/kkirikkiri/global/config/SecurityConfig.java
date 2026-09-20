@@ -6,25 +6,37 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import tools.jackson.databind.ObjectMapper;
 
 import com.kkirikkiri.global.exception.ErrorCode;
 import com.kkirikkiri.global.response.ApiResponse;
+import com.kkirikkiri.global.security.JwtAuthenticationFilter;
+import com.kkirikkiri.global.security.JwtTokenProvider;
 
 @Configuration
 public class SecurityConfig {
 
 	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper objectMapper) throws Exception {
+	PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper objectMapper,
+			JwtTokenProvider jwtTokenProvider) throws Exception {
 		return http
 				.cors(Customizer.withDefaults())
-				// 인증 필터는 auth Service 구현 단계에서 연결한다.
 				.csrf(csrf -> csrf.disable())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.requestCache(cache -> cache.disable())
 				.formLogin(form -> form.disable())
 				.httpBasic(basic -> basic.disable())
+				.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, objectMapper),
+						UsernamePasswordAuthenticationFilter.class)
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 						.requestMatchers("/api/users/me", "/api/users/me/password").authenticated()
