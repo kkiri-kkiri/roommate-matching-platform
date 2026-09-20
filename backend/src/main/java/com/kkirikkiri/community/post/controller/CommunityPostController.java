@@ -1,4 +1,4 @@
-package com.kkirikkiri.community.controller;
+package com.kkirikkiri.community.post.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kkirikkiri.community.dto.CommunityPostCreateRequest;
-import com.kkirikkiri.community.dto.CommunityPostUpdateRequest;
-import com.kkirikkiri.community.dto.PostImagesRequest;
-import com.kkirikkiri.community.service.CommunityPostService;
+import com.kkirikkiri.community.post.dto.CommunityPostCreateRequest;
+import com.kkirikkiri.community.post.dto.CommunityPostUpdateRequest;
+import com.kkirikkiri.community.post.dto.PostImagesRequest;
+import com.kkirikkiri.community.post.service.CommunityPostService;
 import com.kkirikkiri.global.response.ApiResponse;
 import com.kkirikkiri.global.security.AuthenticatedUser;
 

@@ -1,10 +1,10 @@
-package com.kkirikkiri.community.repository;
+package com.kkirikkiri.community.post.repository;
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.kkirikkiri.community.entity.PostImage;
+import com.kkirikkiri.community.post.entity.PostImage;
 
 public interface PostImageRepository extends JpaRepository<PostImage, Long> {
 

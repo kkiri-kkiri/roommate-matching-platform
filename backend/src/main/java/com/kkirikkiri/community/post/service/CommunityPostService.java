@@ -1,4 +1,4 @@
-package com.kkirikkiri.community.service;
+package com.kkirikkiri.community.post.service;
 
 import java.util.HashSet;
 import java.util.List;
@@ -10,16 +10,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kkirikkiri.community.dto.CommunityPostCreateRequest;
-import com.kkirikkiri.community.dto.CommunityPostUpdateRequest;
-import com.kkirikkiri.community.dto.PostImagesRequest;
-import com.kkirikkiri.community.entity.CommunityComment;
-import com.kkirikkiri.community.entity.CommunityContentStatus;
-import com.kkirikkiri.community.entity.CommunityPost;
-import com.kkirikkiri.community.entity.PostImage;
-import com.kkirikkiri.community.repository.CommunityCommentRepository;
-import com.kkirikkiri.community.repository.CommunityPostRepository;
-import com.kkirikkiri.community.repository.PostImageRepository;
+import com.kkirikkiri.community.post.dto.CommunityPostCreateRequest;
+import com.kkirikkiri.community.post.dto.CommunityPostUpdateRequest;
+import com.kkirikkiri.community.post.dto.PostImagesRequest;
+import com.kkirikkiri.community.comment.entity.CommunityComment;
+import com.kkirikkiri.community.common.entity.CommunityContentStatus;
+import com.kkirikkiri.community.post.entity.CommunityPost;
+import com.kkirikkiri.community.post.entity.PostImage;
+import com.kkirikkiri.community.comment.repository.CommunityCommentRepository;
+import com.kkirikkiri.community.post.repository.CommunityPostRepository;
+import com.kkirikkiri.community.post.repository.PostImageRepository;
 import com.kkirikkiri.global.exception.CustomException;
 import com.kkirikkiri.global.exception.ErrorCode;
 import com.kkirikkiri.user.entity.UserProfile;

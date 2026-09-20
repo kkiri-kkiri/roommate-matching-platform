@@ -1,4 +1,4 @@
-package com.kkirikkiri.community.entity;
+package com.kkirikkiri.community.post.entity;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
