@@ -1,9 +1,9 @@
-package com.kkirikkiri.community.dto;
+package com.kkirikkiri.community.post.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.kkirikkiri.community.entity.CommunityPost;
+import com.kkirikkiri.community.post.entity.CommunityPost;
 
 /**
  * 게시글 상세 응답. T에는 댓글 응답 DTO만 사용하고 Entity를 전달하지 않는다.

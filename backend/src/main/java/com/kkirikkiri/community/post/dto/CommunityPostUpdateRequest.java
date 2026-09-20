@@ -1,4 +1,4 @@
-package com.kkirikkiri.community.dto;
+package com.kkirikkiri.community.post.dto;
 
 import java.util.List;
 

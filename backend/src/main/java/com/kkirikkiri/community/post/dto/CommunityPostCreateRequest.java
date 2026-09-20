@@ -1,4 +1,4 @@
-package com.kkirikkiri.community.dto;
+package com.kkirikkiri.community.post.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

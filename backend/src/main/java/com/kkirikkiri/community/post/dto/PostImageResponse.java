@@ -1,6 +1,6 @@
-package com.kkirikkiri.community.dto;
+package com.kkirikkiri.community.post.dto;
 
-import com.kkirikkiri.community.entity.PostImage;
+import com.kkirikkiri.community.post.entity.PostImage;
 
 public record PostImageResponse(Long id, String url) {
 

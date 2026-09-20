@@ -1,4 +1,4 @@
-package com.kkirikkiri.community.repository;
+package com.kkirikkiri.community.post.repository;
 
 import java.util.Optional;
 
@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.kkirikkiri.community.entity.CommunityContentStatus;
-import com.kkirikkiri.community.entity.CommunityPost;
+import com.kkirikkiri.community.common.entity.CommunityContentStatus;
+import com.kkirikkiri.community.post.entity.CommunityPost;
 
 public interface CommunityPostRepository extends JpaRepository<CommunityPost, Long> {
 

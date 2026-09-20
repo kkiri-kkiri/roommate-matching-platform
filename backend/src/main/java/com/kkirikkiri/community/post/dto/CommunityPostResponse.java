@@ -1,8 +1,8 @@
-package com.kkirikkiri.community.dto;
+package com.kkirikkiri.community.post.dto;
 
 import java.time.LocalDateTime;
 
-import com.kkirikkiri.community.entity.CommunityPost;
+import com.kkirikkiri.community.post.entity.CommunityPost;
 
 /**
  * 게시글 목록 항목. 페이징은 기존 RoommatePageResponse의 공통 페이징 계약을 재사용한다.

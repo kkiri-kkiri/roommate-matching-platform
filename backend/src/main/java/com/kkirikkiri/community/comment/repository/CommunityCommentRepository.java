@@ -1,11 +1,11 @@
-package com.kkirikkiri.community.repository;
+package com.kkirikkiri.community.comment.repository;
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.kkirikkiri.community.entity.CommunityComment;
-import com.kkirikkiri.community.entity.CommunityContentStatus;
+import com.kkirikkiri.community.comment.entity.CommunityComment;
+import com.kkirikkiri.community.common.entity.CommunityContentStatus;
 
 public interface CommunityCommentRepository extends JpaRepository<CommunityComment, Long> {
 

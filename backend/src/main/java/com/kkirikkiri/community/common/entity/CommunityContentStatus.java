@@ -1,4 +1,4 @@
-package com.kkirikkiri.community.entity;
+package com.kkirikkiri.community.common.entity;
 
 public enum CommunityContentStatus {
 
