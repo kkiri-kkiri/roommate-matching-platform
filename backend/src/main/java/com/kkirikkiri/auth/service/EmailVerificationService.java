@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.Locale;
 
 import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +17,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kkirikkiri.auth.dto.EmailVerificationVerifyRequest;
+import com.kkirikkiri.auth.dto.EmailVerificationSendRequest;
+import com.kkirikkiri.auth.dto.EmailVerificationSendResponse;
 import com.kkirikkiri.auth.dto.EmailVerificationVerifyResponse;
 import com.kkirikkiri.auth.entity.EmailVerification;
 import com.kkirikkiri.auth.entity.EmailVerificationPurpose;
@@ -33,27 +37,62 @@ public class EmailVerificationService {
 	private final EmailVerificationRepository repository;
 	private final PasswordEncoder passwordEncoder;
 	private final Validator validator;
+	private final EmailVerificationMailSender mailSender;
+	private final long codeExpirationSeconds;
+	private final long resendIntervalSeconds;
 	private final long tokenExpirationSeconds;
 	private final Clock clock;
 	private final SecureRandom random = new SecureRandom();
 
 	@Autowired
 	public EmailVerificationService(EmailVerificationRepository repository, PasswordEncoder passwordEncoder,
-			Validator validator,
-			@Value("${auth.email-verification.token-expiration-seconds:300}") long tokenExpirationSeconds) {
-		this(repository, passwordEncoder, validator, tokenExpirationSeconds, Clock.system(ZoneId.of("Asia/Seoul")));
+			Validator validator, EmailVerificationMailSender mailSender,
+			@Value("${auth.email-verification.token-expiration-seconds:300}") long tokenExpirationSeconds,
+			@Value("${auth.email-verification.code-expiration-seconds:300}") long codeExpirationSeconds,
+			@Value("${auth.email-verification.resend-interval-seconds:60}") long resendIntervalSeconds) {
+		this(repository, passwordEncoder, validator, mailSender, tokenExpirationSeconds,
+				codeExpirationSeconds, resendIntervalSeconds, Clock.system(ZoneId.of("Asia/Seoul")));
 	}
 
 	EmailVerificationService(EmailVerificationRepository repository, PasswordEncoder passwordEncoder,
-			Validator validator, long tokenExpirationSeconds, Clock clock) {
+			Validator validator, EmailVerificationMailSender mailSender, long tokenExpirationSeconds,
+			long codeExpirationSeconds, long resendIntervalSeconds, Clock clock) {
+		if (codeExpirationSeconds <= 0 || resendIntervalSeconds <= 0) {
+			throw new IllegalArgumentException("Email verification durations must be positive");
+		}
 		if (tokenExpirationSeconds <= 0) {
 			throw new IllegalArgumentException("이메일 인증 토큰 만료시간은 양수여야 합니다.");
 		}
 		this.repository = repository;
 		this.passwordEncoder = passwordEncoder;
 		this.validator = validator;
+		this.mailSender = mailSender;
+		this.codeExpirationSeconds = codeExpirationSeconds;
+		this.resendIntervalSeconds = resendIntervalSeconds;
 		this.tokenExpirationSeconds = tokenExpirationSeconds;
 		this.clock = clock;
+	}
+
+	// MySQL의 범위 잠금으로 최초 요청을 포함한 동시 전송을 직렬화한다.
+	@Transactional(isolation = Isolation.SERIALIZABLE)
+	public EmailVerificationSendResponse send(EmailVerificationSendRequest request) {
+		if (request == null || !validator.validate(request).isEmpty()) {
+			throw new CustomException(ErrorCode.VALIDATION_ERROR);
+		}
+		EmailVerificationPurpose purpose = EmailVerificationPurpose.valueOf(request.purpose());
+		var latest = repository.findFirstByEmailAndPurposeOrderByCreatedAtDescVerificationIdDesc(
+				request.email(), purpose);
+		LocalDateTime now = LocalDateTime.now(clock);
+		if (latest.isPresent() && latest.get().getCreatedAt().plusSeconds(resendIntervalSeconds).isAfter(now)) {
+			throw new CustomException(ErrorCode.INVALID_REQUEST);
+		}
+		String code = String.format(Locale.ROOT, "%06d", random.nextInt(1_000_000));
+		String codeHash = passwordEncoder.encode(code);
+		repository.saveAndFlush(new EmailVerification(null, request.email(), purpose,
+				codeHash, LocalDateTime.now(clock).plusSeconds(codeExpirationSeconds)));
+		// 발송 실패는 예외로 전파하여 인증 요청 저장도 롤백한다.
+		mailSender.send(request.email(), purpose, code, codeExpirationSeconds);
+		return new EmailVerificationSendResponse(codeExpirationSeconds);
 	}
 
 	@Transactional
