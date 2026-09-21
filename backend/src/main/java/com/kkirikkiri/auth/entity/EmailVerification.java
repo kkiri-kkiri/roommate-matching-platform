@@ -52,6 +52,15 @@ public class EmailVerification {
 	@Column(name = "verified_at", nullable = true, columnDefinition = "DATETIME")
 	private LocalDateTime verifiedAt;
 
+	@Column(name = "verification_token_hash", nullable = true, length = 255)
+	private String verificationTokenHash;
+
+	@Column(name = "verification_token_expires_at", nullable = true, columnDefinition = "DATETIME")
+	private LocalDateTime verificationTokenExpiresAt;
+
+	@Column(name = "consumed_at", nullable = true, columnDefinition = "DATETIME")
+	private LocalDateTime consumedAt;
+
 	@Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "DATETIME")
 	private LocalDateTime createdAt;
 
@@ -68,13 +77,44 @@ public class EmailVerification {
 	}
 
 	/**
-	 * 서비스에서 인증번호 일치 여부와 만료 여부를 검증한 뒤 호출한다.
+	 * 서비스에서 인증번호 일치 여부를 검증한 뒤 토큰 해시와 만료 시각을 전달한다.
 	 */
-	public void markVerified(LocalDateTime verifiedAt) {
+	public void markVerified(LocalDateTime verifiedAt, String tokenHash, LocalDateTime tokenExpiresAt) {
 		Objects.requireNonNull(verifiedAt, "verifiedAt");
-		if (this.verifiedAt == null) {
-			this.verifiedAt = verifiedAt;
+		Objects.requireNonNull(tokenHash, "tokenHash");
+		Objects.requireNonNull(tokenExpiresAt, "tokenExpiresAt");
+		if (isVerified() || isConsumed() || isCodeExpired(verifiedAt)
+				|| tokenHash.isBlank() || !tokenExpiresAt.isAfter(verifiedAt)) {
+			throw new IllegalStateException("이메일 인증을 완료할 수 없습니다.");
 		}
+		this.verifiedAt = verifiedAt;
+		this.verificationTokenHash = tokenHash;
+		this.verificationTokenExpiresAt = tokenExpiresAt;
+	}
+
+	public boolean isCodeExpired(LocalDateTime now) {
+		return !expiresAt.isAfter(Objects.requireNonNull(now, "now"));
+	}
+
+	public boolean isVerified() {
+		return verifiedAt != null;
+	}
+
+	public boolean isConsumed() {
+		return consumedAt != null;
+	}
+
+	public boolean isTokenUsable(LocalDateTime now) {
+		Objects.requireNonNull(now, "now");
+		return isVerified() && !isConsumed() && verificationTokenHash != null
+				&& verificationTokenExpiresAt != null && verificationTokenExpiresAt.isAfter(now);
+	}
+
+	public void consume(LocalDateTime now) {
+		if (!isTokenUsable(now)) {
+			throw new IllegalStateException("만료되었거나 사용된 이메일 인증 토큰입니다.");
+		}
+		this.consumedAt = now;
 	}
 
 	@PrePersist

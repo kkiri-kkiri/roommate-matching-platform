@@ -14,7 +14,7 @@ import jakarta.validation.constraints.Size;
 
 /**
  * 이메일 인증, 중복 여부, 학부와 전공의 조합은 서비스에서 검증한다.
- * studentId는 admissionYear에 대응하며 MBTI 네 축은 저장 시 하나의 문자열로 조합한다.
+ * admissionYear는 입학연도이며 MBTI 네 축은 저장 시 하나의 문자열로 조합한다.
  */
 public record SignupRequest(
 		@NotBlank(message = "아이디를 입력해 주세요.")
@@ -51,7 +51,7 @@ public record SignupRequest(
 		Short birthYear,
 		@NotBlank(message = "학번을 입력해 주세요.")
 		@Pattern(regexp = "[0-9]{2}", message = "학번은 숫자 2자리여야 합니다.")
-		String studentId,
+		String admissionYear,
 		@NotBlank(message = "학년을 선택해 주세요.")
 		@Pattern(regexp = "[1-5]학년", message = "학년은 1학년부터 5학년까지 선택할 수 있습니다.")
 		String grade,

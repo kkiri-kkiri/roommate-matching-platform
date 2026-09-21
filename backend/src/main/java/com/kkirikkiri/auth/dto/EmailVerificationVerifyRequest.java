@@ -14,5 +14,8 @@ public record EmailVerificationVerifyRequest(
 		String email,
 		@NotBlank(message = "인증번호를 입력해 주세요.")
 		@Pattern(regexp = "[0-9]{6}", message = "인증번호는 숫자 6자리여야 합니다.")
-		String code) {
+		String code,
+		@NotBlank(message = "인증 목적을 입력해 주세요.")
+		@Pattern(regexp = "SIGNUP|FIND_ID", message = "인증 목적은 SIGNUP 또는 FIND_ID여야 합니다.")
+		String purpose) {
 }
