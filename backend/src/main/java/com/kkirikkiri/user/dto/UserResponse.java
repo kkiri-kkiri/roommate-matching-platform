@@ -13,7 +13,7 @@ public record UserResponse(
 		String faculty,
 		String major,
 		Short birthYear,
-		String studentId,
+		String admissionYear,
 		String grade,
 		String mbtiEnergy,
 		String mbtiInformation,

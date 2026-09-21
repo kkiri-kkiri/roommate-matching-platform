@@ -81,6 +81,17 @@ public class User {
 	}
 
 	/**
+	 * 탈퇴한 회원은 정상 또는 이용 정지 상태로 되돌릴 수 없다.
+	 */
+	public void changeStatus(UserStatus status) {
+		Objects.requireNonNull(status, "status");
+		if (this.status == UserStatus.WITHDRAWN && status != UserStatus.WITHDRAWN) {
+			throw new IllegalStateException("탈퇴한 회원의 상태는 변경할 수 없습니다.");
+		}
+		this.status = status;
+	}
+
+	/**
 	 * 서비스에서 학교 이메일 인증 완료 여부를 검증한 뒤 호출한다.
 	 */
 	public void verifyEmail() {

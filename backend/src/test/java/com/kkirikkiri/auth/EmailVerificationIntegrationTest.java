@@ -3,12 +3,16 @@ package com.kkirikkiri.auth;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HexFormat;
 import java.util.Optional;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -30,6 +34,7 @@ import com.kkirikkiri.auth.service.EmailVerificationMailSender;
 import com.kkirikkiri.auth.service.EmailVerificationService;
 import com.kkirikkiri.global.config.SecurityConfig;
 import com.kkirikkiri.global.security.JwtTokenProvider;
+import com.kkirikkiri.user.repository.UserRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -50,6 +55,7 @@ class EmailVerificationIntegrationTest {
 	@Autowired PasswordEncoder passwordEncoder;
 	@MockitoBean EmailVerificationRepository repository;
 	@MockitoBean JavaMailSender mailSender;
+	@MockitoBean UserRepository userRepository;
 	private final AtomicReference<EmailVerification> stored = new AtomicReference<>();
 	private final AtomicReference<SimpleMailMessage> mail = new AtomicReference<>();
 
@@ -62,7 +68,7 @@ class EmailVerificationIntegrationTest {
 				.thenAnswer(invocation -> Optional.ofNullable(stored.get()));
 		when(repository.saveAndFlush(any(EmailVerification.class))).thenAnswer(invocation -> {
 			EmailVerification value = invocation.getArgument(0);
-			ReflectionTestUtils.setField(value, "createdAt", LocalDateTime.now());
+			ReflectionTestUtils.invokeMethod(value, "onCreate");
 			stored.set(value);
 			return value;
 		});
@@ -93,15 +99,26 @@ class EmailVerificationIntegrationTest {
 				.content(verifyBody(code))).andExpect(status().isBadRequest());
 	}
 
-	@Test
-	void resendIsBlockedUntilIntervalPasses() throws Exception {
-		send();
-		mvc.perform(post("/api/auth/email-verifications/send").contentType(MediaType.APPLICATION_JSON)
-				.content(sendBody("SIGNUP"))).andExpect(status().isBadRequest());
-		verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
-		ReflectionTestUtils.setField(stored.get(), "createdAt", LocalDateTime.now().minusSeconds(61));
-		send();
-		verify(mailSender, times(2)).send(any(SimpleMailMessage.class));
+	@ParameterizedTest
+	@ValueSource(strings = {"UTC", "Asia/Seoul", "America/Los_Angeles"})
+	void resendIsBlockedUntilIntervalPassesRegardlessOfJvmTimeZone(String timeZone) throws Exception {
+		TimeZone original = TimeZone.getDefault();
+		try {
+			TimeZone.setDefault(TimeZone.getTimeZone(timeZone));
+			LocalDateTime before = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+			send();
+			assertFalse(stored.get().getCreatedAt().isBefore(before));
+			assertFalse(stored.get().getCreatedAt().isAfter(LocalDateTime.now(ZoneId.of("Asia/Seoul"))));
+			mvc.perform(post("/api/auth/email-verifications/send").contentType(MediaType.APPLICATION_JSON)
+					.content(sendBody("SIGNUP"))).andExpect(status().isBadRequest());
+			verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
+			ReflectionTestUtils.setField(stored.get(), "createdAt",
+					LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusSeconds(61));
+			send();
+			verify(mailSender, times(2)).send(any(SimpleMailMessage.class));
+		} finally {
+			TimeZone.setDefault(original);
+		}
 	}
 
 	@Test

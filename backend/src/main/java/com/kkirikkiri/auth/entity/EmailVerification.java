@@ -1,6 +1,7 @@
 package com.kkirikkiri.auth.entity;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 
 import jakarta.persistence.Column;
@@ -119,6 +120,6 @@ public class EmailVerification {
 
 	@PrePersist
 	protected void onCreate() {
-		this.createdAt = LocalDateTime.now();
+		this.createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 	}
 }

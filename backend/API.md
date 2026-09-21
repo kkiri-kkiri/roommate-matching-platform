@@ -2204,9 +2204,24 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 
 1. global 최소 공통 설정
 2. auth + user
-3. profile-survey + roommate-preferences
-4. roommate + likes + matching
-5. community + comments + reports
+   - User
+   - UserProfile
+
+3. survey
+   - ProfileSurvey
+   - RoommatePreference
+
+4. matching
+   - 룸메이트 조회
+   - 매칭
+   - 관심 프로필(ProfileLike)
+
+5. community
+   - 게시글
+   - 댓글
+   - PostLike
+   - CommentLike
+   - 신고
 6. calendar + crawler
 7. chat
 8. admin
