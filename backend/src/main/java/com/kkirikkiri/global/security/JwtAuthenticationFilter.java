@@ -20,6 +20,9 @@ import tools.jackson.databind.ObjectMapper;
 import com.kkirikkiri.global.exception.CustomException;
 import com.kkirikkiri.global.exception.ErrorCode;
 import com.kkirikkiri.global.response.ApiResponse;
+import com.kkirikkiri.user.entity.User;
+import com.kkirikkiri.user.entity.UserStatus;
+import com.kkirikkiri.user.repository.UserRepository;
 
 /**
  * SecurityFilterChain에 명시적으로 등록하여 사용한다.
@@ -30,6 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtTokenProvider jwtTokenProvider;
 	private final ObjectMapper objectMapper;
+	private final UserRepository userRepository;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -44,6 +48,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		try {
 			// 검증과 principal 추출을 한 번의 호출로 처리한다.
 			principal = jwtTokenProvider.getAuthenticatedUser(authorization.substring(7).trim());
+			User user = userRepository.findById(principal.userId())
+					.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
+			if (user.getStatus() != UserStatus.ACTIVE) {
+				throw new CustomException(ErrorCode.UNAUTHORIZED);
+			}
 		} catch (CustomException exception) {
 			if (exception.getErrorCode() != ErrorCode.UNAUTHORIZED) {
 				throw exception;

@@ -7,6 +7,8 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -76,6 +78,7 @@ class AuthenticationIntegrationTest {
 		UserProfile profile = new UserProfile(user, "차분한하루", "여자", dormitory, faculty, null,
 				(short) 2002, "24", "3학년", "INFJ");
 		when(userRepository.findByLoginId("test01")).thenReturn(Optional.of(user));
+		when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 		when(userProfileRepository.findByUser_UserId(USER_ID)).thenReturn(Optional.of(profile));
 	}
 
@@ -111,6 +114,35 @@ class AuthenticationIntegrationTest {
 		verifyNoInteractions(userProfileRepository);
 	}
 
+	@ParameterizedTest
+	@EnumSource(value = UserStatus.class, names = {"SUSPENDED", "WITHDRAWN"})
+	void existingTokenIsRejectedAfterStatusChange(UserStatus status) throws Exception {
+		String token = jwtTokenProvider.createAccessToken(USER_ID, UserRole.USER);
+		mvc.perform(get("/api/users/me").header("Authorization", "Bearer " + token))
+				.andExpect(status().isOk());
+		user.changeStatus(status);
+		clearInvocations(userProfileRepository);
+		assertRejected(token);
+		mvc.perform(patch("/api/users/me").header("Authorization", "Bearer " + token)
+				.contentType(MediaType.APPLICATION_JSON).content("{\"nickname\":\"새닉네임\"}"))
+				.andExpect(status().isUnauthorized());
+		mvc.perform(patch("/api/users/me/password").header("Authorization", "Bearer " + token)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"currentPassword\":\"test1234\",\"newPassword\":\"newPass123\",\"newPasswordConfirm\":\"newPass123\"}"))
+				.andExpect(status().isUnauthorized());
+		verifyNoInteractions(userProfileRepository);
+		assertTrue(passwordEncoder.matches("test1234", user.getPassword()));
+		verify(userRepository, times(4)).findById(USER_ID);
+	}
+
+	@Test
+	void tokenForMissingUserIsUnauthorized() throws Exception {
+		String token = jwtTokenProvider.createAccessToken(USER_ID, UserRole.USER);
+		when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+		assertRejected(token);
+		verify(userRepository).findById(USER_ID);
+	}
+
 	@Test
 	void forgedTokenIsUnauthorized() throws Exception {
 		byte[] wrongKey = new byte[32];
@@ -118,6 +150,7 @@ class AuthenticationIntegrationTest {
 		String token = new JwtTokenProvider(Base64.getEncoder().encodeToString(wrongKey), 3600)
 				.createAccessToken(USER_ID, UserRole.USER);
 		assertRejected(token);
+		verifyNoInteractions(userRepository);
 	}
 
 	@Test
@@ -127,11 +160,13 @@ class AuthenticationIntegrationTest {
 				.expirationTime(Date.from(Instant.now().minusSeconds(60))).build());
 		jwt.sign(new MACSigner(new byte[32]));
 		assertRejected(jwt.serialize());
+		verifyNoInteractions(userRepository);
 	}
 
 	@Test
 	void malformedTokenIsUnauthorized() throws Exception {
 		assertRejected("broken.token.value");
+		verifyNoInteractions(userRepository);
 	}
 
 	@Test
@@ -165,9 +200,10 @@ class AuthenticationIntegrationTest {
 	}
 
 	private void assertRejected(String token) throws Exception {
-		mvc.perform(get("/api/users/me").header("Authorization", "Bearer " + token))
+		var result = mvc.perform(get("/api/users/me").header("Authorization", "Bearer " + token))
 				.andExpect(status().isUnauthorized()).andExpect(jsonPath("$.success").value(false))
-				.andExpect(jsonPath("$.errorCode").value("UNAUTHORIZED"));
+				.andExpect(jsonPath("$.errorCode").value("UNAUTHORIZED")).andReturn();
+		assertNull(result.getRequest().getSession(false));
 		verifyNoInteractions(userProfileRepository);
 	}
 }

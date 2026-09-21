@@ -16,6 +16,7 @@ import com.kkirikkiri.global.exception.ErrorCode;
 import com.kkirikkiri.global.response.ApiResponse;
 import com.kkirikkiri.global.security.JwtAuthenticationFilter;
 import com.kkirikkiri.global.security.JwtTokenProvider;
+import com.kkirikkiri.user.repository.UserRepository;
 
 @Configuration
 public class SecurityConfig {
@@ -27,7 +28,7 @@ public class SecurityConfig {
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper objectMapper,
-			JwtTokenProvider jwtTokenProvider) throws Exception {
+			JwtTokenProvider jwtTokenProvider, UserRepository userRepository) throws Exception {
 		return http
 				.cors(Customizer.withDefaults())
 				.csrf(csrf -> csrf.disable())
@@ -35,7 +36,7 @@ public class SecurityConfig {
 				.requestCache(cache -> cache.disable())
 				.formLogin(form -> form.disable())
 				.httpBasic(basic -> basic.disable())
-				.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, objectMapper),
+				.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, objectMapper, userRepository),
 						UsernamePasswordAuthenticationFilter.class)
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
