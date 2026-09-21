@@ -65,6 +65,14 @@ public class User {
 		this.status = UserStatus.ACTIVE;
 	}
 
+	public User(String loginId, String encodedPassword, String schoolEmail, UserRole role) {
+    this.loginId = Objects.requireNonNull(loginId, "loginId");
+    this.password = Objects.requireNonNull(encodedPassword, "encodedPassword");
+    this.schoolEmail = Objects.requireNonNull(schoolEmail, "schoolEmail");
+    this.role = Objects.requireNonNull(role, "role");
+    this.status = UserStatus.ACTIVE;
+}
+
 	/**
 	 * 현재 비밀번호 검증과 새 비밀번호 해시는 서비스에서 처리한다.
 	 */
