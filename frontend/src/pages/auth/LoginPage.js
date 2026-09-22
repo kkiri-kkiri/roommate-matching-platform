@@ -1,14 +1,10 @@
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { login } from "../../api/authApi";
 import * as S from "./LoginPageCss";
 
 const REMEMBERED_LOGIN_ID_KEY = "rememberedLoginId";
-const TEST_ACCOUNT = {
-  loginId: "test01",
-  password: "test1234",
-};
-
 function getRememberedLoginId() {
   if (typeof window === "undefined") return "";
 
@@ -29,7 +25,7 @@ const LoginPage = ({ onLogin }) => {
   const [feedback, setFeedback] = useState(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const normalizedLoginId = loginId.trim();
 
@@ -42,39 +38,35 @@ const LoginPage = ({ onLogin }) => {
       return;
     }
 
-    if (
-      normalizedLoginId !== TEST_ACCOUNT.loginId ||
-      password !== TEST_ACCOUNT.password
-    ) {
+    try {
+      const response = await login(normalizedLoginId, password);
+
+      try {
+        window.localStorage.setItem("accessToken", response.accessToken);
+        if (rememberId) {
+          window.localStorage.setItem(
+            REMEMBERED_LOGIN_ID_KEY,
+            normalizedLoginId,
+          );
+        } else {
+          window.localStorage.removeItem(REMEMBERED_LOGIN_ID_KEY);
+        }
+      } catch {
+        // 저장소 접근이 제한된 환경에서도 로그인 흐름은 계속 진행합니다.
+      }
+
+      onLogin?.({
+        loginId: response.user.loginId,
+        displayName: response.user.nickname,
+      });
+      navigate("/", { replace: true });
+    } catch (error) {
       setFeedback({
         tone: "error",
         reason: "credentials",
-        text: "아이디 또는 비밀번호가 올바르지 않습니다.",
+        text: error.message,
       });
-      return;
     }
-
-    setFeedback({
-      tone: "success",
-      text: "로그인되었습니다. 메인 화면으로 이동합니다.",
-    });
-
-    try {
-      if (rememberId) {
-        window.localStorage.setItem(REMEMBERED_LOGIN_ID_KEY, normalizedLoginId);
-      } else {
-        window.localStorage.removeItem(REMEMBERED_LOGIN_ID_KEY);
-      }
-    } catch {
-      // 저장소 접근이 제한된 환경에서도 로그인 흐름은 계속 진행합니다.
-    }
-
-    onLogin?.({
-      loginId: normalizedLoginId,
-      displayName: normalizedLoginId,
-    });
-
-    navigate("/", { replace: true });
   };
 
   const clearFeedback = () => {
@@ -180,9 +172,7 @@ const LoginPage = ({ onLogin }) => {
               {feedback && (
                 <S.Feedback
                   role={feedback.tone === "error" ? "alert" : "status"}
-                  aria-live={
-                    feedback.tone === "error" ? "assertive" : "polite"
-                  }
+                  aria-live={feedback.tone === "error" ? "assertive" : "polite"}
                   $tone={feedback.tone}
                 >
                   {feedback.text}

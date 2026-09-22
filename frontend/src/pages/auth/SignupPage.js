@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { FACULTY_OPTIONS } from "../../data/facultyOptions";
+import {
+  sendEmailVerification,
+  signup,
+  verifyEmailVerification,
+} from "../../api/authApi";
 import * as S from "./SignupPageCss";
 
 const MBTI_DIMENSIONS = [
@@ -54,8 +60,7 @@ const INITIAL_FORM = {
 };
 
 const SCHOOL_EMAIL_DOMAIN = "@hknu.ac.kr";
-const SCHOOL_EMAIL_ID_PATTERN =
-  /^[A-Za-z0-9_%+-]+(?:\.[A-Za-z0-9_%+-]+)*$/;
+const SCHOOL_EMAIL_ID_PATTERN = /^[A-Za-z0-9_%+-]+(?:\.[A-Za-z0-9_%+-]+)*$/;
 const STUDENT_ID_PATTERN = /^\d{2}$/;
 
 const findFaculty = (name) =>
@@ -68,8 +73,10 @@ const SignupPage = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationSent, setVerificationSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [verificationToken, setVerificationToken] = useState("");
   const [verificationFeedback, setVerificationFeedback] = useState(null);
   const [submitFeedback, setSubmitFeedback] = useState(null);
+  const navigate = useNavigate();
 
   const passwordIsLongEnough = form.password.length >= 8;
   const passwordMatches =
@@ -118,11 +125,12 @@ const SignupPage = () => {
       setVerificationCode("");
       setVerificationSent(false);
       setIsVerified(false);
+      setVerificationToken("");
       setVerificationFeedback(null);
     }
   };
 
-  const handleSendCode = () => {
+  const handleSendCode = async () => {
     const schoolEmailId = form.schoolEmailId.trim();
 
     if (!SCHOOL_EMAIL_ID_PATTERN.test(schoolEmailId)) {
@@ -133,16 +141,22 @@ const SignupPage = () => {
       return;
     }
 
-    setVerificationCode("");
-    setVerificationSent(true);
-    setIsVerified(false);
-    setVerificationFeedback({
-      tone: "info",
-      text: `${schoolEmailId}${SCHOOL_EMAIL_DOMAIN}로 인증번호를 전송했어요. 화면 확인용으로 숫자 6자리를 입력해 주세요.`,
-    });
+    try {
+      await sendEmailVerification(`${schoolEmailId}${SCHOOL_EMAIL_DOMAIN}`);
+      setVerificationCode("");
+      setVerificationSent(true);
+      setIsVerified(false);
+      setVerificationToken("");
+      setVerificationFeedback({
+        tone: "info",
+        text: `${schoolEmailId}${SCHOOL_EMAIL_DOMAIN}로 인증번호를 전송했어요.`,
+      });
+    } catch (error) {
+      setVerificationFeedback({ tone: "error", text: error.message });
+    }
   };
 
-  const handleVerifyCode = () => {
+  const handleVerifyCode = async () => {
     if (!/^\d{6}$/.test(verificationCode)) {
       setVerificationFeedback({
         tone: "error",
@@ -151,15 +165,24 @@ const SignupPage = () => {
       return;
     }
 
-    setIsVerified(true);
-    setVerificationFeedback({
-      tone: "success",
-      text: "재학생 인증이 완료되었습니다.",
-    });
-    setSubmitFeedback(null);
+    try {
+      const token = await verifyEmailVerification(
+        `${form.schoolEmailId.trim()}${SCHOOL_EMAIL_DOMAIN}`,
+        verificationCode,
+      );
+      setVerificationToken(token);
+      setIsVerified(true);
+      setVerificationFeedback({
+        tone: "success",
+        text: "재학생 인증이 완료되었습니다.",
+      });
+      setSubmitFeedback(null);
+    } catch (error) {
+      setVerificationFeedback({ tone: "error", text: error.message });
+    }
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const requiredValues = [
@@ -245,10 +268,34 @@ const SignupPage = () => {
       return;
     }
 
-    setSubmitFeedback({
-      tone: "success",
-      text: "가입 정보를 모두 확인했어요. 현재 화면에서는 실제 회원가입이 진행되지 않습니다.",
-    });
+    try {
+      await signup({
+        loginId: form.loginId.trim(),
+        password: form.password,
+        passwordConfirm: form.passwordConfirm,
+        nickname: form.nickname.trim(),
+        schoolEmail: `${form.schoolEmailId.trim()}${SCHOOL_EMAIL_DOMAIN}`,
+        emailVerificationToken: verificationToken,
+        gender: form.gender,
+        dormitory: form.dormitory,
+        faculty: form.faculty,
+        major: form.major,
+        birthYear: Number(form.birthYear),
+        admissionYear: form.studentId,
+        grade: form.grade,
+        mbtiEnergy: form.mbtiEnergy,
+        mbtiInformation: form.mbtiInformation,
+        mbtiDecision: form.mbtiDecision,
+        mbtiLifestyle: form.mbtiLifestyle,
+      });
+      setSubmitFeedback({
+        tone: "success",
+        text: "회원가입이 완료되었습니다. 로그인해 주세요.",
+      });
+      navigate("/login");
+    } catch (error) {
+      setSubmitFeedback({ tone: "error", text: error.message });
+    }
   };
 
   const renderChoiceField = (name, label, options) => (
@@ -260,11 +307,7 @@ const SignupPage = () => {
           const selected = form[name] === option;
 
           return (
-            <S.ChoiceLabel
-              key={option}
-              htmlFor={inputId}
-              $selected={selected}
-            >
+            <S.ChoiceLabel key={option} htmlFor={inputId} $selected={selected}>
               <S.HiddenChoiceInput
                 id={inputId}
                 type="radio"
@@ -292,8 +335,7 @@ const SignupPage = () => {
           <S.Eyebrow>JOIN OUR COMMUNITY</S.Eyebrow>
           <S.Title id="signup-title">룸메이트 찾기를 시작해요</S.Title>
           <S.Description>
-            기본 정보를 입력하면 나와 잘 맞는 룸메이트를 만날 준비가
-            완료됩니다.
+            기본 정보를 입력하면 나와 잘 맞는 룸메이트를 만날 준비가 완료됩니다.
           </S.Description>
         </S.Header>
 
@@ -342,9 +384,7 @@ const SignupPage = () => {
                   />
                   <S.VisibilityButton
                     type="button"
-                    onClick={() =>
-                      setShowPassword((current) => !current)
-                    }
+                    onClick={() => setShowPassword((current) => !current)}
                     aria-label={
                       showPassword ? "비밀번호 숨기기" : "비밀번호 표시하기"
                     }
@@ -498,9 +538,7 @@ const SignupPage = () => {
 
             {verificationSent && !isVerified && (
               <S.FieldGroup>
-                <S.Label htmlFor="signup-verification-code">
-                  인증번호
-                </S.Label>
+                <S.Label htmlFor="signup-verification-code">인증번호</S.Label>
                 <S.ActionRow>
                   <S.Input
                     id="signup-verification-code"
@@ -530,9 +568,7 @@ const SignupPage = () => {
 
             <S.VerificationStatus
               id="verification-status"
-              role={
-                verificationFeedback?.tone === "error" ? "alert" : "status"
-              }
+              role={verificationFeedback?.tone === "error" ? "alert" : "status"}
               aria-live={
                 verificationFeedback?.tone === "error" ? "assertive" : "polite"
               }
@@ -697,9 +733,7 @@ const SignupPage = () => {
                               $selected={selected}
                               aria-label={`${dimension.label} ${option}`}
                               aria-pressed={selected}
-                              onClick={() =>
-                                setFormValue(dimension.id, option)
-                              }
+                              onClick={() => setFormValue(dimension.id, option)}
                             >
                               {option}
                             </S.MbtiButton>
