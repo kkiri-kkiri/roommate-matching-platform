@@ -49,4 +49,18 @@ public class CommunityPostController {
 		communityPostService.deletePost(user.userId(), postId);
 		return ApiResponse.successWithoutData();
 	}
+
+	@PostMapping("/{postId}/likes")
+	public ApiResponse<Void> likePost(@AuthenticationPrincipal AuthenticatedUser user,
+			@PathVariable Long postId) {
+		communityPostService.likePost(user.userId(), postId);
+		return ApiResponse.successWithoutData();
+	}
+
+	@DeleteMapping("/{postId}/likes")
+	public ApiResponse<Void> unlikePost(@AuthenticationPrincipal AuthenticatedUser user,
+			@PathVariable Long postId) {
+		communityPostService.unlikePost(user.userId(), postId);
+		return ApiResponse.successWithoutData();
+	}
 }
