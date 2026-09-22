@@ -44,10 +44,18 @@ public class SecurityConfig {
 								"/api/auth/email-verifications/verify").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/signup", "/api/auth/find-id",
 								"/api/auth/password-reset/request", "/api/auth/password-reset/confirm").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/auth/signup/availability").permitAll()
 						.requestMatchers("/api/users/me", "/api/users/me/password").authenticated()
 						.requestMatchers("/api/roommates/**", "/api/users/me/liked-roommates").authenticated()
-						.requestMatchers(HttpMethod.POST, "/api/posts/*/likes").authenticated()
-						.requestMatchers(HttpMethod.DELETE, "/api/posts/*/likes").authenticated()
+						.requestMatchers(HttpMethod.GET, "/api/calendar/events").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/calendar/events").authenticated()
+						.requestMatchers(HttpMethod.PATCH, "/api/calendar/events/{eventId}").authenticated()
+						.requestMatchers(HttpMethod.DELETE, "/api/calendar/events/{eventId}").authenticated()
+						.requestMatchers(HttpMethod.GET, "/api/calendar/categories").authenticated()
+						.requestMatchers(HttpMethod.PUT, "/api/calendar/categories").authenticated()
+						.requestMatchers(HttpMethod.POST, "/api/calendar/categories/custom").authenticated()
+						.requestMatchers(HttpMethod.PATCH, "/api/calendar/categories/{categoryId}").authenticated()
+						.requestMatchers(HttpMethod.DELETE, "/api/calendar/categories/{categoryId}").authenticated()
 						.anyRequest().denyAll())
 				.exceptionHandling(errors -> errors
 						.authenticationEntryPoint((request, response, exception) -> {
