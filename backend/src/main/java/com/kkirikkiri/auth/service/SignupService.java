@@ -4,11 +4,14 @@ import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kkirikkiri.auth.dto.SignupRequest;
 import com.kkirikkiri.auth.dto.SignupResponse;
+import com.kkirikkiri.auth.dto.SignupAvailabilityResponse;
 import com.kkirikkiri.auth.entity.EmailVerificationPurpose;
 import com.kkirikkiri.global.exception.CustomException;
 import com.kkirikkiri.global.exception.ErrorCode;
@@ -28,6 +31,9 @@ import com.kkirikkiri.user.repository.UserRepository;
 @Transactional(readOnly = true)
 public class SignupService {
 
+	private static final String NO_MAJOR = "세부전공 없음";
+	private static final Logger log = LoggerFactory.getLogger(SignupService.class);
+
 	private final UserRepository userRepository;
 	private final UserProfileRepository userProfileRepository;
 	private final DormitoryRepository dormitoryRepository;
@@ -46,21 +52,28 @@ public class SignupService {
 		if (request == null || !validator.validate(request).isEmpty()) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
-		if (userRepository.existsByLoginId(request.loginId())
-				|| userRepository.existsBySchoolEmail(request.schoolEmail())
-				|| userProfileRepository.existsByNickname(request.nickname())) {
-			throw new CustomException(ErrorCode.INVALID_REQUEST);
+		if (userRepository.existsByLoginId(request.loginId())) {
+			throw new CustomException(ErrorCode.DUPLICATE_ACCOUNT_VALUE);
+		}
+		if (userRepository.existsBySchoolEmail(request.schoolEmail())) {
+			throw new CustomException(ErrorCode.DUPLICATE_ACCOUNT_VALUE);
+		}
+		if (userProfileRepository.existsByNickname(request.nickname())) {
+			throw new CustomException(ErrorCode.DUPLICATE_ACCOUNT_VALUE);
 		}
 
 		Dormitory dormitory = dormitoryRepository.findByDormitoryName(request.dormitory())
 				.filter(Dormitory::isActive)
-				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+				.orElseThrow(() -> reject(ErrorCode.DORMITORY_NOT_FOUND, "dormitory", request.dormitory()));
 		Faculty faculty = facultyRepository.findByFacultyName(request.faculty())
 				.filter(Faculty::isActive)
-				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
-		Major major = majorRepository.findByFaculty_FacultyIdAndMajorName(faculty.getFacultyId(), request.major())
-				.filter(Major::isActive)
-				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+				.orElseThrow(() -> reject(ErrorCode.FACULTY_NOT_FOUND, "faculty", request.faculty()));
+		Major major = null;
+		if (!NO_MAJOR.equals(request.major())) {
+			major = majorRepository.findByFaculty_FacultyIdAndMajorName(faculty.getFacultyId(), request.major())
+					.filter(Major::isActive)
+					.orElseThrow(() -> reject(ErrorCode.MAJOR_NOT_FOUND, "major", request.major()));
+		}
 
 		String encodedPassword = passwordEncoder.encode(request.password());
 		emailVerificationService.consumeToken(request.schoolEmail(), EmailVerificationPurpose.SIGNUP,
@@ -76,8 +89,20 @@ public class SignupService {
 					dormitory, faculty, major, request.birthYear(), request.admissionYear(), request.grade(), mbti));
 		} catch (DataIntegrityViolationException exception) {
 			// 사전 중복 검사 이후의 동시 가입 충돌도 기존 예외 계약으로 처리한다.
-			throw new CustomException(ErrorCode.INVALID_REQUEST);
+			throw new CustomException(ErrorCode.ACCOUNT_SAVE_CONFLICT);
 		}
 		return new SignupResponse(user.getUserId(), user.getLoginId(), request.nickname());
+	}
+
+	public SignupAvailabilityResponse checkAvailability(String loginId, String schoolEmail, String nickname) {
+		return new SignupAvailabilityResponse(
+				!userRepository.existsByLoginId(loginId),
+				!userRepository.existsBySchoolEmail(schoolEmail),
+				!userProfileRepository.existsByNickname(nickname));
+	}
+
+	private CustomException reject(ErrorCode errorCode, String field, String value) {
+		log.warn("Signup rejected because reference data is missing or inactive: {}={}", field, value);
+		return new CustomException(errorCode);
 	}
 }

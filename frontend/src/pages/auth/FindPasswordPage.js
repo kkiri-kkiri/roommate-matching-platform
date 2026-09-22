@@ -10,15 +10,14 @@ import {
 } from "lucide-react";
 import * as S from "./FindPasswordPageCss";
 
-const DEMO_ACCOUNT = {
-    userId: "test01",
-    email: "test01@hknu.ac.kr",
-};
+import { requestPasswordReset, confirmPasswordReset } from "../../api/authApi";
 
 function FindPasswordPage() {
     const [userId, setUserId] = useState("");
     const [email, setEmail] = useState("");
-    const [lookupResult, setLookupResult] = useState("idle");
+    const [lookupError, setLookupError] = useState("");
+    const [resetToken, setResetToken] = useState("");
+    const [pending, setPending] = useState(false);
     const [stage, setStage] = useState("lookup");
     const [newPassword, setNewPassword] = useState("");
     const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -26,7 +25,8 @@ function FindPasswordPage() {
     const [passwordErrorField, setPasswordErrorField] = useState("");
 
     const resetFlow = () => {
-        setLookupResult("idle");
+        setLookupError("");
+        setResetToken("");
         setStage("lookup");
         setNewPassword("");
         setPasswordConfirm("");
@@ -39,24 +39,24 @@ function FindPasswordPage() {
         resetFlow();
     };
 
-    const isCorrectId =
-        userId.trim().toLowerCase() === DEMO_ACCOUNT.userId.toLowerCase();
-
-    const handleEmailSubmit = (event) => {
+    const handleEmailSubmit = async (event) => {
         event.preventDefault();
-        const normalizedEmail = email.trim().toLowerCase();
-
-        if (isCorrectId && normalizedEmail === DEMO_ACCOUNT.email) {
-            setLookupResult("success");
+        if (pending) return;
+        setPending(true);
+        setLookupError("");
+        try {
+            await requestPasswordReset(userId.trim(), email.trim());
             setStage("emailSent");
-            return;
+        } catch (error) {
+            setLookupError(error.message);
+        } finally {
+            setPending(false);
         }
-
-        setLookupResult("empty");
     };
 
-    const handleResetSubmit = (event) => {
+    const handleResetSubmit = async (event) => {
         event.preventDefault();
+        if (pending) return;
 
         if (newPassword.length < 8) {
             setPasswordError("새 비밀번호는 8자 이상으로 입력해 주세요.");
@@ -72,7 +72,18 @@ function FindPasswordPage() {
 
         setPasswordError("");
         setPasswordErrorField("");
-        setStage("complete");
+        setPending(true);
+        try {
+            await confirmPasswordReset(resetToken.trim(), newPassword, passwordConfirm);
+            setResetToken("");
+            setNewPassword("");
+            setPasswordConfirm("");
+            setStage("complete");
+        } catch (error) {
+            setPasswordError(error.message);
+        } finally {
+            setPending(false);
+        }
     };
 
     const renderLookupForm = () => (
@@ -96,6 +107,7 @@ function FindPasswordPage() {
                             autoComplete="username"
                             placeholder="아이디를 입력해 주세요"
                             value={userId}
+                            disabled={pending}
                             onChange={handleLookupFieldChange(setUserId)}
                             required
                         />
@@ -115,38 +127,30 @@ function FindPasswordPage() {
                             autoComplete="email"
                             placeholder="name@hknu.ac.kr"
                             value={email}
+                            disabled={pending}
                             onChange={handleLookupFieldChange(setEmail)}
                             required
                         />
                     </S.InputWrap>
                 </S.Field>
 
-                <S.PrimaryButton type="submit">
+                <S.PrimaryButton type="submit" disabled={pending}>
                     <Mail aria-hidden="true" />
-                    비밀번호 재설정 이메일 보내기
+                    {pending ? "요청 중..." : "비밀번호 재설정 이메일 보내기"}
                 </S.PrimaryButton>
             </S.Form>
 
-            <S.DemoNote>
-                <S.DemoBadge>UI 데모</S.DemoBadge>
-                <span>
-                    아이디 <strong>test01</strong>과 이메일{" "}
-                    <strong>test01@hknu.ac.kr</strong>을 입력하면 계정 있음 상태를 확인할
-                    수 있어요. 다른 유효한 정보는 계정 없음 상태로 전환됩니다.
-                </span>
-            </S.DemoNote>
-
-            {lookupResult === "empty" && (
+            {lookupError && (
                 <S.ResultPanel $tone="empty" role="alert" aria-live="polite">
                     <S.ResultIcon $tone="empty">
                         <CircleAlert aria-hidden="true" />
                     </S.ResultIcon>
                     <S.ResultContent>
-                        <S.ResultTitle>일치하는 계정을 찾지 못했어요</S.ResultTitle>
+                        <S.ResultTitle>요청을 완료하지 못했어요</S.ResultTitle>
                         <S.ResultDescription>
-                            아이디와 이메일을 다시 확인해 주세요.
+                            {lookupError}
                         </S.ResultDescription>
-                        <S.TextButton type="button" onClick={() => setLookupResult("idle")}>
+                        <S.TextButton type="button" onClick={() => setLookupError("")}>
                             <RotateCcw aria-hidden="true" />
                             다시 입력하기
                         </S.TextButton>
@@ -161,9 +165,9 @@ function FindPasswordPage() {
             <S.LargeStatusIcon>
                 <Mail aria-hidden="true" />
             </S.LargeStatusIcon>
-            <S.StepTitle>재설정 이메일을 보냈어요</S.StepTitle>
+            <S.StepTitle>재설정 이메일을 확인해 주세요</S.StepTitle>
             <S.StepDescription>
-                <strong>{email.trim()}</strong>으로 비밀번호 재설정 안내를 전송했어요.
+                가입 정보가 일치하면 <strong>{email.trim()}</strong>으로 비밀번호 재설정 안내가 전송돼요.
                 메일함을 확인해 주세요.
             </S.StepDescription>
             <S.InfoBox>
@@ -172,7 +176,7 @@ function FindPasswordPage() {
             </S.InfoBox>
             <S.PrimaryButton type="button" onClick={() => setStage("reset")}>
                 <KeyRound aria-hidden="true" />
-                데모로 비밀번호 재설정 계속하기
+                메일의 재설정 토큰 입력하기
             </S.PrimaryButton>
             <S.TextButton type="button" onClick={resetFlow}>
                 이메일 다시 입력하기
@@ -184,7 +188,7 @@ function FindPasswordPage() {
         <S.ResetSection>
             <S.VerifiedBadge role="status" aria-live="polite">
                 <CircleCheck aria-hidden="true" />
-                이메일 인증이 완료됐어요
+                메일로 받은 재설정 토큰이 필요해요
             </S.VerifiedBadge>
             <S.SectionHeading>새 비밀번호를 설정해 주세요</S.SectionHeading>
             <S.SectionCopy>
@@ -192,6 +196,17 @@ function FindPasswordPage() {
             </S.SectionCopy>
 
             <S.Form onSubmit={handleResetSubmit}>
+                <S.Field>
+                    <S.Label htmlFor="reset-token">재설정 토큰</S.Label>
+                    <S.InputWrap>
+                        <S.InputIcon><Mail aria-hidden="true" /></S.InputIcon>
+                        <S.Input id="reset-token" name="resetToken" type="text"
+                            autoComplete="off" placeholder="메일로 받은 재설정 토큰을 붙여 넣어 주세요"
+                            value={resetToken} disabled={pending} required
+                            onChange={(event) => { setResetToken(event.target.value); setPasswordError(""); }} />
+                    </S.InputWrap>
+                    <S.FieldHint>토큰이 만료되면 이메일을 다시 요청해 주세요.</S.FieldHint>
+                </S.Field>
                 <S.Field>
                     <S.Label htmlFor="new-password">새 비밀번호</S.Label>
                     <S.InputWrap>
@@ -206,6 +221,7 @@ function FindPasswordPage() {
                             placeholder="8자 이상 입력해 주세요"
                             minLength="8"
                             value={newPassword}
+                            disabled={pending}
                             onChange={(event) => {
                                 setNewPassword(event.target.value);
                                 setPasswordError("");
@@ -239,6 +255,7 @@ function FindPasswordPage() {
                             placeholder="한 번 더 입력해 주세요"
                             minLength="8"
                             value={passwordConfirm}
+                            disabled={pending}
                             onChange={(event) => {
                                 setPasswordConfirm(event.target.value);
                                 setPasswordError("");
@@ -262,13 +279,13 @@ function FindPasswordPage() {
                     </S.ErrorMessage>
                 )}
 
-                <S.PrimaryButton type="submit">
+                <S.PrimaryButton type="submit" disabled={pending}>
                     <ShieldCheck aria-hidden="true" />
-                    비밀번호 변경하기
+                    {pending ? "변경 중..." : "비밀번호 변경하기"}
                 </S.PrimaryButton>
             </S.Form>
 
-            <S.TextButton type="button" onClick={resetFlow}>
+            <S.TextButton type="button" onClick={resetFlow} disabled={pending}>
                 다른 계정 정보 입력하기
             </S.TextButton>
         </S.ResetSection>
@@ -279,10 +296,9 @@ function FindPasswordPage() {
             <S.LargeStatusIcon $complete>
                 <CircleCheck aria-hidden="true" />
             </S.LargeStatusIcon>
-            <S.StepTitle>비밀번호 재설정 화면을 확인했어요</S.StepTitle>
+            <S.StepTitle>비밀번호를 변경했어요</S.StepTitle>
             <S.StepDescription>
-                현재는 UI 데모이므로 실제 계정 비밀번호는 변경되지 않아요. 테스트
-                비밀번호 <strong>test1234</strong>로 로그인해 주세요.
+                새로 설정한 비밀번호로 로그인해 주세요.
             </S.StepDescription>
             <S.LoginButton to="/login">로그인하러 가기</S.LoginButton>
         </S.StepPanel>

@@ -16,6 +16,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Faculty {
 
+	public Faculty(String facultyName, boolean active) {
+		this.facultyName = facultyName;
+		this.active = active;
+	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "faculty_id")

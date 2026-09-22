@@ -160,6 +160,12 @@ export const Input = styled.input`
     box-shadow 160ms ease,
     background-color 160ms ease;
 
+  border-color: ${({ $tone }) => {
+    if ($tone === "success") return "#72c8c1";
+    if ($tone === "error") return "#e07a70";
+    return "#e2e2e4";
+  }};
+
   &::placeholder {
     color: #8e8e93;
   }
@@ -186,7 +192,12 @@ export const EmailInputGroup = styled.div`
   flex: 1 1 auto;
   align-items: stretch;
   overflow: hidden;
-  border: 1px solid #e2e2e4;
+  border: 1px solid
+    ${({ $tone }) => {
+      if ($tone === "success") return "#72c8c1";
+      if ($tone === "error") return "#e07a70";
+      return "#e2e2e4";
+    }};
   border-radius: 12px;
   background: ${({ $readOnly }) => ($readOnly ? "#f3f3f3" : "#ffffff")};
   transition:
@@ -270,7 +281,12 @@ export const SelectShell = styled.div`
   display: flex;
   align-items: center;
   overflow: hidden;
-  border: 1px solid #e2e2e4;
+  border: 1px solid
+    ${({ $tone }) => {
+      if ($tone === "success") return "#72c8c1";
+      if ($tone === "error") return "#e07a70";
+      return "#e2e2e4";
+    }};
   border-radius: 12px;
   background: ${({ $disabled }) => ($disabled ? "#f3f3f3" : "#ffffff")};
   transition:

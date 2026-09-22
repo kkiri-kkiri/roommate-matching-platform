@@ -16,6 +16,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Dormitory {
 
+	public Dormitory(String dormitoryCode, String dormitoryName, boolean active) {
+		this.dormitoryCode = dormitoryCode;
+		this.dormitoryName = dormitoryName;
+		this.active = active;
+	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "dormitory_id")
