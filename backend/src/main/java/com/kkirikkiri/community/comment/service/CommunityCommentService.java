@@ -11,6 +11,8 @@ import com.kkirikkiri.community.comment.dto.CommunityCommentCreateRequest;
 import com.kkirikkiri.community.comment.dto.CommunityCommentUpdateRequest;
 import com.kkirikkiri.community.comment.dto.MyCommunityCommentResponse;
 import com.kkirikkiri.community.comment.entity.CommunityComment;
+import com.kkirikkiri.community.comment.entity.CommentLike;
+import com.kkirikkiri.community.comment.repository.CommentLikeRepository;
 import com.kkirikkiri.community.comment.repository.CommunityCommentRepository;
 import com.kkirikkiri.community.common.entity.CommunityContentStatus;
 import com.kkirikkiri.community.post.entity.CommunityPost;
@@ -31,6 +33,30 @@ public class CommunityCommentService {
 	private final CommunityPostRepository communityPostRepository;
 	private final UserRepository userRepository;
 	private final Validator validator;
+	private final CommentLikeRepository commentLikeRepository;
+
+	/** 댓글 또는 답글에 인증 사용자의 좋아요를 등록한다. 이미 좋아요한 경우 변경 없이 완료한다. */
+	@Transactional
+	public void likeComment(Long userId, Long commentId) {
+		validateUserId(userId);
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
+		CommunityComment comment = findActiveComment(commentId);
+		if (!commentLikeRepository.existsByComment_CommentIdAndUser_UserId(commentId, userId)) {
+			commentLikeRepository.save(new CommentLike(comment, user));
+		}
+	}
+
+	/** 댓글 또는 답글의 본인 좋아요만 취소한다. 좋아요가 없는 경우 변경 없이 완료한다. */
+	@Transactional
+	public void unlikeComment(Long userId, Long commentId) {
+		validateUserId(userId);
+		userRepository.findById(userId)
+				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
+		findActiveComment(commentId);
+		commentLikeRepository.findByComment_CommentIdAndUser_UserId(commentId, userId)
+				.ifPresent(commentLikeRepository::delete);
+	}
 
 	/** 활성 게시글에 댓글을 작성하고 생성된 댓글 ID를 반환한다. */
 	@Transactional
