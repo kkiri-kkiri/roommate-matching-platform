@@ -20,13 +20,17 @@ import com.kkirikkiri.community.comment.entity.CommunityComment;
 import com.kkirikkiri.community.common.entity.CommunityContentStatus;
 import com.kkirikkiri.community.post.entity.CommunityPost;
 import com.kkirikkiri.community.post.entity.PostImage;
+import com.kkirikkiri.community.post.entity.PostLike;
 import com.kkirikkiri.community.comment.repository.CommunityCommentRepository;
 import com.kkirikkiri.community.post.repository.CommunityPostRepository;
 import com.kkirikkiri.community.post.repository.PostImageRepository;
+import com.kkirikkiri.community.post.repository.PostLikeRepository;
 import com.kkirikkiri.global.exception.CustomException;
 import com.kkirikkiri.global.exception.ErrorCode;
 import com.kkirikkiri.user.entity.UserProfile;
+import com.kkirikkiri.user.entity.User;
 import com.kkirikkiri.user.repository.UserProfileRepository;
+import com.kkirikkiri.user.repository.UserRepository;
 import com.kkirikkiri.community.post.dto.CommunityPostListRequest;
 import com.kkirikkiri.community.post.dto.CommunityPostResponse;
 import com.kkirikkiri.community.post.dto.CommunityPostDetailResponse;
@@ -52,6 +56,39 @@ public class CommunityPostService {
 	private final UserProfileRepository userProfileRepository;
 	private final Validator validator;
 	private final CommunityPostReadRepository communityPostReadRepository;
+	private final PostLikeRepository postLikeRepository;
+	private final UserRepository userRepository;
+
+	/** 인증 사용자의 좋아요를 등록한다. 이미 좋아요한 경우 변경 없이 완료한다. */
+	@Transactional
+	public void likePost(Long userId, Long postId) {
+		CommunityPost post = findPostForLikeUpdate(userId, postId);
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
+		if (postLikeRepository.findByPost_PostIdAndUser_UserId(postId, userId).isEmpty()) {
+			postLikeRepository.save(new PostLike(post, user));
+		}
+	}
+
+	/** 인증 사용자 자신의 좋아요만 취소한다. 좋아요가 없는 경우 변경 없이 완료한다. */
+	@Transactional
+	public void unlikePost(Long userId, Long postId) {
+		findPostForLikeUpdate(userId, postId);
+		userRepository.findById(userId)
+				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
+		postLikeRepository.findByPost_PostIdAndUser_UserId(postId, userId)
+				.ifPresent(postLikeRepository::delete);
+	}
+
+	private CommunityPost findPostForLikeUpdate(Long userId, Long postId) {
+		validateUserId(userId);
+		if (postId == null || postId <= 0) {
+			throw new CustomException(ErrorCode.INVALID_REQUEST);
+		}
+		// 일반 조회보다 먼저 잠금을 획득해 동시 좋아요 추가/취소를 직렬화한다.
+		return communityPostRepository.findDetailForUpdate(postId, CommunityContentStatus.ACTIVE)
+				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+	}
 
 	/** 공개 목록 조회. userId는 좋아요/신고 여부를 표시하는 데만 사용한다. */
 	public RoommatePageResponse<CommunityPostResponse> getPosts(Long userId, CommunityPostListRequest request) {
