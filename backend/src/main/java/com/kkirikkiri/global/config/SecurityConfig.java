@@ -46,6 +46,8 @@ public class SecurityConfig {
 								"/api/auth/password-reset/request", "/api/auth/password-reset/confirm").permitAll()
 						.requestMatchers("/api/users/me", "/api/users/me/password").authenticated()
 						.requestMatchers("/api/roommates/**", "/api/users/me/liked-roommates").authenticated()
+						.requestMatchers(HttpMethod.POST, "/api/posts/*/likes").authenticated()
+						.requestMatchers(HttpMethod.DELETE, "/api/posts/*/likes").authenticated()
 						.anyRequest().denyAll())
 				.exceptionHandling(errors -> errors
 						.authenticationEntryPoint((request, response, exception) -> {
