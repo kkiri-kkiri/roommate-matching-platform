@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { FACULTY_OPTIONS } from "../../data/facultyOptions";
 import {
   sendEmailVerification,
+  checkSignupAvailability,
   signup,
   verifyEmailVerification,
 } from "../../api/authApi";
@@ -62,6 +63,7 @@ const INITIAL_FORM = {
 const SCHOOL_EMAIL_DOMAIN = "@hknu.ac.kr";
 const SCHOOL_EMAIL_ID_PATTERN = /^[A-Za-z0-9_%+-]+(?:\.[A-Za-z0-9_%+-]+)*$/;
 const STUDENT_ID_PATTERN = /^\d{2}$/;
+const LOGIN_ID_PATTERN = /^[A-Za-z0-9]+$/;
 
 const findFaculty = (name) =>
   FACULTY_OPTIONS.find((faculty) => faculty.name === name);
@@ -76,6 +78,8 @@ const SignupPage = () => {
   const [verificationToken, setVerificationToken] = useState("");
   const [verificationFeedback, setVerificationFeedback] = useState(null);
   const [submitFeedback, setSubmitFeedback] = useState(null);
+  const [availability, setAvailability] = useState(null);
+  const [availabilityError, setAvailabilityError] = useState(false);
   const navigate = useNavigate();
 
   const passwordIsLongEnough = form.password.length >= 8;
@@ -92,6 +96,50 @@ const SignupPage = () => {
     birthYear >= 1900 &&
     birthYear <= currentYear;
   const studentIdIsValid = STUDENT_ID_PATTERN.test(form.studentId);
+  const loginIdIsValid = LOGIN_ID_PATTERN.test(form.loginId);
+  const nicknameIsValid =
+    form.nickname.trim().length > 0 && form.nickname.trim().length <= 20;
+  const schoolEmailIdIsValid = SCHOOL_EMAIL_ID_PATTERN.test(
+    form.schoolEmailId.trim(),
+  );
+  const verificationCodeIsValid = /^\d{6}$/.test(verificationCode);
+
+  useEffect(() => {
+    const loginId = form.loginId.trim();
+    const schoolEmail = schoolEmailIdIsValid
+      ? `${form.schoolEmailId.trim()}${SCHOOL_EMAIL_DOMAIN}`
+      : "";
+    const nickname = form.nickname.trim();
+
+    if (!loginId && !schoolEmail && !nickname) {
+      setAvailability(null);
+      setAvailabilityError(false);
+      return undefined;
+    }
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const result = await checkSignupAvailability({
+          loginId: LOGIN_ID_PATTERN.test(loginId) ? loginId : "",
+          schoolEmail,
+          nickname: nicknameIsValid ? nickname : "",
+        });
+        setAvailability(result);
+        setAvailabilityError(false);
+      } catch {
+        setAvailability(null);
+        setAvailabilityError(true);
+      }
+    }, 400);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    form.loginId,
+    form.nickname,
+    form.schoolEmailId,
+    nicknameIsValid,
+    schoolEmailIdIsValid,
+  ]);
 
   const setFormValue = (name, value) => {
     setForm((current) => {
@@ -104,6 +152,10 @@ const SignupPage = () => {
 
       return nextForm;
     });
+    if (["loginId", "nickname", "schoolEmailId"].includes(name)) {
+      setAvailability(null);
+      setAvailabilityError(false);
+    }
     setSubmitFeedback(null);
   };
 
@@ -325,6 +377,11 @@ const SignupPage = () => {
           );
         })}
       </S.ChoiceGrid>
+      <S.FieldFeedback $tone={form[name] ? "success" : "neutral"}>
+        {form[name]
+          ? `${label}을(를) 선택했어요.`
+          : `${label}을(를) 선택해 주세요.`}
+      </S.FieldFeedback>
     </S.ChoiceFieldset>
   );
 
@@ -359,8 +416,39 @@ const SignupPage = () => {
                 placeholder="사용할 아이디를 입력해 주세요"
                 autoComplete="username"
                 required
+                $tone={
+                  form.loginId
+                    ? loginIdIsValid && availability
+                      ? availability.loginIdAvailable
+                        ? "success"
+                        : "error"
+                      : loginIdIsValid
+                        ? "neutral"
+                        : "error"
+                    : "neutral"
+                }
               />
-              <S.HelperText>영문과 숫자를 조합해 입력해 주세요.</S.HelperText>
+              <S.FieldFeedback
+                $tone={
+                  form.loginId
+                    ? loginIdIsValid
+                      ? "success"
+                      : "error"
+                    : "neutral"
+                }
+              >
+                {form.loginId
+                  ? loginIdIsValid
+                    ? availabilityError
+                      ? "중복 확인에 실패했어요. 잠시 후 다시 입력해 주세요."
+                      : availability
+                        ? availability.loginIdAvailable
+                          ? "사용할 수 있는 아이디예요."
+                          : "이미 사용 중인 아이디예요."
+                        : "아이디 중복을 확인하는 중이에요."
+                    : "아이디는 영문과 숫자만 사용할 수 있어요."
+                  : "영문과 숫자를 조합해 입력해 주세요."}
+              </S.FieldFeedback>
             </S.FieldGroup>
 
             <S.TwoColumnFields>
@@ -381,6 +469,13 @@ const SignupPage = () => {
                       form.password && !passwordIsLongEnough,
                     )}
                     $hasAction
+                    $tone={
+                      form.password
+                        ? passwordIsLongEnough
+                          ? "success"
+                          : "error"
+                        : "neutral"
+                    }
                   />
                   <S.VisibilityButton
                     type="button"
@@ -431,6 +526,13 @@ const SignupPage = () => {
                       form.passwordConfirm && !passwordMatches,
                     )}
                     $hasAction
+                    $tone={
+                      form.passwordConfirm
+                        ? passwordMatches
+                          ? "success"
+                          : "error"
+                        : "neutral"
+                    }
                   />
                   <S.VisibilityButton
                     type="button"
@@ -478,7 +580,40 @@ const SignupPage = () => {
                 placeholder="표시할 닉네임"
                 autoComplete="nickname"
                 required
+                aria-invalid={Boolean(form.nickname && !nicknameIsValid)}
+                $tone={
+                  form.nickname
+                    ? nicknameIsValid && availability
+                      ? availability.nicknameAvailable
+                        ? "success"
+                        : "error"
+                      : nicknameIsValid
+                        ? "neutral"
+                        : "error"
+                    : "neutral"
+                }
               />
+              <S.FieldFeedback
+                $tone={
+                  form.nickname
+                    ? nicknameIsValid
+                      ? "success"
+                      : "error"
+                    : "neutral"
+                }
+              >
+                {form.nickname
+                  ? nicknameIsValid
+                    ? availabilityError
+                      ? "중복 확인에 실패했어요. 잠시 후 다시 입력해 주세요."
+                      : availability
+                        ? availability.nicknameAvailable
+                          ? "사용할 수 있는 닉네임이에요."
+                          : "이미 사용 중인 닉네임이에요."
+                        : "닉네임 중복을 확인하는 중이에요."
+                    : "닉네임은 1자 이상 20자 이하로 입력해 주세요."
+                  : "다른 사람에게 보여질 닉네임을 입력해 주세요."}
+              </S.FieldFeedback>
             </S.FieldGroup>
           </S.FormSection>
 
@@ -500,7 +635,16 @@ const SignupPage = () => {
             <S.FieldGroup>
               <S.Label htmlFor="signup-school-email">학교 이메일</S.Label>
               <S.ActionRow>
-                <S.EmailInputGroup $readOnly={isVerified}>
+                <S.EmailInputGroup
+                  $readOnly={isVerified}
+                  $tone={
+                    form.schoolEmailId
+                      ? schoolEmailIdIsValid
+                        ? "success"
+                        : "error"
+                      : "neutral"
+                  }
+                >
                   <S.EmailLocalInput
                     id="signup-school-email"
                     name="schoolEmailId"
@@ -514,6 +658,16 @@ const SignupPage = () => {
                     required
                     readOnly={isVerified}
                     aria-describedby="school-email-domain verification-status"
+                    aria-invalid={Boolean(
+                      form.schoolEmailId && !schoolEmailIdIsValid,
+                    )}
+                    $tone={
+                      form.schoolEmailId
+                        ? schoolEmailIdIsValid
+                          ? "success"
+                          : "error"
+                        : "neutral"
+                    }
                   />
                   <S.EmailDomain id="school-email-domain">
                     {SCHOOL_EMAIL_DOMAIN}
@@ -531,9 +685,31 @@ const SignupPage = () => {
                       : "인증번호 전송"}
                 </S.OutlineButton>
               </S.ActionRow>
-              <S.HelperText>
-                학교 이메일에서 @ 앞부분만 입력해 주세요.
-              </S.HelperText>
+              <S.FieldFeedback
+                $tone={
+                  form.schoolEmailId
+                    ? schoolEmailIdIsValid && availability
+                      ? availability.schoolEmailAvailable
+                        ? "success"
+                        : "error"
+                      : schoolEmailIdIsValid
+                        ? "neutral"
+                        : "error"
+                    : "neutral"
+                }
+              >
+                {form.schoolEmailId
+                  ? schoolEmailIdIsValid
+                    ? availabilityError
+                      ? "중복 확인에 실패했어요. 잠시 후 다시 입력해 주세요."
+                      : availability
+                        ? availability.schoolEmailAvailable
+                          ? "사용할 수 있는 학교 이메일이에요."
+                          : "이미 가입된 학교 이메일이에요."
+                        : "학교 이메일 중복을 확인하는 중이에요."
+                    : "이메일 아이디에는 영문, 숫자와 일부 기호만 입력할 수 있어요."
+                  : "학교 이메일에서 @ 앞부분만 입력해 주세요."}
+              </S.FieldFeedback>
             </S.FieldGroup>
 
             {verificationSent && !isVerified && (
@@ -558,11 +734,36 @@ const SignupPage = () => {
                     }}
                     placeholder="숫자 6자리"
                     autoComplete="one-time-code"
+                    aria-invalid={Boolean(
+                      verificationCode && !verificationCodeIsValid,
+                    )}
+                    $tone={
+                      verificationCode
+                        ? verificationCodeIsValid
+                          ? "success"
+                          : "error"
+                        : "neutral"
+                    }
                   />
                   <S.OutlineButton type="button" onClick={handleVerifyCode}>
                     인증 확인
                   </S.OutlineButton>
                 </S.ActionRow>
+                <S.FieldFeedback
+                  $tone={
+                    verificationCode
+                      ? verificationCodeIsValid
+                        ? "success"
+                        : "error"
+                      : "neutral"
+                  }
+                >
+                  {verificationCode
+                    ? verificationCodeIsValid
+                      ? "인증번호 형식이 맞아요."
+                      : "인증번호는 숫자 6자리로 입력해 주세요."
+                    : "인증번호 숫자 6자리를 입력해 주세요."}
+                </S.FieldFeedback>
               </S.FieldGroup>
             )}
 
@@ -600,7 +801,7 @@ const SignupPage = () => {
             <S.TwoColumnFields>
               <S.FieldGroup>
                 <S.Label htmlFor="signup-faculty">나의 학부</S.Label>
-                <S.SelectShell>
+                <S.SelectShell $tone={form.faculty ? "success" : "neutral"}>
                   <S.Select
                     id="signup-faculty"
                     name="faculty"
@@ -618,14 +819,22 @@ const SignupPage = () => {
                   </S.Select>
                   <ChevronDown size={18} aria-hidden="true" />
                 </S.SelectShell>
-                <S.HelperText id="faculty-guide">
-                  학부를 먼저 선택해 주세요.
-                </S.HelperText>
+                <S.FieldFeedback
+                  id="faculty-guide"
+                  $tone={form.faculty ? "success" : "neutral"}
+                >
+                  {form.faculty
+                    ? "학부를 선택했어요."
+                    : "학부를 선택해 주세요."}
+                </S.FieldFeedback>
               </S.FieldGroup>
 
               <S.FieldGroup>
                 <S.Label htmlFor="signup-major">나의 전공</S.Label>
-                <S.SelectShell $disabled={!selectedFaculty || hasNoMajor}>
+                <S.SelectShell
+                  $disabled={!selectedFaculty || hasNoMajor}
+                  $tone={form.major ? "success" : "neutral"}
+                >
                   <S.Select
                     id="signup-major"
                     name="major"
@@ -652,11 +861,16 @@ const SignupPage = () => {
                   </S.Select>
                   <ChevronDown size={18} aria-hidden="true" />
                 </S.SelectShell>
-                <S.HelperText id="major-guide">
+                <S.FieldFeedback
+                  id="major-guide"
+                  $tone={form.major ? "success" : "neutral"}
+                >
                   {hasNoMajor
                     ? "선택한 학부는 별도 세부전공이 없어요."
-                    : "선택한 학부의 전공만 표시돼요."}
-                </S.HelperText>
+                    : form.major
+                      ? "전공을 선택했어요."
+                      : "전공을 선택해 주세요."}
+                </S.FieldFeedback>
               </S.FieldGroup>
             </S.TwoColumnFields>
 
@@ -678,10 +892,22 @@ const SignupPage = () => {
                   aria-invalid={Boolean(form.birthYear && !birthYearIsValid)}
                   aria-describedby="birth-year-guide"
                 />
-                <S.HelperText id="birth-year-guide">
-                  1900년부터 {currentYear}년 사이의 네 자리 숫자를 입력해
-                  주세요.
-                </S.HelperText>
+                <S.FieldFeedback
+                  id="birth-year-guide"
+                  $tone={
+                    form.birthYear
+                      ? birthYearIsValid
+                        ? "success"
+                        : "error"
+                      : "neutral"
+                  }
+                >
+                  {form.birthYear
+                    ? birthYearIsValid
+                      ? "올바른 출생연도예요."
+                      : `1900년부터 ${currentYear}년 사이의 네 자리 숫자를 입력해 주세요.`
+                    : `1900년부터 ${currentYear}년 사이의 네 자리 숫자를 입력해 주세요.`}
+                </S.FieldFeedback>
               </S.FieldGroup>
 
               <S.FieldGroup>
@@ -701,9 +927,22 @@ const SignupPage = () => {
                   aria-invalid={Boolean(form.studentId && !studentIdIsValid)}
                   aria-describedby="student-id-guide"
                 />
-                <S.HelperText id="student-id-guide">
-                  학번은 숫자 두 자리로 입력해 주세요.
-                </S.HelperText>
+                <S.FieldFeedback
+                  id="student-id-guide"
+                  $tone={
+                    form.studentId
+                      ? studentIdIsValid
+                        ? "success"
+                        : "error"
+                      : "neutral"
+                  }
+                >
+                  {form.studentId
+                    ? studentIdIsValid
+                      ? "올바른 학번 형식이에요."
+                      : "학번은 숫자 두 자리로 입력해 주세요."
+                    : "학번은 숫자 두 자리로 입력해 주세요."}
+                </S.FieldFeedback>
               </S.FieldGroup>
             </S.TwoColumnFields>
 

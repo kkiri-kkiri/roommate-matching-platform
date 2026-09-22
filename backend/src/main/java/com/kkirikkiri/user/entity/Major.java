@@ -20,6 +20,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Major {
 
+	public Major(Faculty faculty, String majorName, boolean active) {
+		this.faculty = faculty;
+		this.majorName = majorName;
+		this.active = active;
+	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "major_id")

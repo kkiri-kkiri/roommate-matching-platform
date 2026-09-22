@@ -44,6 +44,7 @@ public class SecurityConfig {
 								"/api/auth/email-verifications/verify").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/signup", "/api/auth/find-id",
 								"/api/auth/password-reset/request", "/api/auth/password-reset/confirm").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/auth/signup/availability").permitAll()
 						.requestMatchers("/api/users/me", "/api/users/me/password").authenticated()
 						.requestMatchers("/api/roommates/**", "/api/users/me/liked-roommates").authenticated()
 						.anyRequest().denyAll())

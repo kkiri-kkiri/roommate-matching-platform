@@ -5,6 +5,13 @@ const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+export async function checkSignupAvailability(params) {
+  const response = await apiClient.get("/auth/signup/availability", {
+    params,
+  });
+  return response.data.data;
+}
+
 function getApiErrorMessage(error, fallbackMessage) {
   return error.response?.data?.message || fallbackMessage;
 }

@@ -29,6 +29,7 @@ import com.kkirikkiri.auth.entity.EmailVerificationPurpose;
 import com.kkirikkiri.auth.repository.EmailVerificationRepository;
 import com.kkirikkiri.global.exception.CustomException;
 import com.kkirikkiri.global.exception.ErrorCode;
+import com.kkirikkiri.user.repository.UserRepository;
 
 @Service
 @Transactional(readOnly = true)
@@ -38,6 +39,7 @@ public class EmailVerificationService {
 	private final PasswordEncoder passwordEncoder;
 	private final Validator validator;
 	private final EmailVerificationMailSender mailSender;
+	private final UserRepository userRepository;
 	private final long codeExpirationSeconds;
 	private final long resendIntervalSeconds;
 	private final long tokenExpirationSeconds;
@@ -47,16 +49,17 @@ public class EmailVerificationService {
 	@Autowired
 	public EmailVerificationService(EmailVerificationRepository repository, PasswordEncoder passwordEncoder,
 			Validator validator, EmailVerificationMailSender mailSender,
+			UserRepository userRepository,
 			@Value("${auth.email-verification.token-expiration-seconds:300}") long tokenExpirationSeconds,
 			@Value("${auth.email-verification.code-expiration-seconds:300}") long codeExpirationSeconds,
 			@Value("${auth.email-verification.resend-interval-seconds:60}") long resendIntervalSeconds) {
-		this(repository, passwordEncoder, validator, mailSender, tokenExpirationSeconds,
+		this(repository, passwordEncoder, validator, mailSender, userRepository, tokenExpirationSeconds,
 				codeExpirationSeconds, resendIntervalSeconds, Clock.system(ZoneId.of("Asia/Seoul")));
 	}
 
 	EmailVerificationService(EmailVerificationRepository repository, PasswordEncoder passwordEncoder,
-			Validator validator, EmailVerificationMailSender mailSender, long tokenExpirationSeconds,
-			long codeExpirationSeconds, long resendIntervalSeconds, Clock clock) {
+			Validator validator, EmailVerificationMailSender mailSender, UserRepository userRepository,
+			long tokenExpirationSeconds, long codeExpirationSeconds, long resendIntervalSeconds, Clock clock) {
 		if (codeExpirationSeconds <= 0 || resendIntervalSeconds <= 0) {
 			throw new IllegalArgumentException("Email verification durations must be positive");
 		}
@@ -67,6 +70,7 @@ public class EmailVerificationService {
 		this.passwordEncoder = passwordEncoder;
 		this.validator = validator;
 		this.mailSender = mailSender;
+		this.userRepository = userRepository;
 		this.codeExpirationSeconds = codeExpirationSeconds;
 		this.resendIntervalSeconds = resendIntervalSeconds;
 		this.tokenExpirationSeconds = tokenExpirationSeconds;
@@ -80,11 +84,15 @@ public class EmailVerificationService {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
 		EmailVerificationPurpose purpose = EmailVerificationPurpose.valueOf(request.purpose());
+		if (purpose == EmailVerificationPurpose.SIGNUP
+				&& userRepository.existsBySchoolEmail(request.email())) {
+			throw new CustomException(ErrorCode.EMAIL_ALREADY_REGISTERED);
+		}
 		var latest = repository.findFirstByEmailAndPurposeOrderByCreatedAtDescVerificationIdDesc(
 				request.email(), purpose);
 		LocalDateTime now = LocalDateTime.now(clock);
 		if (latest.isPresent() && latest.get().getCreatedAt().plusSeconds(resendIntervalSeconds).isAfter(now)) {
-			throw new CustomException(ErrorCode.INVALID_REQUEST);
+			throw new CustomException(ErrorCode.EMAIL_VERIFICATION_COOLDOWN);
 		}
 		String code = String.format(Locale.ROOT, "%06d", random.nextInt(1_000_000));
 		String codeHash = passwordEncoder.encode(code);
@@ -103,16 +111,21 @@ public class EmailVerificationService {
 		EmailVerificationPurpose purpose = EmailVerificationPurpose.valueOf(request.purpose());
 		EmailVerification verification = repository
 				.findFirstByEmailAndPurposeOrderByCreatedAtDescVerificationIdDesc(request.email(), purpose)
-				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+				.orElseThrow(() -> new CustomException(ErrorCode.EMAIL_VERIFICATION_NOT_FOUND));
 		LocalDateTime now = LocalDateTime.now(clock);
-		if (verification.isVerified() || verification.isConsumed() || verification.isCodeExpired(now)
-				|| !passwordEncoder.matches(request.code(), verification.getVerificationCode())) {
-			throw new CustomException(ErrorCode.INVALID_REQUEST);
+		if (verification.isVerified() || verification.isConsumed()) {
+			throw new CustomException(ErrorCode.EMAIL_VERIFICATION_ALREADY_USED);
+		}
+		if (verification.isCodeExpired(now)) {
+			throw new CustomException(ErrorCode.EMAIL_VERIFICATION_EXPIRED);
+		}
+		if (!passwordEncoder.matches(request.code(), verification.getVerificationCode())) {
+			throw new CustomException(ErrorCode.EMAIL_VERIFICATION_INVALID);
 		}
 		// BCrypt 검증 도중 인증번호가 만료된 경우에도 발급하지 않는다.
 		now = LocalDateTime.now(clock);
 		if (verification.isCodeExpired(now)) {
-			throw new CustomException(ErrorCode.INVALID_REQUEST);
+			throw new CustomException(ErrorCode.EMAIL_VERIFICATION_EXPIRED);
 		}
 		byte[] bytes = new byte[32];
 		random.nextBytes(bytes);
@@ -133,10 +146,10 @@ public class EmailVerificationService {
 		}
 		EmailVerification verification = repository
 				.findByEmailAndPurposeAndVerificationTokenHash(email, purpose, hash(token))
-				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+				.orElseThrow(() -> new CustomException(ErrorCode.EMAIL_VERIFICATION_TOKEN_INVALID));
 		LocalDateTime now = LocalDateTime.now(clock);
 		if (!verification.isTokenUsable(now)) {
-			throw new CustomException(ErrorCode.INVALID_REQUEST);
+			throw new CustomException(ErrorCode.EMAIL_VERIFICATION_TOKEN_INVALID);
 		}
 		verification.consume(now);
 	}
