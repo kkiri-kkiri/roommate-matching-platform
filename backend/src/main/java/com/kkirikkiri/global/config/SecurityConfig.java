@@ -47,6 +47,8 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/api/auth/signup/availability").permitAll()
 						.requestMatchers("/api/users/me", "/api/users/me/password").authenticated()
 						.requestMatchers("/api/roommates/**", "/api/users/me/liked-roommates").authenticated()
+						.requestMatchers(HttpMethod.POST, "/api/comments/{commentId}/likes").authenticated()
+						.requestMatchers(HttpMethod.DELETE, "/api/comments/{commentId}/likes").authenticated()
 						.requestMatchers(HttpMethod.GET, "/api/calendar/events").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/calendar/events").authenticated()
 						.requestMatchers(HttpMethod.PATCH, "/api/calendar/events/{eventId}").authenticated()

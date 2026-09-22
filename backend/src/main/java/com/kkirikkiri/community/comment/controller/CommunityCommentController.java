@@ -54,4 +54,18 @@ public class CommunityCommentController {
 		communityCommentService.deleteComment(user == null ? null : user.userId(), commentId);
 		return ApiResponse.successWithoutData();
 	}
+
+	@PostMapping("/comments/{commentId}/likes")
+	public ApiResponse<Void> likeComment(@AuthenticationPrincipal AuthenticatedUser user,
+			@PathVariable Long commentId) {
+		communityCommentService.likeComment(user == null ? null : user.userId(), commentId);
+		return ApiResponse.successWithoutData();
+	}
+
+	@DeleteMapping("/comments/{commentId}/likes")
+	public ApiResponse<Void> unlikeComment(@AuthenticationPrincipal AuthenticatedUser user,
+			@PathVariable Long commentId) {
+		communityCommentService.unlikeComment(user == null ? null : user.userId(), commentId);
+		return ApiResponse.successWithoutData();
+	}
 }
