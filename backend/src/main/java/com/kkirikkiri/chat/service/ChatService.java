@@ -248,6 +248,11 @@ public class ChatService {
 				member.isPinned(), member.isMuted(), lastMessage);
 	}
 
+	/** 해당 방의 현재 활성 참여자가 아니면 기존 권한 예외를 발생시킨다. */
+	public void validateActiveMember(Long userId, Long roomId) {
+		findActiveMember(userId, roomId);
+	}
+
 	private ChatRoomMember findActiveMember(Long userId, Long roomId) {
 		validateUserId(userId);
 		validateId(roomId);
