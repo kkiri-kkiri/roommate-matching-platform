@@ -81,7 +81,9 @@ public class ChatService {
 				: chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalseAndChatRoom_Category(
 						userId, ChatRoomCategory.valueOf(filter.category()));
 		String keyword = filter.q() == null ? "" : filter.q().trim().toLowerCase(Locale.ROOT);
-		return members.stream().map(this::toRoomResponse)
+		return members.stream()
+				.filter(member -> member.getChatRoom().getStatus() == ChatRoomStatus.ACTIVE)
+				.map(this::toRoomResponse)
 				.filter(room -> keyword.isEmpty()
 						|| room.counterpart().nickname().toLowerCase(Locale.ROOT).contains(keyword))
 				.sorted(Comparator.comparing(ChatRoomResponse::pinned).reversed()
@@ -225,13 +227,16 @@ public class ChatService {
 		Long targetId = findCounterpart(roomId, userId).getUser().getUserId();
 		UserProfile profile = userProfileRepository.findByUser_UserId(targetId)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+		// RoommateMatchingService의 기존 태그 규칙: 흡연, 취침 시간, 청소 빈도 순서.
+		// 해당 생성 메서드는 private이므로 동일한 기존 규칙을 유지한다.
 		List<String> tags = profileSurveyRepository.findByUser_UserId(targetId).filter(ProfileSurvey::isCompleted)
 				.map(survey -> Stream.of(survey.getSmoking(), survey.getSleepTime(), survey.getCleaningFrequency())
 						.filter(Objects::nonNull).toList()).orElse(List.of());
 		Integer score = roommateMatchRepository.findByRequesterUser_UserIdAndTargetUser_UserId(userId, targetId)
 				.map(RoommateMatch::getMatchScore).orElse(null);
 		var counterpart = new ChatRoomResponse.CounterpartResponse(targetId, profile.getNickname(),
-				profile.getProfileImageUrl(), profile.getDormitory().getDormitoryName(), profile.getAdmissionYear(),
+				profile.getProfileImageUrl(),
+				profile.getDormitory() == null ? null : profile.getDormitory().getDormitoryName(), profile.getAdmissionYear(),
 				profile.getMajor() == null ? null : profile.getMajor().getMajorName(), score, profile.getIntroduction(), tags);
 		Long sourcePost = room.getSourcePost() != null ? room.getSourcePost().getPostId()
 				: room.getSourceComment() == null ? null : room.getSourceComment().getPost().getPostId();
