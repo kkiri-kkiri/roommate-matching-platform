@@ -1,5 +1,6 @@
 package com.kkirikkiri.global.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,8 +16,7 @@ import tools.jackson.databind.ObjectMapper;
 import com.kkirikkiri.global.exception.ErrorCode;
 import com.kkirikkiri.global.response.ApiResponse;
 import com.kkirikkiri.global.security.JwtAuthenticationFilter;
-import com.kkirikkiri.global.security.JwtTokenProvider;
-import com.kkirikkiri.user.repository.UserRepository;
+import com.kkirikkiri.global.security.JwtAuthenticationProvider;
 
 @Configuration
 public class SecurityConfig {
@@ -28,7 +28,8 @@ public class SecurityConfig {
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper objectMapper,
-			JwtTokenProvider jwtTokenProvider, UserRepository userRepository) throws Exception {
+			JwtAuthenticationProvider jwtAuthenticationProvider,
+			@Value("${app.chat.websocket.endpoint:}") String websocketEndpoint) throws Exception {
 		return http
 				.cors(Customizer.withDefaults())
 				.csrf(csrf -> csrf.disable())
@@ -36,7 +37,7 @@ public class SecurityConfig {
 				.requestCache(cache -> cache.disable())
 				.formLogin(form -> form.disable())
 				.httpBasic(basic -> basic.disable())
-				.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, objectMapper, userRepository),
+				.addFilterBefore(new JwtAuthenticationFilter(jwtAuthenticationProvider, objectMapper),
 						UsernamePasswordAuthenticationFilter.class)
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
@@ -58,6 +59,12 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/api/calendar/categories/custom").authenticated()
 						.requestMatchers(HttpMethod.PATCH, "/api/calendar/categories/{categoryId}").authenticated()
 						.requestMatchers(HttpMethod.DELETE, "/api/calendar/categories/{categoryId}").authenticated()
+						.requestMatchers("/api/chat/**").authenticated()
+						// HTTP Upgrade만 허용하고 실제 인증은 STOMP CONNECT에서 수행한다.
+						.requestMatchers(request -> !websocketEndpoint.isBlank()
+								&& HttpMethod.GET.matches(request.getMethod())
+								&& (request.getContextPath() + websocketEndpoint).equals(request.getRequestURI())
+								&& "websocket".equalsIgnoreCase(request.getHeader("Upgrade"))).permitAll()
 						.anyRequest().denyAll())
 				.exceptionHandling(errors -> errors
 						.authenticationEntryPoint((request, response, exception) -> {

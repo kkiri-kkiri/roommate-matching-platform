@@ -1,7 +1,6 @@
 package com.kkirikkiri.global.security;
 
 import java.io.IOException;
-import java.util.List;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,7 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -20,9 +18,6 @@ import tools.jackson.databind.ObjectMapper;
 import com.kkirikkiri.global.exception.CustomException;
 import com.kkirikkiri.global.exception.ErrorCode;
 import com.kkirikkiri.global.response.ApiResponse;
-import com.kkirikkiri.user.entity.User;
-import com.kkirikkiri.user.entity.UserStatus;
-import com.kkirikkiri.user.repository.UserRepository;
 
 /**
  * SecurityFilterChain에 명시적으로 등록하여 사용한다.
@@ -31,9 +26,8 @@ import com.kkirikkiri.user.repository.UserRepository;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-	private final JwtTokenProvider jwtTokenProvider;
+	private final JwtAuthenticationProvider jwtAuthenticationProvider;
 	private final ObjectMapper objectMapper;
-	private final UserRepository userRepository;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -44,15 +38,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		AuthenticatedUser principal;
+		UsernamePasswordAuthenticationToken authentication;
 		try {
 			// 검증과 principal 추출을 한 번의 호출로 처리한다.
-			principal = jwtTokenProvider.getAuthenticatedUser(authorization.substring(7).trim());
-			User user = userRepository.findById(principal.userId())
-					.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
-			if (user.getStatus() != UserStatus.ACTIVE) {
-				throw new CustomException(ErrorCode.UNAUTHORIZED);
-			}
+			authentication = jwtAuthenticationProvider.authenticate(authorization.substring(7).trim());
 		} catch (CustomException exception) {
 			if (exception.getErrorCode() != ErrorCode.UNAUTHORIZED) {
 				throw exception;
@@ -64,9 +53,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		UsernamePasswordAuthenticationToken authentication =
-				UsernamePasswordAuthenticationToken.authenticated(principal, null,
-						List.of(new SimpleGrantedAuthority("ROLE_" + principal.role())));
 		authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
 		context.setAuthentication(authentication);
