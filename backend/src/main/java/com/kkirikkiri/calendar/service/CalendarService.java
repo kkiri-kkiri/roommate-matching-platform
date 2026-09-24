@@ -1,5 +1,6 @@
 package com.kkirikkiri.calendar.service;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -39,10 +40,10 @@ import com.kkirikkiri.user.repository.UserRepository;
 @Transactional(readOnly = true)
 public class CalendarService {
 
-	private static final Set<String> DEFAULT_CODES = Set.of("SCHOOL", "DORMITORY", "ROOMMATE", "PERSONAL");
+	private static final Set<String> DEFAULT_CODES = Set.of("SCHOOL", "DORMITORY");
 	// 저장된 설정이 없는 경우 기존 CalendarPageCss의 기본 색상을 사용한다.
 	private static final Map<String, String> DEFAULT_COLORS = Map.of(
-			"SCHOOL", "#245fc5", "DORMITORY", "#006a65", "ROOMMATE", "#7550ae", "PERSONAL", "#906016");
+			"SCHOOL", "#245fc5", "DORMITORY", "#006a65");
 
 	private final CalendarEventRepository calendarEventRepository;
 	private final CalendarCategoryRepository calendarCategoryRepository;
@@ -71,7 +72,8 @@ public class CalendarService {
 		LocalTime start = parseTime(request.startTime());
 		LocalTime end = parseTime(request.endTime());
 		validateTimeRange(start, end);
-		CalendarEvent event = new CalendarEvent(user, category, request.title(), request.date(),
+		validateDateRange(request.startDate(), request.endDate());
+		CalendarEvent event = new CalendarEvent(user, category, request.title(), request.startDate(), request.endDate(),
 				start, end, start == null && end == null, request.description(),
 				CalendarEventSourceType.USER, null, null, null);
 		return CalendarEventResponse.from(calendarEventRepository.save(event), true);
@@ -88,8 +90,11 @@ public class CalendarService {
 		LocalTime start = request.startTime() == null ? event.getStartTime() : parseTime(request.startTime());
 		LocalTime end = request.endTime() == null ? event.getEndTime() : parseTime(request.endTime());
 		validateTimeRange(start, end);
+		LocalDate startDate = request.startDate() == null ? event.getStartDate() : request.startDate();
+		LocalDate endDate = request.endDate() == null ? event.getEndDate() : request.endDate();
+		validateDateRange(startDate, endDate);
 		event.update(category, request.title() == null ? event.getTitle() : request.title(),
-				request.date() == null ? event.getEventDate() : request.date(),
+				startDate, endDate,
 				start, end, start == null && end == null,
 				request.description() == null ? event.getDescription() : request.description());
 		return CalendarEventResponse.from(event, true);
@@ -275,6 +280,12 @@ public class CalendarService {
 
 	private LocalTime parseTime(String value) {
 		return value == null ? null : LocalTime.parse(value);
+	}
+
+	private void validateDateRange(LocalDate startDate, LocalDate endDate) {
+		if (startDate == null || endDate == null || endDate.isBefore(startDate)) {
+			throw new CustomException(ErrorCode.VALIDATION_ERROR);
+		}
 	}
 
 	private void validateTimeRange(LocalTime start, LocalTime end) {

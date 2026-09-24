@@ -1716,7 +1716,7 @@ VARCHAR(50)
 
 UNIQUE
 
-SCHOOL / DORMITORY / ROOMMATE / PERSONAL / CUSTOM-\*
+SCHOOL / DORMITORY / CUSTOM-\*
 
 default_name
 
@@ -1750,11 +1750,11 @@ DATETIME
 
 생성 일시
 
-기본 카테고리는 학교 일정, 기숙사 일정, 룸메찾기 일정, 개인 일정이다.
+시스템 고정 카테고리는 SCHOOL(학교), DORMITORY(기숙사) 두 개이며 owner_user_id = NULL, is_system = true이다.
 
-학교 일정과 기숙사 일정은 프론트에서 고정 카테고리이므로 name_locked = true로 설정한다.
+학교·기숙사 카테고리는 name_locked = true이며 사용자 수정·삭제 및 직접 일정 등록을 금지한다.
 
-사용자가 직접 추가한 카테고리는 owner_user_id를 설정한다.
+사용자가 직접 추가한 CUSTOM-\* 카테고리는 owner_user_id를 설정하고 is_system = false, name_locked = false로 저장한다.
 
 학교·기숙사 카테고리는 모든 사용자에게 공통으로 사용한다.
 
@@ -1858,11 +1858,17 @@ VARCHAR(80)
 
 일정 제목
 
-event_date
+start_date
 
-DATE
+DATE NOT NULL
 
-일정 날짜
+일정 시작일
+
+end_date
+
+DATE NOT NULL
+
+일정 종료일
 
 start_time
 
@@ -1924,6 +1930,8 @@ nullable
 
 크롤링 수집 일시
 
+단일 일정은 start_date = end_date로 저장한다. 기간 일정은 start_date <= end_date여야 한다.
+
 사용자가 직접 등록한 룸메찾기·개인 일정은 owner_user_id를 저장한다.
 
 학교 일정과 기숙사 일정처럼 모든 사용자에게 제공되는 크롤링 일정은 owner_user_id = NULL로 저장한다.
@@ -1934,7 +1942,8 @@ nullable
 
 크롤링 일정은 관리자 페이지에서 직접 생성·수정하기 위한 데이터가 아니라 수집된 결과를 확인하는 용도로 사용한다.
 
-동일한 공지가 반복 수집되지 않도록 실제 크롤링 구현 시 source_url 또는 외부 공지 ID 등을 기준으로 중복 방지 로직을 적용한다.
+한경국립대학교 학사일정은 source_type, source_name, title, start_date, end_date 조합으로 중복을 확인한다. 새 식별 컬럼은 추가하지 않는다.
+기존 SCHOOL 시스템 카테고리 행의 쓰기 잠금 안에서 중복 확인과 저장을 수행하며 기존 일정을 전체 삭제하지 않는다.
 
 일정 크롤링 실행 이력 (SCHEDULE_CRAWL_RUN)
 
