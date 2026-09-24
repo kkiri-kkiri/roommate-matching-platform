@@ -49,7 +49,7 @@ public class RoommatePreferenceService {
 	private static final Set<String> SLEEP_HABIT_OPTIONS = Set.of(
 			"없음만 가능", "적음까지 괜찮음", "보통까지 괜찮음", NO_PREFERENCE);
 	private static final Set<String> SMOKING_OPTIONS = Set.of("비흡연자만", "전자담배까지 허용", NO_PREFERENCE);
-	private static final Set<String> LIGHTING_OPTIONS = Set.of("밝음 선호", "어두움 선호", "상관 없음");
+	private static final Set<String> LIGHTING_OPTIONS = Set.of("밝음 선호", "어두움 선호", NO_PREFERENCE);
 	private static final Set<String> SHOWER_TIME_OPTIONS = Set.of("아침", "저녁", NO_PREFERENCE);
 	private static final Set<String> SHOWER_DURATION_OPTIONS = Set.of(
 			"10분 이하", "20분 이하", "30분 이하", "40분 이하", NO_PREFERENCE);
@@ -97,7 +97,7 @@ public class RoommatePreferenceService {
 		return roommatePreferenceRepository.findByUser_UserId(userId)
 				.map(preference -> RoommatePreferenceResponse.from(
 						preference,
-						roommatePreferenceOptionRepository.findAllByRoommatePreference_PreferenceId(
+						roommatePreferenceOptionRepository.findAllByRoommatePreference_PreferenceIdOrderByPreferenceOptionIdAsc(
 								preference.getPreferenceId()),
 						preferenceCriterionRepository.findAllByRoommatePreference_PreferenceId(
 								preference.getPreferenceId())))
@@ -139,7 +139,7 @@ public class RoommatePreferenceService {
 
 	private void replaceOptions(RoommatePreference preference, RoommatePreferenceRequest request) {
 		List<RoommatePreferenceOption> existingOptions = roommatePreferenceOptionRepository
-				.findAllByRoommatePreference_PreferenceId(preference.getPreferenceId());
+				.findAllByRoommatePreference_PreferenceIdOrderByPreferenceOptionIdAsc(preference.getPreferenceId());
 		roommatePreferenceOptionRepository.deleteAll(existingOptions);
 		roommatePreferenceOptionRepository.flush();
 

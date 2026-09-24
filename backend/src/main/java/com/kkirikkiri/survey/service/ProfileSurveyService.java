@@ -30,6 +30,8 @@ import com.kkirikkiri.user.repository.UserRepository;
 @Transactional(readOnly = true)
 public class ProfileSurveyService {
 
+	private static final String NO_PREFERENCE = "상관없음";
+
 	private static final Set<String> SLEEP_TIMES = Set.of(
 			"22시 ~ 23시", "23시 ~ 24시", "24시 ~ 01시", "01시 ~ 02시", "02시 ~ 03시", "03시 이후");
 	private static final Set<String> WAKE_TIMES = Set.of(
@@ -39,8 +41,8 @@ public class ProfileSurveyService {
 			"밝음 (소리에 잘 깨요)", "보통", "어두움 (잘 깨지 않아요)");
 	private static final Set<String> INDOOR_EATING_OPTIONS = Set.of("가능", "불가능", "냄새 안나는 음식 가능");
 	private static final Set<String> SMOKING_OPTIONS = Set.of("비흡연", "일반담배", "전자담배");
-	private static final Set<String> LIGHTING_OPTIONS = Set.of("밝음 선호", "어두움 선호", "상관 없음");
-	private static final Set<String> PHONE_CALL_OPTIONS = Set.of("항상 밖에서", "방에서는 짧게만", "상관없음");
+	private static final Set<String> LIGHTING_OPTIONS = Set.of("밝음 선호", "어두움 선호", NO_PREFERENCE);
+	private static final Set<String> PHONE_CALL_OPTIONS = Set.of("항상 밖에서", "방에서는 짧게만", NO_PREFERENCE);
 	private static final Set<String> MEDIA_SOUND_OPTIONS = Set.of(
 			"항상 이어폰 사용해주세요", "공부·과제할 때 아니면 상관없음", "소리만 작게 해주세요", "자유롭게 하세요");
 	private static final Set<String> SHOWER_TIME_OPTIONS = Set.of("아침", "저녁", "유동적");
@@ -53,11 +55,11 @@ public class ProfileSurveyService {
 	private static final Set<String> DORM_STAY_DAY_OPTIONS = Set.of("월", "화", "수", "목", "금", "토", "일");
 	private static final Set<String> MEAL_PLAN_OPTIONS = Set.of("조식", "중식", "석식", "신청 안 함");
 	private static final Set<String> MEAL_OPTIONS = Set.of(
-			"같이 먹고 싶음", "각자 먹고 싶음", "시간 될 때만 같이 먹고 싶음", "상관없음");
+			"같이 먹고 싶음", "각자 먹고 싶음", "시간 될 때만 같이 먹고 싶음", NO_PREFERENCE);
 	private static final Set<String> ROOMMATE_INTERACTION_OPTIONS = Set.of(
 			"친하게 지내고 싶음", "적당히 대화", "필요한 대화만");
 	private static final Set<String> TEMPERATURE_OPTIONS = Set.of("추위 타요", "더위 타요", "보통");
-	private static final Set<String> SCENT_PRODUCT_OPTIONS = Set.of("자주 사용", "가끔 사용", "사용 안 함", "상관없음");
+	private static final Set<String> SCENT_PRODUCT_OPTIONS = Set.of("자주 사용", "가끔 사용", "사용 안 함", NO_PREFERENCE);
 	private static final Set<String> DESKTOP_USE_OPTIONS = Set.of(
 			"사용해요", "사용하지 않아요", "특정 시간 제외하면 상관없음");
 	private static final Set<String> SHARED_ITEMS_OPTIONS = Set.of("적극적으로 공유", "일부만 공유", "각자 사용");
@@ -71,7 +73,7 @@ public class ProfileSurveyService {
 		validateUserId(userId);
 		return profileSurveyRepository.findByUser_UserId(userId)
 				.map(survey -> ProfileSurveyResponse.from(survey,
-						profileSurveyOptionRepository.findAllByProfileSurvey_ProfileSurveyId(
+						profileSurveyOptionRepository.findAllByProfileSurvey_ProfileSurveyIdOrderByProfileSurveyOptionIdAsc(
 								survey.getProfileSurveyId())))
 				.orElseGet(() -> ProfileSurveyResponse.from(null, List.of()));
 	}
@@ -114,7 +116,7 @@ public class ProfileSurveyService {
 
 	private void replaceOptions(ProfileSurvey survey, ProfileSurveyRequest request) {
 		List<ProfileSurveyOption> existingOptions = profileSurveyOptionRepository
-				.findAllByProfileSurvey_ProfileSurveyId(survey.getProfileSurveyId());
+				.findAllByProfileSurvey_ProfileSurveyIdOrderByProfileSurveyOptionIdAsc(survey.getProfileSurveyId());
 		profileSurveyOptionRepository.deleteAll(existingOptions);
 		profileSurveyOptionRepository.flush();
 
