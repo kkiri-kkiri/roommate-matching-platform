@@ -15,6 +15,8 @@ import {
   X,
 } from "lucide-react";
 
+import * as api from "../../api/communityApi";
+import { createChatRoom } from "../../api/chatApi";
 import * as S from "./CommunityPostPageCss";
 
 const REPORT_REASONS = [
@@ -26,11 +28,6 @@ const REPORT_REASONS = [
   "기타",
 ];
 const COMMENT_LIMIT = 1000;
-
-function createId() {
-  return window.crypto?.randomUUID?.() ||
-    `comment-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
 
 function formatDate(value) {
   return new Intl.DateTimeFormat("ko-KR", {
@@ -88,14 +85,13 @@ function PostDialog({ title, description, onDismiss, children }) {
   );
 }
 
-function CommentComposer({ id, label, onSubmit, onCancel, compact = false }) {
+function CommentComposer({ id, label, onSubmit, onCancel, compact = false, busy }) {
   const [value, setValue] = useState("");
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!value.trim()) return;
-    onSubmit(value.trim());
-    setValue("");
+    if (await onSubmit(value.trim())) setValue("");
   };
 
   return (
@@ -117,7 +113,7 @@ function CommentComposer({ id, label, onSubmit, onCancel, compact = false }) {
         <small id={`${id}-count`}>{value.length} / {COMMENT_LIMIT.toLocaleString()}자</small>
         <div>
           {onCancel && <S.TextButton type="button" onClick={onCancel}>취소</S.TextButton>}
-          <S.PrimaryButton type="submit" disabled={!value.trim()}>
+          <S.PrimaryButton type="submit" disabled={busy || !value.trim()}>
             <Send size={15} aria-hidden="true" />
             {compact ? "답글 등록" : "댓글 등록"}
           </S.PrimaryButton>
@@ -127,13 +123,11 @@ function CommentComposer({ id, label, onSubmit, onCancel, compact = false }) {
   );
 }
 
-function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onReport, onReply, replying, onChat, replyAuthor, onLike }) {
+function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onReport, onReply, replying, onChat, replyAuthor, busy }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(entry.content);
-  const mine = Boolean(currentUser && currentUser.name === entry.authorId);
-  const reported = Boolean(currentUser && entry.reportedBy?.includes(currentUser.name));
-  const liked = Boolean(currentUser && entry.likedBy?.includes(currentUser.name));
-  const likeCount = entry.likedBy?.length || 0;
+  const mine = Boolean(currentUser && currentUser.id === entry.author.id);
+  // Comment DTO has no liked/count/reported fields; do not invent server state.
   const editActions = mine && !editing && (
     <S.ActionGroup>
       <S.TextButton type="button" onClick={() => {
@@ -153,24 +147,23 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
         </S.ReplyHeading>
       )}
       <S.CommentHeader>
-        <S.Avatar $small $mine={mine} aria-hidden="true">{entry.author.slice(0, 1)}</S.Avatar>
+        <S.Avatar $small $mine={mine} aria-hidden="true">{entry.author.nickname.slice(0, 1)}</S.Avatar>
         <div>
-          <strong>{entry.author}</strong>
-          {entry.authorId === postAuthorId && <S.AuthorBadge>작성자</S.AuthorBadge>}
+          <strong>{entry.author.nickname}</strong>
+          {entry.author.id === postAuthorId && <S.AuthorBadge>작성자</S.AuthorBadge>}
           {mine && <S.AuthorBadge>나</S.AuthorBadge>}
           <time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time>
         </div>
         {replyAuthor == null && editActions}
-        {!mine && <S.ChatButton type="button" onClick={onChat} aria-label={`${entry.author}님에게 채팅 보내기`}>
+        {!mine && <S.ChatButton type="button" onClick={onChat} aria-label={`${entry.author.nickname}님에게 채팅 보내기`}>
           <MessageCircle size={14} aria-hidden="true" />채팅
         </S.ChatButton>}
       </S.CommentHeader>
       {editing && mine ? (
-        <S.CommentForm $compact onSubmit={(event) => {
+        <S.CommentForm $compact onSubmit={async (event) => {
           event.preventDefault();
           if (!draft.trim()) return;
-          onSave(draft.trim());
-          setEditing(false);
+          if (await onSave(draft.trim())) setEditing(false);
         }}>
           <label htmlFor={`edit-${entry.id}`}>{onReply ? "댓글 수정" : "대댓글 수정"}</label>
           <S.Textarea
@@ -186,7 +179,7 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
             <small>{draft.length} / {COMMENT_LIMIT.toLocaleString()}자</small>
             <div>
               <S.TextButton type="button" onClick={() => setEditing(false)}>수정 취소</S.TextButton>
-              <S.PrimaryButton type="submit" disabled={!draft.trim()}>수정 완료</S.PrimaryButton>
+              <S.PrimaryButton type="submit" disabled={busy || !draft.trim()}>수정 완료</S.PrimaryButton>
             </div>
           </S.FormFooter>
         </S.CommentForm>
@@ -194,8 +187,8 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
         <>
           <S.CommentText>{entry.content}</S.CommentText>
           <S.ActionGroup>
-            <S.LikeButton type="button" $active={liked} aria-pressed={liked} aria-label={`댓글 좋아요 ${likeCount.toLocaleString()}개`} onClick={onLike}>
-              <Heart size={14} aria-hidden="true" /><span>{likeCount.toLocaleString()}</span>
+            <S.LikeButton type="button" disabled aria-label="댓글 좋아요 (지원 준비 중)" title="서버에서 댓글 좋아요 상태와 개수를 제공하지 않습니다.">
+              <Heart size={14} aria-hidden="true" /><span>좋아요</span>
             </S.LikeButton>
             {onReply && (
               <S.TextButton type="button" aria-expanded={replying} onClick={onReply}>
@@ -203,8 +196,8 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
               </S.TextButton>
             )}
             {onReport && !mine && (
-              <S.TextButton type="button" onClick={onReport} disabled={reported}>
-                <Flag size={13} aria-hidden="true" />{reported ? "신고 완료" : "신고"}
+              <S.TextButton type="button" onClick={onReport} disabled={busy}>
+                <Flag size={13} aria-hidden="true" />신고
               </S.TextButton>
             )}
           </S.ActionGroup>
@@ -214,8 +207,11 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
   );
 }
 
-function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEdit, onRequireLogin }) {
+function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit, onRequireLogin }) {
   const navigate = useNavigate();
+  const busyRef = useRef(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [replyTarget, setReplyTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -223,9 +219,9 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
   const [reportReason, setReportReason] = useState("");
   const [otherReason, setOtherReason] = useState("");
   const comments = post.comments || [];
-  const mine = Boolean(currentUser && currentUser.name === post.authorId);
-  const liked = Boolean(currentUser && post.likedBy?.includes(currentUser.name));
-  const reported = Boolean(currentUser && post.reportedBy?.includes(currentUser.name));
+  const mine = Boolean(currentUser && currentUser.id === post.author.id);
+  const liked = post.liked;
+  const reported = post.reported;
   const commentCount = comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0);
 
   const requireUser = () => {
@@ -234,137 +230,92 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
     return false;
   };
 
-  const startChat = (author, authorId, from) => {
-    if (!requireUser() || authorId === currentUser.name) return;
-    const roomId = `community-${encodeURIComponent(currentUser.name)}-${encodeURIComponent(authorId)}`;
-    navigate(`/chat?room=${encodeURIComponent(roomId)}`, {
-      state: { communityChat: {
-        roomId, recipientId: authorId, nickname: author, ownerId: currentUser.name,
-        sourcePost: { id: post.id, title: post.title, from },
-      } },
-    });
-  };
-
-  const toggleLike = () => {
-    if (!requireUser()) return;
-    onUpdatePost((previous) => {
-      const likedBy = previous.likedBy || [];
-      const alreadyLiked = likedBy.includes(currentUser.name);
-      return {
-        ...previous,
-        likes: Math.max(0, previous.likes + (alreadyLiked ? -1 : 1)),
-        likedBy: alreadyLiked ? likedBy.filter((name) => name !== currentUser.name) : [...likedBy, currentUser.name],
-      };
-    });
-  };
-
-  const toggleCommentLike = (commentId, replyId) => {
-    if (!requireUser()) return;
-    const toggleEntry = (entry) => {
-      const likedBy = entry.likedBy || [];
-      return {
-        ...entry,
-        likedBy: likedBy.includes(currentUser.name)
-          ? likedBy.filter((name) => name !== currentUser.name)
-          : [...likedBy, currentUser.name],
-      };
-    };
-    onUpdatePost((previous) => ({
-      ...previous,
-      comments: (previous.comments || []).map((comment) => {
-        if (comment.id !== commentId) return comment;
-        return replyId
-          ? { ...comment, replies: (comment.replies || []).map((reply) => reply.id === replyId ? toggleEntry(reply) : reply) }
-          : toggleEntry(comment);
-      }),
-    }));
-  };
-
-  const addComment = (content, commentId) => {
-    if (!requireUser()) return;
-    const entry = {
-      id: createId(),
-      author: currentUser.name,
-      authorId: currentUser.name,
-      content,
-      createdAt: new Date().toISOString(),
-      reportedBy: [],
-    };
-    onUpdatePost((previous) => ({
-      ...previous,
-      comments: commentId
-        ? previous.comments.map((comment) => comment.id === commentId
-          ? { ...comment, replies: [...(comment.replies || []), entry] }
-          : comment)
-        : [...previous.comments, { ...entry, replies: [] }],
-    }));
-    if (commentId) setReplyTarget(null);
-  };
-
-  const saveComment = (commentId, replyId, content) => {
-    if (!requireUser()) return;
-    onUpdatePost((previous) => ({
-      ...previous,
-      comments: previous.comments.map((comment) => {
-        if (comment.id !== commentId) return comment;
-        if (replyId) return {
-          ...comment,
-          replies: (comment.replies || []).map((reply) => reply.id === replyId && reply.authorId === currentUser.name
-            ? { ...reply, content }
-            : reply),
-        };
-        return comment.authorId === currentUser.name ? { ...comment, content } : comment;
-      }),
-    }));
-  };
-
-  const confirmDelete = () => {
-    if (!requireUser() || !deleteTarget) return;
-    if (deleteTarget.kind === "post") {
-      if (mine) onDeletePost();
-      setDeleteTarget(null);
-      return;
+  const runAction = async (action) => {
+    if (!requireUser() || busyRef.current) return false;
+    busyRef.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      await action();
+      return true;
+    } catch (failure) {
+      setError(failure.message);
+      return false;
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
     }
-    const { commentId, replyId } = deleteTarget;
-    onUpdatePost((previous) => ({
-      ...previous,
-      comments: previous.comments
-        .filter((comment) => replyId || comment.id !== commentId || comment.authorId !== currentUser.name)
-        .map((comment) => comment.id === commentId && replyId
-          ? { ...comment, replies: (comment.replies || []).filter((reply) => reply.id !== replyId || reply.authorId !== currentUser.name) }
-          : comment),
-    }));
-    if (replyTarget === commentId && !replyId) setReplyTarget(null);
-    setDeleteTarget(null);
   };
+
+  const startChat = (authorId, sourceCommentId) => runAction(async () => {
+    if (authorId === currentUser.id) return;
+    const room = await createChatRoom({
+      targetUserId: authorId, category: "COMMUNITY",
+      sourceFrom: sourceCommentId == null ? "POST" : "COMMENT",
+      sourcePostId: post.id,
+      ...(sourceCommentId == null ? {} : { sourceCommentId }),
+    });
+    navigate('/chat?room=' + encodeURIComponent(room.id));
+  });
+
+  const toggleLike = () => runAction(async () => {
+    await (post.liked ? api.unlikeCommunityPost(post.id) : api.likeCommunityPost(post.id));
+    await onRefresh();
+  });
+
+  const addComment = (content, commentId) => runAction(async () => {
+    if (commentId == null) await api.createCommunityComment(post.id, content);
+    else await api.createCommunityReply(commentId, content);
+    await onRefresh();
+    if (commentId != null) setReplyTarget(null);
+  });
+
+  const saveComment = (commentId, replyId, content) => runAction(async () => {
+    await api.updateCommunityComment(replyId ?? commentId, content);
+    await onRefresh();
+  });
+
+  const confirmDelete = () => runAction(async () => {
+    if (!deleteTarget) return;
+    if (deleteTarget.kind === "post") {
+      if (mine) await onDeletePost();
+    } else {
+      await api.deleteCommunityComment(deleteTarget.replyId ?? deleteTarget.commentId);
+      await onRefresh();
+      if (replyTarget === deleteTarget.commentId && !deleteTarget.replyId) setReplyTarget(null);
+    }
+    setDeleteTarget(null);
+  });
 
   const openReport = (comment) => {
-    if (!requireUser()) return;
-    if ((comment || post).reportedBy?.includes(currentUser.name)) {
-      return;
-    }
+    if (!requireUser() || (!comment && post.reported)) return;
+    setError("");
     setReportReason("");
     setOtherReason("");
-    setReportTarget(comment ? { kind: "comment", id: comment.id } : { kind: "post" });
+    setReportTarget(comment ? { kind: "comment", id: comment.id } : { kind: "post", id: post.id });
   };
 
   const submitReport = (event) => {
     event.preventDefault();
-    if (!requireUser() || !reportTarget || !reportReason || (reportReason === "기타" && !otherReason.trim())) return;
-    const markReported = (entry) => entry.reportedBy?.includes(currentUser.name)
-      ? entry
-      : { ...entry, reportedBy: [...(entry.reportedBy || []), currentUser.name] };
-    onUpdatePost((previous) => reportTarget.kind === "post"
-      ? markReported(previous)
-      : { ...previous, comments: previous.comments.map((comment) => comment.id === reportTarget.id ? markReported(comment) : comment) });
-    setReportTarget(null);
-    setNotice(`${reportTarget.kind === "post" ? "게시글" : "댓글"} 신고를 접수했어요. 더 편안한 커뮤니티를 위해 확인할게요.`);
+    if (!reportTarget || !reportReason || (reportReason === "기타" && !otherReason.trim())) return;
+    runAction(async () => {
+      await api.createCommunityReport({
+        targetType: reportTarget.kind === "post" ? "POST" : "COMMENT",
+        targetId: reportTarget.id, reason: reportReason,
+        description: reportReason === "기타" ? otherReason.trim() : null,
+      });
+      setReportTarget(null);
+      setNotice("신고를 접수했어요. 더 편안한 커뮤니티를 위해 확인할게요.");
+      if (reportTarget.kind === "post") await onRefresh();
+    });
   };
 
   const deleteLabel = deleteTarget?.kind === "post" ? "게시글" : deleteTarget?.replyId ? "답글" : "댓글";
 
   return (
-    <S.Detail aria-labelledby="community-post-title">
+    <S.Detail aria-labelledby="community-post-title" aria-busy={busy}>
+      {error && !reportTarget && !deleteTarget && <p role="alert">{error}</p>}
+      {busy && <p role="status">처리하고 있어요.</p>}
       <S.BackLink as={Link} to="/community"><ArrowLeft size={17} aria-hidden="true" />커뮤니티 목록</S.BackLink>
       {notice && <S.Notice role="status"><CheckCircle2 size={18} aria-hidden="true" />{notice}</S.Notice>}
 
@@ -382,16 +333,16 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
         </S.ArticleTop>
         <S.Title id="community-post-title">{post.title}</S.Title>
         <S.AuthorRow>
-          <S.Avatar $mine={mine} aria-hidden="true">{post.author.slice(0, 1)}</S.Avatar>
+          <S.Avatar $mine={mine} aria-hidden="true">{post.author.nickname.slice(0, 1)}</S.Avatar>
           <S.AuthorInfo>
-            <strong>{post.author}{mine ? " · 나" : ""}</strong>
+            <strong>{post.author.nickname}{mine ? " · 나" : ""}</strong>
             <S.Metadata>
               <time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time>
               <span><Eye size={13} aria-hidden="true" />조회 {post.views.toLocaleString()}</span>
             </S.Metadata>
           </S.AuthorInfo>
-          {!mine && <S.ChatButton type="button" onClick={() => startChat(post.author, post.authorId, "게시글")}
-            aria-label={`${post.author}님에게 채팅 보내기`}>
+          {!mine && <S.ChatButton type="button" onClick={() => startChat(post.author.id)}
+            aria-label={`${post.author.nickname}님에게 채팅 보내기`}>
             <MessageCircle size={15} aria-hidden="true" />채팅
           </S.ChatButton>}
         </S.AuthorRow>
@@ -406,10 +357,10 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
           </S.Attachments>
         )}
         <S.Reactions>
-          <S.LikeButton type="button" $active={liked} aria-pressed={liked} aria-label={`좋아요 ${post.likes.toLocaleString()}개`} onClick={toggleLike}>
+          <S.LikeButton type="button" $active={liked} aria-pressed={liked} aria-label={`좋아요 ${post.likes.toLocaleString()}개`} onClick={toggleLike} disabled={busy}>
             <Heart size={16} aria-hidden="true" /><span>{post.likes.toLocaleString()}</span>
           </S.LikeButton>
-          <S.TextButton type="button" onClick={() => openReport()} disabled={reported}>
+          <S.TextButton type="button" onClick={() => openReport()} disabled={busy || reported}>
             <Flag size={15} aria-hidden="true" />{reported ? "신고 완료" : "게시글 신고"}
           </S.TextButton>
         </S.Reactions>
@@ -422,11 +373,11 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
             {comments.map((comment) => (
               <S.CommentThread key={comment.id}>
                 <CommentEntry
+                  busy={busy}
                   entry={comment}
-                  onLike={() => toggleCommentLike(comment.id)}
-                  onChat={() => startChat(comment.author, comment.authorId, "댓글")}
+                  onChat={() => startChat(comment.author.id, comment.id)}
                   currentUser={currentUser}
-                  postAuthorId={post.authorId}
+                  postAuthorId={post.author.id}
                   onSave={(content) => saveComment(comment.id, null, content)}
                   onDelete={() => setDeleteTarget({ kind: "comment", commentId: comment.id })}
                   onReport={() => openReport(comment)}
@@ -436,16 +387,17 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
                   }}
                 />
                 {comment.replies?.length > 0 && (
-                  <S.ReplyList aria-label={`${comment.author}님 댓글의 답글`}>
+                  <S.ReplyList aria-label={`${comment.author.nickname}님 댓글의 답글`}>
                     {comment.replies.map((reply) => (
                       <li key={reply.id}>
                         <CommentEntry
+                          busy={busy}
                           entry={reply}
-                          replyAuthor={comment.author}
-                          onLike={() => toggleCommentLike(comment.id, reply.id)}
-                          onChat={() => startChat(reply.author, reply.authorId, "댓글")}
+                          onReport={() => openReport(reply)}
+                          replyAuthor={comment.author.nickname}
+                          onChat={() => startChat(reply.author.id, reply.id)}
                           currentUser={currentUser}
-                          postAuthorId={post.authorId}
+                          postAuthorId={post.author.id}
                           onSave={(content) => saveComment(comment.id, reply.id, content)}
                           onDelete={() => setDeleteTarget({ kind: "reply", commentId: comment.id, replyId: reply.id })}
                         />
@@ -455,8 +407,9 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
                 )}
                 {replyTarget === comment.id && currentUser && (
                   <CommentComposer
+                    busy={busy}
                     id={`reply-to-${comment.id}`}
-                    label={`${comment.author}님에게 답글 남기기`}
+                    label={`${comment.author.nickname}님에게 답글 남기기`}
                     compact
                     onSubmit={(content) => addComment(content, comment.id)}
                     onCancel={() => setReplyTarget(null)}
@@ -474,7 +427,8 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
         )}
 
         {currentUser ? (
-          <CommentComposer id="community-new-comment" label={`${currentUser.name}님의 댓글`} onSubmit={(content) => addComment(content)} />
+          <CommentComposer
+            busy={busy} id="community-new-comment" label={`${currentUser.name}님의 댓글`} onSubmit={(content) => addComment(content)} />
         ) : (
           <S.CommentForm onSubmit={(event) => event.preventDefault()}>
             <label htmlFor="community-guest-comment">댓글 남기기</label>
@@ -497,9 +451,10 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
               : "이 댓글에 달린 답글도 함께 삭제돼요.\n삭제한 내용은 되돌릴 수 없어요."}
           onDismiss={() => setDeleteTarget(null)}
         >
-          <S.DialogActions>
+          {error && <p role="alert">{error}</p>}
+            <S.DialogActions>
             <S.SecondaryButton type="button" onClick={() => setDeleteTarget(null)}>취소</S.SecondaryButton>
-            <S.PrimaryButton type="button" $danger onClick={confirmDelete}>삭제하기</S.PrimaryButton>
+            <S.PrimaryButton type="button" $danger onClick={confirmDelete} disabled={busy}>삭제하기</S.PrimaryButton>
           </S.DialogActions>
         </PostDialog>
       )}
@@ -525,9 +480,10 @@ function CommunityPostPage({ post, currentUser, onUpdatePost, onDeletePost, onEd
                 <S.Textarea id="community-other-reason" value={otherReason} onChange={(event) => setOtherReason(event.target.value)} placeholder="신고 사유를 입력해 주세요." maxLength={500} required />
               </S.OtherReason>
             )}
-            <S.DialogActions>
+            {error && <p role="alert">{error}</p>}
+          <S.DialogActions>
               <S.SecondaryButton type="button" onClick={() => setReportTarget(null)}>취소</S.SecondaryButton>
-              <S.PrimaryButton type="submit" disabled={!reportReason || (reportReason === "기타" && !otherReason.trim())}>신고하기</S.PrimaryButton>
+              <S.PrimaryButton type="submit" disabled={busy || !reportReason || (reportReason === "기타" && !otherReason.trim())}>신고하기</S.PrimaryButton>
             </S.DialogActions>
           </form>
         </PostDialog>
