@@ -44,8 +44,11 @@ public class CalendarEvent {
 	@Column(name = "title", nullable = false, length = 80)
 	private String title;
 
-	@Column(name = "event_date", nullable = false, columnDefinition = "DATE")
-	private LocalDate eventDate;
+	@Column(name = "start_date", nullable = false, columnDefinition = "DATE")
+	private LocalDate startDate;
+
+	@Column(name = "end_date", nullable = false, columnDefinition = "DATE")
+	private LocalDate endDate;
 
 	@Column(name = "start_time", nullable = true, columnDefinition = "TIME")
 	private LocalTime startTime;
@@ -73,13 +76,13 @@ public class CalendarEvent {
 	private LocalDateTime collectedAt;
 
 	/** 카테고리 접근 권한과 입력값은 서비스에서 검증한다. 크롤링 일정의 소유자는 null이다. */
-	public CalendarEvent(User ownerUser, CalendarCategory category, String title, LocalDate eventDate,
+	public CalendarEvent(User ownerUser, CalendarCategory category, String title, LocalDate startDate, LocalDate endDate,
 			LocalTime startTime, LocalTime endTime, boolean allDay, String description,
 			CalendarEventSourceType sourceType, String sourceName, String sourceUrl, LocalDateTime collectedAt) {
 		this.sourceType = Objects.requireNonNull(sourceType, "sourceType");
 		this.ownerUser = sourceType == CalendarEventSourceType.USER
 				? Objects.requireNonNull(ownerUser, "ownerUser") : null;
-		applyDetails(category, title, eventDate, startTime, endTime, allDay, description);
+		applyDetails(category, title, startDate, endDate, startTime, endTime, allDay, description);
 		this.sourceName = sourceName;
 		this.sourceUrl = sourceUrl;
 		this.collectedAt = collectedAt;
@@ -89,26 +92,31 @@ public class CalendarEvent {
 	 * 서비스에서 소유권과 카테고리를 검증하고 PATCH의 미지정 값을 병합한 전체 값을 전달한다.
 	 * nullable 필드에 null을 전달하면 기존 값을 제거한다.
 	 */
-	public void update(CalendarCategory category, String title, LocalDate eventDate,
+	public void update(CalendarCategory category, String title, LocalDate startDate, LocalDate endDate,
 			LocalTime startTime, LocalTime endTime, boolean allDay, String description) {
 		if (sourceType != CalendarEventSourceType.USER) {
 			throw new IllegalStateException("crawled events cannot be updated by users");
 		}
-		applyDetails(category, title, eventDate, startTime, endTime, allDay, description);
+		applyDetails(category, title, startDate, endDate, startTime, endTime, allDay, description);
 	}
 
-	private void applyDetails(CalendarCategory category, String title, LocalDate eventDate,
+	private void applyDetails(CalendarCategory category, String title, LocalDate startDate, LocalDate endDate,
 			LocalTime startTime, LocalTime endTime, boolean allDay, String description) {
 		Objects.requireNonNull(category, "category");
 		Objects.requireNonNull(title, "title");
-		Objects.requireNonNull(eventDate, "eventDate");
+		Objects.requireNonNull(startDate, "startDate");
+		Objects.requireNonNull(endDate, "endDate");
+		if (endDate.isBefore(startDate)) {
+			throw new IllegalArgumentException("endDate cannot be before startDate");
+		}
 		if (sourceType == CalendarEventSourceType.USER
 				&& ("SCHOOL".equals(category.getCategoryCode()) || "DORMITORY".equals(category.getCategoryCode()))) {
 			throw new IllegalArgumentException("users cannot create or move events to a school or dormitory category");
 		}
 		this.category = category;
 		this.title = title;
-		this.eventDate = eventDate;
+		this.startDate = startDate;
+		this.endDate = endDate;
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.allDay = allDay;

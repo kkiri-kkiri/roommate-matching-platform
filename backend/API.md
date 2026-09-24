@@ -1266,13 +1266,17 @@ Auth
 
 학교 일정과 기숙사 일정은 백엔드 크롤링으로 수집한다.
 
+한경국립대학교 학사일정(https://www.hknu.ac.kr/kor/646/subview.do)은 매일 04:00(Asia/Seoul)에 현재 표시된 연간 일정을 수집한다.
+기존 SCHOOL 시스템 카테고리가 없으면 수집 저장을 중단하며 카테고리를 자동 생성하지 않는다.
+수집 일정은 ownerUser=null, sourceType=CRAWLED, sourceName="한경국립대학교 학사일정"인 종일 일정이다.
+sourceType/sourceName/title/startDate/endDate가 모두 같으면 추가 저장하지 않는다. 원문의 제목이나 날짜가 변경되면 새 일정으로 저장되며 기존 일정은 자동 수정·삭제하지 않는다.
+수집 전용 API는 제공하지 않으며 기존 일정 조회 API에서 조회한다.
+
 SCHOOL = 학교 일정
 DORMITORY = 기숙사 일정
-ROOMMATE = 룸메찾기 일정
-PERSONAL = 개인 일정
-CUSTOM = 사용자 추가 분류
+CUSTOM-* = 사용자가 직접 생성한 카테고리
 
-SCHOOL, DORMITORY는 시스템 소유 일정으로 보고 사용자가 수정/삭제할 수 없도록 하는 것을 권장한다.
+시스템 고정 카테고리는 SCHOOL(학교), DORMITORY(기숙사)뿐이며 ownerUser=null, isSystem=true이다. 사용자는 두 카테고리를 수정·삭제하거나 직접 일정을 등록할 수 없다. 학교 크롤링은 SCHOOL, 기숙사 크롤링은 DORMITORY를 사용한다.
 
 현재 프론트 데모는 모든 일정을 수정/삭제할 수 있으므로 API 연동 시 버튼 제어가 필요하다.
 
@@ -1284,14 +1288,15 @@ Query:
 
 ?from=2026-09-01
 &to=2026-09-30
-&categories=SCHOOL,DORMITORY,ROOMMATE,PERSONAL
+&categories=SCHOOL,DORMITORY,CUSTOM-example
 
 Response item:
 
 {
 "id": 10,
 "title": "생활관 정기 점검",
-"date": "2026-09-08",
+"startDate": "2026-09-08",
+"endDate": "2026-09-08",
 "startTime": "18:00",
 "endTime": "19:00",
 "category": "DORMITORY",
@@ -1300,6 +1305,24 @@ Response item:
 "editable": false,
 "source": "생활관 홈페이지"
 }
+
+기간 일정 Response item 예시:
+
+{
+"id": 11,
+"title": "학사일정",
+"startDate": "2026-03-03",
+"endDate": "2026-03-20",
+"startTime": null,
+"endTime": null,
+"category": "SCHOOL",
+"categoryId": 1,
+"description": "기간으로 저장하는 학사일정 예시",
+"editable": false,
+"source": "한경국립대학교 학사일정"
+}
+
+조회 기간과 일정 기간이 겹치면 반환한다(startDate <= to AND endDate >= from, 경계일 포함).
 
 11.2 사용자 일정 등록
 
@@ -1311,7 +1334,8 @@ Request:
 
 {
 "title": "룸메이트와 첫 만남",
-"date": "2026-09-16",
+"startDate": "2026-09-16",
+"endDate": "2026-09-16",
 "startTime": "12:00",
 "endTime": "13:00",
 "categoryId": 3,
@@ -1322,13 +1346,15 @@ Validation:
 
 제목 필수, 최대 80자
 
-날짜 1900-01-01 ~ 2100-12-31
+startDate, endDate 모두 필수, 각각 1900-01-01 ~ 2100-12-31
+
+startDate <= endDate. 단일 일정은 startDate = endDate로 저장한다.
 
 시작/종료 시간 HH:mm
 
 종료시간 > 시작시간
 
-categoryId 유효성
+categoryId는 본인 소유 CUSTOM-* 카테고리의 실제 ID를 사용한다. 예시의 categoryId=3은 사용자가 생성한 카테고리 ID이다.
 
 description 최대 2,000자
 
@@ -1340,7 +1366,17 @@ PATCH /api/calendar/events/{eventId}
 
 Auth / 본인 일정만 가능
 
-Validation은 등록과 동일.
+Request 예시(종료일만 변경):
+
+{
+"endDate": "2026-09-20"
+}
+
+PATCH에서 생략하거나 null인 필드는 기존 값을 유지한다. startDate/endDate 중 일부만 전달해도 기존 값과 병합한 뒤 startDate <= endDate를 검증한다.
+
+전달된 값의 Validation은 등록과 동일하며 필수 입력 제약은 적용하지 않는다.
+
+등록/수정 Response는 11.1의 Response item과 동일하게 startDate, endDate를 반환한다.
 
 11.4 사용자 일정 삭제
 
@@ -1362,14 +1398,14 @@ Response:
 {
 "id": 1,
 "code": "SCHOOL",
-"label": "학교 일정",
+"label": "학교",
 "color": "#006A65",
 "fixed": true,
 "enabled": true
 },
 {
 "id": 4,
-"code": "PERSONAL",
+"code": "CUSTOM-example",
 "label": "개인 일정",
 "color": "#123456",
 "fixed": false,
@@ -1388,7 +1424,7 @@ Request:
 [
 {
 "id": 1,
-"label": "학교 일정",
+"label": "학교",
 "color": "#006A65",
 "enabled": true
 },
@@ -1449,7 +1485,7 @@ DELETE /api/calendar/categories/{categoryId}
 
 Auth / 본인 소유 사용자 카테고리만 가능
 
-SCHOOL, DORMITORY, ROOMMATE, PERSONAL 기본 카테고리는 삭제할 수 없다.
+SCHOOL, DORMITORY 시스템 카테고리는 삭제할 수 없다. 그 외 카테고리는 본인 소유 CUSTOM-*만 수정·삭제할 수 있다.
 
 해당 카테고리를 사용하는 일정이 존재하면 삭제를 제한한다.
 
@@ -2194,7 +2230,7 @@ CommunityPostPage는 Router state에 communityChat을 전달하지만 현재 Cha
 
 SCHOOL, DORMITORY: 조회 전용
 
-ROOMMATE, PERSONAL, 사용자 카테고리: 사용자 CRUD 가능
+본인 소유 CUSTOM-* 사용자 카테고리: 사용자 CRUD 가능
 
 구조로 맞추는 것을 권장한다.
 

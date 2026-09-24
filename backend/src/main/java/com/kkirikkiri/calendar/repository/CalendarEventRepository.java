@@ -9,19 +9,23 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.kkirikkiri.calendar.entity.CalendarEvent;
+import com.kkirikkiri.calendar.entity.CalendarEventSourceType;
 
 public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Long> {
+
+	boolean existsBySourceTypeAndSourceNameAndTitleAndStartDateAndEndDate(
+			CalendarEventSourceType sourceType, String sourceName, String title, LocalDate startDate, LocalDate endDate);
 
 	/** 시작일과 종료일을 포함하여 공용 크롤링 일정과 본인 일정을 조회한다. */
 	@Query("""
 			select e from CalendarEvent e
 			join fetch e.category c
 			left join e.ownerUser owner
-			where e.eventDate between :from and :to
+			where e.startDate <= :to and e.endDate >= :from
 			  and ((e.ownerUser is null
 			        and e.sourceType = com.kkirikkiri.calendar.entity.CalendarEventSourceType.CRAWLED)
 			       or owner.userId = :userId)
-			order by e.eventDate, e.startTime, e.eventId
+			order by e.startDate, e.startTime, e.eventId
 			""")
 	List<CalendarEvent> findVisibleEvents(@Param("userId") Long userId,
 			@Param("from") LocalDate from, @Param("to") LocalDate to);
@@ -31,12 +35,12 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
 			select e from CalendarEvent e
 			join fetch e.category c
 			left join e.ownerUser owner
-			where e.eventDate between :from and :to
+			where e.startDate <= :to and e.endDate >= :from
 			  and ((e.ownerUser is null
 			        and e.sourceType = com.kkirikkiri.calendar.entity.CalendarEventSourceType.CRAWLED)
 			       or owner.userId = :userId)
 			  and c.categoryCode in :categoryCodes
-			order by e.eventDate, e.startTime, e.eventId
+			order by e.startDate, e.startTime, e.eventId
 			""")
 	List<CalendarEvent> findVisibleEventsByCategoryCodes(@Param("userId") Long userId,
 			@Param("from") LocalDate from, @Param("to") LocalDate to,

@@ -1,4 +1,4 @@
--- Local reference data from frontend/src/data/facultyOptions.js and SignupPage.js.
+-- Common reference data from frontend/src/data/facultyOptions.js and SignupPage.js.
 -- Insert missing rows only; preserve existing IDs and active flags.
 
 INSERT INTO dormitory (dormitory_code, dormitory_name, is_active)
@@ -421,3 +421,29 @@ SELECT f.faculty_id, '탄소중립바이오시스템융합전공(융합전공)',
 WHERE f.faculty_name = 'AI융합학부'
 AND NOT EXISTS (SELECT 1 FROM major m WHERE m.faculty_id = f.faculty_id AND m.major_name = '탄소중립바이오시스템융합전공(융합전공)');
 
+-- Calendar system categories
+
+INSERT INTO calendar_category
+    (category_code, default_name, owner_user_id, name_locked, is_system, created_at)
+SELECT
+    'SCHOOL', '학교', NULL, TRUE, TRUE, NOW()
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM calendar_category
+    WHERE category_code = 'SCHOOL'
+);
+
+INSERT INTO calendar_category
+    (category_code, default_name, owner_user_id, name_locked, is_system, created_at)
+SELECT
+    'DORMITORY', '기숙사', NULL, TRUE, TRUE, NOW()
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM calendar_category
+    WHERE category_code = 'DORMITORY'
+);
+-- Restore the invariant for existing reserved system categories without changing IDs.
+UPDATE calendar_category
+SET owner_user_id = NULL, is_system = TRUE, name_locked = TRUE
+WHERE category_code IN ('SCHOOL', 'DORMITORY')
+  AND (owner_user_id IS NOT NULL OR is_system = FALSE OR name_locked = FALSE);

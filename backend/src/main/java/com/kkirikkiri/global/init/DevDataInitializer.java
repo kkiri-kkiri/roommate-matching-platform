@@ -34,7 +34,7 @@ public class DevDataInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        // Reference data is loaded by data-local.sql before this runner executes.
+        // Common reference data is loaded by data-common.sql before this runner executes.
 
         Dormitory dormitory = dormitoryRepository.findByDormitoryName("나래").orElseThrow();
         Faculty faculty = facultyRepository.findByFacultyName("컴퓨터응용수학부").orElseThrow();

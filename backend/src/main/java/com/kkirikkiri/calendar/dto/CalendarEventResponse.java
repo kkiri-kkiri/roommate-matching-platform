@@ -10,7 +10,8 @@ import com.kkirikkiri.calendar.entity.CalendarEvent;
 public record CalendarEventResponse(
 		Long id,
 		String title,
-		LocalDate date,
+		LocalDate startDate,
+		LocalDate endDate,
 		@JsonFormat(pattern = "HH:mm") LocalTime startTime,
 		@JsonFormat(pattern = "HH:mm") LocalTime endTime,
 		String category,
@@ -21,7 +22,7 @@ public record CalendarEventResponse(
 
 	public static CalendarEventResponse from(CalendarEvent event, boolean editable) {
 		return new CalendarEventResponse(
-				event.getEventId(), event.getTitle(), event.getEventDate(),
+				event.getEventId(), event.getTitle(), event.getStartDate(), event.getEndDate(),
 				event.getStartTime(), event.getEndTime(), event.getCategory().getCategoryCode(),
 				event.getCategory().getCategoryId(), event.getDescription(), editable, event.getSourceName());
 	}
