@@ -56,8 +56,16 @@ public class SecurityConfig {
 								"/api/users/me/roommate-preferences")
 						.authenticated()
 						.requestMatchers("/api/roommates/**", "/api/users/me/liked-roommates").authenticated()
+						.requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/{postId}").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/posts", "/api/posts/{postId}/likes",
+								"/api/posts/{postId}/comments", "/api/comments/{commentId}/replies").authenticated()
+						.requestMatchers(HttpMethod.PATCH, "/api/posts/{postId}", "/api/comments/{commentId}").authenticated()
+						.requestMatchers(HttpMethod.DELETE, "/api/posts/{postId}", "/api/posts/{postId}/likes",
+								"/api/comments/{commentId}").authenticated()
 						.requestMatchers(HttpMethod.POST, "/api/comments/{commentId}/likes").authenticated()
 						.requestMatchers(HttpMethod.DELETE, "/api/comments/{commentId}/likes").authenticated()
+						.requestMatchers(HttpMethod.GET, "/api/users/me/posts", "/api/users/me/comments").authenticated()
+						.requestMatchers(HttpMethod.POST, "/api/reports").authenticated()
 						.requestMatchers(HttpMethod.GET, "/api/calendar/events").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/calendar/events").authenticated()
 						.requestMatchers(HttpMethod.PATCH, "/api/calendar/events/{eventId}").authenticated()

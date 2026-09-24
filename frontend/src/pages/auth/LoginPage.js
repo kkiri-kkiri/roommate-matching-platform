@@ -56,6 +56,7 @@ const LoginPage = ({ onLogin }) => {
       }
 
       onLogin?.({
+        id: response.user.id,
         loginId: response.user.loginId,
         displayName: response.user.nickname,
       });

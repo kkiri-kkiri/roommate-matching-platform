@@ -30,6 +30,9 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
   const [images, setImages] = useState(() => [...(post?.images || [])]);
   const [errors, setErrors] = useState({});
   const [imageError, setImageError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const [saveError, setSaveError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const titleRef = useRef(null);
   const contentRef = useRef(null);
@@ -71,6 +74,7 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
           id: `attachment-${Date.now()}-${nextImageRef.current}`,
           src: reader.result,
           name: file.name,
+          file,
         });
       };
       reader.onerror = () => {
@@ -87,7 +91,7 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
   const handleImageChange = async (event) => {
     const files = Array.from(event.target.files || []);
     event.target.value = "";
-    if (!files.length || processingRef.current) return;
+    if (!files.length || processingRef.current || savingRef.current) return;
 
     setImageError("");
     if (images.length + files.length > MAX_IMAGES) {
@@ -124,14 +128,14 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
   };
 
   const removeImage = (imageId) => {
-    if (processingRef.current) return;
+    if (processingRef.current || savingRef.current) return;
     setImages((previous) => previous.filter((image) => image.id !== imageId));
     setImageError("");
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    if (processingRef.current) return;
+    if (processingRef.current || savingRef.current) return;
 
     const nextErrors = {};
     if (!title.trim()) nextErrors.title = "게시글 제목을 입력해 주세요.";
@@ -146,7 +150,17 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
       return;
     }
 
-    onSave({ category, title: title.trim(), content: content.trim(), images });
+    savingRef.current = true;
+    setSaving(true);
+    setSaveError("");
+    try {
+      await onSave({ category, title: title.trim(), content: content.trim(), images });
+    } catch (error) {
+      setSaveError(error.message);
+    } finally {
+      savingRef.current = false;
+      if (mountedRef.current) setSaving(false);
+    }
   };
 
   return (
@@ -265,7 +279,7 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
               <S.UploadButton
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                disabled={isProcessing || images.length >= MAX_IMAGES}
+                disabled={isProcessing || saving || images.length >= MAX_IMAGES}
                 aria-describedby="community-image-help"
               >
                 <ImagePlus size={17} aria-hidden="true" />
@@ -279,7 +293,7 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
                 name="images"
                 aria-label="첨부할 이미지 선택"
                 onChange={handleImageChange}
-                disabled={isProcessing || images.length >= MAX_IMAGES}
+                disabled={isProcessing || saving || images.length >= MAX_IMAGES}
               />
             </S.UploadArea>
 
@@ -307,7 +321,7 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
                         <S.RemoveImage
                           type="button"
                           onClick={() => removeImage(image.id)}
-                          disabled={isProcessing}
+                          disabled={isProcessing || saving}
                           aria-label={`${image.name || `이미지 ${index + 1}`} 삭제`}
                         >
                           <X size={16} aria-hidden="true" />
@@ -325,12 +339,14 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
 
         </S.Fields>
 
+        {saveError && <S.Error role="alert">{saveError}</S.Error>}
+        {saving && <p role="status">저장하고 있어요.</p>}
         <S.Actions>
           <S.ActionButtons>
             <S.CancelButton type="button" onClick={onCancel}>
               취소
             </S.CancelButton>
-            <S.SaveButton type="submit" disabled={isProcessing}>
+            <S.SaveButton type="submit" disabled={isProcessing || saving}>
               {isEditing
                 ? <Check size={18} aria-hidden="true" />
                 : <Send size={17} aria-hidden="true" />}

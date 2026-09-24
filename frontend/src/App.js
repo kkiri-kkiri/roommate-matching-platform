@@ -34,6 +34,7 @@ function getStoredAuthenticatedUser() {
     }
 
     return {
+      id: storedUser.id,
       name: storedUser.name,
       initial: storedUser.initial || storedUser.name.slice(0, 1),
     };
@@ -45,9 +46,10 @@ function getStoredAuthenticatedUser() {
 function App() {
   const [currentUser, setCurrentUser] = useState(getStoredAuthenticatedUser);
 
-  const handleLogin = ({ displayName, loginId }) => {
+  const handleLogin = ({ id, displayName, loginId }) => {
     const name = displayName || loginId || "내 프로필";
     const authenticatedUser = {
+      id,
       name,
       initial: name.slice(0, 1),
     };

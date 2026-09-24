@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,12 +14,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kkirikkiri.community.comment.dto.CommunityCommentResponse;
 import com.kkirikkiri.community.post.dto.CommunityPostCreateRequest;
+import com.kkirikkiri.community.post.dto.CommunityPostDetailResponse;
+import com.kkirikkiri.community.post.dto.CommunityPostListRequest;
+import com.kkirikkiri.community.post.dto.CommunityPostResponse;
 import com.kkirikkiri.community.post.dto.CommunityPostUpdateRequest;
 import com.kkirikkiri.community.post.dto.PostImagesRequest;
 import com.kkirikkiri.community.post.service.CommunityPostService;
 import com.kkirikkiri.global.response.ApiResponse;
 import com.kkirikkiri.global.security.AuthenticatedUser;
+import com.kkirikkiri.matching.dto.RoommatePageResponse;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -26,6 +32,20 @@ import com.kkirikkiri.global.security.AuthenticatedUser;
 public class CommunityPostController {
 
 	private final CommunityPostService communityPostService;
+
+	@GetMapping
+	public ApiResponse<RoommatePageResponse<CommunityPostResponse>> getPosts(
+			@AuthenticationPrincipal AuthenticatedUser user,
+			@Valid @ModelAttribute CommunityPostListRequest request) {
+		return ApiResponse.success(communityPostService.getPosts(user == null ? null : user.userId(), request));
+	}
+
+	@GetMapping("/{postId}")
+	public ApiResponse<CommunityPostDetailResponse<CommunityCommentResponse>> getPost(
+			@AuthenticationPrincipal AuthenticatedUser user,
+			@PathVariable Long postId) {
+		return ApiResponse.success(communityPostService.getPost(user == null ? null : user.userId(), postId));
+	}
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ApiResponse<Long> createPost(@AuthenticationPrincipal AuthenticatedUser user,
