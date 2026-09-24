@@ -115,6 +115,32 @@ public class Report {
 		return new Report(reporter, comment.getAuthor(), null, comment, ReportType.COMMENT, reason, description);
 	}
 
+	/**
+	 * 관리자 권한 확인과 회원 정지, 게시글/댓글 삭제는 서비스에서 처리한다.
+	 * resolutionAction은 ERD에 따라 null을 허용한다.
+	 */
+	public void process(ReportStatus status, String resolutionAction, User processedBy, LocalDateTime processedAt) {
+		if (this.status != ReportStatus.PENDING) {
+			throw new IllegalStateException("only pending reports can be processed");
+		}
+		Objects.requireNonNull(status, "status");
+		if (status != ReportStatus.COMPLETED && status != ReportStatus.REJECTED) {
+			throw new IllegalArgumentException("processed status must be COMPLETED or REJECTED");
+		}
+		Objects.requireNonNull(processedBy, "processedBy");
+		Objects.requireNonNull(processedAt, "processedAt");
+		if (resolutionAction != null && resolutionAction.length() > 30) {
+			throw new IllegalArgumentException("resolutionAction cannot exceed 30 characters");
+		}
+		if (createdAt != null && processedAt.isBefore(createdAt)) {
+			throw new IllegalArgumentException("processedAt cannot be before createdAt");
+		}
+		this.status = status;
+		this.resolutionAction = resolutionAction;
+		this.processedBy = processedBy;
+		this.processedAt = processedAt;
+	}
+
 	@PrePersist
 	protected void onCreate() {
 		this.createdAt = LocalDateTime.now();
