@@ -8,5 +8,5 @@ import com.kkirikkiri.survey.entity.RoommatePreferenceOption;
 
 public interface RoommatePreferenceOptionRepository extends JpaRepository<RoommatePreferenceOption, Long> {
 
-	List<RoommatePreferenceOption> findAllByRoommatePreference_PreferenceId(Long preferenceId);
+	List<RoommatePreferenceOption> findAllByRoommatePreference_PreferenceIdOrderByPreferenceOptionIdAsc(Long preferenceId);
 }

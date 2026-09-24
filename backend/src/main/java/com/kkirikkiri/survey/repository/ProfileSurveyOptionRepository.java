@@ -8,5 +8,5 @@ import com.kkirikkiri.survey.entity.ProfileSurveyOption;
 
 public interface ProfileSurveyOptionRepository extends JpaRepository<ProfileSurveyOption, Long> {
 
-	List<ProfileSurveyOption> findAllByProfileSurvey_ProfileSurveyId(Long profileSurveyId);
+	List<ProfileSurveyOption> findAllByProfileSurvey_ProfileSurveyIdOrderByProfileSurveyOptionIdAsc(Long profileSurveyId);
 }

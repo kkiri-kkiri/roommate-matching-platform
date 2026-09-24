@@ -97,7 +97,7 @@ public class RoommatePreferenceService {
 		return roommatePreferenceRepository.findByUser_UserId(userId)
 				.map(preference -> RoommatePreferenceResponse.from(
 						preference,
-						roommatePreferenceOptionRepository.findAllByRoommatePreference_PreferenceId(
+						roommatePreferenceOptionRepository.findAllByRoommatePreference_PreferenceIdOrderByPreferenceOptionIdAsc(
 								preference.getPreferenceId()),
 						preferenceCriterionRepository.findAllByRoommatePreference_PreferenceId(
 								preference.getPreferenceId())))
@@ -139,7 +139,7 @@ public class RoommatePreferenceService {
 
 	private void replaceOptions(RoommatePreference preference, RoommatePreferenceRequest request) {
 		List<RoommatePreferenceOption> existingOptions = roommatePreferenceOptionRepository
-				.findAllByRoommatePreference_PreferenceId(preference.getPreferenceId());
+				.findAllByRoommatePreference_PreferenceIdOrderByPreferenceOptionIdAsc(preference.getPreferenceId());
 		roommatePreferenceOptionRepository.deleteAll(existingOptions);
 		roommatePreferenceOptionRepository.flush();
 

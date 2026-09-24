@@ -73,7 +73,7 @@ public class ProfileSurveyService {
 		validateUserId(userId);
 		return profileSurveyRepository.findByUser_UserId(userId)
 				.map(survey -> ProfileSurveyResponse.from(survey,
-						profileSurveyOptionRepository.findAllByProfileSurvey_ProfileSurveyId(
+						profileSurveyOptionRepository.findAllByProfileSurvey_ProfileSurveyIdOrderByProfileSurveyOptionIdAsc(
 								survey.getProfileSurveyId())))
 				.orElseGet(() -> ProfileSurveyResponse.from(null, List.of()));
 	}
@@ -116,7 +116,7 @@ public class ProfileSurveyService {
 
 	private void replaceOptions(ProfileSurvey survey, ProfileSurveyRequest request) {
 		List<ProfileSurveyOption> existingOptions = profileSurveyOptionRepository
-				.findAllByProfileSurvey_ProfileSurveyId(survey.getProfileSurveyId());
+				.findAllByProfileSurvey_ProfileSurveyIdOrderByProfileSurveyOptionIdAsc(survey.getProfileSurveyId());
 		profileSurveyOptionRepository.deleteAll(existingOptions);
 		profileSurveyOptionRepository.flush();
 
