@@ -42,11 +42,19 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/email-verifications/send",
-								"/api/auth/email-verifications/verify").permitAll()
+								"/api/auth/email-verifications/verify")
+						.permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/signup", "/api/auth/find-id",
-								"/api/auth/password-reset/request", "/api/auth/password-reset/confirm").permitAll()
+								"/api/auth/password-reset/request", "/api/auth/password-reset/confirm")
+						.permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/auth/signup/availability").permitAll()
 						.requestMatchers("/api/users/me", "/api/users/me/password").authenticated()
+						.requestMatchers(HttpMethod.GET, "/api/users/me/profile-survey",
+								"/api/users/me/roommate-preferences")
+						.authenticated()
+						.requestMatchers(HttpMethod.PUT, "/api/users/me/profile-survey",
+								"/api/users/me/roommate-preferences")
+						.authenticated()
 						.requestMatchers("/api/roommates/**", "/api/users/me/liked-roommates").authenticated()
 						.requestMatchers(HttpMethod.POST, "/api/comments/{commentId}/likes").authenticated()
 						.requestMatchers(HttpMethod.DELETE, "/api/comments/{commentId}/likes").authenticated()
