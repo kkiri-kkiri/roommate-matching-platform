@@ -59,8 +59,9 @@ const LoginPage = ({ onLogin }) => {
         id: response.user.id,
         loginId: response.user.loginId,
         displayName: response.user.nickname,
+        role: response.user.role,
       });
-      navigate("/", { replace: true });
+      navigate(response.user.role === "ADMIN" ? "/admin" : "/", { replace: true });
     } catch (error) {
       setFeedback({
         tone: "error",

@@ -35,6 +35,7 @@ function getStoredAuthenticatedUser() {
 
     return {
       id: storedUser.id,
+      role: storedUser.role,
       name: storedUser.name,
       initial: storedUser.initial || storedUser.name.slice(0, 1),
     };
@@ -43,13 +44,28 @@ function getStoredAuthenticatedUser() {
   }
 }
 
+function AdminRoute({ currentUser }) {
+  let accessToken;
+  try {
+    accessToken = window.localStorage.getItem("accessToken");
+  } catch {
+    // A token is required by the existing admin API client.
+  }
+
+  if (!accessToken) return <Navigate to="/login" replace />;
+  return currentUser?.role === "ADMIN"
+    ? <AdminPage />
+    : <Navigate to="/" replace />;
+}
+
 function App() {
   const [currentUser, setCurrentUser] = useState(getStoredAuthenticatedUser);
 
-  const handleLogin = ({ id, displayName, loginId }) => {
+  const handleLogin = ({ id, displayName, loginId, role }) => {
     const name = displayName || loginId || "내 프로필";
     const authenticatedUser = {
       id,
+      role,
       name,
       initial: name.slice(0, 1),
     };
@@ -93,7 +109,7 @@ function App() {
           }
         >
           <Route index element={<MainPage />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin" element={<AdminRoute currentUser={currentUser} />} />
           <Route
             path="/roommates"
             element={<><RoommateSearchPage /><Outlet /></>}
@@ -126,7 +142,7 @@ function App() {
           />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/profile" element={<MyPage currentUser={currentUser} onUserUpdated={(user) => handleLogin({ id: user.id, displayName: user.nickname, loginId: user.loginId })} />} />
+          <Route path="/profile" element={<MyPage currentUser={currentUser} onUserUpdated={(user) => handleLogin({ id: user.id, displayName: user.nickname, loginId: user.loginId, role: currentUser?.role })} />} />
           <Route
             path="/profile-survey"
             element={<Navigate to="/profile?tab=survey" replace />}
