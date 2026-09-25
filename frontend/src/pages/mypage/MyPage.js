@@ -1,3 +1,4 @@
+import { getMyInfo, updateMyInfo, changePassword } from "../../api/userApi";
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -561,23 +562,6 @@ const getInternationalAge = (birthYear) => {
   const parsedBirthYear = Number.parseInt(birthYear, 10);
   if (!Number.isInteger(parsedBirthYear)) return null;
   return new Date().getFullYear() - parsedBirthYear;
-};
-
-const INITIAL_ACCOUNT = {
-  loginId: "haru24",
-  nickname: "차분한하루",
-  schoolEmail: "haru24@hknu.ac.kr",
-  gender: "여자",
-  dormitory: "나래",
-  faculty: "컴퓨터응용수학부",
-  major: "소프트웨어융합전공",
-  birthYear: "2002",
-  studentId: "24",
-  grade: "3학년",
-  mbtiEnergy: "I",
-  mbtiInformation: "N",
-  mbtiDecision: "F",
-  mbtiLifestyle: "J",
 };
 
 const MENU_ITEMS = [
@@ -1158,6 +1142,10 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
 }
 
 function AccountContent({ account, onSave }) {
+  const [saving, setSaving] = useState(false);
+  const pendingRef = useRef(false);
+  const [saveError, setSaveError] = useState("");
+  const [saveStatus, setSaveStatus] = useState("");
   const [draft, setDraft] = useState({
     ...account,
     currentPassword: "",
@@ -1198,10 +1186,11 @@ function AccountContent({ account, onSave }) {
     }));
   };
 
-  const finishSection = (ids) => {
+  const finishSection = async (ids) => {
+    if (pendingRef.current) return;
     const nextErrors = {};
     ids.forEach((id) => {
-      if (!draft[id].trim())
+      if (!(id === "major" && noMajor) && !String(draft[id] || "").trim())
         nextErrors[id] = `${id} 항목을 입력하거나 선택해 주세요.`;
     });
     if (
@@ -1219,10 +1208,14 @@ function AccountContent({ account, onSave }) {
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
-    onSave({
-      ...account,
-      ...Object.fromEntries(ids.map((id) => [id, draft[id]])),
-    });
+    pendingRef.current = true; setSaving(true); setSaveError(""); setSaveStatus("");
+    try {
+      const payload = Object.fromEntries(ids.filter((id) => !(id === "major" && noMajor)).map((id) => [id, draft[id]]));
+      const saved = await onSave(payload);
+      setDraft((current) => ({ ...current, ...saved }));
+      setSaveStatus("회원정보를 저장했어요.");
+    } catch (error) { setSaveError(error.message); return; }
+    finally { pendingRef.current = false; setSaving(false); }
     setEditingFields((current) =>
       Object.fromEntries(Object.keys(current).map((id) => [id, false])),
     );
@@ -1236,7 +1229,8 @@ function AccountContent({ account, onSave }) {
     setErrors({});
   };
 
-  const finishPassword = () => {
+  const finishPassword = async () => {
+    if (pendingRef.current) return;
     const hasPasswordInput = Boolean(
       draft.currentPassword || draft.newPassword || draft.confirmPassword,
     );
@@ -1258,6 +1252,10 @@ function AccountContent({ account, onSave }) {
       nextErrors.confirmPassword = "새 비밀번호가 일치하지 않아요.";
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
+    pendingRef.current = true; setSaving(true); setSaveError(""); setSaveStatus("");
+    try { await changePassword(draft.currentPassword, draft.newPassword, draft.confirmPassword); setSaveStatus("비밀번호를 변경했어요."); }
+    catch (error) { setSaveError(error.message); return; }
+    finally { pendingRef.current = false; setSaving(false); }
     setPasswordEditing(false);
     setDraft((current) => ({
       ...current,
@@ -1348,7 +1346,10 @@ function AccountContent({ account, onSave }) {
   };
 
   return (
-    <S.Stack as="form" ref={formRef} onSubmit={save} noValidate>
+    <S.Stack as="form" ref={formRef} onSubmit={save} noValidate aria-busy={saving}>
+      {saveError && <S.Banner $error role="alert">{saveError}</S.Banner>}
+      {saveStatus && <p role="status">{saveStatus}</p>}
+      <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0, display: "flex", flexDirection: "column", gap: 24 }}>
       <S.SectionHeading>
         <div>
           <S.SectionTitle>계정 정보</S.SectionTitle>
@@ -1387,7 +1388,7 @@ function AccountContent({ account, onSave }) {
           {renderField("gender", "성별", { readOnly: true })}
           {renderField("birthYear", "만 나이", {
             readOnly: true,
-            displayValue: `${getInternationalAge(draft.birthYear || INITIAL_ACCOUNT.birthYear) ?? "-"}세`,
+            displayValue: `${getInternationalAge(draft.birthYear) ?? "-"}세`,
           })}
         </S.FormGrid>
       </S.Card>
@@ -1421,7 +1422,7 @@ function AccountContent({ account, onSave }) {
           })}
           {renderField("studentId", "학번", {
             readOnly: true,
-            displayValue: draft.studentId || INITIAL_ACCOUNT.studentId,
+            displayValue: draft.studentId,
           })}
           {renderField("grade", "학년", {
             options: ["1학년", "2학년", "3학년", "4학년", "5학년"],
@@ -1546,12 +1547,13 @@ function AccountContent({ account, onSave }) {
           </>
         )}
       </S.Card>
+    </fieldset>
     </S.Stack>
   );
 }
 
-function MyPage({ currentUser }) {
-  const surveyProfileId = `survey:${currentUser?.name || INITIAL_ACCOUNT.loginId}`;
+function MyPage({ currentUser, onUserUpdated }) {
+  const surveyProfileId = `survey:${currentUser?.name || ""}`;
   const [savedSurvey] = useState(() =>
     getSavedSurveyProfiles().find((profile) => profile.id === surveyProfileId),
   );
@@ -1566,11 +1568,26 @@ function MyPage({ currentUser }) {
     window.scrollTo(0, 0);
   }, [activeTab]);
 
-  const [account, setAccount] = useState(() => ({
-    ...INITIAL_ACCOUNT,
-    nickname: currentUser?.name || INITIAL_ACCOUNT.nickname,
-    ...savedSurvey?.profile,
-  }));
+  const [account, setAccount] = useState(null);
+  const [accountLoading, setAccountLoading] = useState(true);
+  const [accountError, setAccountError] = useState("");
+  const [accountRevision, setAccountRevision] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    setAccountLoading(true); setAccountError(""); setAccount(null);
+    getMyInfo().then((user) => {
+      if (!cancelled) setAccount({ ...user, major: user.major || "", studentId: user.admissionYear });
+    }).catch((error) => { if (!cancelled) setAccountError(error.message); })
+      .finally(() => { if (!cancelled) setAccountLoading(false); });
+    return () => { cancelled = true; };
+  }, [currentUser?.id, accountRevision]);
+  const saveAccount = async (payload) => {
+    const user = await updateMyInfo(payload);
+    const saved = { ...user, major: user.major || "", studentId: user.admissionYear };
+    setAccount(saved);
+    onUserUpdated?.(user);
+    return saved;
+  };
   const [profileAnswers, setProfileAnswers] = useState(
     savedSurvey?.answers || PROFILE_DEFAULTS,
   );
@@ -1612,12 +1629,15 @@ function MyPage({ currentUser }) {
     }
   }, [likesPage, totalLikesPages]);
 
+  if (accountLoading) return <S.Page><p role="status">내 정보를 불러오는 중이에요.</p></S.Page>;
+  if (accountError || !account) return <S.Page><p role="alert">{accountError || "내 정보를 불러오지 못했어요."}</p><button onClick={() => setAccountRevision((value) => value + 1)}>다시 시도</button></S.Page>;
+
   const detailItems = [
     ["닉네임", account.nickname],
     ["성별", account.gender],
     [
       "만 나이",
-      `${getInternationalAge(account.birthYear || INITIAL_ACCOUNT.birthYear) ?? "-"}세`,
+      `${getInternationalAge(account.birthYear) ?? "-"}세`,
     ],
     ["생활관", `${account.dormitory}관`],
     ["학년", account.grade],
@@ -1869,7 +1889,7 @@ function MyPage({ currentUser }) {
               </S.Stack>
             )}
             {activeTab === "account" && (
-              <AccountContent account={account} onSave={setAccount} />
+              <AccountContent account={account} onSave={saveAccount} />
             )}
             <S.PreviewPanel>
               <summary>

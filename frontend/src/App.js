@@ -85,7 +85,7 @@ function App() {
   };
 
   return (
-    <CalendarDataProvider>
+    <CalendarDataProvider userId={currentUser?.id}>
       <Routes>
         <Route
           element={
@@ -126,7 +126,7 @@ function App() {
           />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/profile" element={<MyPage currentUser={currentUser} />} />
+          <Route path="/profile" element={<MyPage currentUser={currentUser} onUserUpdated={(user) => handleLogin({ id: user.id, displayName: user.nickname, loginId: user.loginId })} />} />
           <Route
             path="/profile-survey"
             element={<Navigate to="/profile?tab=survey" replace />}
