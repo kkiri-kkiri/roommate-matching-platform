@@ -42,6 +42,7 @@ function getStoredUser() {
 function Header({ currentUser, onLogout }) {
   const authenticatedUser =
     currentUser === undefined ? getStoredUser() : currentUser;
+  const myPagePath = authenticatedUser?.role === "ADMIN" ? "/admin" : "/mypage";
   const profileMenuRef = useRef(null);
   const profileButtonRef = useRef(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -132,7 +133,7 @@ function Header({ currentUser, onLogout }) {
                 <S.ProfileDropdown id="profile-dropdown">
                   <S.ProfileMenuLink
                     as={Link}
-                    to="/profile"
+                    to={myPagePath}
                     onClick={() => setIsProfileMenuOpen(false)}
                   >
                     <UserRound size={17} aria-hidden="true" />
