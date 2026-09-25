@@ -2,9 +2,9 @@ package com.kkirikkiri.admin.dto;
 
 import java.time.LocalDateTime;
 
-import com.kkirikkiri.admin.entity.ScheduleCrawlCategory;
-import com.kkirikkiri.admin.entity.ScheduleCrawlRun;
-import com.kkirikkiri.admin.entity.ScheduleCrawlStatus;
+import com.kkirikkiri.calendar.entity.ScheduleCrawlCategory;
+import com.kkirikkiri.calendar.entity.ScheduleCrawlRun;
+import com.kkirikkiri.calendar.entity.ScheduleCrawlStatus;
 
 /** 최신 실행/성공/실패 이력과 실제 일정 총수는 서비스에서 조립하여 이 DTO의 배열로 반환한다. */
 public record AdminScheduleCrawlStatusResponse(

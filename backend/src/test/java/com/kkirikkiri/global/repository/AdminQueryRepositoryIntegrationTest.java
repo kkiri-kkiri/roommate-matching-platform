@@ -1,9 +1,15 @@
-package com.kkirikkiri.admin.repository;
+package com.kkirikkiri.global.repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import com.kkirikkiri.user.repository.AdminMemberQueryRepository;
+import com.kkirikkiri.community.repository.AdminPostQueryRepository;
+import com.kkirikkiri.community.repository.AdminCommentQueryRepository;
+import com.kkirikkiri.report.repository.AdminReportQueryRepository;
+import com.kkirikkiri.calendar.repository.AdminCrawledScheduleQueryRepository;
 
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
@@ -13,7 +19,7 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 
-import com.kkirikkiri.admin.entity.ScheduleCrawlCategory;
+import com.kkirikkiri.calendar.entity.ScheduleCrawlCategory;
 import com.kkirikkiri.calendar.entity.CalendarCategory;
 import com.kkirikkiri.calendar.entity.CalendarEvent;
 import com.kkirikkiri.calendar.entity.CalendarEventSourceType;
