@@ -76,6 +76,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.PATCH, "/api/calendar/categories/{categoryId}").authenticated()
 						.requestMatchers(HttpMethod.DELETE, "/api/calendar/categories/{categoryId}").authenticated()
 						.requestMatchers("/api/chat/**").authenticated()
+						.requestMatchers("/api/admin/**").hasRole("ADMIN")
 						// HTTP Upgrade만 허용하고 실제 인증은 STOMP CONNECT에서 수행한다.
 						.requestMatchers(request -> !websocketEndpoint.isBlank()
 								&& HttpMethod.GET.matches(request.getMethod())
