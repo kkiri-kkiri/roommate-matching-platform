@@ -1,7 +1,9 @@
-package com.kkirikkiri.admin.repository;
+package com.kkirikkiri.calendar.repository;
 
 import java.util.List;
 import java.util.Optional;
+
+import com.kkirikkiri.global.repository.AdminQuerySupport;
 
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
@@ -9,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kkirikkiri.admin.entity.ScheduleCrawlCategory;
+import com.kkirikkiri.calendar.entity.ScheduleCrawlCategory;
 import com.kkirikkiri.calendar.entity.CalendarEvent;
 
 @Repository

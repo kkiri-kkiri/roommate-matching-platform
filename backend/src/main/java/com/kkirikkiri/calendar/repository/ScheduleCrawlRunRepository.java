@@ -1,12 +1,12 @@
-package com.kkirikkiri.admin.repository;
+package com.kkirikkiri.calendar.repository;
 
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.kkirikkiri.admin.entity.ScheduleCrawlCategory;
-import com.kkirikkiri.admin.entity.ScheduleCrawlRun;
-import com.kkirikkiri.admin.entity.ScheduleCrawlStatus;
+import com.kkirikkiri.calendar.entity.ScheduleCrawlCategory;
+import com.kkirikkiri.calendar.entity.ScheduleCrawlRun;
+import com.kkirikkiri.calendar.entity.ScheduleCrawlStatus;
 
 public interface ScheduleCrawlRunRepository extends JpaRepository<ScheduleCrawlRun, Long> {
 

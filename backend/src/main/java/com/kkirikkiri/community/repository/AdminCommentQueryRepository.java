@@ -1,7 +1,9 @@
-package com.kkirikkiri.admin.repository;
+package com.kkirikkiri.community.repository;
 
 import java.util.List;
 import java.util.Optional;
+
+import com.kkirikkiri.global.repository.AdminQuerySupport;
 
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;

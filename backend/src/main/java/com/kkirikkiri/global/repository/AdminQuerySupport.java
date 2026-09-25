@@ -1,4 +1,4 @@
-package com.kkirikkiri.admin.repository;
+package com.kkirikkiri.global.repository;
 
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 /** 관리자 조회 공통 실행부. JPQL 조각은 코드 상수만 사용하고 입력값은 모두 바인딩한다. */
-abstract class AdminQuerySupport {
+public abstract class AdminQuerySupport {
 	protected final EntityManager entityManager;
 
 	protected AdminQuerySupport(EntityManager entityManager) {

@@ -1,4 +1,4 @@
-package com.kkirikkiri.admin.entity;
+package com.kkirikkiri.calendar.entity;
 
 public enum ScheduleCrawlStatus {
 	RUNNING,
