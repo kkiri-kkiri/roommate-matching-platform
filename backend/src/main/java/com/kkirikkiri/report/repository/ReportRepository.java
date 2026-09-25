@@ -7,6 +7,12 @@ import com.kkirikkiri.report.entity.ReportType;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
 
+	/** 관리자 응답용. 신고자와 처리 상태에 관계없이 전체 신고 존재 여부를 확인한다. */
+	boolean existsByPost_PostId(Long postId);
+
+	/** 댓글과 답글 모두 동일한 comment 연관관계로 조회한다. */
+	boolean existsByComment_CommentId(Long commentId);
+
 	/**
 	 * USER 유형으로 조회하여 게시글·댓글 작성자에 대한 신고 이력과 구분한다.
 	 */
