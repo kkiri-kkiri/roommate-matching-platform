@@ -100,6 +100,8 @@ function App() {
     }
   };
 
+  const myPageElement = <MyPage currentUser={currentUser} onUserUpdated={(user) => handleLogin({ id: user.id, displayName: user.nickname, loginId: user.loginId, role: currentUser?.role })} />;
+
   return (
     <CalendarDataProvider userId={currentUser?.id}>
       <Routes>
@@ -142,7 +144,8 @@ function App() {
           />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/profile" element={<MyPage currentUser={currentUser} onUserUpdated={(user) => handleLogin({ id: user.id, displayName: user.nickname, loginId: user.loginId, role: currentUser?.role })} />} />
+          <Route path="/profile" element={myPageElement} />
+          <Route path="/mypage" element={myPageElement} />
           <Route
             path="/profile-survey"
             element={<Navigate to="/profile?tab=survey" replace />}
