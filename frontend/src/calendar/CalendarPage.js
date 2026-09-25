@@ -10,6 +10,7 @@ import {
 
 import * as S from "./CalendarPageCss";
 import { dateKey, FIXED_CATEGORY_IDS, useCalendarData } from "./CalendarDataContext";
+import { calendarEventDates, eventTimeLabel, nextDate, overlaps } from "./calendarDates";
 
 const CALENDAR_PLUGINS = [dayGridPlugin, interactionPlugin];
 
@@ -89,7 +90,8 @@ function CalendarDialog({ title, description, onDismiss, children }) {
 
 function CalendarPage() {
   const [initialDate] = useState(() => new Date());
-  const { events, setEvents, categorySettings, setCategorySettings } = useCalendarData();
+  const [range, setRange] = useState({ from: undefined, to: undefined });
+  const { events, setEvents, categorySettings, setCategorySettings, loading, error, retry } = useCalendarData(range.from, range.to);
   const categoryIds = categorySettings.map(({ id }) => id);
   const categoryLabels = Object.fromEntries(categorySettings.map(({ id, label }) => [id, label]));
   const [settingsDraft, setSettingsDraft] = useState([]);
@@ -118,18 +120,24 @@ function CalendarPage() {
     .filter((event) => categories.includes(event.category))
     .sort((first, second) => `${first.date}T${first.startTime}`.localeCompare(`${second.date}T${second.startTime}`)),
   [events, categories]);
-  const monthEvents = filteredEvents.filter((event) => event.date.startsWith(visibleMonth));
-  const dayEvents = filteredEvents.filter((event) => event.date === selectedDate);
+  const monthEnd = dateKey(new Date(Number(visibleMonth.slice(0, 4)), Number(visibleMonth.slice(5)), 0));
+  const monthEvents = filteredEvents.filter((event) => overlaps(event, `${visibleMonth}-01`, monthEnd));
+  const dayEvents = filteredEvents.filter((event) => overlaps(event, selectedDate));
   const agendaEvents = agendaScope === "day" ? dayEvents : monthEvents;
-  const eventDates = useMemo(() => new Set(filteredEvents.map((event) => event.date)), [filteredEvents]);
+  const eventDates = useMemo(() => {
+    const dates = new Set();
+    for (let day = range.from; day && day <= range.to; day = nextDate(day)) {
+      if (filteredEvents.some((event) => overlaps(event, day))) dates.add(day);
+    }
+    return dates;
+  }, [filteredEvents, range]);
   const activeEvent = dialog?.eventId ? events.find((event) => event.id === dialog.eventId) : null;
   const isFormOpen = dialog?.mode === "create" || dialog?.mode === "edit";
   const calendarEvents = useMemo(() => filteredEvents.map((event) => {
     const categoryStyle = categoryStyles[event.category];
     return {
       id: event.id, title: event.title,
-      start: `${event.date}T${event.startTime}:00`, end: `${event.date}T${event.endTime}:00`,
-      allDay: false,
+      ...calendarEventDates(event),
       backgroundColor: categoryStyle.background,
       borderColor: categoryStyle.color,
       textColor: categoryStyle.text,
@@ -137,7 +145,12 @@ function CalendarPage() {
     };
   }), [filteredEvents, categoryStyles]);
 
-  const handleDatesSet = useCallback(({ view }) => {
+  const handleDatesSet = useCallback(({ view, start, end }) => {
+    const lastDate = new Date(end);
+    lastDate.setDate(lastDate.getDate() - 1);
+    const from = dateKey(start);
+    const to = dateKey(lastDate);
+    setRange((current) => current.from === from && current.to === to ? current : { from, to });
     const firstDate = dateKey(view.currentStart);
     const nextMonth = firstDate.slice(0, 7);
     setVisibleMonth(nextMonth);
@@ -183,6 +196,7 @@ function CalendarPage() {
   };
 
   const openEdit = () => {
+    if (activeEvent.editable === false) return;
     setDraft({ ...activeEvent });
     setErrors({});
     setDialog({ mode: "edit", eventId: activeEvent.id });
@@ -243,6 +257,7 @@ function CalendarPage() {
   };
 
   const deleteEvent = () => {
+    if (activeEvent.editable === false) return;
     setEvents((current) => current.filter((event) => event.id !== activeEvent.id));
     closeDialog();
     setStatus("");
@@ -261,6 +276,8 @@ function CalendarPage() {
     <S.Page id="campus-calendar" style={categoryVariables}>
       <S.Content>
         <S.Status role="status" aria-live="polite" aria-atomic="true">{status}</S.Status>
+        {loading && <p role="status">일정을 불러오는 중이에요.</p>}
+        {error && <div role="alert">{error} <S.SecondaryButton type="button" onClick={retry}>다시 시도</S.SecondaryButton></div>}
 
         <S.Workspace>
           <S.CalendarCard aria-labelledby="calendar-month-title">
@@ -349,7 +366,7 @@ function CalendarPage() {
                 moreLinkClick="popover"
               />
             </S.CalendarSurface>
-            {monthEvents.length === 0 && (
+            {!loading && !error && monthEvents.length === 0 && (
               <S.EmptyState role="status">
                 <strong>{categories.length === 0 ? "조회할 일정 분류를 선택해 주세요" : "이번 달에 표시할 일정이 없어요"}</strong>
                 <p>{categories.length === 0 ? "위에서 원하는 분류를 하나 이상 선택해 주세요." : "다른 분류를 선택하거나 새로운 일정을 등록해 보세요."}</p>
@@ -377,19 +394,19 @@ function CalendarPage() {
                 {agendaEvents.map((event) => (
                   <S.AgendaItem key={event.id}>
                     <S.AgendaButton type="button" onClick={() => openDetail(event.id)}
-                      aria-label={`${event.title}, ${formatDate(event.date, false)}, ${event.startTime}부터 ${event.endTime}, ${categoryLabels[event.category]}, 상세 보기`}>
+                      aria-label={`${event.title}, ${formatDate(event.date, false)}, ${eventTimeLabel(event)}, ${categoryLabels[event.category]}, 상세 보기`}>
                       <S.AgendaMeta>
                         <S.CategoryBadge $category={event.category}><S.ColorDot $category={event.category} aria-hidden="true" />{categoryLabels[event.category]}</S.CategoryBadge>
                         <ChevronRight size={16} aria-hidden="true" />
                       </S.AgendaMeta>
                       <S.EventTitle>{event.title}</S.EventTitle>
                       {agendaScope === "month" && <S.EventTime><CalendarDays size={14} aria-hidden="true" />{formatDate(event.date, false)}</S.EventTime>}
-                      <S.EventTime><Clock3 size={14} aria-hidden="true" />{event.startTime} – {event.endTime}</S.EventTime>
+                      <S.EventTime><Clock3 size={14} aria-hidden="true" />{eventTimeLabel(event)}</S.EventTime>
                     </S.AgendaButton>
                   </S.AgendaItem>
                 ))}
               </S.AgendaList>
-            ) : (
+            ) : !loading && !error && (
               <S.EmptyState>
                 <S.EmptyIcon><CalendarDays size={28} aria-hidden="true" /></S.EmptyIcon>
                 <strong>{categories.length === 0 ? "선택된 분류가 없어요" : "아직 일정이 없어요"}</strong>
@@ -510,15 +527,14 @@ function CalendarPage() {
               <S.CategoryBadge $category={activeEvent.category}><S.ColorDot $category={activeEvent.category} aria-hidden="true" />{categoryLabels[activeEvent.category]}</S.CategoryBadge>
               <S.DetailTitle>{activeEvent.title}</S.DetailTitle>
               <S.DetailList>
-                <div><dt>날짜</dt><dd>{formatDate(activeEvent.date)}</dd></div>
-                <div><dt>시작 시간</dt><dd>{activeEvent.startTime}</dd></div>
-                <div><dt>종료 시간</dt><dd>{activeEvent.endTime}</dd></div>
+                <div><dt>날짜</dt><dd>{formatDate(activeEvent.date)}{activeEvent.endDate && activeEvent.endDate !== activeEvent.date && ` ~ ${formatDate(activeEvent.endDate)}`}</dd></div>
+                <div><dt>시간</dt><dd>{eventTimeLabel(activeEvent)}</dd></div>
               </S.DetailList>
               <S.DetailDescription><h3>일정 내용</h3><p>{activeEvent.description || "등록된 내용이 없어요."}</p></S.DetailDescription>
-              <S.DialogActions>
+              {activeEvent.editable !== false && <S.DialogActions>
                 <S.DangerButton type="button" onClick={deleteEvent}><Trash2 size={16} aria-hidden="true" /> 삭제</S.DangerButton>
                 <S.PrimaryButton type="button" onClick={openEdit}><Pencil size={16} aria-hidden="true" /> 일정 수정</S.PrimaryButton>
-              </S.DialogActions>
+              </S.DialogActions>}
             </S.DialogBody>
           </CalendarDialog>
         )}

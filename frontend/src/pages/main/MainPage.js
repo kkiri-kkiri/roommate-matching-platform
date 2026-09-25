@@ -16,6 +16,7 @@ import { KOREA_REGIONS } from "../../data/koreaRegions";
 import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./MainPageCss";
 import { dateKey, useCalendarData } from "../../calendar/CalendarDataContext";
+import { eventTimeLabel, overlaps } from "../../calendar/calendarDates";
 
 const ROOMMATES = [
   {
@@ -145,10 +146,13 @@ function getCalendarCells(month) {
 function MainPage() {
   const { hash } = useLocation();
   const [postFilter, setPostFilter] = useState("전체");
-  const { events, categorySettings } = useCalendarData();
   const [initialDate] = useState(() => new Date());
   const [calendarMonth, setCalendarMonth] = useState(
     () => new Date(initialDate.getFullYear(), initialDate.getMonth(), 1),
+  );
+  const { events, categorySettings, loading, error, retry } = useCalendarData(
+    dateKey(calendarMonth),
+    dateKey(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0)),
   );
   const [selectedDate, setSelectedDate] = useState(initialDate.getDate());
   const [scoreForm, setScoreForm] = useState(INITIAL_SCORE_FORM);
@@ -191,15 +195,14 @@ function MainPage() {
     [calendarMonth],
   );
   const monthEvents = useMemo(() => {
-    const monthKey = dateKey(calendarMonth).slice(0, 7);
-    return events
-      .filter((event) => event.date.startsWith(monthKey))
-      .sort((first, second) => first.startTime.localeCompare(second.startTime))
-      .reduce((days, event) => {
-        const day = Number(event.date.slice(8));
-        (days[day] ||= []).push(event);
-        return days;
-      }, {});
+    const days = {};
+    const lastDay = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0).getDate();
+    for (let day = 1; day <= lastDay; day++) {
+      const value = dateKey(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day));
+      days[day] = events.filter((event) => overlaps(event, value))
+        .sort((first, second) => first.startTime.localeCompare(second.startTime));
+    }
+    return days;
   }, [events, calendarMonth]);
   const categoryLabels = Object.fromEntries(
     categorySettings.map(({ id, label }) => [id, label]),
@@ -447,6 +450,8 @@ function MainPage() {
               </S.SectionHeader>
 
               <S.ToolCard id="campus-calendar" aria-label="캘린더">
+                {loading && <p role="status">일정을 불러오는 중이에요.</p>}
+                {error && <div role="alert">{error} <button type="button" onClick={retry}>다시 시도</button></div>}
                 <S.ToolHeader>
                   <S.MonthControls>
                     <button
@@ -481,7 +486,7 @@ function MainPage() {
                       return <S.CalendarBlank key={`blank-${index}`} />;
                     }
 
-                    const hasEvent = Boolean(monthEvents[day]);
+                    const hasEvent = Boolean(monthEvents[day]?.length);
 
                     const isSelected = selectedDate === day;
 
@@ -538,13 +543,13 @@ function MainPage() {
                             <strong>{eventItem.title}</strong>
 
                             <span>
-                              {eventItem.startTime} ~ {eventItem.endTime}
+                              {eventTimeLabel(eventItem)}
                             </span>
                           </div>
                         </S.EventItem>
                       ))}
                     </S.EventList>
-                  ) : (
+                  ) : !loading && !error && (
                     <S.EventEmpty>
                       <CalendarDays size={19} aria-hidden="true" />
                       선택한 날짜에는 등록된 일정이 없어요.
