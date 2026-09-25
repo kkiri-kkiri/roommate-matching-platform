@@ -91,7 +91,10 @@ function CalendarDialog({ title, description, onDismiss, children }) {
 function CalendarPage() {
   const [initialDate] = useState(() => new Date());
   const [range, setRange] = useState({ from: undefined, to: undefined });
-  const { events, setEvents, categorySettings, setCategorySettings, loading, error, retry } = useCalendarData(range.from, range.to);
+  const { events, categorySettings: allCategories, saveEvent: persistEvent, removeEvent, saveCategories, authenticated, loading, error, retry } = useCalendarData(range.from, range.to);
+  const categorySettings = useMemo(() => allCategories.filter((item) => item.enabled !== false), [allCategories]);
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const categoryIds = categorySettings.map(({ id }) => id);
   const categoryLabels = Object.fromEntries(categorySettings.map(({ id, label }) => [id, label]));
   const [settingsDraft, setSettingsDraft] = useState([]);
@@ -99,6 +102,13 @@ function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(() => dateKey(initialDate));
   const [visibleMonth, setVisibleMonth] = useState(() => dateKey(initialDate).slice(0, 7));
   const [categories, setCategories] = useState(categoryIds);
+  const previousCategoryIds = useRef(categoryIds);
+  useEffect(() => {
+    const nextIds = categorySettings.map((item) => item.id);
+    const previous = previousCategoryIds.current;
+    setCategories((current) => nextIds.filter((id) => current.includes(id) || !previous.includes(id)));
+    previousCategoryIds.current = nextIds;
+  }, [categorySettings]);
   const categoryStyles = useMemo(() => Object.fromEntries(
     categorySettings.map(({ id, color }) => [id, colorStyle(color)]),
   ), [categorySettings]);
@@ -134,7 +144,7 @@ function CalendarPage() {
   const activeEvent = dialog?.eventId ? events.find((event) => event.id === dialog.eventId) : null;
   const isFormOpen = dialog?.mode === "create" || dialog?.mode === "edit";
   const calendarEvents = useMemo(() => filteredEvents.map((event) => {
-    const categoryStyle = categoryStyles[event.category];
+    const categoryStyle = categoryStyles[event.category] || colorStyle("#006a65");
     return {
       id: event.id, title: event.title,
       ...calendarEventDates(event),
@@ -171,6 +181,7 @@ function CalendarPage() {
   };
 
   const closeDialog = () => {
+    if (savingRef.current) return;
     setDialog(null);
     setErrors({});
     requestAnimationFrame(() => {
@@ -181,6 +192,7 @@ function CalendarPage() {
   };
 
   const openCreate = (date = selectedDate) => {
+    if (!authenticated) { setStatus("로그인 후 일정을 등록할 수 있어요."); return; }
     dialogTriggerRef.current = document.activeElement;
     setDraft({ title: "", date, startTime: "", endTime: "", category: "", description: "" });
     setErrors({});
@@ -196,13 +208,14 @@ function CalendarPage() {
   };
 
   const openEdit = () => {
-    if (activeEvent.editable === false) return;
+    if (savingRef.current || activeEvent.editable === false) return;
     setDraft({ ...activeEvent });
     setErrors({});
     setDialog({ mode: "edit", eventId: activeEvent.id });
   };
 
   const openCategorySettings = () => {
+    if (!authenticated) { setStatus("로그인 후 카테고리를 설정할 수 있어요."); return; }
     dialogTriggerRef.current = document.activeElement;
     setSettingsDraft(categorySettings.map((item) => ({ ...item })));
     setSettingsError("");
@@ -215,16 +228,21 @@ function CalendarPage() {
     setSettingsError("");
   };
 
-  const saveCategorySettings = (event) => {
+  const saveCategorySettings = async (event) => {
     event.preventDefault();
+    if (savingRef.current) return;
     const next = settingsDraft.map((item) => ({ ...item, label: item.label.trim() }));
     if (next.some(({ label }) => !label || label.length > 30) || new Set(next.map(({ label }) => label)).size !== next.length) {
       setSettingsError("카테고리 이름은 중복 없이 1~30자로 입력해 주세요.");
       return;
     }
-    setCategorySettings(next);
-    setCategories((current) => next.filter(({ id }) => current.includes(id) || !categoryIds.includes(id)).map(({ id }) => id));
-    closeDialog();
+    savingRef.current = true; setSaving(true); setSettingsError("");
+    try {
+      await saveCategories(next);
+      savingRef.current = false;
+      closeDialog();
+    } catch (error) { setSettingsDraft(next); setSettingsError(error.message); }
+    finally { savingRef.current = false; setSaving(false); }
   };
 
   const updateDraft = (event) => {
@@ -233,34 +251,37 @@ function CalendarPage() {
     setErrors((current) => ({ ...current, [name]: undefined, ...(name === "startTime" ? { endTime: undefined } : {}) }));
   };
 
-  const saveEvent = (event) => {
+  const saveEvent = async (event) => {
     event.preventDefault();
-    const nextErrors = validateDraft(draft, categoryIds);
+    if (savingRef.current) return;
+    const nextErrors = validateDraft(draft, categorySettings.filter((item) => !item.fixed).map((item) => item.id));
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
       event.currentTarget.elements.namedItem(Object.keys(nextErrors)[0])?.focus();
       return;
     }
     const isEditing = dialog.mode === "edit";
-    const savedEvent = {
-      ...draft, title: draft.title.trim(), description: draft.description.trim(),
-      id: isEditing ? dialog.eventId : `local-${Date.now()}-${eventSequence.current++}`,
-    };
-    setEvents((current) => isEditing
-      ? current.map((item) => item.id === savedEvent.id ? savedEvent : item)
-      : [...current, savedEvent]);
-    // 숨겨진 분류로 저장해도 등록한 일정을 바로 확인할 수 있게 합니다.
-    setCategories((current) => current.includes(savedEvent.category) ? current : [...current, savedEvent.category]);
-    selectDate(savedEvent.date);
-    closeDialog();
-    setStatus(isEditing ? "" : `“${savedEvent.title}” 일정을 등록했어요.`);
+    savingRef.current = true; setSaving(true);
+    try {
+      const savedEvent = await persistEvent({ ...draft, endDate: draft.date }, isEditing ? dialog.eventId : undefined);
+      setCategories((current) => current.includes(savedEvent.category) ? current : [...current, savedEvent.category]);
+      selectDate(savedEvent.date);
+      savingRef.current = false;
+      closeDialog();
+      setStatus(isEditing ? "일정을 수정했어요." : "일정을 등록했어요.");
+    } catch (error) { setErrors({ submit: error.message }); }
+    finally { savingRef.current = false; setSaving(false); }
   };
 
-  const deleteEvent = () => {
-    if (activeEvent.editable === false) return;
-    setEvents((current) => current.filter((event) => event.id !== activeEvent.id));
-    closeDialog();
-    setStatus("");
+  const deleteEvent = async () => {
+    if (activeEvent.editable === false || savingRef.current) return;
+    savingRef.current = true; setSaving(true); setErrors({});
+    try {
+      await removeEvent(activeEvent.id);
+      savingRef.current = false;
+      closeDialog(); setStatus("일정을 삭제했어요.");
+    } catch (error) { setErrors({ submit: error.message }); }
+    finally { savingRef.current = false; setSaving(false); }
   };
 
   const fieldProps = (name) => ({
@@ -425,6 +446,7 @@ function CalendarPage() {
           <CalendarDialog key="categories" title="카테고리 설정" onDismiss={closeDialog}
             description="학교 일정과 기숙사 일정은 고정 카테고리예요. 색상은 자유롭게 변경할 수 있어요.">
             <S.Form onSubmit={saveCategorySettings}>
+              <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
               <S.SettingsList>
                 {settingsDraft.map(({ id, label, color }) => {
                   const fixed = FIXED_CATEGORY_IDS.includes(id);
@@ -464,6 +486,7 @@ function CalendarPage() {
                 <S.GhostButton type="button" onClick={closeDialog}>취소</S.GhostButton>
                 <S.PrimaryButton type="submit">설정 저장</S.PrimaryButton>
               </S.DialogActions>
+              </fieldset>
             </S.Form>
           </CalendarDialog>
         )}
@@ -472,6 +495,8 @@ function CalendarPage() {
           <CalendarDialog key={dialog.mode} title={dialog.mode === "edit" ? "일정 수정" : "새 일정 등록"}
             description="기억하고 싶은 일정을 차근차근 채워 주세요." onDismiss={closeDialog}>
             <S.Form onSubmit={saveEvent} noValidate>
+              <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+              {fieldError("submit")}
               <S.FormHint>* 표시는 필수 입력 항목이에요.</S.FormHint>
               <S.FormGrid>
                 <S.Field $wide>
@@ -498,7 +523,7 @@ function CalendarPage() {
                   <label htmlFor="calendar-category">일정 분류 *</label>
                   <S.Select {...fieldProps("category")} required>
                     <option value="">분류를 선택해 주세요</option>
-                    {categorySettings.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}
+                    {categorySettings.filter((item) => !item.fixed).map(({ id, label }) => <option key={id} value={id}>{label}</option>)}
                   </S.Select>
                   {fieldError("category")}
                   {draft.category && <S.CategoryPreview>
@@ -517,12 +542,14 @@ function CalendarPage() {
                 <S.GhostButton type="button" onClick={closeDialog}>취소</S.GhostButton>
                 <S.PrimaryButton type="submit">{dialog.mode === "edit" ? "변경 내용 저장" : "일정 등록"}</S.PrimaryButton>
               </S.DialogActions>
+              </fieldset>
             </S.Form>
           </CalendarDialog>
         )}
 
         {dialog?.mode === "detail" && activeEvent && (
           <CalendarDialog key="detail" title="일정 상세" onDismiss={closeDialog}>
+            {fieldError("submit")}
             <S.DialogBody>
               <S.CategoryBadge $category={activeEvent.category}><S.ColorDot $category={activeEvent.category} aria-hidden="true" />{categoryLabels[activeEvent.category]}</S.CategoryBadge>
               <S.DetailTitle>{activeEvent.title}</S.DetailTitle>
@@ -532,7 +559,7 @@ function CalendarPage() {
               </S.DetailList>
               <S.DetailDescription><h3>일정 내용</h3><p>{activeEvent.description || "등록된 내용이 없어요."}</p></S.DetailDescription>
               {activeEvent.editable !== false && <S.DialogActions>
-                <S.DangerButton type="button" onClick={deleteEvent}><Trash2 size={16} aria-hidden="true" /> 삭제</S.DangerButton>
+                <S.DangerButton type="button" disabled={saving} onClick={deleteEvent}><Trash2 size={16} aria-hidden="true" /> 삭제</S.DangerButton>
                 <S.PrimaryButton type="button" onClick={openEdit}><Pencil size={16} aria-hidden="true" /> 일정 수정</S.PrimaryButton>
               </S.DialogActions>}
             </S.DialogBody>

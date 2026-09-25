@@ -1,3 +1,4 @@
+import { getCommunityPosts } from "../../api/communityApi";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -66,40 +67,6 @@ const ROOMMATES = [
   },
 ];
 
-const COMMUNITY_POSTS = [
-  {
-    id: 1,
-    category: "자유",
-    title: "새 학기 룸메이트와 꼭 정해두면 좋은 생활 규칙",
-    excerpt:
-      "소등 시간부터 공용 물품 사용까지, 서로 편해지는 기준을 정리했어요.",
-    author: "기숙사생활러",
-    time: "18분 전",
-    views: 428,
-    comments: 32,
-  },
-  {
-    id: 2,
-    category: "택배",
-    title: "새빛관 공동 택배함 오늘 도착분 확인하세요",
-    excerpt: "오후 도착 택배가 많아 수령 위치와 보관 시간을 안내해 드려요.",
-    author: "택배도우미",
-    time: "42분 전",
-    views: 285,
-    comments: 19,
-  },
-  {
-    id: 3,
-    category: "나눔",
-    title: "미개봉 세탁 세제 소분해서 나눔합니다",
-    excerpt: "향이 맞지 않아 남은 제품을 기숙사 로비에서 나누려고 해요.",
-    author: "민트초코",
-    time: "1시간 전",
-    views: 196,
-    comments: 11,
-  },
-];
-
 const POST_FILTERS = ["전체", "자유", "나눔", "택배", "민원"];
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -145,6 +112,10 @@ function getCalendarCells(month) {
 
 function MainPage() {
   const { hash } = useLocation();
+  const [visiblePosts, setVisiblePosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [postsError, setPostsError] = useState("");
+  const [postsRevision, setPostsRevision] = useState(0);
   const [postFilter, setPostFilter] = useState("전체");
   const [initialDate] = useState(() => new Date());
   const [calendarMonth, setCalendarMonth] = useState(
@@ -169,14 +140,18 @@ function MainPage() {
     return () => window.cancelAnimationFrame(frameId);
   }, [hash]);
 
-  const visiblePosts = useMemo(() => {
-    const filteredPosts =
-      postFilter === "전체"
-        ? COMMUNITY_POSTS
-        : COMMUNITY_POSTS.filter((post) => post.category === postFilter);
-
-    return filteredPosts.slice(0, 3);
-  }, [postFilter]);
+  useEffect(() => {
+    let cancelled = false;
+    setPostsLoading(true); setPostsError(""); setVisiblePosts([]);
+    getCommunityPosts({ size: 3, sort: "VIEWS", category: postFilter === "전체" ? undefined : postFilter + "게시판" })
+      .then((data) => { if (!cancelled) setVisiblePosts(data.content.map((post) => ({
+        ...post, category: post.category.replace("게시판", ""), excerpt: post.contentPreview,
+        author: post.author?.nickname, time: new Date(post.createdAt).toLocaleDateString("ko-KR"), comments: post.commentCount,
+      }))); })
+      .catch((error) => { if (!cancelled) setPostsError(error.message); })
+      .finally(() => { if (!cancelled) setPostsLoading(false); });
+    return () => { cancelled = true; };
+  }, [postFilter, postsRevision]);
 
   const activeMonth = useMemo(
     () => ({
@@ -372,7 +347,7 @@ function MainPage() {
           </S.SectionHeader>
 
           <S.CommunityCard>
-            {visiblePosts.length > 0 ? (
+            {postsLoading ? <p role="status">게시글을 불러오는 중이에요.</p> : postsError ? <div role="alert">{postsError} <S.GhostButton onClick={() => setPostsRevision((value) => value + 1)}>다시 시도</S.GhostButton></div> : visiblePosts.length > 0 ? (
               <S.PostList>
                 {visiblePosts.map((post, index) => (
                   <S.PostItem key={post.id}>
@@ -389,7 +364,7 @@ function MainPage() {
                         <span>{post.time}</span>
                       </S.PostMetaTop>
 
-                      <S.PostTitle>{post.title}</S.PostTitle>
+                      <S.PostTitle as={Link} to={`/community/posts/${post.id}`}>{post.title}</S.PostTitle>
 
                       <S.PostExcerpt>{post.excerpt}</S.PostExcerpt>
 
