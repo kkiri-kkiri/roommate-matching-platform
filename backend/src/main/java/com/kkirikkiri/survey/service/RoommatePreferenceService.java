@@ -97,8 +97,9 @@ public class RoommatePreferenceService {
 		return roommatePreferenceRepository.findByUser_UserId(userId)
 				.map(preference -> RoommatePreferenceResponse.from(
 						preference,
-						roommatePreferenceOptionRepository.findAllByRoommatePreference_PreferenceIdOrderByPreferenceOptionIdAsc(
-								preference.getPreferenceId()),
+						roommatePreferenceOptionRepository
+								.findAllByRoommatePreference_PreferenceIdOrderByPreferenceOptionIdAsc(
+										preference.getPreferenceId()),
 						preferenceCriterionRepository.findAllByRoommatePreference_PreferenceId(
 								preference.getPreferenceId())))
 				.orElseGet(() -> RoommatePreferenceResponse.from(null, List.of(), List.of()));
@@ -109,7 +110,8 @@ public class RoommatePreferenceService {
 		validateUserId(userId);
 		validateRequest(request);
 
-		User user = userRepository.findById(userId)
+		// 프로필 설문과 같은 사용자 잠금을 사용하고 선택지·조건 교체까지 유지한다.
+		User user = userRepository.findByIdForSurveyUpdate(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
 		RoommatePreference preference = roommatePreferenceRepository.findByUser_UserId(userId).orElse(null);
 		if (preference == null) {

@@ -73,8 +73,9 @@ public class ProfileSurveyService {
 		validateUserId(userId);
 		return profileSurveyRepository.findByUser_UserId(userId)
 				.map(survey -> ProfileSurveyResponse.from(survey,
-						profileSurveyOptionRepository.findAllByProfileSurvey_ProfileSurveyIdOrderByProfileSurveyOptionIdAsc(
-								survey.getProfileSurveyId())))
+						profileSurveyOptionRepository
+								.findAllByProfileSurvey_ProfileSurveyIdOrderByProfileSurveyOptionIdAsc(
+										survey.getProfileSurveyId())))
 				.orElseGet(() -> ProfileSurveyResponse.from(null, List.of()));
 	}
 
@@ -83,7 +84,8 @@ public class ProfileSurveyService {
 		validateUserId(userId);
 		validateRequest(request);
 
-		User user = userRepository.findById(userId)
+		// 최초 생성도 보호하도록 설문 조회 전에 기존 사용자 행을 잠근다.
+		User user = userRepository.findByIdForSurveyUpdate(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
 		ProfileSurvey survey = profileSurveyRepository.findByUser_UserId(userId).orElse(null);
 		if (survey == null) {
