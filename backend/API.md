@@ -550,6 +550,9 @@ Auth
 
 Request:
 
+PUT 요청 본문은 answers로 감싸지 않고 아래 객체를 그대로 전송한다.
+
+```json
 {
 "sleepTime": "23시 ~ 24시",
 "wakeTime": "07시 ~ 08시",
@@ -571,10 +574,13 @@ Request:
 "meal": "시간 될 때만 같이 먹고 싶음",
 "roommateInteraction": "적당히 대화",
 "temperaturePreference": "보통",
+"hairDryer": "사용",
+"bugHandling": "작은 벌레는 가능",
 "scentProductUse": "사용 안 함",
 "desktopUse": "사용하지 않아요",
 "sharedItems": "일부만 공유"
 }
+```
 
 현재 MyPage 저장 로직에서는 화면에 노출된 모든 설문 항목에 답변이 있어야 저장된다.
 
@@ -612,7 +618,22 @@ Response:
 "weights": {
 "department": 3,
 "age": 3,
-"grade": 3
+"grade": 3,
+"bedtime": 3,
+"wakeTime": 3,
+"sleepTalking": 3,
+"snoring": 3,
+"teethGrinding": 3,
+"smoking": 3,
+"lightingPreference": 3,
+"showerTime": 3,
+"showerDuration": 3,
+"cleaningFrequency": 3,
+"cleaningStyle": 3,
+"interaction": 3,
+"meal": 3,
+"sharedItems": 3,
+"temperature": 3
 },
 "requiredConditions": ["smoking", "bedtime", "cleaningFrequency"]
 }
@@ -626,7 +647,54 @@ PUT /api/users/me/roommate-preferences
 
 Auth
 
-Request는 위 answers 구조와 동일하다.
+Request:
+
+PUT 요청 본문은 answers로 감싸지 않고 아래 객체를 그대로 전송한다.
+weights에는 지원하는 18개 키를 모두 포함한다. requiredConditions: []는 필수조건 없음으로 정상 허용한다.
+
+```json
+{
+"department": "상관없음",
+"age": ["상관없음"],
+"grade": ["상관없음"],
+"bedtime": ["23시 ~ 24시", "24시 ~ 01시"],
+"wakeTime": ["07시 ~ 08시", "08시 ~ 09시"],
+"sleepTalking": "적음까지 괜찮음",
+"snoring": "없음만 가능",
+"teethGrinding": "적음까지 괜찮음",
+"smoking": "비흡연자만",
+"lightingPreference": "어두움 선호",
+"showerTime": "저녁",
+"showerDuration": "20분 이하",
+"cleaningFrequency": ["주 1회", "주 2회"],
+"cleaningStyle": "상황에 따라 협의하는 사람",
+"interaction": "적당히 대화하고 싶은 사람",
+"meal": "시간 될 때만 같이 먹고 싶음",
+"sharedItems": "일부만 공유하는 사람",
+"temperature": "보통인 사람",
+"weights": {
+"department": 3,
+"age": 3,
+"grade": 3,
+"bedtime": 3,
+"wakeTime": 3,
+"sleepTalking": 3,
+"snoring": 3,
+"teethGrinding": 3,
+"smoking": 3,
+"lightingPreference": 3,
+"showerTime": 3,
+"showerDuration": 3,
+"cleaningFrequency": 3,
+"cleaningStyle": 3,
+"interaction": 3,
+"meal": 3,
+"sharedItems": 3,
+"temperature": 3
+},
+"requiredConditions": []
+}
+```
 
 Validation:
 
