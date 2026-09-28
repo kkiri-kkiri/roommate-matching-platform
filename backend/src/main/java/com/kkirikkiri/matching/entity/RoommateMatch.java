@@ -41,27 +41,23 @@ public class RoommateMatch {
 	@Column(name = "match_score", nullable = false)
 	private int matchScore;
 
-	@Column(name = "required_conditions_met", nullable = false)
-	private boolean requiredConditionsMet;
-
 	@Column(name = "recommendation_reason", nullable = true, columnDefinition = "TEXT")
 	private String recommendationReason;
 
 	public RoommateMatch(User requesterUser, User targetUser, int matchScore,
-			boolean requiredConditionsMet, String recommendationReason) {
+			String recommendationReason) {
 		this.requesterUser = Objects.requireNonNull(requesterUser, "requesterUser");
 		this.targetUser = Objects.requireNonNull(targetUser, "targetUser");
 		validateDifferentUsers(requesterUser, targetUser);
-		updateResult(matchScore, requiredConditionsMet, recommendationReason);
+		updateResult(matchScore, recommendationReason);
 	}
 
-	public void updateResult(int matchScore, boolean requiredConditionsMet,
+	public void updateResult(int matchScore,
 			String recommendationReason) {
 		if (matchScore < 0 || matchScore > 100) {
 			throw new IllegalArgumentException("matchScore must be between 0 and 100");
 		}
 		this.matchScore = matchScore;
-		this.requiredConditionsMet = requiredConditionsMet;
 		this.recommendationReason = recommendationReason;
 	}
 

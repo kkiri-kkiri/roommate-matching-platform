@@ -36,7 +36,5 @@ public record RoommatePreferenceRequest(
 		@NotEmpty(message = "모든 선호 항목의 가중치를 입력해 주세요.")
 		@Size(min = 18, max = 18, message = "모든 선호 항목의 가중치를 입력해 주세요.")
 		Map<@NotBlank(message = "가중치 조건 key는 공백일 수 없습니다.") @Size(max = 40, message = "가중치 조건 key는 40자 이하여야 합니다.") String,
-				@NotNull(message = "가중치는 필수입니다.") @Min(value = 1, message = "가중치는 1 이상이어야 합니다.") @Max(value = 5, message = "가중치는 5 이하여야 합니다.") Integer> weights,
-		@NotNull(message = "필수조건 목록은 필수입니다.") @Size(max = 18, message = "필수조건은 18개 이하여야 합니다.")
-		List<@NotBlank(message = "필수조건 key는 공백일 수 없습니다.") @Size(max = 40, message = "필수조건 key는 40자 이하여야 합니다.") String> requiredConditions) {
+				@NotNull(message = "가중치는 필수입니다.") @Min(value = 1, message = "가중치는 1 이상이어야 합니다.") @Max(value = 5, message = "가중치는 5 이하여야 합니다.") Integer> weights) {
 }

@@ -14,7 +14,7 @@ public interface RoommateMatchRepository
 
 	Page<RoommateMatch> findAllByRequesterUser_UserId(Long requesterUserId, Pageable pageable);
 
-	Page<RoommateMatch> findAllByRequesterUser_UserIdAndMatchScoreGreaterThanEqualAndRequiredConditionsMetTrueOrderByMatchScoreDesc(
+	Page<RoommateMatch> findAllByRequesterUser_UserIdAndMatchScoreGreaterThanEqualOrderByMatchScoreDesc(
 			Long requesterUserId, int minimumMatchScore, Pageable pageable);
 
 	Optional<RoommateMatch> findByRequesterUser_UserIdAndTargetUser_UserId(

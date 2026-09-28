@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import Pagination from "../../components/common/Pagination/Pagination";
+import { getRecommendedRoommates, getRoommateDetail } from "../../api/roommateApi";
 import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./RoommateSearchPageCss";
 import {
@@ -26,16 +27,6 @@ const DEFAULT_FILTERS = FILTER_GROUPS.reduce(
   {},
 );
 const PAGE_SIZE = 9;
-
-function generateRecommendationReason(profile) {
-  const scoreLabel = profile.matchScore >= 90 ? "매우 높은" : profile.matchScore >= 75 ? "높은" : "보통 수준의";
-  const lifestyleSummary = [profile.rhythm, profile.smoking, profile.interaction]
-    .filter(Boolean)
-    .join(" · ");
-  const tagSummary = profile.tags?.slice(0, 2).join(" / ");
-
-  return `${profile.nickname}님은 ${scoreLabel} 매칭 점수를 보이며, ${lifestyleSummary || "생활 습관"}이 서로 잘 어울릴 가능성이 높습니다. ${profile.dormitory} 생활관 환경과 ${profile.major} 전공 특성을 고려했을 때, 서로의 루틴을 존중하며 편안하게 생활할 확률이 높은 편이에요.${tagSummary ? ` ${tagSummary}와 같은 요소가 추천 이유를 뒷받침합니다.` : ""}`;
-}
 
 function createProfilePhoto(background, skin, hair, shirt) {
   const svg = `
@@ -706,6 +697,29 @@ function RoommateSearchPage() {
     dormLife: false,
   });
   const [savedProfiles, setSavedProfiles] = useState(getSavedSurveyProfiles);
+  const [recommendations, setRecommendations] = useState({ status: "loading", profiles: [], error: "" });
+  useEffect(() => {
+    if (activeTab !== "recommended") return;
+    const controller = new AbortController();
+    setRecommendations({ status: "loading", profiles: [], error: "" });
+    (async () => {
+      try {
+        const page = await getRecommendedRoommates(controller.signal);
+        if (!Array.isArray(page?.content)) throw new Error("추천 목록 응답을 확인할 수 없습니다.");
+        const profiles = await Promise.all(page.content.map(async (item) => {
+          if (!Number.isSafeInteger(item.id) || item.id <= 0) throw new Error("추천 사용자 정보를 확인할 수 없습니다.");
+          const detail = await getRoommateDetail(item.id, controller.signal);
+          if (detail?.id !== item.id) throw new Error("추천 사용자 정보를 확인할 수 없습니다.");
+          return { ...item, userId: item.id, source: "backend", answers: detail.answers || {},
+            message: item.introduction, photo: item.profileImageUrl };
+        }));
+        if (!controller.signal.aborted) setRecommendations({ status: "success", profiles, error: "" });
+      } catch (error) {
+        if (!controller.signal.aborted) setRecommendations({ status: "error", profiles: [], error: error.message });
+      }
+    })();
+    return () => controller.abort();
+  }, [activeTab]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const tabRefs = useRef({});
@@ -754,11 +768,7 @@ function RoommateSearchPage() {
         tags: [answers.smoking, answers.sleepTime, answers.cleaningFrequency].filter(Boolean),
       })),
     ];
-    const rankedProfiles = [...profiles].sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0));
-    const profilesForTab =
-      activeTab === "recommended"
-        ? rankedProfiles.filter((profile) => profile.matchScore >= 60).slice(0, 9)
-        : profiles;
+    const profilesForTab = activeTab === "recommended" ? recommendations.profiles : profiles;
 
     return profilesForTab.filter((profile) =>
       (!selectedTag || profile.tags.includes(selectedTag)) &&
@@ -770,7 +780,7 @@ function RoommateSearchPage() {
         return selectedValues.some((value) => answerValues.includes(value));
       }),
     );
-  }, [activeTab, filters, savedProfiles, selectedTag]);
+  }, [activeTab, filters, savedProfiles, selectedTag, recommendations.profiles]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PAGE_SIZE));
 
@@ -1076,7 +1086,12 @@ function RoommateSearchPage() {
                 : "all-profile-tab"
             }
           >
-            {visibleProfiles.length > 0 ? (
+            {activeTab === "recommended" && recommendations.status !== "success" ? (
+              <S.EmptyState role={recommendations.status === "error" ? "alert" : "status"}>
+                <h3>{recommendations.status === "loading" ? "추천 프로필을 불러오고 있어요" : "추천 프로필을 불러오지 못했어요"}</h3>
+                <p>{recommendations.error || "잠시만 기다려 주세요."}</p>
+              </S.EmptyState>
+            ) : visibleProfiles.length > 0 ? (
               <>
                 <S.ProfileGrid>
                   {visibleProfiles.map((profile) => (
@@ -1084,7 +1099,6 @@ function RoommateSearchPage() {
                       key={profile.id}
                       profile={profile}
                       activeTab={activeTab}
-                      overlayText={generateRecommendationReason(profile)}
                       showOverlay={activeTab === "recommended"}
                     />
                   ))}
@@ -1101,7 +1115,7 @@ function RoommateSearchPage() {
                 <S.EmptyIcon>
                   <UserRoundSearch size={30} aria-hidden="true" />
                 </S.EmptyIcon>
-                <h3>조건에 맞는 프로필이 없어요</h3>
+                <h3>{activeTab === "recommended" ? "조건에 맞는 추천 프로필이 없어요" : "조건에 맞는 프로필이 없어요"}</h3>
                 <p>필터를 조금 넓히면 더 많은 룸메이트를 만날 수 있어요.</p>
                 <S.EmptyResetButton type="button" onClick={resetFilters}>
                   <RotateCcw size={16} aria-hidden="true" />

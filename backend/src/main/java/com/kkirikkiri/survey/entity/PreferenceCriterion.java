@@ -41,21 +41,17 @@ public class PreferenceCriterion {
 	@Column(name = "weight", nullable = false, columnDefinition = "TINYINT")
 	private byte weight;
 
-	@Column(name = "is_required", nullable = false)
-	private boolean required;
-
 	public PreferenceCriterion(RoommatePreference roommatePreference,
-			PreferenceCriterionCode criterionCode, int weight, boolean required) {
+			PreferenceCriterionCode criterionCode, int weight) {
 		this.roommatePreference = Objects.requireNonNull(roommatePreference, "roommatePreference");
 		this.criterionCode = Objects.requireNonNull(criterionCode, "criterionCode");
-		updateSettings(weight, required);
+		updateSettings(weight);
 	}
 
-	public void updateSettings(int weight, boolean required) {
+	public void updateSettings(int weight) {
 		if (weight < 1 || weight > 5) {
 			throw new IllegalArgumentException("weight must be between 1 and 5");
 		}
 		this.weight = (byte) weight;
-		this.required = required;
 	}
 }

@@ -3,6 +3,9 @@ package com.kkirikkiri.global.exception;
 import org.springframework.http.HttpStatus;
 
 public enum ErrorCode {
+    MATCH_ANALYSIS_UNAVAILABLE(HttpStatus.CONFLICT, "매칭 결과를 계산할 수 없습니다. 프로필과 선호 설문을 확인해 주세요."),
+    AI_GATEWAY_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "AI 분석 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요."),
+    AI_GATEWAY_INVALID_RESPONSE(HttpStatus.BAD_GATEWAY, "AI 분석 응답을 확인할 수 없습니다. 다시 시도해 주세요."),
 	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증 정보가 유효하지 않습니다."),
 	FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 	INVALID_REQUEST(HttpStatus.BAD_REQUEST, "요청을 처리할 수 없습니다."),

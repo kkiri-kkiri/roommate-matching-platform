@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { analyzeRoommateProfile } from "../../../api/roommateApi";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Heart, Sparkles } from "lucide-react";
 
@@ -85,19 +86,41 @@ function ProfileCard({
     profile,
     activeTab,
     onToggleLike,
-    overlayText,
     showOverlay = false,
 }) {
     const location = useLocation();
     const navigate = useNavigate();
     const { isLiked: checkLiked, updateLikes } = useProfileLikes();
-    const detailProfile = location.pathname === "/" ? { ...profile, id: `main:${profile.id}` } : profile;
+    const detailProfile = profile.source === "backend" ? { ...profile, id: profile.userId }
+        : location.pathname === "/" ? { ...profile, id: `main:${profile.id}` } : profile;
     const isLiked = checkLiked(detailProfile);
     const href = `/roommates/${encodeURIComponent(getProfileKey(detailProfile))}${activeTab === "recommended" ? "?tab=recommended" : ""}`;
     const detailState = { profile: detailProfile, activeTab, fromProfileCard: true };
+    const [analysis, setAnalysis] = useState({ status: "idle", text: "" });
+    const analysisRequest = useRef(null);
+    useEffect(() => {
+        setAnalysis({ status: "idle", text: "" });
+        return () => { analysisRequest.current?.abort(); analysisRequest.current = null; };
+    }, [profile.userId]);
+    const loadAnalysis = async () => {
+        if (!showOverlay || activeTab !== "recommended" || profile.source !== "backend"
+            || analysisRequest.current || analysis.status === "success") return;
+        const controller = new AbortController();
+        analysisRequest.current = controller;
+        setAnalysis({ status: "loading", text: "AI가 매칭 결과를 분석하고 있어요…" });
+        try {
+            const result = await analyzeRoommateProfile(profile.userId, controller.signal);
+            if (!controller.signal.aborted) setAnalysis({ status: "success", text: result.analysis });
+        } catch (error) {
+            if (!controller.signal.aborted) setAnalysis({ status: "error", text: error.message });
+        } finally {
+            if (analysisRequest.current === controller) analysisRequest.current = null;
+        }
+    };
 
     return (
-        <S.ProfileCard onClick={(event) => {
+        <S.ProfileCard onMouseEnter={loadAnalysis} onFocus={loadAnalysis} onClick={(event) => {
+            loadAnalysis();
             if (!event.target.closest("a, button")) {
                 event.currentTarget.querySelector("a")?.focus({ preventScroll: true });
                 navigate(href, { state: detailState });
@@ -163,7 +186,10 @@ function ProfileCard({
             {showOverlay && activeTab === "recommended" && (
                 <S.ProfileCardOverlay aria-label={`${profile.nickname} 추천 이유`}>
                     <S.ProfileCardOverlayTitle>AI 추천 이유</S.ProfileCardOverlayTitle>
-                    <S.ProfileCardOverlayText>{overlayText}</S.ProfileCardOverlayText>
+                    <S.ProfileCardOverlayText role={analysis.status === "error" ? "alert" : "status"}
+                        aria-busy={analysis.status === "loading"}>
+                        {analysis.text || "프로필을 선택하면 AI 분석을 확인할 수 있어요."}
+                    </S.ProfileCardOverlayText>
                 </S.ProfileCardOverlay>
             )}
         </S.ProfileCard>

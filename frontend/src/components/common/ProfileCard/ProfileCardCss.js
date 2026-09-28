@@ -76,7 +76,7 @@ export const ProfileCard = styled.article`
     transform: translateY(-2px);
   }
 
-  &:hover ${ProfileCardOverlay} {
+  &:hover ${ProfileCardOverlay}, &:focus-within ${ProfileCardOverlay} {
     opacity: 1;
     transform: translateY(0%);
   }

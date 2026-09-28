@@ -45,8 +45,7 @@ public record RoommatePreferenceResponse(
 			String meal,
 			String sharedItems,
 			String temperature,
-			Map<String, Integer> weights,
-			List<String> requiredConditions) {
+			Map<String, Integer> weights) {
 
 		public static Answers from(RoommatePreference preference,
 				List<RoommatePreferenceOption> options, List<PreferenceCriterion> criteria) {
@@ -69,8 +68,7 @@ public record RoommatePreferenceResponse(
 					preference.getMealPreference(),
 					preference.getSharedItemsPreference(),
 					preference.getTemperaturePreference(),
-					weights(criteria),
-					requiredConditions(criteria));
+					weights(criteria));
 		}
 
 		private static List<String> optionValues(List<RoommatePreferenceOption> options,
@@ -86,14 +84,6 @@ public record RoommatePreferenceResponse(
 			criteria.forEach(criterion -> weights.put(
 					apiKey(criterion.getCriterionCode()), (int) criterion.getWeight()));
 			return weights;
-		}
-
-		private static List<String> requiredConditions(List<PreferenceCriterion> criteria) {
-			return criteria.stream()
-					.filter(PreferenceCriterion::isRequired)
-					.map(PreferenceCriterion::getCriterionCode)
-					.map(Answers::apiKey)
-					.toList();
 		}
 
 		private static String apiKey(PreferenceCriterionCode code) {

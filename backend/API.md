@@ -634,8 +634,7 @@ Response:
 "meal": 3,
 "sharedItems": 3,
 "temperature": 3
-},
-"requiredConditions": ["smoking", "bedtime", "cleaningFrequency"]
+}
 }
 }
 
@@ -650,7 +649,7 @@ Auth
 Request:
 
 PUT 요청 본문은 answers로 감싸지 않고 아래 객체를 그대로 전송한다.
-weights에는 지원하는 18개 키를 모두 포함한다. requiredConditions: []는 필수조건 없음으로 정상 허용한다.
+weights에는 지원하는 18개 키를 모두 포함한다.
 
 ```json
 {
@@ -691,8 +690,7 @@ weights에는 지원하는 18개 키를 모두 포함한다. requiredConditions:
 "meal": 3,
 "sharedItems": 3,
 "temperature": 3
-},
-"requiredConditions": []
+}
 }
 ```
 
@@ -706,19 +704,13 @@ multi 항목에서 상관없음은 다른 값과 동시 선택 불가
 
 모든 선호 항목에 가중치 존재
 
-requiredConditions에는 지원되는 조건 key만 사용 가능
-
-requiredConditions 중복 key 저장 불가
-
-빈 배열은 필수조건 없음으로 처리
-
 6. 룸메이트 찾기
 
 공통 계산·조회 정책 (2026-09-28 확정):
 
 - A → B는 A의 완료된 선호 설문과 A/B의 프로필, B의 완료된 프로필 설문으로 계산한다.
 - 점수 = round(100 × 충족 항목 가중치 합 / 적용 항목 가중치 합). 가중치는 1~5이며 항목 충족은 0 또는 1이다. 소수점 첫째 자리에서 반올림한다.
-- 선호의 “상관없음”은 분자·분모에서 제외하고 필수조건은 충족한 것으로 본다. 필수조건 전체 충족 여부는 점수와 별개다.
+- 선호의 “상관없음”은 분자·분모에서 제외한다.
 - 복수 선택은 하나라도 일치하면 충족한다. 잠꼬대·코골이·이갈이는 없음 < 적음 < 보통 < 심함 순서로 허용 상한을 비교한다.
 - 샤워 소요시간은 선호 상한 이하일 때 충족한다. “그 이상”은 40분 이하 조건도 충족하지 않는다.
 - “비흡연자만”은 비흡연만, “전자담배까지 허용”은 비흡연과 전자담배를 허용한다.
@@ -787,11 +779,11 @@ Query:
 
 ?page=0&size=9
 
-현재 프론트 Mock 기준:
+추천 정렬 기준:
 
 matchScore DESC, 상대 userId ASC (동점 보조 정렬)
 
-추천 기준 matchScore >= 60 AND requiredConditionsMet = true
+추천 기준 matchScore >= 60
 
 요청당 최대 9개 표시. size가 9보다 크면 9로 제한한다.
 명시적 sort는 matchScore,desc만 허용한다.
@@ -799,6 +791,43 @@ matchScore DESC, 상대 userId ASC (동점 보조 정렬)
 실제 추천 점수 계산은 백엔드에서 처리한다.
 
 Response item은 전체 프로필 조회와 동일하며 추천 결과의 matchScore는 항상 숫자다.
+
+프론트 추천 탭은 page=0, size=9로 이 API를 호출한다. 응답 id는 실제 userId이며
+카드의 userId, 상세 경로, AI 분석 요청에 동일하게 사용한다. 설문 필터와 상세 표시에 필요한
+answers는 기존 GET /api/roommates/{userId}에서 조회한다. 전체 탭의 예시 데이터는 추천에 섞지 않는다.
+카드에 마우스를 올리거나 키보드로 선택하면 AI 분석을 요청하고 기존 오버레이에 표시한다.
+요청 중 중복 호출을 방지하며, 카드가 화면에서 제거될 때 진행 중 요청을 취소한다. 실패 후 재선택 시 다시 요청한다.
+추천 조회/AI 분석 실패와 빈 추천 목록은 각각 별도 상태로 표시한다.
+
+6.2.1 AI 프로필 분석
+
+POST /api/roommates/{userId}/ai-analysis
+
+Auth. 요청 본문 없음. 경로 userId는 분석 대상이며 요청자는 인증 토큰에서 결정한다.
+
+Response (공통 ApiResponse.data):
+
+```json
+{
+  "targetUserId": 2,
+  "matchScore": 75,
+  "analysis": "AI가 생성한 매칭 결과 설명"
+}
+```
+
+- 기존 공개 후보 검증 및 매칭 갱신/계산을 재사용한다. 점수 산식과 추천 기준은 변경하지 않는다.
+- 저장하는 점수와 동일한 계산 결과에서 일치/불일치 항목을 추출한다. 상관없음 항목은 제외한다.
+- AI에는 matchScore, matchedItems, mismatchedItems만 전달한다. 항목은 PreferenceCriterionCode이며 사용자 ID, 이름, 이메일, 설문 원본은 전달하지 않는다.
+- AI는 한국어 자연어 설명만 생성한다. API의 matchScore는 AI 응답에서 추출하지 않는다.
+- 분석은 요청 시 생성하여 반환하며 DB에 저장하지 않는다. Gateway 대기 중에는 매칭 트랜잭션을 유지하지 않는다.
+- ai.api-key, ai.base-url, ai.model 설정 사용. 현재 AI_MODEL=gpt-5.6-luna.
+- POST {AI_BASE_URL}/chat/completions/ (Bearer 인증), choices[0].message.content 사용.
+- 연결 제한 5초, 응답 제한 45초. 자동 재시도 없음. 인증키와 Gateway 오류 본문은 로그/응답에 노출하지 않는다.
+- 400 INVALID_REQUEST: 자기 자신, 유효하지 않거나 공개 불가능한 대상.
+- 401 UNAUTHORIZED: 인증 없음/실패.
+- 409 MATCH_ANALYSIS_UNAVAILABLE: 선호 미작성 등으로 점수 계산 불가.
+- 503 AI_GATEWAY_UNAVAILABLE: 설정 누락, Gateway HTTP 오류, 연결/시간 초과.
+- 502 AI_GATEWAY_INVALID_RESPONSE: 잘못된 JSON, choices/content 누락, 빈 문자열 또는 문자열이 아닌 content.
 
 6.3 룸메이트 상세 프로필
 

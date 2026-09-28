@@ -900,7 +900,7 @@ VARCHAR(60)
 
 상관없음을 선택한 조건은 다른 선택값과 동시에 저장하지 않도록 백엔드에서 검증한다.
 
-선호 조건 중요도·필수조건 (PREFERENCE_CRITERION)
+선호 조건 중요도 (PREFERENCE_CRITERION)
 
 컬럼명
 
@@ -938,13 +938,7 @@ TINYINT
 
 중요도 1~5
 
-is_required
-
-BOOLEAN
-
-반드시 만족해야 하는 필수조건 여부
-
-마이페이지에 구현된 조건별 가중치와 선호 설문 화면의 필수조건을 함께 관리한다.
+선호 설문의 항목별 가중치를 관리한다.
 
 (preference_id, criterion_code) 조합에 UNIQUE 제약을 적용한다.
 
@@ -961,8 +955,6 @@ weight는 1~5 범위만 허용한다.
 4: 높음
 
 5: 매우 높음
-
-필수조건 없음은 별도의 조건값으로 저장하지 않고 모든 is_required = false로 표현한다.
 
 예시 criterion_code: DEPARTMENT, AGE, GRADE, BEDTIME, WAKE_TIME, SLEEP_TALKING, SNORING, TEETH_GRINDING, SMOKING, LIGHTING, SHOWER_TIME, SHOWER_DURATION, CLEANING_FREQUENCY, CLEANING_STYLE, INTERACTION, MEAL, SHARED_ITEMS, TEMPERATURE.
 
@@ -1006,12 +998,6 @@ INT
 
 0~100 매칭 점수
 
-required_conditions_met
-
-BOOLEAN
-
-모든 필수조건 충족 여부
-
 recommendation_reason
 
 TEXT
@@ -1026,7 +1012,7 @@ nullable
 
 매칭은 방향성이 있으므로 A → B 점수와 B → A 점수는 서로 다를 수 있다.
 
-추천 프로필 화면에서는 match_score >= 60이면서 required_conditions_met = true인 결과를 조회한다.
+추천 프로필 화면에서는 match_score >= 60인 결과를 조회한다.
 
 매칭점수는 사용자의 ROOMMATE_PREFERENCE와 상대방의 USER_PROFILE, PROFILE_SURVEY를 비교하여 Spring Boot에서 계산한다.
 
@@ -1035,9 +1021,9 @@ nullable
 설문이 변경되면 기존 매칭 결과를 재계산하거나 무효화한다.
 
 계산 정책은 API.md 6장의 공통 계산·조회 정책을 따른다.
-계산 가능한 기존 쌍은 동일 행의 점수·필수조건 판정을 갱신하고, 없는 쌍은 생성한다.
+계산 가능한 기존 쌍은 동일 행의 점수를 갱신하고, 없는 쌍은 생성한다.
 계산 불가가 된 기존 행만 제거한다. match_score에 임시 0점이나 null을 저장하지 않으며,
-API는 계산 불가 상태를 matchScore: null로 표현한다. DB 스키마 변경은 없다.
+API는 계산 불가 상태를 matchScore: null로 표현한다.
 
 입력 변경 이벤트는 입력 트랜잭션 커밋 후 처리한다. 계산은 별도 READ_COMMITTED 트랜잭션에서
 관련 USER 행을 user_id ASC로 잠근 뒤 최신 입력을 일괄 조회한다. survey 저장과 계산 입력 프로필 변경도
@@ -2031,7 +2017,7 @@ nullable
 
 ROOMMATE_MATCH에서 다음 조건으로 조회한다.
 
-match_score >= 60 AND required_conditions_met = true
+match_score >= 60
 
 따라서 추천 프로필은 데이터 자체가 아니라 매칭 결과에 대한 조회 조건이다.
 
