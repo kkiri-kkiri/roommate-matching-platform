@@ -60,7 +60,7 @@ public class RoommateMatchingService {
             Specification<RoommateMatch> spec = MatchingCandidates.<RoommateMatch>eligibleTarget(userId)
                     .and((root, query, cb) -> cb.and(
                             cb.equal(root.get("requesterUser").get("userId"), userId),
-                            cb.ge(root.get("matchScore"), 60), cb.isTrue(root.get("requiredConditionsMet"))));
+                            cb.ge(root.get("matchScore"), 60)));
             Page<Long> ids = roommateMatchRepository.findAll(spec, sorted)
                     .map(match -> match.getTargetUser().getUserId());
             return toIdPage(userId, ids);
@@ -79,6 +79,13 @@ public class RoommateMatchingService {
             return RoommateDetailResponse.from(profile, survey, createTags(survey), score,
                     profileLikeRepository.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId));
         });
+    }
+
+    public RoommateMatchCalculator.Result getAnalysisInput(Long userId, Long targetUserId) {
+        validateDifferentUserIds(userId, targetUserId);
+        read(() -> findCandidate(userId, targetUserId));
+        return refreshService.refreshAnalysis(userId, targetUserId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MATCH_ANALYSIS_UNAVAILABLE));
     }
 
     /** A uniqueness failure is checked outside the failed transaction. */

@@ -85,6 +85,8 @@ class SecurityConfigTest {
 			"POST, /api/calendar/events, , 401",
 			"POST, /api/calendar/events, USER, 200",
 			"GET, /api/users/me, USER, 200",
+            "POST, /api/roommates/2/ai-analysis, , 401",
+            "POST, /api/roommates/2/ai-analysis, USER, 200",
 			"GET, /api/unmatched, ADMIN, 403"
 	})
 	void existingAccessRulesArePreserved(String method, String path, UserRole role, int expectedStatus)

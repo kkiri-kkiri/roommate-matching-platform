@@ -7,6 +7,7 @@ import {
 
 import * as S from "./DetailedProfileCss";
 import ProfileImage from "../ProfileImage";
+import { getRoommateDetail } from "../../../api/roommateApi";
 import { getProfileKey, useProfileLikes } from "./ProfileCard";
 import { PROFILES } from "../../../pages/roommate/RoommateSearchPage";
 import { getSavedSurveyProfiles, LIKED_PROFILES } from "../../../pages/mypage/MyPage";
@@ -89,6 +90,9 @@ const DEMO_PROFILES = {
 };
 
 export function getDetailedProfile(profileId, routeProfile) {
+  if (routeProfile?.source === "backend") {
+    return String(routeProfile.userId) === String(profileId) ? routeProfile : null;
+  }
   const key = getProfileKey({ id: profileId });
   const listProfile = PROFILES.find((item) => getProfileKey(item) === key);
   const likedProfile = LIKED_PROFILES.find((item) => getProfileKey(item) === key);
@@ -118,7 +122,7 @@ function displayAnswer(value) {
   return typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
 }
 
-function ProfileDialog({ profile, sourceProfile, onDismiss, returnTo }) {
+function ProfileDialog({ profile, sourceProfile, onDismiss, returnTo, loading, error }) {
   const navigate = useNavigate();
   const dialogRef = useRef(null);
   const tabRefs = useRef([]);
@@ -291,10 +295,10 @@ function ProfileDialog({ profile, sourceProfile, onDismiss, returnTo }) {
           </S.Actions>
         </>
       ) : (
-        <S.MissingProfile>
+        <S.MissingProfile role={error ? "alert" : "status"}>
           <S.EmptyIcon><UserRound size={32} aria-hidden="true" /></S.EmptyIcon>
-          <h1 id="detailed-profile-title">프로필을 찾을 수 없어요</h1>
-          <p>존재하지 않거나 더 이상 공개되지 않는 프로필이에요.<br />목록에서 다른 룸메이트를 만나보세요.</p>
+          <h1 id="detailed-profile-title">{loading ? "프로필을 불러오고 있어요" : "프로필을 찾을 수 없어요"}</h1>
+          <p>{loading ? "잠시만 기다려 주세요." : error || "존재하지 않거나 더 이상 공개되지 않는 프로필이에요."}</p>
           <S.ChatButton as={Link} to={returnTo}>룸메찾기로 돌아가기<ArrowUpRight size={17} aria-hidden="true" /></S.ChatButton>
         </S.MissingProfile>
       )}
@@ -307,7 +311,27 @@ function DetailedProfile() {
   const location = useLocation();
   const navigate = useNavigate();
   const { likes } = useProfileLikes();
-  const selectedProfile = getDetailedProfile(profileId,
+  const serverRoute = new URLSearchParams(location.search).get("tab") === "recommended"
+    || location.state?.profile?.source === "backend";
+  const supplied = location.state?.profile;
+  const suppliedServerProfile = supplied?.source === "backend" && String(supplied.userId) === profileId ? supplied : null;
+  const [remote, setRemote] = useState({ id: null, profile: null, error: "" });
+  useEffect(() => {
+    if (!serverRoute || suppliedServerProfile) return;
+    const controller = new AbortController();
+    setRemote({ id: profileId, profile: null, error: "" });
+    getRoommateDetail(profileId, controller.signal).then((detail) => {
+      if (String(detail?.id) !== profileId) throw new Error("프로필 응답을 확인할 수 없습니다.");
+      if (!controller.signal.aborted) setRemote({ id: profileId, error: "", profile: {
+        ...detail, userId: detail.id, source: "backend", message: detail.introduction,
+        photo: detail.profileImageUrl, answers: detail.answers || {},
+      } });
+    }).catch((failure) => {
+      if (!controller.signal.aborted) setRemote({ id: profileId, profile: null, error: failure.message });
+    });
+    return () => controller.abort();
+  }, [serverRoute, suppliedServerProfile, profileId]);
+  const selectedProfile = serverRoute ? suppliedServerProfile || (remote.id === profileId ? remote.profile : null) : getDetailedProfile(profileId,
     location.state?.profile || likes[getProfileKey({ id: profileId })]?.profile,
   );
   const emptyPreview = new URLSearchParams(location.search).get("preview") === "empty";
@@ -320,7 +344,9 @@ function DetailedProfile() {
   }, [location.state?.fromProfileCard, navigate, returnTo]);
 
   return <ProfileDialog key={`${profileId}-${emptyPreview}`} profile={profile} sourceProfile={selectedProfile}
-    onDismiss={dismiss} returnTo={returnTo} />;
+    onDismiss={dismiss} returnTo={returnTo}
+    loading={serverRoute && !selectedProfile && !(remote.id === profileId && remote.error)}
+    error={serverRoute && remote.id === profileId ? remote.error : ""} />;
 }
 
 export default DetailedProfile;

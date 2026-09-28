@@ -489,42 +489,6 @@ export const FieldHint = styled.span`
   line-height: 18px;
 `;
 
-export const ConditionNotice = styled.div`
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 11px;
-  align-items: start;
-  margin-bottom: 16px;
-  padding: 15px 16px;
-  border: 1px solid rgba(52, 120, 246, 0.18);
-  border-radius: 12px;
-  color: ${colors.blue};
-  background: #f2f6ff;
-
-  svg {
-    margin-top: 1px;
-  }
-
-  strong,
-  span {
-    display: block;
-  }
-
-  strong {
-    color: ${colors.navy};
-    font-size: 13px;
-    line-height: 19px;
-  }
-
-  span {
-    margin-top: 2px;
-    color: ${colors.textSoft};
-    font-size: 12px;
-    line-height: 18px;
-    word-break: keep-all;
-  }
-`;
-
 export const SelectionGuide = styled.p`
   margin: -4px 0 12px;
   color: ${colors.subtle};
@@ -615,70 +579,6 @@ export const ChoiceIndicator = styled.span`
   border-radius: ${({ $multiple }) => ($multiple ? "6px" : "50%")};
   color: ${colors.white};
   background: ${({ $selected }) => ($selected ? colors.mint : colors.white)};
-`;
-
-export const RequirementSummary = styled.div`
-  margin-top: 20px;
-  padding: 16px;
-  border: 1px solid
-    ${({ $empty }) => ($empty ? colors.border : "rgba(0, 167, 159, 0.24)")};
-  border-radius: 12px;
-  background: ${({ $empty }) => ($empty ? "#fafafa" : colors.mintSoft)};
-`;
-
-export const SummaryHeader = styled.div`
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-
-  span {
-    display: inline-flex;
-    gap: 7px;
-    align-items: center;
-    color: ${colors.textSoft};
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 18px;
-  }
-
-  svg {
-    color: ${colors.mintDark};
-  }
-
-  strong {
-    color: ${colors.mintDark};
-    font-size: 12px;
-    line-height: 18px;
-  }
-`;
-
-export const SummaryChips = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 12px;
-`;
-
-export const SummaryChip = styled.span`
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  color: ${colors.mintDark};
-  background: ${colors.white};
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 16px;
-`;
-
-export const SummaryEmpty = styled.p`
-  margin: 8px 0 0;
-  color: ${colors.muted};
-  font-size: 12px;
-  line-height: 18px;
-  word-break: keep-all;
 `;
 
 export const ErrorText = styled.p`

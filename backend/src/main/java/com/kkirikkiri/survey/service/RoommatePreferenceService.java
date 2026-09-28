@@ -167,10 +167,9 @@ public class RoommatePreferenceService {
 		preferenceCriterionRepository.deleteAll(existingCriteria);
 		preferenceCriterionRepository.flush();
 
-		Set<String> requiredConditions = Set.copyOf(request.requiredConditions());
 		List<PreferenceCriterion> criteria = CRITERION_CODES.entrySet().stream()
 				.map(entry -> new PreferenceCriterion(preference, entry.getValue(),
-						request.weights().get(entry.getKey()), requiredConditions.contains(entry.getKey())))
+						request.weights().get(entry.getKey())))
 				.toList();
 		preferenceCriterionRepository.saveAll(criteria);
 	}
@@ -200,9 +199,7 @@ public class RoommatePreferenceService {
 		validateOption(request.temperature(), TEMPERATURE_OPTIONS);
 
 		if (!request.weights().keySet().equals(CRITERION_CODES.keySet())
-				|| request.weights().values().stream().anyMatch(weight -> weight == null || weight < 1 || weight > 5)
-				|| new HashSet<>(request.requiredConditions()).size() != request.requiredConditions().size()
-				|| !CRITERION_CODES.keySet().containsAll(request.requiredConditions())) {
+				|| request.weights().values().stream().anyMatch(weight -> weight == null || weight < 1 || weight > 5)) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
 	}

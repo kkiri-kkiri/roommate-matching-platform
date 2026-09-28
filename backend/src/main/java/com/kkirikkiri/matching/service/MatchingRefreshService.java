@@ -43,22 +43,26 @@ public class MatchingRefreshService {
         refresh(List.of(requesterId), targetIds);
     }
 
-    private void refresh(List<Long> requesterIds, List<Long> targetIds) {
-        if (requesterIds.isEmpty() || targetIds.isEmpty()) return;
+    public Optional<RoommateMatchCalculator.Result> refreshAnalysis(Long requesterId, Long targetId) {
+        return Optional.ofNullable(refresh(List.of(requesterId), List.of(targetId)).get(new Pair(requesterId, targetId)));
+    }
+
+    private Map<Pair, RoommateMatchCalculator.Result> refresh(List<Long> requesterIds, List<Long> targetIds) {
+        if (requesterIds.isEmpty() || targetIds.isEmpty()) return Map.of();
         TransactionTemplate tx = new TransactionTemplate(transactionManager);
         tx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         tx.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
         for (int attempt = 0; ; attempt++) {
             try {
-                tx.executeWithoutResult(status -> calculateBatch(requesterIds, targetIds));
-                return;
+                return tx.execute(status -> calculateBatch(requesterIds, targetIds));
             } catch (TransientDataAccessException failure) {
                 if (attempt == 2) throw failure;
             }
         }
     }
 
-    private void calculateBatch(List<Long> requesterIds, List<Long> targetIds) {
+    private Map<Pair, RoommateMatchCalculator.Result> calculateBatch(List<Long> requesterIds, List<Long> targetIds) {
+        Map<Pair, RoommateMatchCalculator.Result> results = new HashMap<>();
         Set<Long> ids = new TreeSet<>(requesterIds);
         ids.addAll(targetIds);
         Map<Long, User> userMap = users.lockMatchingUsers(ids).stream()
@@ -99,18 +103,19 @@ public class MatchingRefreshService {
                     continue;
                 }
                 var value = result.get();
+                results.put(new Pair(requesterId, targetId), value);
                 if (match == null) {
                     saved.add(new RoommateMatch(userMap.get(requesterId), userMap.get(targetId),
-                            value.score(), value.requiredConditionsMet(), null));
-                } else if (match.getMatchScore() != value.score()
-                        || match.isRequiredConditionsMet() != value.requiredConditionsMet()) {
-                    match.updateResult(value.score(), value.requiredConditionsMet(), null);
+                            value.score(), null));
+                } else if (match.getMatchScore() != value.score()) {
+                    match.updateResult(value.score(), null);
                 }
             }
         }
         matches.deleteAll(removed);
         matches.saveAll(saved);
         matches.flush();
+        return results;
     }
 
     private boolean active(User user) {

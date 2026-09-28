@@ -9,7 +9,8 @@ import static com.kkirikkiri.survey.entity.PreferenceCriterionCode.*;
 /** Pure directional calculation; unavailable inputs never become a synthetic score. */
 @Component
 public class RoommateMatchCalculator {
-    public record Result(int score, boolean requiredConditionsMet) {}
+    public record Result(int score,
+            List<PreferenceCriterionCode> matchedItems, List<PreferenceCriterionCode> mismatchedItems) {}
 
     public Optional<Result> calculate(UserProfile requester, UserProfile target, ProfileSurvey survey,
             RoommatePreference preference, List<RoommatePreferenceOption> options, List<PreferenceCriterion> criteria) {
@@ -35,17 +36,19 @@ public class RoommateMatchCalculator {
                 || criteria.stream().map(PreferenceCriterion::getCriterionCode).distinct().count() != criteria.size())
             return Optional.empty();
         int total = 0, matched = 0;
-        boolean required = true;
+        List<PreferenceCriterionCode> matchedItems = new ArrayList<>();
+        List<PreferenceCriterionCode> mismatchedItems = new ArrayList<>();
         for (var criterion : criteria) {
             var values = selections.get(criterion.getCriterionCode());
             if (values == null || values.isEmpty()) return Optional.empty();
             if (values.contains("상관없음")) continue;
             boolean met = values.stream().anyMatch(value -> matches(criterion.getCriterionCode(), value, requester, target, survey));
+            (met ? matchedItems : mismatchedItems).add(criterion.getCriterionCode());
             total += criterion.getWeight();
             if (met) matched += criterion.getWeight();
-            if (criterion.isRequired() && !met) required = false;
         }
-        return total == 0 ? Optional.empty() : Optional.of(new Result((int) Math.round(100.0 * matched / total), required));
+        return total == 0 ? Optional.empty() : Optional.of(new Result((int) Math.round(100.0 * matched / total),
+                List.copyOf(matchedItems), List.copyOf(mismatchedItems)));
     }
 
     private boolean matches(PreferenceCriterionCode code, String value, UserProfile a, UserProfile b, ProfileSurvey s) {

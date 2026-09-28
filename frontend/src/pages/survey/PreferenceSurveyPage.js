@@ -6,7 +6,6 @@ import {
   Check,
   CheckCircle2,
   Clock3,
-  Info,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
@@ -243,39 +242,6 @@ const SURVEY_STEPS = [
       },
     ],
   },
-  {
-    id: "requirements",
-    shortTitle: "필수조건",
-    title: "필수조건 설정",
-    description:
-      "매칭할 때 반드시 만족해야 하는 조건을 마지막으로 확인해 주세요.",
-    fields: [
-      {
-        id: "requiredConditions",
-        label: "반드시 만족해야 하는 조건",
-        type: "multi",
-        options: [
-          "학과·학부",
-          "나이",
-          "학년",
-          "취침시간",
-          "기상시간",
-          "잠꼬대",
-          "코골이",
-          "이갈이",
-          "청소 주기",
-          "청소 방식",
-          "흡연 여부",
-          "온도 선호",
-          "룸메이트와의 교류 정도",
-          "기숙사 식사",
-          "공용물품 사용",
-          "필수조건 없음",
-        ],
-        exclusiveOptions: ["필수조건 없음"],
-      },
-    ],
-  },
 ];
 
 const ALL_FIELDS = SURVEY_STEPS.flatMap((step) => step.fields);
@@ -295,10 +261,7 @@ function isAnswered(field, values) {
 function validateStep(step, values) {
   return step.fields.reduce((stepErrors, field) => {
     if (!isAnswered(field, values)) {
-      stepErrors[field.id] =
-        field.id === "requiredConditions"
-          ? "필수조건을 선택하거나 ‘필수조건 없음’을 선택해 주세요."
-          : `${field.label} 항목을 선택해 주세요.`;
+      stepErrors[field.id] = `${field.label} 항목을 선택해 주세요.`;
     }
     return stepErrors;
   }, {});
@@ -340,8 +303,6 @@ function RoommatePreferenceSurvey() {
     [values],
   );
   const progress = Math.round((answeredFieldCount / ALL_FIELDS.length) * 100);
-  const selectedRequirements = values.requiredConditions;
-  const hasNoRequiredCondition = selectedRequirements.includes("필수조건 없음");
 
   useEffect(() => {
     if (!showValidation) return;
@@ -538,7 +499,7 @@ function RoommatePreferenceSurvey() {
           <S.SelectionGuide>
             <Check size={14} aria-hidden="true" />
             <span>
-              여러 항목을 선택할 수 있어요. ‘상관없음’ 또는 ‘필수조건 없음’은
+              여러 항목을 선택할 수 있어요. ‘상관없음’은
               다른 선택과 함께 적용되지 않습니다.
             </span>
           </S.SelectionGuide>
@@ -583,31 +544,6 @@ function RoommatePreferenceSurvey() {
         </S.ChoiceGrid>
 
         {renderError(field)}
-
-        {field.id === "requiredConditions" && (
-          <S.RequirementSummary aria-live="polite">
-            <S.SummaryHeader>
-              <strong>선택한 필수조건</strong>
-              <span>
-                {hasNoRequiredCondition ? 0 : selectedRequirements.length}개
-                선택
-              </span>
-            </S.SummaryHeader>
-            {selectedRequirements.length === 0 ? (
-              <S.SummaryEmpty>아직 선택한 필수조건이 없습니다.</S.SummaryEmpty>
-            ) : hasNoRequiredCondition ? (
-              <S.SummaryEmpty>
-                필수조건 없이 전체 선호도를 기준으로 매칭해요.
-              </S.SummaryEmpty>
-            ) : (
-              <S.SummaryChips aria-label="선택한 필수조건 목록">
-                {selectedRequirements.map((requirement) => (
-                  <S.SummaryChip key={requirement}>{requirement}</S.SummaryChip>
-                ))}
-              </S.SummaryChips>
-            )}
-          </S.RequirementSummary>
-        )}
       </S.Fieldset>
     );
   };
@@ -717,16 +653,6 @@ function RoommatePreferenceSurvey() {
                     <span>표시된 문항을 확인해 주세요.</span>
                   </div>
                 </S.ValidationBanner>
-              )}
-
-              {currentStep.id === "requirements" && (
-                <S.ConditionNotice>
-                  <Info size={17} aria-hidden="true" />
-                  <span>
-                    아래에서 선택한 항목은 단순 점수 계산이 아니라 필수조건으로
-                    적용합니다.
-                  </span>
-                </S.ConditionNotice>
               )}
 
               {currentStep.fields.map(renderChoiceField)}
