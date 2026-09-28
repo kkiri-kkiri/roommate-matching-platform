@@ -91,6 +91,7 @@ public class RoommatePreferenceService {
 	private final RoommatePreferenceOptionRepository roommatePreferenceOptionRepository;
 	private final PreferenceCriterionRepository preferenceCriterionRepository;
 	private final Validator validator;
+    private final org.springframework.context.ApplicationEventPublisher events;
 
 	public RoommatePreferenceResponse getMyRoommatePreference(Long userId) {
 		validateUserId(userId);
@@ -123,6 +124,7 @@ public class RoommatePreferenceService {
 		roommatePreferenceRepository.save(preference);
 		replaceOptions(preference, request);
 		replaceCriteria(preference, request);
+        events.publishEvent(new com.kkirikkiri.matching.service.MatchingInputsChanged(userId, false, true));
 	}
 
 	private RoommatePreference createPreference(User user, RoommatePreferenceRequest request) {

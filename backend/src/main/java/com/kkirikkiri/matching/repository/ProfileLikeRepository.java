@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.kkirikkiri.matching.entity.ProfileLike;
 
-public interface ProfileLikeRepository extends JpaRepository<ProfileLike, Long> {
+public interface ProfileLikeRepository extends JpaRepository<ProfileLike, Long>, org.springframework.data.jpa.repository.JpaSpecificationExecutor<ProfileLike> {
 
 	boolean existsByUser_UserIdAndTargetUser_UserId(Long userId, Long targetUserId);
 

@@ -68,6 +68,7 @@ public class ProfileSurveyService {
 	private final ProfileSurveyRepository profileSurveyRepository;
 	private final ProfileSurveyOptionRepository profileSurveyOptionRepository;
 	private final Validator validator;
+    private final org.springframework.context.ApplicationEventPublisher events;
 
 	public ProfileSurveyResponse getMyProfileSurvey(Long userId) {
 		validateUserId(userId);
@@ -95,6 +96,7 @@ public class ProfileSurveyService {
 		}
 		profileSurveyRepository.save(survey);
 		replaceOptions(survey, request);
+        events.publishEvent(new com.kkirikkiri.matching.service.MatchingInputsChanged(userId, true, false));
 	}
 
 	private ProfileSurvey createSurvey(User user, ProfileSurveyRequest request) {

@@ -39,6 +39,7 @@ public class UserService {
 	private final MajorRepository majorRepository;
 	private final Validator validator;
 	private final PasswordEncoder passwordEncoder;
+    private final org.springframework.context.ApplicationEventPublisher events;
 
 	public UserResponse getMyInfo(Long userId) {
 		return UserResponse.from(findProfile(userId));
@@ -47,6 +48,10 @@ public class UserService {
 	@Transactional
 	public UserResponse updateMyInfo(Long userId, UserUpdateRequest request) {
 		validateRequest(request);
+        validateUserId(userId);
+        // Match the survey lock protocol before reading comparison inputs.
+        userRepository.findByIdForSurveyUpdate(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
 		UserProfile profile = findProfile(userId);
 
 		if (request.nickname() != null
@@ -80,6 +85,11 @@ public class UserService {
 			throw new CustomException(ErrorCode.INVALID_REQUEST);
 		}
 
+        boolean departmentChanged = !Objects.equals(profile.getFaculty().getFacultyId(), faculty.getFacultyId())
+                || !Objects.equals(profile.getMajor() == null ? null : profile.getMajor().getMajorId(),
+                        major == null ? null : major.getMajorId());
+        boolean gradeChanged = request.grade() != null && !Objects.equals(profile.getGrade(), request.grade());
+
 		if (request.nickname() != null) {
 			profile.changeNickname(request.nickname());
 		}
@@ -102,6 +112,10 @@ public class UserService {
 					+ (request.mbtiLifestyle() == null ? mbti.substring(3, 4) : request.mbtiLifestyle()));
 		}
 
+        if (departmentChanged || gradeChanged) {
+            events.publishEvent(new com.kkirikkiri.matching.service.MatchingInputsChanged(
+                    userId, true, departmentChanged));
+        }
 		// Repository로 조회한 관리 엔티티의 변경은 트랜잭션 커밋 시 반영된다.
 		return UserResponse.from(profile);
 	}
