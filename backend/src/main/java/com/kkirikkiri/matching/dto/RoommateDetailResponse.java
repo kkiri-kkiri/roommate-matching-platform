@@ -17,7 +17,7 @@ public record RoommateDetailResponse(
 		String introduction,
 		List<String> tags,
 		String profileImageUrl,
-		int matchScore,
+		Integer matchScore,
 		boolean liked,
 		Answers answers) {
 
@@ -27,7 +27,7 @@ public record RoommateDetailResponse(
 
 	public static RoommateDetailResponse from(
 			UserProfile profile, ProfileSurvey survey, List<String> tags,
-			int matchScore, boolean liked) {
+			Integer matchScore, boolean liked) {
 		return new RoommateDetailResponse(
 				profile.getUser().getUserId(),
 				profile.getNickname(),

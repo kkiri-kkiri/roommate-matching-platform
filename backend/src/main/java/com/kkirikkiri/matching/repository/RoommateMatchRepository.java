@@ -19,4 +19,8 @@ public interface RoommateMatchRepository
 
 	Optional<RoommateMatch> findByRequesterUser_UserIdAndTargetUser_UserId(
 			Long requesterUserId, Long targetUserId);
+    java.util.List<RoommateMatch> findAllByRequesterUser_UserIdInAndTargetUser_UserIdIn(
+            java.util.Collection<Long> requesterIds, java.util.Collection<Long> targetIds);
+    java.util.List<RoommateMatch> findAllByRequesterUser_UserIdAndTargetUser_UserIdIn(
+            Long requesterId, java.util.Collection<Long> targetIds);
 }

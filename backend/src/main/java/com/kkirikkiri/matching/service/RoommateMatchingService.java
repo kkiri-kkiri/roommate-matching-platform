@@ -3,163 +3,179 @@ package com.kkirikkiri.matching.service;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.*;
+import org.springframework.transaction.annotation.*;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import com.kkirikkiri.global.exception.CustomException;
-import com.kkirikkiri.global.exception.ErrorCode;
-import com.kkirikkiri.matching.dto.RoommateDetailResponse;
-import com.kkirikkiri.matching.dto.RoommateFilterRequest;
-import com.kkirikkiri.matching.dto.RoommatePageResponse;
-import com.kkirikkiri.matching.dto.RoommateProfileResponse;
-import com.kkirikkiri.matching.entity.RoommateMatch;
-import com.kkirikkiri.matching.entity.ProfileLike;
-import com.kkirikkiri.matching.repository.ProfileLikeRepository;
-import com.kkirikkiri.matching.repository.RoommateMatchRepository;
-import com.kkirikkiri.survey.entity.ProfileSurvey;
-import com.kkirikkiri.survey.entity.ProfileSurveyFieldCode;
-import com.kkirikkiri.survey.entity.ProfileSurveyOption;
+import com.kkirikkiri.global.exception.*;
+import com.kkirikkiri.matching.dto.*;
+import com.kkirikkiri.matching.entity.*;
+import com.kkirikkiri.matching.repository.*;
+import com.kkirikkiri.survey.entity.*;
 import com.kkirikkiri.survey.repository.ProfileSurveyRepository;
-import com.kkirikkiri.user.entity.UserProfile;
-import com.kkirikkiri.user.repository.UserProfileRepository;
+import com.kkirikkiri.user.entity.*;
+import com.kkirikkiri.user.repository.*;
 
-/**
- * userId에는 인증된 사용자의 ID를 전달한다.
- */
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
 public class RoommateMatchingService {
+    private final RoommateMatchRepository roommateMatchRepository;
+    private final ProfileLikeRepository profileLikeRepository;
+    private final PlatformTransactionManager transactionManager;
+    private final UserProfileRepository userProfileRepository;
+    private final ProfileSurveyRepository profileSurveyRepository;
+    private final UserRepository userRepository;
+    private final MatchingRefreshService refreshService;
+    private final Validator validator;
 
-	private static final int RECOMMENDED_MINIMUM_SCORE = 60;
-	private static final int RECOMMENDED_MAX_PAGE_SIZE = 9;
+    public RoommatePageResponse<RoommateProfileResponse> getRoommates(
+            Long userId, RoommateFilterRequest filter, Pageable pageable) {
+        validateUserId(userId);
+        validatePageable(pageable);
+        validateFilter(filter);
+        Pageable sorted = ordered(pageable, "userId", "user.userId", false);
+        // Choose the page in SQL before preparing only its scores.
+        Page<Long> ids = read(() -> userProfileRepository.findAll(
+                MatchingCandidates.eligible(userId).and(buildFilterSpecification(userId, filter)), sorted)
+                .map(profile -> profile.getUser().getUserId()));
+        refreshService.refreshTargets(userId, ids.getContent());
+        return read(() -> toIdPage(userId, ids));
+    }
 
-	private final RoommateMatchRepository roommateMatchRepository;
-	private final ProfileLikeRepository profileLikeRepository;
-	private final PlatformTransactionManager transactionManager;
-	private final UserProfileRepository userProfileRepository;
-	private final ProfileSurveyRepository profileSurveyRepository;
-	private final Validator validator;
+    public RoommatePageResponse<RoommateProfileResponse> getRecommendedRoommates(Long userId, Pageable pageable) {
+        validateUserId(userId);
+        validatePageable(pageable);
+        Pageable sorted = recommendedPageable(pageable);
+        // Ranking needs all scores for this requester, never all user pairs.
+        refreshService.refreshOutgoing(userId);
+        return read(() -> {
+            Specification<RoommateMatch> spec = MatchingCandidates.<RoommateMatch>eligibleTarget(userId)
+                    .and((root, query, cb) -> cb.and(
+                            cb.equal(root.get("requesterUser").get("userId"), userId),
+                            cb.ge(root.get("matchScore"), 60), cb.isTrue(root.get("requiredConditionsMet"))));
+            Page<Long> ids = roommateMatchRepository.findAll(spec, sorted)
+                    .map(match -> match.getTargetUser().getUserId());
+            return toIdPage(userId, ids);
+        });
+    }
 
-	public RoommatePageResponse<RoommateProfileResponse> getRoommates(
-			Long userId, RoommateFilterRequest filter, Pageable pageable) {
-		validateUserId(userId);
-		validatePageable(pageable);
-		validateFilter(filter);
+    public RoommateDetailResponse getRoommateDetail(Long userId, Long targetUserId) {
+        validateDifferentUserIds(userId, targetUserId);
+        read(() -> findCandidate(userId, targetUserId));
+        refreshService.refreshTargets(userId, List.of(targetUserId));
+        return read(() -> {
+            UserProfile profile = findCandidate(userId, targetUserId);
+            ProfileSurvey survey = profileSurveyRepository.findByUser_UserId(targetUserId).orElseThrow();
+            Integer score = roommateMatchRepository.findByRequesterUser_UserIdAndTargetUser_UserId(userId, targetUserId)
+                    .map(RoommateMatch::getMatchScore).orElse(null);
+            return RoommateDetailResponse.from(profile, survey, createTags(survey), score,
+                    profileLikeRepository.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId));
+        });
+    }
 
-		Page<RoommateMatch> matches;
-		if (hasAnyFilter(filter)) {
-			matches = roommateMatchRepository.findAll(buildFilterSpecification(userId, filter), pageable);
-		} else {
-			matches = roommateMatchRepository.findAllByRequesterUser_UserId(userId, pageable);
-		}
+    /** A uniqueness failure is checked outside the failed transaction. */
+    public void addProfileLike(Long userId, Long targetUserId) {
+        validateDifferentUserIds(userId, targetUserId);
+        TransactionTemplate transaction = new TransactionTemplate(transactionManager);
+        transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        try {
+            transaction.executeWithoutResult(status -> {
+                UserProfile target = findCandidate(userId, targetUserId);
+                User requester = userRepository.findById(userId)
+                        .filter(user -> user.getStatus() == UserStatus.ACTIVE)
+                        .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+                if (!profileLikeRepository.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId)) {
+                    profileLikeRepository.saveAndFlush(new ProfileLike(requester, target.getUser()));
+                }
+            });
+        } catch (DataIntegrityViolationException exception) {
+            Boolean exists = read(() -> profileLikeRepository.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId));
+            if (!Boolean.TRUE.equals(exists)) throw exception;
+        }
+    }
 
-		return toProfilePage(userId, matches);
-	}
+    @Transactional
+    public void cancelProfileLike(Long userId, Long targetUserId) {
+        validateDifferentUserIds(userId, targetUserId);
+        ProfileLike like = profileLikeRepository.findByUser_UserIdAndTargetUser_UserId(userId, targetUserId)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+        profileLikeRepository.delete(like);
+    }
 
-	public RoommatePageResponse<RoommateProfileResponse> getRecommendedRoommates(
-			Long userId, Pageable pageable) {
-		validateUserId(userId);
-		validatePageable(pageable);
-		Pageable limitedPageable = limitRecommendedPageSize(pageable);
+    public RoommatePageResponse<RoommateProfileResponse> getLikedRoommates(Long userId, Pageable pageable) {
+        validateUserId(userId);
+        validatePageable(pageable);
+        Pageable sorted = ordered(pageable, "profileLikeId", "profileLikeId", true);
+        Specification<ProfileLike> spec = MatchingCandidates.<ProfileLike>eligibleTarget(userId)
+                .and((root, query, cb) -> cb.equal(root.get("user").get("userId"), userId));
+        Page<Long> ids = read(() -> profileLikeRepository.findAll(spec, sorted).map(like -> like.getTargetUser().getUserId()));
+        refreshService.refreshTargets(userId, ids.getContent());
+        return read(() -> toIdPage(userId, ids));
+    }
 
-		Page<RoommateMatch> matches = roommateMatchRepository
-				.findAllByRequesterUser_UserIdAndMatchScoreGreaterThanEqualAndRequiredConditionsMetTrueOrderByMatchScoreDesc(
-						userId, RECOMMENDED_MINIMUM_SCORE, limitedPageable);
-		return toProfilePage(userId, matches);
-	}
+    private RoommatePageResponse<RoommateProfileResponse> toIdPage(Long userId, Page<Long> ids) {
+        if (ids.isEmpty()) return RoommatePageResponse.from(ids.map(id -> (RoommateProfileResponse) null));
+        var profiles = userProfileRepository.findAllByUser_UserIdIn(ids.getContent()).stream()
+                .collect(Collectors.toMap(profile -> profile.getUser().getUserId(), profile -> profile));
+        var surveys = profileSurveyRepository.findAllByUser_UserIdIn(ids.getContent()).stream()
+                .collect(Collectors.toMap(survey -> survey.getUser().getUserId(), survey -> survey));
+        var scores = roommateMatchRepository.findAllByRequesterUser_UserIdAndTargetUser_UserIdIn(userId, ids.getContent())
+                .stream().collect(Collectors.toMap(match -> match.getTargetUser().getUserId(), RoommateMatch::getMatchScore));
+        Set<Long> liked = profileLikeRepository.findAllByUser_UserIdAndTargetUser_UserIdIn(userId, ids.getContent())
+                .stream().map(like -> like.getTargetUser().getUserId()).collect(Collectors.toSet());
+        return RoommatePageResponse.from(ids.map(id ->
+                RoommateProfileResponse.from(profiles.get(id), createTags(surveys.get(id)), scores.get(id), liked.contains(id))));
+    }
 
-	public RoommateDetailResponse getRoommateDetail(Long userId, Long targetUserId) {
-		validateDifferentUserIds(userId, targetUserId);
+    private List<String> createTags(ProfileSurvey survey) {
+        return List.of(survey.getSmoking(), survey.getSleepTime(), survey.getCleaningFrequency());
+    }
 
-		RoommateMatch match = findMatch(userId, targetUserId);
-		UserProfile profile = findProfile(targetUserId);
-		ProfileSurvey survey = findSurvey(targetUserId);
+    private UserProfile findCandidate(Long userId, Long targetUserId) {
+        return userProfileRepository.findAll(MatchingCandidates.eligible(userId)
+                .and((root, query, cb) -> cb.equal(root.get("user").get("userId"), targetUserId)), PageRequest.of(0, 1))
+                .stream().findFirst().orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+    }
 
-		return RoommateDetailResponse.from(
-				profile, survey, createTags(survey), match.getMatchScore(),
-				profileLikeRepository.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId));
-	}
+    private <T> T read(java.util.function.Supplier<T> work) {
+        TransactionTemplate transaction = new TransactionTemplate(transactionManager);
+        transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        transaction.setReadOnly(true);
+        return transaction.execute(status -> work.get());
+    }
 
-	/** 동시 등록의 UNIQUE 충돌은 저장 트랜잭션 롤백 후 새 트랜잭션에서 확인한다. */
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public void addProfileLike(Long userId, Long targetUserId) {
-		validateDifferentUserIds(userId, targetUserId);
-		TransactionTemplate transaction = new TransactionTemplate(transactionManager);
-		transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-		try {
-			transaction.executeWithoutResult(status -> {
-				RoommateMatch match = findMatch(userId, targetUserId);
-				if (!profileLikeRepository.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId)) {
-					profileLikeRepository.save(new ProfileLike(match.getRequesterUser(), match.getTargetUser()));
-				}
-			});
-		} catch (DataIntegrityViolationException exception) {
-			transaction.setReadOnly(true);
-			Boolean exists = transaction.execute(status -> profileLikeRepository
-					.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId));
-			if (!Boolean.TRUE.equals(exists)) {
-				throw exception;
-			}
-		}
-	}
+    private Pageable ordered(Pageable pageable, String publicField, String entityField, boolean descending) {
+        for (var order : pageable.getSort()) {
+            if (!order.getProperty().equals(publicField)) throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+        var order = pageable.getSort().getOrderFor(publicField);
+        var direction = order == null ? (descending ? Sort.Direction.DESC : Sort.Direction.ASC) : order.getDirection();
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(direction, entityField));
+    }
 
-	/** 기존 삭제 정책에 따라 없는 관계는 INVALID_REQUEST로 처리한다. */
-	@Transactional
-	public void cancelProfileLike(Long userId, Long targetUserId) {
-		validateDifferentUserIds(userId, targetUserId);
-		ProfileLike like = profileLikeRepository.findByUser_UserIdAndTargetUser_UserId(userId, targetUserId)
-				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
-		profileLikeRepository.delete(like);
-	}
+    private Pageable recommendedPageable(Pageable pageable) {
+        for (var order : pageable.getSort()) {
+            if (!order.getProperty().equals("matchScore") || !order.isDescending())
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+        return PageRequest.of(pageable.getPageNumber(), Math.min(pageable.getPageSize(), 9),
+                Sort.by(Sort.Order.desc("matchScore"), Sort.Order.asc("targetUser.userId")));
+    }
 
-	public RoommatePageResponse<RoommateProfileResponse> getLikedRoommates(Long userId, Pageable pageable) {
-		validateUserId(userId);
-		validatePageable(pageable);
-		return RoommatePageResponse.from(profileLikeRepository.findAllByUser_UserId(userId, pageable)
-				.map(like -> toProfileResponse(findMatch(userId, like.getTargetUser().getUserId()), true)));
-	}
-
-	private RoommatePageResponse<RoommateProfileResponse> toProfilePage(Long userId, Page<RoommateMatch> matches) {
-		List<Long> targetUserIds = matches.stream().map(match -> match.getTargetUser().getUserId()).toList();
-		Set<Long> likedUserIds = targetUserIds.isEmpty() ? Set.of() : profileLikeRepository
-				.findAllByUser_UserIdAndTargetUser_UserIdIn(userId, targetUserIds).stream()
-				.map(like -> like.getTargetUser().getUserId()).collect(Collectors.toSet());
-		return RoommatePageResponse.from(matches.map(
-				match -> toProfileResponse(match, likedUserIds.contains(match.getTargetUser().getUserId()))));
-	}
-
-	private RoommateProfileResponse toProfileResponse(RoommateMatch match, boolean liked) {
-		Long targetUserId = match.getTargetUser().getUserId();
-		UserProfile profile = findProfile(targetUserId);
-		ProfileSurvey survey = findSurvey(targetUserId);
-		return RoommateProfileResponse.from(
-				profile, createTags(survey), match.getMatchScore(), liked);
-	}
-
-	private List<String> createTags(ProfileSurvey survey) {
-		return List.of(survey.getSmoking(), survey.getSleepTime(), survey.getCleaningFrequency());
-	}
-
-	private Specification<RoommateMatch> buildFilterSpecification(
+	private Specification<UserProfile> buildFilterSpecification(
 			Long userId, RoommateFilterRequest filter) {
-		Specification<RoommateMatch> specification = (root, query, criteriaBuilder) ->
-				criteriaBuilder.equal(root.get("requesterUser").get("userId"), userId);
+		Specification<UserProfile> specification = (root, query, criteriaBuilder) ->
+				criteriaBuilder.conjunction();
 
+        if (filter == null) return specification;
 		specification = specification.and(hasSurveyValue("sleepTime", filter.sleepTime()));
 		specification = specification.and(hasSurveyValue("wakeTime", filter.wakeTime()));
 		specification = specification.and(hasSurveyValue("sleepTalking", filter.sleepTalking()));
@@ -192,9 +208,9 @@ public class RoommateMatchingService {
 		return specification;
 	}
 
-	private Specification<RoommateMatch> hasSurveyValue(String attribute, List<String> values) {
+	private Specification<UserProfile> hasSurveyValue(String attribute, List<String> values) {
 		if (values == null || values.isEmpty()) {
-			return null;
+			return Specification.unrestricted();
 		}
 		return (root, query, criteriaBuilder) -> {
 			Subquery<Long> subquery = query.subquery(Long.class);
@@ -203,17 +219,17 @@ public class RoommateMatchingService {
 			subquery.where(
 					criteriaBuilder.equal(
 							survey.get("user").get("userId"),
-							root.get("targetUser").get("userId")),
+							root.get("user").get("userId")),
 					criteriaBuilder.isTrue(survey.get("completed")),
 					survey.get(attribute).in(values));
 			return criteriaBuilder.exists(subquery);
 		};
 	}
 
-	private Specification<RoommateMatch> hasSurveyOptions(
+	private Specification<UserProfile> hasSurveyOptions(
 			ProfileSurveyFieldCode fieldCode, List<String> values) {
 		if (values == null || values.isEmpty()) {
-			return null;
+			return Specification.unrestricted();
 		}
 		return (root, query, criteriaBuilder) -> {
 			Subquery<Long> subquery = query.subquery(Long.class);
@@ -222,58 +238,12 @@ public class RoommateMatchingService {
 			subquery.where(
 					criteriaBuilder.equal(
 							option.get("profileSurvey").get("user").get("userId"),
-							root.get("targetUser").get("userId")),
+							root.get("user").get("userId")),
 					criteriaBuilder.isTrue(option.get("profileSurvey").get("completed")),
 					criteriaBuilder.equal(option.get("fieldCode"), fieldCode),
 					option.get("optionValue").in(values));
 			return criteriaBuilder.exists(subquery);
 		};
-	}
-
-	private boolean hasAnyFilter(RoommateFilterRequest filter) {
-		return filter != null && (
-				hasValues(filter.sleepTime()) || hasValues(filter.wakeTime())
-						|| hasValues(filter.sleepTalking()) || hasValues(filter.snoring())
-						|| hasValues(filter.teethGrinding()) || hasValues(filter.sleepSensitivity())
-						|| hasValues(filter.indoorEating()) || hasValues(filter.smoking())
-						|| hasValues(filter.lightingPreference()) || hasValues(filter.phoneCall())
-						|| hasValues(filter.mediaSound()) || hasValues(filter.showerTime())
-						|| hasValues(filter.showerDuration()) || hasValues(filter.cleaningFrequency())
-						|| hasValues(filter.cleaningStyle()) || hasValues(filter.dormStayDays())
-						|| hasValues(filter.mealPlan()) || hasValues(filter.meal())
-						|| hasValues(filter.roommateInteraction())
-						|| hasValues(filter.temperaturePreference()) || hasValues(filter.hairDryer())
-						|| hasValues(filter.bugHandling()) || hasValues(filter.scentProductUse())
-						|| hasValues(filter.desktopUse()) || hasValues(filter.sharedItems()));
-	}
-
-	private boolean hasValues(List<String> values) {
-		return values != null && !values.isEmpty();
-	}
-
-	private Pageable limitRecommendedPageSize(Pageable pageable) {
-		if (pageable.getPageSize() <= RECOMMENDED_MAX_PAGE_SIZE) {
-			return pageable;
-		}
-		return PageRequest.of(
-				pageable.getPageNumber(), RECOMMENDED_MAX_PAGE_SIZE, pageable.getSort());
-	}
-
-	private UserProfile findProfile(Long userId) {
-		return userProfileRepository.findByUser_UserId(userId)
-				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
-	}
-
-	private ProfileSurvey findSurvey(Long userId) {
-		return profileSurveyRepository.findByUser_UserId(userId)
-				.filter(ProfileSurvey::isCompleted)
-				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
-	}
-
-	private RoommateMatch findMatch(Long userId, Long targetUserId) {
-		return roommateMatchRepository
-				.findByRequesterUser_UserIdAndTargetUser_UserId(userId, targetUserId)
-				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
 	}
 
 	private void validateDifferentUserIds(Long userId, Long targetUserId) {
