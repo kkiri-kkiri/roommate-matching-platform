@@ -6,11 +6,20 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
 
 import com.kkirikkiri.community.comment.entity.CommunityComment;
 import com.kkirikkiri.community.common.entity.CommunityContentStatus;
 
 public interface CommunityCommentRepository extends JpaRepository<CommunityComment, Long> {
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select c from CommunityComment c where c.commentId = :commentId and c.status = :status")
+	Optional<CommunityComment> findForLikeUpdate(@Param("commentId") Long commentId,
+			@Param("status") CommunityContentStatus status);
 
 	/**
 	 * 답글 작성의 부모 댓글 및 수정/소프트 삭제할 댓글·답글을 조회한다.

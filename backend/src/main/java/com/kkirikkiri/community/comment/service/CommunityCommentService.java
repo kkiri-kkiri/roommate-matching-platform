@@ -39,9 +39,9 @@ public class CommunityCommentService {
 	@Transactional
 	public void likeComment(Long userId, Long commentId) {
 		validateUserId(userId);
+		CommunityComment comment = findCommentForLikeUpdate(commentId);
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
-		CommunityComment comment = findActiveComment(commentId);
 		if (!commentLikeRepository.existsByComment_CommentIdAndUser_UserId(commentId, userId)) {
 			commentLikeRepository.save(new CommentLike(comment, user));
 		}
@@ -51,9 +51,9 @@ public class CommunityCommentService {
 	@Transactional
 	public void unlikeComment(Long userId, Long commentId) {
 		validateUserId(userId);
+		findCommentForLikeUpdate(commentId);
 		userRepository.findById(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
-		findActiveComment(commentId);
 		commentLikeRepository.findByComment_CommentIdAndUser_UserId(commentId, userId)
 				.ifPresent(commentLikeRepository::delete);
 	}
@@ -117,6 +117,19 @@ public class CommunityCommentService {
 				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
 		return communityCommentRepository.save(new CommunityComment(post, author, parent, request.content()))
 				.getCommentId();
+	}
+
+	private CommunityComment findCommentForLikeUpdate(Long commentId) {
+		validateId(commentId);
+		// MySQL REPEATABLE READ의 일반 조회 스냅샷이 만들어지기 전에 댓글 행을 잠근다.
+		// 게시글/부모 댓글에는 잠금을 추가하지 않아 서로 다른 댓글의 요청을 직렬화하지 않는다.
+		CommunityComment comment = communityCommentRepository
+				.findForLikeUpdate(commentId, CommunityContentStatus.ACTIVE)
+				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+		if (comment.getPost().getStatus() != CommunityContentStatus.ACTIVE) {
+			throw new CustomException(ErrorCode.INVALID_REQUEST);
+		}
+		return comment;
 	}
 
 	private CommunityComment findActiveComment(Long commentId) {

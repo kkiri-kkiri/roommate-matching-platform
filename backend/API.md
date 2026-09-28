@@ -948,6 +948,13 @@ Response:
 
 게시글 상세 조회 시 조회수 증가 정책은 백엔드에서 처리한다.
 
+목록·상세는 공개 조회이며 likes는 전체 좋아요 수, liked는 인증 사용자 본인의 좋아요 여부다.
+비로그인 요청의 liked는 false다.
+상세의 comments는 댓글·답글을 parentCommentId로 연결하는 기존 배열 구조를 유지한다.
+각 항목은 id, parentCommentId(일반 댓글은 null), content, author, createdAt,
+likes(전체 좋아요 수, 없으면 0), liked(본인 좋아요 여부, 비로그인은 false)를 포함한다.
+댓글·답글의 좋아요 상태는 표시할 댓글 ID 기준으로 일괄 조회한다.
+
 7.3 게시글 작성
 
 POST /api/posts
@@ -1030,6 +1037,9 @@ DELETE /api/posts/{postId}/likes
 
 Auth
 
+게시글 좋아요는 인증 사용자 본인 관계만 등록·취소한다. 반복 등록과 없는 관계의 취소는 성공한다.
+비활성·삭제 게시글에는 등록할 수 없다.
+
 8. 댓글 / 답글
 
 8.1 댓글 작성
@@ -1093,6 +1103,11 @@ POST /api/comments/{commentId}/likes
 DELETE /api/comments/{commentId}/likes
 
 Auth
+
+댓글과 답글에 동일하게 적용한다. 인증 사용자 본인 관계만 등록·취소한다.
+반복·동시 등록은 관계 1개로 유지하며 이미 없는 관계의 취소도 성공한다.
+삭제·비활성 댓글 또는 삭제·비활성 게시글의 댓글에는 등록할 수 없다.
+상태는 게시글 상세 comments 항목의 likes·liked로 확인한다.
 
 8.6 내가 작성한 게시글
 

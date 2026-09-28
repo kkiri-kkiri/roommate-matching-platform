@@ -2,6 +2,7 @@ package com.kkirikkiri.community.post.service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ import com.kkirikkiri.community.post.entity.CommunityPost;
 import com.kkirikkiri.community.post.entity.PostImage;
 import com.kkirikkiri.community.post.entity.PostLike;
 import com.kkirikkiri.community.comment.repository.CommunityCommentRepository;
+import com.kkirikkiri.community.comment.repository.CommentLikeRepository;
 import com.kkirikkiri.community.post.repository.CommunityPostRepository;
 import com.kkirikkiri.community.post.repository.PostImageRepository;
 import com.kkirikkiri.community.post.repository.PostLikeRepository;
@@ -58,6 +60,7 @@ public class CommunityPostService {
 	private final CommunityPostReadRepository communityPostReadRepository;
 	private final PostLikeRepository postLikeRepository;
 	private final UserRepository userRepository;
+	private final CommentLikeRepository commentLikeRepository;
 
 	/** 인증 사용자의 좋아요를 등록한다. 이미 좋아요한 경우 변경 없이 완료한다. */
 	@Transactional
@@ -115,9 +118,17 @@ public class CommunityPostService {
 		post.increaseViewCount();
 		var images = postImageRepository.findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(postId)
 				.stream().map(PostImageResponse::from).toList();
-		var comments = communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(
-				postId, CommunityContentStatus.ACTIVE).stream()
-				.map(comment -> CommunityCommentResponse.from(comment, author(comment.getAuthor().getUserId())))
+		var commentEntities = communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(
+				postId, CommunityContentStatus.ACTIVE);
+		var commentIds = commentEntities.stream().map(CommunityComment::getCommentId).toList();
+		Map<Long, Long> likeCounts = commentIds.isEmpty() ? Map.of()
+				: commentLikeRepository.countLikesByCommentIds(commentIds).stream().collect(Collectors.toMap(
+						CommentLikeRepository.LikeCount::getCommentId, CommentLikeRepository.LikeCount::getLikes));
+		Set<Long> likedIds = userId == null || commentIds.isEmpty() ? Set.of()
+				: new HashSet<>(commentLikeRepository.findLikedCommentIds(commentIds, userId));
+		var comments = commentEntities.stream()
+				.map(comment -> CommunityCommentResponse.from(comment, author(comment.getAuthor().getUserId()),
+						likeCounts.getOrDefault(comment.getCommentId(), 0L), likedIds.contains(comment.getCommentId())))
 				.toList();
 		return CommunityPostDetailResponse.from(post, author(post.getAuthor().getUserId()),
 				communityPostReadRepository.countLikes(postId), communityPostReadRepository.isLiked(postId, userId),
