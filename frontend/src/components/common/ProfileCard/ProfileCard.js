@@ -203,11 +203,9 @@ function ProfileCard({
             </S.CardHeader>
 
             {likeError && <p role="alert">{likeError}</p>}
-            {profile.message && (
-                <S.ProfileMessage>
-                    <p>{profile.message}</p>
-                </S.ProfileMessage>
-            )}
+            <S.ProfileMessage>
+                <p>{profile.message?.trim() || "아직 작성된 자기소개가 없어요."}</p>
+            </S.ProfileMessage>
 
             {showOverlay && activeTab === "recommended" && (
                 <S.ProfileCardOverlay aria-label={`${profile.nickname} 추천 이유`}>
