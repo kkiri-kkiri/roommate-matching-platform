@@ -35,3 +35,14 @@ export const analyzeRoommateProfile = async (userId, signal) => {
   }
   return data;
 };
+
+export const getRoommates = ({ page = 0, size = 9, filters = {} } = {}, signal) => {
+  const params = new URLSearchParams({ page: String(page), size: String(size) });
+  Object.entries(filters).forEach(([key, values]) => {
+    values.forEach((value) => params.append(key, value));
+  });
+  return request({ method: "get", url: "/roommates", params, signal });
+};
+
+export const setRoommateLike = (userId, liked) =>
+  request({ method: liked ? "post" : "delete", url: `/roommates/${userId}/likes` });

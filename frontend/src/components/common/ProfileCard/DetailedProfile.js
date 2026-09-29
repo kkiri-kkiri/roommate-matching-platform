@@ -9,7 +9,6 @@ import * as S from "./DetailedProfileCss";
 import ProfileImage from "../ProfileImage";
 import { getRoommateDetail } from "../../../api/roommateApi";
 import { getProfileKey, useProfileLikes } from "./ProfileCard";
-import { PROFILES } from "../../../pages/roommate/RoommateSearchPage";
 import { getSavedSurveyProfiles, LIKED_PROFILES } from "../../../pages/mypage/MyPage";
 
 // 상세 화면에서 사용하는 설문 항목은 기존 내 설문의 응답 키와 일치시킵니다.
@@ -94,14 +93,13 @@ export function getDetailedProfile(profileId, routeProfile) {
     return String(routeProfile.userId) === String(profileId) ? routeProfile : null;
   }
   const key = getProfileKey({ id: profileId });
-  const listProfile = PROFILES.find((item) => getProfileKey(item) === key);
   const likedProfile = LIKED_PROFILES.find((item) => getProfileKey(item) === key);
   const savedSurvey = getSavedSurveyProfiles().find((item) => item.id === key);
   const supplied = routeProfile && getProfileKey(routeProfile) === key ? routeProfile : null;
   const demo = Object.prototype.hasOwnProperty.call(DEMO_PROFILES, key) ? DEMO_PROFILES[key] : null;
-  if (!listProfile && !likedProfile && !savedSurvey && !supplied && !demo) return null;
+  if (!likedProfile && !savedSurvey && !supplied && !demo) return null;
   const profile = {
-    ...demo, ...likedProfile, ...listProfile,
+    ...demo, ...likedProfile,
     ...(savedSurvey ? { ...savedSurvey.profile, id: savedSurvey.id, answers: savedSurvey.answers } : {}),
     ...supplied,
   };
@@ -128,7 +126,7 @@ function ProfileDialog({ profile, sourceProfile, onDismiss, returnTo, loading, e
   const tabRefs = useRef([]);
   const backdropPointer = useRef(false);
   const [activeSection, setActiveSection] = useState("pattern");
-  const { isLiked, updateLikes } = useProfileLikes();
+  const { isLiked, updateLikes, likeError, likePending } = useProfileLikes();
   const liked = profile ? isLiked(profile) : false;
   const section = SECTIONS.find(({ id }) => id === activeSection);
   const SectionIcon = section.icon;
@@ -203,6 +201,7 @@ function ProfileDialog({ profile, sourceProfile, onDismiss, returnTo, loading, e
       {profile ? (
         <>
           <S.ScrollArea>
+            {likeError && <p role="alert">{likeError}</p>}
             <S.ProfileSection aria-labelledby="detailed-profile-title">
               <S.ProfileHero>
                 <S.Avatar>
@@ -219,7 +218,7 @@ function ProfileDialog({ profile, sourceProfile, onDismiss, returnTo, loading, e
                     <span aria-hidden="true">·</span>{profile.grade || "학년 미등록"}
                   </S.AcademicSummary>
                 </S.Identity>
-                <S.SaveButton type="button" $liked={liked} aria-pressed={liked} onClick={toggleLike}
+                <S.SaveButton type="button" $liked={liked} aria-pressed={liked} onClick={toggleLike} disabled={likePending}
                   title={liked ? "좋아요 취소" : "좋아요"}
                   aria-label={`${profile.nickname}님 ${liked ? "좋아요 취소" : "좋아요"}`}>
                   <Heart size={16} fill={liked ? "currentColor" : "none"} aria-hidden="true" />
@@ -311,13 +310,11 @@ function DetailedProfile() {
   const location = useLocation();
   const navigate = useNavigate();
   const { likes } = useProfileLikes();
-  const serverRoute = new URLSearchParams(location.search).get("tab") === "recommended"
+  const serverRoute = /^\d+$/.test(profileId) || new URLSearchParams(location.search).get("tab") === "recommended"
     || location.state?.profile?.source === "backend";
-  const supplied = location.state?.profile;
-  const suppliedServerProfile = supplied?.source === "backend" && String(supplied.userId) === profileId ? supplied : null;
   const [remote, setRemote] = useState({ id: null, profile: null, error: "" });
   useEffect(() => {
-    if (!serverRoute || suppliedServerProfile) return;
+    if (!serverRoute) return;
     const controller = new AbortController();
     setRemote({ id: profileId, profile: null, error: "" });
     getRoommateDetail(profileId, controller.signal).then((detail) => {
@@ -330,11 +327,11 @@ function DetailedProfile() {
       if (!controller.signal.aborted) setRemote({ id: profileId, profile: null, error: failure.message });
     });
     return () => controller.abort();
-  }, [serverRoute, suppliedServerProfile, profileId]);
-  const selectedProfile = serverRoute ? suppliedServerProfile || (remote.id === profileId ? remote.profile : null) : getDetailedProfile(profileId,
+  }, [serverRoute, profileId]);
+  const selectedProfile = serverRoute ? (remote.id === profileId ? remote.profile : null) : getDetailedProfile(profileId,
     location.state?.profile || likes[getProfileKey({ id: profileId })]?.profile,
   );
-  const emptyPreview = new URLSearchParams(location.search).get("preview") === "empty";
+  const emptyPreview = !serverRoute && new URLSearchParams(location.search).get("preview") === "empty";
   const profile = selectedProfile && (emptyPreview ? { ...selectedProfile, answers: {}, matchScore: null } : selectedProfile);
   const returnTo = new URLSearchParams(location.search).get("tab") === "recommended"
     || location.state?.activeTab === "recommended" ? "/roommates?tab=recommended" : "/roommates";

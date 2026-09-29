@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { analyzeRoommateProfile } from "../../../api/roommateApi";
+import { analyzeRoommateProfile, setRoommateLike } from "../../../api/roommateApi";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Heart, Sparkles } from "lucide-react";
 
@@ -25,7 +25,7 @@ function readProfileLikes() {
         const saved = JSON.parse(window.localStorage.getItem(LIKES_KEY) || "{}");
         if (!saved || typeof saved !== "object" || Array.isArray(saved)) return {};
         return Object.fromEntries(Object.entries(saved)
-            .filter(([, entry]) => typeof entry?.liked === "boolean" && entry.profile?.id != null)
+            .filter(([, entry]) => typeof entry?.liked === "boolean" && entry.profile?.id != null && entry.profile.source !== "backend")
             .map(([, entry]) => [getProfileKey(entry.profile), entry]));
     } catch {
         return {};
@@ -46,6 +46,9 @@ function isInitiallyLiked(profile) {
 // Provider를 추가하지 않고 각 화면의 로컬 상태와 브라우저의 예시 좋아요만 동기화합니다.
 export function useProfileLikes() {
     const [likes, setLikes] = useState(readProfileLikes);
+    const [likeError, setLikeError] = useState("");
+    const [likePending, setLikePending] = useState(false);
+    const pending = useRef(false);
 
     useEffect(() => {
         const syncLocal = (event) => setLikes(event.detail);
@@ -62,8 +65,29 @@ export function useProfileLikes() {
         };
     }, []);
 
-    const isLiked = (profile) => likes[getProfileKey(profile)]?.liked ?? isInitiallyLiked(profile);
+    const isLiked = (profile) => profile.source === "backend"
+        ? likes[`backend:${profile.id}`]?.liked ?? Boolean(profile.liked)
+        : likes[getProfileKey(profile)]?.liked ?? isInitiallyLiked(profile);
     const updateLikes = (profiles, liked) => {
+        if (profiles.length === 1 && profiles[0].source === "backend") {
+            if (pending.current) return;
+            const profile = profiles[0];
+            pending.current = true;
+            setLikePending(true);
+            setLikeError("");
+            return setRoommateLike(profile.userId ?? profile.id, liked).then(() => {
+                const next = { ...likes, [`backend:${profile.id}`]: { liked, profile } };
+                setLikes(next);
+                window.dispatchEvent(new CustomEvent(LIKES_EVENT, { detail: next }));
+                return true;
+            }).catch((error) => {
+                setLikeError(error.message);
+                return false;
+            }).finally(() => {
+                pending.current = false;
+                setLikePending(false);
+            });
+        }
         const next = { ...likes, ...readProfileLikes() };
         for (const profile of profiles) {
             next[getProfileKey(profile)] = { liked, profile };
@@ -79,7 +103,7 @@ export function useProfileLikes() {
         return saved;
     };
 
-    return { likes, isLiked, updateLikes };
+    return { likes, isLiked, updateLikes, likeError, likePending };
 }
 
 function ProfileCard({
@@ -90,7 +114,7 @@ function ProfileCard({
 }) {
     const location = useLocation();
     const navigate = useNavigate();
-    const { isLiked: checkLiked, updateLikes } = useProfileLikes();
+    const { isLiked: checkLiked, updateLikes, likeError, likePending } = useProfileLikes();
     const detailProfile = profile.source === "backend" ? { ...profile, id: profile.userId }
         : location.pathname === "/" ? { ...profile, id: `main:${profile.id}` } : profile;
     const isLiked = checkLiked(detailProfile);
@@ -163,6 +187,7 @@ function ProfileCard({
                         aria-pressed={isLiked}
                         title={isLiked ? "좋아요 취소" : "좋아요"}
                         $liked={isLiked}
+                        disabled={likePending}
                         onClick={(event) => {
                             event.stopPropagation();
                             updateLikes([detailProfile], !isLiked);
@@ -177,11 +202,10 @@ function ProfileCard({
                 </S.LikeButton>
             </S.CardHeader>
 
-            {profile.message && (
-                <S.ProfileMessage>
-                    <p>{profile.message}</p>
-                </S.ProfileMessage>
-            )}
+            {likeError && <p role="alert">{likeError}</p>}
+            <S.ProfileMessage>
+                <p>{profile.message?.trim() || "아직 작성된 자기소개가 없어요."}</p>
+            </S.ProfileMessage>
 
             {showOverlay && activeTab === "recommended" && (
                 <S.ProfileCardOverlay aria-label={`${profile.nickname} 추천 이유`}>

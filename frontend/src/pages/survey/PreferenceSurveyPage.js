@@ -1,3 +1,6 @@
+import { PREFERENCE_STEPS } from "../../data/preferenceSurvey";
+import { getMyPreferences, saveMyPreferences } from "../../api/surveyApi";
+import { Link } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
@@ -6,243 +9,17 @@ import {
   Check,
   CheckCircle2,
   Clock3,
+  Info,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
 
 import * as S from "./PreferenceSurveyPageCss";
 
-const SURVEY_STEPS = [
-  {
-    id: "basic",
-    shortTitle: "기본·학적",
-    title: "기본·학적 정보",
-    description: "함께 생활하고 싶은 룸메이트의 기본 조건을 선택해 주세요.",
-    fields: [
-      {
-        id: "department",
-        label: "학과·학부",
-        type: "single",
-        options: [
-          "같은 전공",
-          "같은 학부의 다른 전공",
-          "다른 학부",
-          "상관없음",
-        ],
-      },
-      {
-        id: "age",
-        label: "나이",
-        type: "multi",
-        options: ["연하", "동갑", "연상", "나이 상관없음"],
-        exclusiveOptions: ["나이 상관없음"],
-      },
-      {
-        id: "grade",
-        label: "학년",
-        type: "multi",
-        options: [
-          "1학년",
-          "2학년",
-          "3학년",
-          "4학년",
-          "5학년",
-          "6학년 이상",
-          "학년 상관없음",
-        ],
-        exclusiveOptions: ["학년 상관없음"],
-      },
-    ],
-  },
-  {
-    id: "sleep",
-    shortTitle: "수면 패턴",
-    title: "수면 패턴",
-    description: "서로 편안하게 쉴 수 있도록 선호하는 수면 습관을 알려주세요.",
-    fields: [
-      {
-        id: "bedtime",
-        label: "선호하는 취침시간",
-        type: "multi",
-        options: [
-          "22시 이전",
-          "23시",
-          "자정",
-          "1시",
-          "2시",
-          "3시 이후",
-          "상관없음",
-        ],
-        exclusiveOptions: ["상관없음"],
-      },
-      {
-        id: "wakeTime",
-        label: "선호하는 기상시간",
-        type: "multi",
-        options: [
-          "6시 이전",
-          "6시 ~ 7시",
-          "7시 ~ 8시",
-          "8시 ~ 9시",
-          "9시",
-          "10시 이후",
-          "수업 시간에 따라 유동적",
-          "상관없음",
-        ],
-        exclusiveOptions: ["상관없음"],
-      },
-      {
-        id: "sleepTalking",
-        label: "잠꼬대 허용 정도",
-        type: "single",
-        options: [
-          "없음만 가능",
-          "적음까지 괜찮음",
-          "보통까지 괜찮음",
-          "상관없음",
-        ],
-      },
-      {
-        id: "snoring",
-        label: "코골이 허용 정도",
-        type: "single",
-        options: [
-          "없음만 가능",
-          "적음까지 괜찮음",
-          "보통까지 괜찮음",
-          "상관없음",
-        ],
-      },
-      {
-        id: "teethGrinding",
-        label: "이갈이 허용 정도",
-        type: "single",
-        options: [
-          "없음만 가능",
-          "적음까지 괜찮음",
-          "보통까지 괜찮음",
-          "상관없음",
-        ],
-      },
-    ],
-  },
-  {
-    id: "habits",
-    shortTitle: "생활 습관",
-    title: "생활 습관",
-    description:
-      "공용 공간을 함께 관리할 룸메이트의 생활 습관을 선택해 주세요.",
-    fields: [
-      {
-        id: "smoking",
-        label: "흡연 여부",
-        type: "single",
-        options: ["비흡연자만", "전자담배까지 허용", "흡연 여부 상관없음"],
-      },
-      {
-        id: "lightingPreference",
-        label: "조명 환경",
-        type: "single",
-        options: ["밝음 선호", "어두움 선호", "상관 없음"],
-        required: true,
-      },
-      {
-        id: "showerTime",
-        label: "샤워 시간대",
-        type: "single",
-        options: ["아침", "저녁", "유동적"],
-        required: true,
-      },
-      {
-        id: "showerDuration",
-        label: "샤워 소요시간",
-        type: "single",
-        options: ["10분", "20분", "30분", "40분", "그 이상"],
-        required: true,
-      },
-    ],
-  },
-  {
-    id: "dormitory",
-    shortTitle: "청소 및 공동생활",
-    title: "청소 및 공동생활",
-    description: "룸메이트와 어느 정도 일상을 나누고 싶은지 알려주세요.",
-    fields: [
-      {
-        id: "cleaningFrequency",
-        label: "선호하는 청소 주기",
-        type: "multi",
-        options: [
-          "안함",
-          "주 1회",
-          "주 2회",
-          "주 3회",
-          "주 4회",
-          "주 5회",
-          "매일",
-          "유동적",
-          "상관없음",
-        ],
-        exclusiveOptions: ["상관없음"],
-      },
-      {
-        id: "cleaningStyle",
-        label: "청소 방식",
-        type: "single",
-        options: [
-          "같이 청소하는 사람",
-          "각자 영역만 청소하는 사람",
-          "상황에 따라 협의하는 사람",
-          "상관없음",
-        ],
-      },
-      {
-        id: "interaction",
-        label: "룸메이트와의 교류 정도",
-        type: "single",
-        options: [
-          "친하게 지내고 싶은 사람",
-          "적당히 대화하고 싶은 사람",
-          "필요한 대화만 하고 싶은 사람",
-          "상관없음",
-        ],
-      },
-      {
-        id: "meal",
-        label: "기숙사 식사",
-        type: "single",
-        options: [
-          "같이 먹고 싶음",
-          "각자 먹고 싶음",
-          "시간 될 때만 같이 먹고 싶음",
-          "상관없음",
-        ],
-      },
-      {
-        id: "sharedItems",
-        label: "공용물품 사용",
-        type: "single",
-        options: [
-          "적극적으로 공유하는 사람",
-          "일부만 공유하는 사람",
-          "각자 사용하는 사람",
-          "상관없음",
-        ],
-      },
-      {
-        id: "temperature",
-        label: "온도 선호",
-        type: "single",
-        options: [
-          "추위를 타는 사람",
-          "더위를 타는 사람",
-          "보통인 사람",
-          "상관없음",
-        ],
-      },
-    ],
-  },
-];
+const SURVEY_STEPS = PREFERENCE_STEPS.map((step) => ({
+  ...step, shortTitle: step.title,
+  description: "함께 생활하고 싶은 룸메이트의 조건을 선택해 주세요.",
+}));
 
 const ALL_FIELDS = SURVEY_STEPS.flatMap((step) => step.fields);
 
@@ -288,6 +65,21 @@ function prefersReducedMotion() {
 
 function RoommatePreferenceSurvey() {
   const [values, setValues] = useState(createInitialValues);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [revision, setRevision] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    getMyPreferences().then((data) => {
+      if (!cancelled) setValues(data.answers || createInitialValues());
+    }).catch((error) => { if (!cancelled) setLoadError(error.message); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [revision]);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [errors, setErrors] = useState({});
   const [showValidation, setShowValidation] = useState(false);
@@ -394,6 +186,7 @@ function RoommatePreferenceSurvey() {
   };
 
   const goToStep = (stepIndex) => {
+    if (saving) return;
     if (stepIndex < 0 || stepIndex >= SURVEY_STEPS.length) return;
     setCurrentStepIndex(stepIndex);
     setErrors({});
@@ -413,7 +206,8 @@ function RoommatePreferenceSurvey() {
     });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (saving || loading || loadError) return;
     const currentErrors = validateStep(currentStep, values);
 
     if (Object.keys(currentErrors).length > 0) {
@@ -449,6 +243,18 @@ function RoommatePreferenceSurvey() {
       return;
     }
 
+    setSaving(true);
+    setSaveError("");
+    try {
+      await saveMyPreferences({ ...values, weights: Object.fromEntries(
+        ALL_FIELDS.map((field) => [field.id, values.weights?.[field.id] ?? 3]),
+      ) });
+    } catch (error) {
+      setSaveError(error.message);
+      return;
+    } finally {
+      setSaving(false);
+    }
     setShowComplete(true);
     window.requestAnimationFrame(() => {
       completeRef.current?.scrollIntoView?.({
@@ -548,6 +354,9 @@ function RoommatePreferenceSurvey() {
     );
   };
 
+  if (loading) return <S.Page><p role="status">선호 설문을 불러오는 중이에요.</p></S.Page>;
+  if (loadError) return <S.Page><p role="alert">{loadError}</p><button onClick={() => setRevision((value) => value + 1)}>다시 시도</button></S.Page>;
+
   return (
     <S.Page>
       <S.PageReset />
@@ -567,7 +376,7 @@ function RoommatePreferenceSurvey() {
               <Clock3 size={15} aria-hidden="true" /> 약 5분 소요
             </span>
             <span>
-              <ShieldCheck size={15} aria-hidden="true" /> 총 20개 문항
+              <ShieldCheck size={15} aria-hidden="true" /> 총 {ALL_FIELDS.length}개 문항
             </span>
           </S.IntroMeta>
         </S.Intro>
@@ -634,6 +443,7 @@ function RoommatePreferenceSurvey() {
           </S.StepPanel>
 
           <S.FormCard as="form" onSubmit={handleSubmit} noValidate>
+            <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
             <S.FormHeader>
               <S.StepKicker>
                 STEP {currentStepIndex + 1} OF {SURVEY_STEPS.length}
@@ -645,6 +455,7 @@ function RoommatePreferenceSurvey() {
             </S.FormHeader>
 
             <S.FormBody>
+              {saveError && <S.ValidationBanner role="alert">{saveError}</S.ValidationBanner>}
               {showValidation && Object.keys(errors).length > 0 && (
                 <S.ValidationBanner role="alert">
                   <AlertCircle size={18} aria-hidden="true" />
@@ -663,8 +474,9 @@ function RoommatePreferenceSurvey() {
                   <div>
                     <strong>원하는 룸메이트 조건 입력을 완료했어요.</strong>
                     <span>
-                      현재 화면은 UI 확인용이며 실제 데이터는 제출되지 않습니다.
+                      선호 설문을 저장했어요. 추천 프로필에서 결과를 확인해 주세요.
                     </span>
+                    <Link to="/roommates?tab=recommended">추천 프로필 보기</Link>
                   </div>
                 </S.CompleteBanner>
               )}
@@ -690,6 +502,7 @@ function RoommatePreferenceSurvey() {
                 )}
               </S.NextButton>
             </S.FormFooter>
+            </fieldset>
           </S.FormCard>
         </S.SurveyLayout>
       </S.Content>

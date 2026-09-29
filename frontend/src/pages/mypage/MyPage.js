@@ -1,10 +1,11 @@
+import { PREFERENCE_STEPS } from "../../data/preferenceSurvey";
+import { getMyPreferences, saveMyPreferences } from "../../api/surveyApi";
 import { getMyInfo, updateMyInfo, changePassword } from "../../api/userApi";
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
   BadgeCheck,
-  BookOpen,
   Building2,
   Check,
   ChevronRight,
@@ -266,226 +267,6 @@ export function getSavedSurveyProfiles() {
   }
 }
 
-const PREFERENCE_STEPS = [
-  {
-    id: "basic",
-    title: "기본·학적 정보",
-    fields: [
-      {
-        id: "grade",
-        label: "학년",
-        type: "multi",
-        options: ["1학년", "2학년", "3학년", "4학년", "5학년", "상관없음"],
-        exclusiveOptions: ["상관없음"],
-      },
-      {
-        id: "age",
-        label: "나이",
-        type: "multi",
-        options: ["연하", "동갑", "연상", "상관없음"],
-        exclusiveOptions: ["상관없음"],
-      },
-      {
-        id: "department",
-        label: "학부·학과",
-        type: "single",
-        options: [
-          "같은 전공",
-          "같은 학부의 다른 전공",
-          "다른 학부",
-          "상관없음",
-        ],
-      },
-    ],
-  },
-  {
-    id: "sleep",
-    title: "수면 패턴",
-    fields: [
-      {
-        id: "bedtime",
-        label: "선호하는 취침시간",
-        type: "multi",
-        options: [
-          "22시 ~ 23시",
-          "23시 ~ 24시",
-          "24시 ~ 01시",
-          "01시 ~ 02시",
-          "02시 ~ 03시",
-          "03시 이후",
-          "상관없음",
-        ],
-        exclusiveOptions: ["상관없음"],
-      },
-      {
-        id: "wakeTime",
-        label: "선호하는 기상시간",
-        type: "multi",
-        options: [
-          "07시 이전",
-          "07시 ~ 08시",
-          "08시 ~ 09시",
-          "09시 ~ 10시",
-          "10시 이후",
-          "수업 시간에 따라 유동적",
-          "상관없음",
-        ],
-        exclusiveOptions: ["상관없음"],
-      },
-      {
-        id: "sleepTalking",
-        label: "잠꼬대 허용 정도",
-        type: "single",
-        options: [
-          "없음만 가능",
-          "적음까지 괜찮음",
-          "보통까지 괜찮음",
-          "상관없음",
-        ],
-      },
-      {
-        id: "snoring",
-        label: "코골이 허용 정도",
-        type: "single",
-        options: [
-          "없음만 가능",
-          "적음까지 괜찮음",
-          "보통까지 괜찮음",
-          "상관없음",
-        ],
-      },
-      {
-        id: "teethGrinding",
-        label: "이갈이 허용 정도",
-        type: "single",
-        options: [
-          "없음만 가능",
-          "적음까지 괜찮음",
-          "보통까지 괜찮음",
-          "상관없음",
-        ],
-      },
-    ],
-  },
-  {
-    id: "habits",
-    title: "생활 습관",
-    fields: [
-      {
-        id: "smoking",
-        label: "흡연 여부",
-        type: "single",
-        options: ["비흡연자만", "전자담배까지 허용", "상관없음"],
-      },
-      {
-        id: "lightingPreference",
-        label: "조명 환경",
-        type: "single",
-        options: ["밝음 선호", "어두움 선호", "상관 없음"],
-        required: true,
-      },
-      {
-        id: "showerTime",
-        label: "샤워 시간대",
-        type: "single",
-        options: ["아침", "저녁", "상관없음"],
-        required: true,
-      },
-      {
-        id: "showerDuration",
-        label: "샤워 소요시간",
-        type: "single",
-        options: [
-          "10분 이하",
-          "20분 이하",
-          "30분 이하",
-          "40분 이하",
-          "상관없음",
-        ],
-        required: true,
-      },
-    ],
-  },
-  {
-    id: "dormitory",
-    title: "청소 및 공동생활",
-    fields: [
-      {
-        id: "cleaningFrequency",
-        label: "선호하는 청소 주기",
-        type: "multi",
-        options: [
-          "안함",
-          "주 1회",
-          "주 2회",
-          "주 3회",
-          "주 4회",
-          "주 5회",
-          "매일",
-          "유동적",
-          "상관없음",
-        ],
-        exclusiveOptions: ["상관없음"],
-      },
-      {
-        id: "cleaningStyle",
-        label: "청소 방식",
-        type: "single",
-        options: [
-          "같이 청소하는 사람",
-          "각자 영역만 청소하는 사람",
-          "상황에 따라 협의하는 사람",
-          "상관없음",
-        ],
-      },
-      {
-        id: "interaction",
-        label: "룸메이트와의 교류 정도",
-        type: "single",
-        options: [
-          "친하게 지내고 싶은 사람",
-          "적당히 대화하고 싶은 사람",
-          "필요한 대화만 하고 싶은 사람",
-          "상관없음",
-        ],
-      },
-      {
-        id: "meal",
-        label: "기숙사 식사",
-        type: "single",
-        options: [
-          "같이 먹고 싶음",
-          "각자 먹고 싶음",
-          "시간 될 때만 같이 먹고 싶음",
-          "상관없음",
-        ],
-      },
-      {
-        id: "sharedItems",
-        label: "공용물품 사용",
-        type: "single",
-        options: [
-          "적극적으로 공유하는 사람",
-          "일부만 공유하는 사람",
-          "각자 사용하는 사람",
-          "상관없음",
-        ],
-      },
-      {
-        id: "temperature",
-        label: "온도 선호",
-        type: "single",
-        options: [
-          "추위를 타는 사람",
-          "더위를 타는 사람",
-          "보통인 사람",
-          "상관없음",
-        ],
-      },
-    ],
-  },
-];
-
 const MBTI_DIMENSIONS = [
   { id: "mbtiEnergy", label: "에너지 방향", options: ["E", "I"] },
   { id: "mbtiInformation", label: "인식 방식", options: ["N", "S"] },
@@ -518,27 +299,6 @@ const PROFILE_DEFAULTS = {
   scentProductUse: "사용 안 함",
   desktopUse: "사용하지 않아요",
   sharedItems: "일부만 공유",
-};
-
-const PREFERENCE_DEFAULTS = {
-  department: "상관없음",
-  age: ["상관없음"],
-  grade: ["상관없음"],
-  bedtime: ["23시 ~ 24시", "24시 ~ 01시"],
-  wakeTime: ["07시 ~ 08시", "08시 ~ 09시"],
-  sleepTalking: "적음까지 괜찮음",
-  snoring: "없음만 가능",
-  teethGrinding: "적음까지 괜찮음",
-  smoking: "비흡연자만",
-  lightingPreference: "어두움 선호",
-  showerTime: "저녁",
-  showerDuration: "20분 이하",
-  cleaningFrequency: ["주 1회", "주 2회"],
-  cleaningStyle: "상황에 따라 협의하는 사람",
-  interaction: "적당히 대화하고 싶은 사람",
-  meal: "시간 될 때만 같이 먹고 싶음",
-  sharedItems: "일부만 공유하는 사람",
-  temperature: "보통인 사람",
 };
 
 const PREFERENCE_WEIGHT_OPTIONS = [
@@ -860,6 +620,8 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
   const isPreference = type === "preferences";
   const sections = isPreference ? PREFERENCE_STEPS : PROFILE_SECTIONS;
   const [draft, setDraft] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [errors, setErrors] = useState({});
   const formRef = useRef(null);
   const titleRef = useRef(null);
@@ -884,8 +646,9 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
     setErrors((current) => ({ ...current, [field.id]: undefined }));
   };
 
-  const save = (event) => {
+  const save = async (event) => {
     event.preventDefault();
+    if (saving) return;
     const missing = sections
       .flatMap((section) => section.fields)
       .filter((field) => !hasAnswer(draft[field.id]));
@@ -916,7 +679,16 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
         ),
       }
       : draft;
-    if (onSave(saved) === false) return;
+    setSaving(true);
+    setSaveError("");
+    try {
+      if (await onSave(saved) === false) return;
+    } catch (error) {
+      setSaveError(error.message);
+      return;
+    } finally {
+      setSaving(false);
+    }
     setDraft(null);
     setErrors({});
     requestAnimationFrame(() => {
@@ -984,7 +756,9 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
         <EmptyState type={type} onStart={() => startEditing()} />
       ) : (
         <>
+          {saveError && <S.Banner $error role="alert">{saveError}</S.Banner>}
           <S.Stack as="form" ref={formRef} onSubmit={save} noValidate>
+            <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0, display: "grid", gap: 24 }}>
             {sections.map((section, index) => (
               <S.Card key={section.id}>
                 <S.CardHeader>
@@ -1130,10 +904,11 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
                   취소
                 </S.GhostButton>
                 <S.PrimaryButton type="submit">
-                  <Check size={17} aria-hidden="true" /> 저장
+                  <Check size={17} aria-hidden="true" /> {saving ? "저장 중…" : "저장"}
                 </S.PrimaryButton>
               </S.FormActions>
             )}
+            </fieldset>
           </S.Stack>
         </>
       )}
@@ -1575,8 +1350,12 @@ function MyPage({ currentUser, onUserUpdated }) {
   useEffect(() => {
     let cancelled = false;
     setAccountLoading(true); setAccountError(""); setAccount(null);
-    getMyInfo().then((user) => {
-      if (!cancelled) setAccount({ ...user, major: user.major || "", studentId: user.admissionYear });
+    Promise.all([getMyInfo(), getMyPreferences()]).then(([user, preference]) => {
+      if (!cancelled) {
+        setAccount({ ...user, major: user.major || "", studentId: user.admissionYear });
+        setPreferences(preference.answers || {});
+        setPreferencesCompleted(preference.completed);
+      }
     }).catch((error) => { if (!cancelled) setAccountError(error.message); })
       .finally(() => { if (!cancelled) setAccountLoading(false); });
     return () => { cancelled = true; };
@@ -1592,13 +1371,15 @@ function MyPage({ currentUser, onUserUpdated }) {
     savedSurvey?.answers || PROFILE_DEFAULTS,
   );
   const [surveySaveError, setSurveySaveError] = useState("");
-  const [preferences, setPreferences] = useState(PREFERENCE_DEFAULTS);
-  const { likes, isLiked, updateLikes } = useProfileLikes();
-  const [preview, setPreview] = useState({
-    survey: "filled",
-    preferences: "filled",
-    likes: "filled",
-  });
+  const [preferences, setPreferences] = useState({});
+  const [preferencesCompleted, setPreferencesCompleted] = useState(false);
+  const { likes, isLiked } = useProfileLikes();
+  const hasSurveyAnswers = {
+    survey: PROFILE_SECTIONS.some((section) =>
+      section.fields.some((field) => hasAnswer(profileAnswers[field.id])),
+    ),
+    preferences: preferencesCompleted,
+  };
   const [likesPage, setLikesPage] = useState(1);
   const likesTitleRef = useRef(null);
   const profileMap = new Map(LIKED_PROFILES.map((profile) => [getProfileKey(profile), profile]));
@@ -1607,15 +1388,13 @@ function MyPage({ currentUser, onUserUpdated }) {
     const previous = profileMap.get(key);
     profileMap.set(key, { ...previous, ...profile, answers: profile.answers ?? previous?.answers });
   });
-  const likedProfiles = preview.likes === "empty" ? [] : [...profileMap.values()].filter(isLiked);
+  const likedProfiles = [...profileMap.values()].filter(isLiked);
   const totalLikesPages = Math.ceil(likedProfiles.length / LIKES_PER_PAGE);
   const pagedLikedProfiles = likedProfiles.slice(
     (likesPage - 1) * LIKES_PER_PAGE,
     likesPage * LIKES_PER_PAGE,
   );
-  const completeCount = [preview.survey, preview.preferences].filter(
-    (value) => value === "filled",
-  ).length;
+  const completeCount = Object.values(hasSurveyAnswers).filter(Boolean).length;
 
   const handleLikeChange = () => {
     requestAnimationFrame(() =>
@@ -1777,14 +1556,14 @@ function MyPage({ currentUser, onUserUpdated }) {
                       >
                         <S.CardHeader>
                           <Icon size={23} aria-hidden="true" />
-                          <S.Badge $muted={preview[id] === "empty"}>
-                            {preview[id] === "filled" ? "작성 완료" : "미작성"}
+                          <S.Badge $muted={!hasSurveyAnswers[id]}>
+                            {hasSurveyAnswers[id] ? "작성 완료" : "미작성"}
                           </S.Badge>
                         </S.CardHeader>
                         <S.SummaryTitle>{title}</S.SummaryTitle>
                         <S.SummaryText>{text}</S.SummaryText>
                         <S.SummaryFooter>
-                          {preview[id] === "filled"
+                          {hasSurveyAnswers[id]
                             ? "답변 확인하기"
                             : "설문 알아보기"}
                           <ArrowRight size={16} aria-hidden="true" />
@@ -1801,11 +1580,11 @@ function MyPage({ currentUser, onUserUpdated }) {
                   <S.Banner $error role="alert">{surveySaveError}</S.Banner>
                 )}
                 <SurveyContent
-                  key={`${activeTab}-${preview[activeTab]}`}
+                  key={activeTab}
                   type={activeTab}
                   answers={activeTab === "survey" ? profileAnswers : preferences}
-                  isEmpty={preview[activeTab] === "empty"}
-                  onSave={(savedAnswers) => {
+                  isEmpty={!hasSurveyAnswers[activeTab]}
+                  onSave={async (savedAnswers) => {
                     if (activeTab === "survey") {
                       const savedProfile = {
                         id: surveyProfileId,
@@ -1834,12 +1613,10 @@ function MyPage({ currentUser, onUserUpdated }) {
                       setSurveySaveError("");
                       setProfileAnswers(savedAnswers);
                     } else {
+                      await saveMyPreferences(savedAnswers);
                       setPreferences(savedAnswers);
+                      setPreferencesCompleted(true);
                     }
-                    setPreview((current) => ({
-                      ...current,
-                      [activeTab]: "filled",
-                    }));
                   }}
                 />
               </>
@@ -1891,48 +1668,6 @@ function MyPage({ currentUser, onUserUpdated }) {
             {activeTab === "account" && (
               <AccountContent account={account} onSave={saveAccount} />
             )}
-            <S.PreviewPanel>
-              <summary>
-                <BookOpen size={15} aria-hidden="true" /> 화면 미리보기 설정{" "}
-                <span>예시 데이터</span>
-              </summary>
-              <S.Helper>
-                데이터가 있는 화면과 없는 화면을 확인할 수 있어요.
-                좋아요는 이 브라우저에 저장되며, 미리보기 설정은 페이지를 벗어나면 초기화돼요.
-              </S.Helper>
-              <S.PreviewOptions>
-                {[
-                  ["survey", "내 설문"],
-                  ["preferences", "선호 룸메 설문"],
-                  ["likes", "좋아요"],
-                ].map(([id, label]) => (
-                  <S.Field key={id}>
-                    <S.Label htmlFor={`preview-${id}`}>{label}</S.Label>
-                    <S.Select
-                      id={`preview-${id}`}
-                      value={preview[id]}
-                      onChange={(event) => {
-                        const value = event.target.value;
-                        setPreview((current) => ({ ...current, [id]: value }));
-                        if (id === "likes") {
-                          if (value === "filled") {
-                            setLikesPage(1);
-                            updateLikes(LIKED_PROFILES, true);
-                          }
-                        }
-                      }}
-                    >
-                      <option value="filled">
-                        {id === "likes" ? "목록 있음" : "작성 완료"}
-                      </option>
-                      <option value="empty">
-                        {id === "likes" ? "목록 없음" : "미작성"}
-                      </option>
-                    </S.Select>
-                  </S.Field>
-                ))}
-              </S.PreviewOptions>
-            </S.PreviewPanel>
           </S.Content>
         </S.Layout>
       </S.Container>
