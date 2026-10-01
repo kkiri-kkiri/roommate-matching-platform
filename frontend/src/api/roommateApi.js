@@ -46,3 +46,12 @@ export const getRoommates = ({ page = 0, size = 9, filters = {} } = {}, signal) 
 
 export const setRoommateLike = (userId, liked) =>
   request({ method: liked ? "post" : "delete", url: `/roommates/${userId}/likes` });
+
+export const getMyLikedRoommates = ({ page = 0, size = 6 } = {}, signal) =>
+  request({ method: "get", url: "/users/me/liked-roommates", params: { page, size }, signal });
+
+export function toRoommateProfile(item) {
+  if (!Number.isSafeInteger(item.id) || item.id <= 0) throw new Error("사용자 정보를 확인할 수 없습니다.");
+  return { ...item, userId: item.id, source: "backend",
+    message: item.introduction, photo: item.profileImageUrl };
+}

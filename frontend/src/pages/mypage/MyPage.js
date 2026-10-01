@@ -24,8 +24,9 @@ import {
 import { FACULTY_OPTIONS } from "../../data/facultyOptions";
 import Pagination from "../../components/common/Pagination/Pagination";
 import ProfileImage from "../../components/common/ProfileImage";
-import ProfileCard, { getProfileKey, useProfileLikes } from "../../components/common/ProfileCard/ProfileCard";
+import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./MyPageCss";
+import { getMyLikedRoommates, toRoommateProfile } from "../../api/roommateApi";
 
 // Search filters share the survey's field names and answer options.
 export const PROFILE_SECTIONS = [
@@ -345,228 +346,6 @@ function createAvatar(background, shirt, hair = "#363a46") {
 }
 
 const MY_PHOTO = createAvatar("#e8eef9", "#0c3273");
-const BASE_LIKED_PROFILES = [
-  {
-    id: "roommate-cloud",
-    nickname: "포근한구름",
-    year: "24",
-    major: "소프트웨어융합전공",
-    faculty: "컴퓨터응용수학부",
-    dormitory: "나래",
-    grade: "3학년",
-    age: "동갑",
-    photo: createAvatar("#dff6f2", "#00a79f"),
-    message: "서로의 공부 시간을 존중하면서 편하게 지내고 싶어요.",
-    tags: ["비흡연", "아침형", "주 1회 청소"],
-    answers: {
-      sleepTime: "23시 ~ 24시",
-      wakeTime: "07시 ~ 08시",
-      sleepTalking: "없음",
-      snoring: "없음",
-      teethGrinding: "없음",
-      sleepSensitivity: "보통",
-      indoorEating: "냄새 안나는 음식 가능",
-      smoking: "비흡연",
-      lightingPreference: "어두움 선호",
-      phoneCall: "항상 밖에서",
-      mediaSound: "항상 이어폰 사용해주세요",
-      showerTime: "저녁",
-      showerDuration: "20분",
-      cleaningFrequency: "주 1회",
-      cleaningStyle: "상황에 따라 협의",
-      roommateInteraction: "적당히 대화",
-      meal: "시간 될 때만 같이 먹고 싶음",
-      dormStayDays: ["월", "화", "수", "목", "금"],
-      mealPlan: ["조식", "석식"],
-      temperaturePreference: "보통",
-      bugHandling: "작은 건 잡음",
-      scentProductUse: "사용 안 함",
-      desktopUse: "사용하지 않아요",
-      sharedItems: "일부만 공유",
-    },
-  },
-  {
-    id: "community-star",
-    nickname: "새벽별",
-    year: "23",
-    major: "경영학전공",
-    faculty: "법경영학부",
-    dormitory: "호연",
-    grade: "4학년",
-    age: "연상",
-    photo: createAvatar("#e6edff", "#3478f6", "#2c2625"),
-    message: "늦게 자는 편이지만 방에서는 늘 이어폰을 사용해요.",
-    tags: ["이어폰 사용", "깔끔해요", "개인 시간"],
-    answers: {
-      sleepTime: "02시 ~ 03시",
-      wakeTime: "10시 이후",
-      sleepTalking: "적음",
-      snoring: "적음",
-      teethGrinding: "없음",
-      sleepSensitivity: "어두움 (잘 깨지 않아요)",
-      indoorEating: "가능",
-      smoking: "비흡연",
-      lightingPreference: "어두움 선호",
-      phoneCall: "방에서는 짧게만",
-      mediaSound: "항상 이어폰 사용해주세요",
-      showerTime: "저녁",
-      showerDuration: "30분",
-      cleaningFrequency: "주 2회",
-      cleaningStyle: "각자 영역만 청소",
-      roommateInteraction: "필요한 대화만",
-      meal: "각자 먹고 싶음",
-      dormStayDays: ["월", "화", "수", "목", "금"],
-      mealPlan: ["중식", "석식"],
-      temperaturePreference: "추위 타요",
-      bugHandling: "못 잡음",
-      scentProductUse: "가끔 사용",
-      desktopUse: "사용하지 않아요",
-      sharedItems: "각자 사용",
-    },
-  },
-  {
-    id: "dormitory-afternoon",
-    nickname: "느긋한오후",
-    year: "24",
-    major: "식품영양학전공",
-    faculty: "웰니스산업융합학부",
-    dormitory: "나래",
-    grade: "3학년",
-    age: "동갑",
-    photo: createAvatar("#fce8ed", "#d8607a", "#4c3028"),
-    message: "조용하고 여유로운 분위기에서 각자의 루틴을 지켜요.",
-    tags: ["비흡연", "조용한 방", "주말 외출"],
-    answers: {
-      sleepTime: "24시 ~ 01시",
-      wakeTime: "08시 ~ 09시",
-      sleepTalking: "없음",
-      snoring: "없음",
-      teethGrinding: "적음",
-      sleepSensitivity: "보통",
-      indoorEating: "냄새 안나는 음식 가능",
-      smoking: "비흡연",
-      lightingPreference: "밝음 선호",
-      phoneCall: "항상 밖에서",
-      mediaSound: "소리만 작게 해주세요",
-      showerTime: "아침",
-      showerDuration: "20분",
-      cleaningFrequency: "주 1회",
-      cleaningStyle: "상황에 따라 협의",
-      roommateInteraction: "필요한 대화만",
-      meal: "각자 먹고 싶음",
-      dormStayDays: ["월", "화", "수", "목", "금"],
-      mealPlan: ["조식", "석식"],
-      temperaturePreference: "보통",
-      bugHandling: "작은 건 잡음",
-      scentProductUse: "사용 안 함",
-      desktopUse: "사용하지 않아요",
-      sharedItems: "일부만 공유",
-    },
-  },
-];
-
-const GENERATED_PROFILE_NAMES = [
-  "차분한연필",
-  "햇살가득",
-  "책읽는오후",
-  "푸른산책",
-  "느린호흡",
-  "정돈된하루",
-  "소소한기록",
-  "따뜻한라떼",
-  "고요한밤",
-  "주말여행자",
-  "맑은창가",
-  "성실한새벽",
-  "초록노트",
-  "담백한생활",
-  "함께걷기",
-  "반짝이는별",
-  "편안한방",
-  "오늘도맑음",
-  "작은정원",
-  "구름산책",
-  "다정한공간",
-  "새로운계절",
-  "일상의발견",
-  "푸른책상",
-  "포근한저녁",
-  "차 한잔",
-  "느긋한주말",
-];
-
-const GENERATED_PROFILE_COLORS = [
-  ["#e8f4f1", "#198f83"],
-  ["#fff0df", "#d97732"],
-  ["#edf0ff", "#5268c9"],
-  ["#f8e9f0", "#bd5d83"],
-  ["#eaf4e5", "#5d9b4b"],
-  ["#f1ebff", "#8057bd"],
-];
-
-function createGeneratedLikedProfile(index) {
-  const [background, shirt] =
-    GENERATED_PROFILE_COLORS[index % GENERATED_PROFILE_COLORS.length];
-  const nickname = GENERATED_PROFILE_NAMES[index];
-  const majors = [
-    "컴퓨터공학전공",
-    "경영학전공",
-    "미디어문화전공",
-    "생명공학전공",
-  ];
-  const tags = [
-    ["비흡연", "아침형", "청소 협의"],
-    ["조용한 방", "개인 시간", "주 2회 청소"],
-    ["이어폰 사용", "규칙적인 생활", "비흡연"],
-  ];
-  return {
-    id: `generated-roommate-${index + 1}`,
-    nickname,
-    year: String(22 + (index % 4)),
-    major: majors[index % majors.length],
-    faculty: "융합인재학부",
-    dormitory: index % 2 ? "호연" : "나래",
-    grade: `${2 + (index % 3)}학년`,
-    age: index % 3 === 0 ? "동갑" : "연상",
-    photo: createAvatar(background, shirt),
-    message: `${nickname}님은 서로의 생활 리듬을 존중하며 편하게 지내고 싶어 해요.`,
-    tags: tags[index % tags.length],
-    answers: {
-      sleepTime: "23시 ~ 24시",
-      wakeTime: "07시 ~ 08시",
-      smoking: "비흡연",
-      sleepTalking: "없음",
-      snoring: "없음",
-      teethGrinding: "없음",
-      sleepSensitivity: "보통",
-      indoorEating: "냄새 안나는 음식 가능",
-      lightingPreference: "상관 없음",
-      phoneCall: "항상 밖에서",
-      mediaSound: "항상 이어폰 사용해주세요",
-      showerTime: "저녁",
-      showerDuration: "20분",
-      cleaningFrequency: "주 1회",
-      cleaningStyle: "상황에 따라 협의",
-      roommateInteraction: "적당히 대화",
-      meal: "각자 먹고 싶음",
-      dormStayDays: ["월", "화", "수", "목", "금"],
-      mealPlan: ["조식", "석식"],
-      temperaturePreference: "보통",
-      bugHandling: "작은 건 잡음",
-      scentProductUse: "사용 안 함",
-      desktopUse: "사용하지 않아요",
-      sharedItems: "일부만 공유",
-    },
-  };
-}
-
-export const LIKED_PROFILES = [
-  ...BASE_LIKED_PROFILES,
-  ...GENERATED_PROFILE_NAMES.map((_, index) =>
-    createGeneratedLikedProfile(index),
-  ),
-];
-
 const LIKES_PER_PAGE = 6;
 
 const asArray = (value) => (Array.isArray(value) ? value : [value]);
@@ -1372,7 +1151,6 @@ function MyPage({ currentUser, onUserUpdated }) {
   const [surveySaveError, setSurveySaveError] = useState("");
   const [preferences, setPreferences] = useState({});
   const [preferencesCompleted, setPreferencesCompleted] = useState(false);
-  const { likes, isLiked } = useProfileLikes();
   const hasSurveyAnswers = {
     survey: PROFILE_SECTIONS.some((section) =>
       section.fields.some((field) => hasAnswer(profileAnswers[field.id])),
@@ -1381,31 +1159,45 @@ function MyPage({ currentUser, onUserUpdated }) {
   };
   const [likesPage, setLikesPage] = useState(1);
   const likesTitleRef = useRef(null);
-  const profileMap = new Map(LIKED_PROFILES.map((profile) => [getProfileKey(profile), profile]));
-  Object.values(likes).forEach(({ profile }) => {
-    const key = getProfileKey(profile);
-    const previous = profileMap.get(key);
-    profileMap.set(key, { ...previous, ...profile, answers: profile.answers ?? previous?.answers });
+  const [likesRevision, setLikesRevision] = useState(0);
+  const [likedResults, setLikedResults] = useState({
+    status: "loading", profiles: [], totalElements: 0, totalPages: 0,
+    page: 0, first: true, last: true, error: "",
   });
-  const likedProfiles = [...profileMap.values()].filter(isLiked);
-  const totalLikesPages = Math.ceil(likedProfiles.length / LIKES_PER_PAGE);
-  const pagedLikedProfiles = likedProfiles.slice(
-    (likesPage - 1) * LIKES_PER_PAGE,
-    likesPage * LIKES_PER_PAGE,
-  );
   const completeCount = Object.values(hasSurveyAnswers).filter(Boolean).length;
 
   const handleLikeChange = () => {
-    requestAnimationFrame(() =>
-      likesTitleRef.current?.focus({ preventScroll: true }),
-    );
+    setLikedResults((current) => ({ ...current, status: "loading" }));
+    setLikesRevision((value) => value + 1);
+    requestAnimationFrame(() => likesTitleRef.current?.focus({ preventScroll: true }));
   };
 
   useEffect(() => {
-    if (totalLikesPages > 0 && likesPage > totalLikesPages) {
-      setLikesPage(totalLikesPages);
-    }
-  }, [likesPage, totalLikesPages]);
+    if (activeTab !== "likes") return;
+    const controller = new AbortController();
+    setLikedResults((current) => ({ ...current, status: "loading", error: "" }));
+    getMyLikedRoommates({ page: likesPage - 1, size: LIKES_PER_PAGE }, controller.signal)
+      .then((page) => {
+        if (controller.signal.aborted) return;
+        if (!Array.isArray(page?.content) || !Number.isInteger(page.totalPages)
+            || page.totalPages < 0 || !Number.isInteger(page.totalElements) || page.totalElements < 0
+            || page.page !== likesPage - 1 || typeof page.first !== "boolean" || typeof page.last !== "boolean") {
+          throw new Error("관심 프로필 목록 응답을 확인할 수 없습니다.");
+        }
+        // A deleted last page is corrected only toward a smaller page.
+        const lastPage = Math.max(1, page.totalPages);
+        if (likesPage > lastPage) {
+          setLikesPage(lastPage);
+          return;
+        }
+        setLikedResults({ ...page, profiles: page.content.map(toRoommateProfile), status: "success", error: "" });
+      }).catch((error) => {
+        if (!controller.signal.aborted) {
+          setLikedResults((current) => ({ ...current, status: "error", error: error.message }));
+        }
+      });
+    return () => controller.abort();
+  }, [activeTab, likesPage, likesRevision, currentUser?.id]);
 
   if (accountLoading) return <S.Page><p role="status">내 정보를 불러오는 중이에요.</p></S.Page>;
   if (accountError || !account) return <S.Page><p role="alert">{accountError || "내 정보를 불러오지 못했어요."}</p><button onClick={() => setAccountRevision((value) => value + 1)}>다시 시도</button></S.Page>;
@@ -1625,7 +1417,7 @@ function MyPage({ currentUser, onUserUpdated }) {
                 <S.SectionHeading>
                   <div>
                     <S.SectionTitle ref={likesTitleRef} tabIndex={-1}>
-                      좋아요 <S.Badge>{likedProfiles.length}명</S.Badge>
+                      좋아요 <S.Badge>{likedResults.status === "success" ? `${likedResults.totalElements}명` : "—"}</S.Badge>
                     </S.SectionTitle>
                     <S.Description>
                       마음에 담아둔 룸메이트를 다시 만나보세요.
@@ -1636,12 +1428,20 @@ function MyPage({ currentUser, onUserUpdated }) {
                     <ArrowRight size={16} aria-hidden="true" />
                   </S.SubtleLink>
                 </S.SectionHeading>
-                {!likedProfiles.length ? (
+                {likedResults.status !== "success" ? (
+                  <S.EmptyCard role={likedResults.status === "error" ? "alert" : "status"}>
+                    <S.EmptyTitle>{likedResults.status === "loading" ? "관심 프로필을 불러오고 있어요" : "관심 프로필을 불러오지 못했어요"}</S.EmptyTitle>
+                    <S.EmptyText>{likedResults.error || "잠시만 기다려 주세요."}</S.EmptyText>
+                    {likedResults.status === "error" && (
+                      <button type="button" onClick={handleLikeChange}>다시 시도</button>
+                    )}
+                  </S.EmptyCard>
+                ) : likedResults.totalElements === 0 ? (
                   <EmptyState type="likes" />
                 ) : (
                   <>
                     <S.LikeGrid>
-                      {pagedLikedProfiles.map((profile) => (
+                      {likedResults.profiles.map((profile) => (
                         <ProfileCard
                           key={profile.id}
                           profile={profile}
@@ -1653,9 +1453,13 @@ function MyPage({ currentUser, onUserUpdated }) {
                     </S.LikeGrid>
 
                     <Pagination
-                      currentPage={likesPage}
-                      totalPages={totalLikesPages}
+                      currentPage={likedResults.page + 1}
+                      totalPages={likedResults.totalPages}
                       onPageChange={(nextPage) => {
+                        if ((likedResults.first && nextPage < likedResults.page + 1)
+                            || (likedResults.last && nextPage > likedResults.page + 1)
+                            || nextPage === likedResults.page + 1) return;
+                        setLikedResults((current) => ({ ...current, status: "loading" }));
                         setLikesPage(nextPage);
                         window.scrollTo({ top: 0, behavior: "smooth" });
                       }}

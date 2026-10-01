@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 import Pagination from "../../components/common/Pagination/Pagination";
-import { getRoommates, getRecommendedRoommates } from "../../api/roommateApi";
+import { getRoommates, getRecommendedRoommates, toRoommateProfile } from "../../api/roommateApi";
 import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./RoommateSearchPageCss";
 import { PROFILE_SECTIONS } from "../mypage/MyPage";
@@ -74,11 +74,7 @@ function RoommateSearchPage() {
           } while (index < filteredPage.totalPages && !controller.signal.aborted);
           items = items.filter((item) => matchingIds.has(item.id));
         }
-        const profiles = items.map((item) => {
-          if (!Number.isSafeInteger(item.id) || item.id <= 0) throw new Error("사용자 정보를 확인할 수 없습니다.");
-          return { ...item, userId: item.id, source: "backend",
-            message: item.introduction, photo: item.profileImageUrl };
-        });
+        const profiles = items.map(toRoommateProfile);
         if (!controller.signal.aborted) setResults({ status: "success", profiles,
           totalPages: recommended ? 1 : Math.max(1, page.totalPages), error: "" });
       } catch (error) {

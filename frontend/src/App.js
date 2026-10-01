@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
 import DetailedProfile from "./components/common/ProfileCard/DetailedProfile";
@@ -42,6 +42,8 @@ function AdminRoute({ currentUser }) {
 }
 
 function App() {
+  const location = useLocation();
+  const backgroundLocation = location.state?.backgroundLocation;
   const [currentUser, setCurrentUser] = useState(null);
   const [authInitialized, setAuthInitialized] = useState(false);
 
@@ -83,7 +85,7 @@ function App() {
 
   return (
     <CalendarDataProvider userId={currentUser?.id}>
-      <Routes>
+      <Routes location={backgroundLocation || location}>
         <Route
           element={
             <MainLayout currentUser={currentUser} onLogout={handleLogout} />
@@ -139,6 +141,11 @@ function App() {
         <Route path="/find-password" element={<FindPasswordPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      {backgroundLocation && (
+        <Routes>
+          <Route path="/roommates/:profileId" element={<DetailedProfile />} />
+        </Routes>
+      )}
     </CalendarDataProvider>
   );
 }
