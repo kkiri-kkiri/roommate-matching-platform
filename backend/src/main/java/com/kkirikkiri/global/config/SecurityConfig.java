@@ -40,11 +40,11 @@ public class SecurityConfig {
 				.addFilterBefore(new JwtAuthenticationFilter(jwtAuthenticationProvider, objectMapper),
 						UsernamePasswordAuthenticationFilter.class)
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/login/email-check").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/email-verifications/send",
 								"/api/auth/email-verifications/verify")
 						.permitAll()
-						.requestMatchers(HttpMethod.POST, "/api/auth/signup", "/api/auth/find-id",
+						.requestMatchers(HttpMethod.POST, "/api/auth/signup",
 								"/api/auth/password-reset/request", "/api/auth/password-reset/confirm")
 						.permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/auth/signup/availability").permitAll()

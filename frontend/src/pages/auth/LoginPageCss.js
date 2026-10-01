@@ -15,9 +15,11 @@ export const PageGlobalStyle = createGlobalStyle`
 `;
 
 export const Page = styled.main`
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
-  padding: 64px 20px 80px;
+  padding: 40px 20px;
   background: #faf9f6;
   color: #1a1c1c;
   font-family:
@@ -34,13 +36,14 @@ export const Page = styled.main`
   }
 
   @media (max-width: 600px) {
-    padding: 32px 16px 56px;
+    padding: 24px 16px;
   }
 `;
 
 export const PageInner = styled.div`
   width: min(100%, 480px);
-  margin: 0 auto;
+  flex-shrink: 0;
+  margin: auto;
 `;
 
 export const BackLink = styled(Link)`

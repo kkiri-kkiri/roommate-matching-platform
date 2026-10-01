@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kkirikkiri.auth.dto.LoginRequest;
+import com.kkirikkiri.auth.dto.LoginEmailCheckRequest;
+import com.kkirikkiri.auth.dto.LoginEmailCheckResponse;
 import com.kkirikkiri.auth.dto.LoginResponse;
 import com.kkirikkiri.global.exception.CustomException;
 import com.kkirikkiri.global.exception.ErrorCode;
@@ -28,12 +30,19 @@ public class AuthService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final Validator validator;
 
+	public LoginEmailCheckResponse checkEmail(LoginEmailCheckRequest request) {
+		if (request == null || !validator.validate(request).isEmpty()) {
+			throw new CustomException(ErrorCode.VALIDATION_ERROR);
+		}
+		return new LoginEmailCheckResponse(userRepository.existsBySchoolEmail(request.email()));
+	}
+
 	public LoginResponse login(LoginRequest request) {
 		if (request == null || !validator.validate(request).isEmpty()) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
 
-		User user = userRepository.findByLoginId(request.loginId())
+		User user = userRepository.findBySchoolEmail(request.email())
 				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
 		if (user.getStatus() != UserStatus.ACTIVE
 				|| !passwordEncoder.matches(request.password(), user.getPassword())) {
@@ -44,6 +53,6 @@ public class AuthService {
 				.orElseThrow(() -> new CustomException(ErrorCode.INTERNAL_SERVER_ERROR));
 		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), user.getRole());
 		return new LoginResponse(accessToken, new LoginResponse.LoginUser(
-				user.getUserId(), user.getLoginId(), profile.getNickname(), user.getRole().name()));
+				user.getUserId(), user.getSchoolEmail(), profile.getNickname(), user.getRole().name()));
 	}
 }

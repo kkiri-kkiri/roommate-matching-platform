@@ -24,13 +24,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("select u from User u where u.userId in :ids order by u.userId")
     List<User> lockMatchingUsers(@Param("ids") Collection<Long> ids);
 
-    Optional<User> findByLoginId(String loginId);
 
     Optional<User> findBySchoolEmail(String schoolEmail);
 
-    boolean existsByLoginId(String loginId);
 
     boolean existsBySchoolEmail(String schoolEmail);
 
-    List<User> findAllByLoginIdStartingWith(String prefix);
+    List<User> findAllBySchoolEmailIn(Collection<String> emails);
 }

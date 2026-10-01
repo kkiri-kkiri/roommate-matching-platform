@@ -218,10 +218,10 @@ public class SeedDataService {
         for (int i = 1; i <= SEED_USER_COUNT; i++) {
 
             String number = String.format("%02d", i);
-            String loginId = SEED_PREFIX + number;
+            String schoolEmail = SEED_PREFIX + number + "@hknu.ac.kr";
 
             User user = userRepository
-                    .findByLoginId(loginId)
+                    .findBySchoolEmail(schoolEmail)
                     .orElse(null);
 
             /*
@@ -233,9 +233,8 @@ public class SeedDataService {
                         UUID.randomUUID() + "!Aa1";
 
                 user = new User(
-                        loginId,
                         passwordEncoder.encode(randomPassword),
-                        loginId + "@hknu.ac.kr",
+                        schoolEmail,
                         UserRole.USER
                 );
 
@@ -737,9 +736,9 @@ public class SeedDataService {
 
         List<User> seedUsers =
                 userRepository
-                        .findAllByLoginIdStartingWith(
-                                SEED_PREFIX
-                        );
+                        .findAllBySchoolEmailIn(java.util.stream.IntStream.rangeClosed(1, SEED_USER_COUNT)
+                                .mapToObj(i -> SEED_PREFIX + String.format("%02d", i) + "@hknu.ac.kr")
+                                .toList());
 
         if (seedUsers.isEmpty()) {
             log.info("삭제할 Seed 데이터가 없습니다.");

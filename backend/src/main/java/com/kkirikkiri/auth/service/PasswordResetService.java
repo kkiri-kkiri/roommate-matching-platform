@@ -67,10 +67,9 @@ public class PasswordResetService {
 	@Transactional
 	public PasswordResetResponse requestPasswordReset(PasswordResetRequest request) {
 		validateRequest(request);
-		var user = userRepository.findByLoginId(request.loginId())
-				.filter(value -> value.getSchoolEmail().equals(request.email()))
+		var user = userRepository.findBySchoolEmail(request.email())
 				.filter(value -> value.getStatus() == UserStatus.ACTIVE);
-		// 계정 존재 여부 및 아이디/이메일 불일치를 응답으로 구분하지 않는다.
+		// 계정 존재 여부를 응답으로 구분하지 않는다.
 		if (user.isEmpty()) {
 			return new PasswordResetResponse(true);
 		}

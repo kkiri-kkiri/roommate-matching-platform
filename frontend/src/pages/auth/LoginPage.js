@@ -1,55 +1,85 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../../api/authApi";
+import { checkLoginEmail, login } from "../../api/authApi";
 import * as S from "./LoginPageCss";
 
-const REMEMBERED_LOGIN_ID_KEY = "rememberedLoginId";
-function getRememberedLoginId() {
+const REMEMBERED_EMAIL_KEY = "rememberedEmail";
+function getRememberedEmail() {
   if (typeof window === "undefined") return "";
 
   try {
-    return window.localStorage.getItem(REMEMBERED_LOGIN_ID_KEY) || "";
+    window.localStorage.removeItem("rememberedLoginId");
+    return window.localStorage.getItem(REMEMBERED_EMAIL_KEY) || "";
   } catch {
     return "";
   }
 }
 
 const LoginPage = ({ onLogin }) => {
-  const [loginId, setLoginId] = useState(getRememberedLoginId);
+  const [email, setEmail] = useState(getRememberedEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberId, setRememberId] = useState(() =>
-    Boolean(getRememberedLoginId()),
+  const [rememberEmail, setRememberEmail] = useState(() =>
+    Boolean(getRememberedEmail()),
   );
   const [feedback, setFeedback] = useState(null);
   const navigate = useNavigate();
+  const [emailChecked, setEmailChecked] = useState(false);
+  const [pending, setPending] = useState(false);
+  const requestVersion = useRef(0);
+  const inFlight = useRef(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const normalizedLoginId = loginId.trim();
+    if (inFlight.current) return;
+    const normalizedEmail = email.trim();
 
-    if (!normalizedLoginId || !password) {
+    if (!/^[^@\s]{1,64}@hknu\.ac\.kr$/.test(normalizedEmail)) {
       setFeedback({
         tone: "error",
-        reason: "required",
-        text: "아이디와 비밀번호를 모두 입력해 주세요.",
+        reason: "email",
+        text: "@hknu.ac.kr을 포함한 학교 이메일 전체 주소를 입력해 주세요.",
       });
       return;
     }
 
-    try {
-      const response = await login(normalizedLoginId, password);
+    if (emailChecked && !password) {
+      setFeedback({
+        tone: "error",
+        reason: "password",
+        text: "비밀번호를 입력해 주세요.",
+      });
+      return;
+    }
 
+    const version = requestVersion.current;
+    inFlight.current = true;
+    setPending(true);
+    setFeedback(null);
+    try {
+      if (!emailChecked) {
+        const result = await checkLoginEmail(normalizedEmail);
+        if (version !== requestVersion.current) return;
+        if (result.registered) {
+          setEmailChecked(true);
+        } else {
+          setFeedback({ tone: "error", reason: "email", text: "가입된 이메일을 확인해 주세요." });
+        }
+        return;
+      }
+      const response = await login(normalizedEmail, password);
+
+      if (version !== requestVersion.current) return;
       try {
         window.localStorage.setItem("accessToken", response.accessToken);
-        if (rememberId) {
+        if (rememberEmail) {
           window.localStorage.setItem(
-            REMEMBERED_LOGIN_ID_KEY,
-            normalizedLoginId,
+            REMEMBERED_EMAIL_KEY,
+            normalizedEmail,
           );
         } else {
-          window.localStorage.removeItem(REMEMBERED_LOGIN_ID_KEY);
+          window.localStorage.removeItem(REMEMBERED_EMAIL_KEY);
         }
       } catch {
         // 저장소 접근이 제한된 환경에서도 로그인 흐름은 계속 진행합니다.
@@ -57,17 +87,23 @@ const LoginPage = ({ onLogin }) => {
 
       onLogin?.({
         id: response.user.id,
-        loginId: response.user.loginId,
+        schoolEmail: response.user.schoolEmail,
         displayName: response.user.nickname,
         role: response.user.role,
       });
-      navigate(response.user.role === "ADMIN" ? "/admin" : "/", { replace: true });
+      navigate(response.user.role === "ADMIN" ? "/admin" : "/", {
+        replace: true,
+      });
     } catch (error) {
+      if (version !== requestVersion.current) return;
       setFeedback({
         tone: "error",
         reason: "credentials",
         text: error.message,
       });
+    } finally {
+      inFlight.current = false;
+      setPending(false);
     }
   };
 
@@ -89,36 +125,36 @@ const LoginPage = ({ onLogin }) => {
 
           <S.LoginCard aria-labelledby="login-title">
             <S.Header>
-              <S.Eyebrow>ROOMMATE MATCHING</S.Eyebrow>
-              <S.Title id="login-title">다시 만나 반가워요</S.Title>
-              <S.Description>
-                로그인하고 나와 잘 맞는 룸메이트를 찾아보세요.
-              </S.Description>
+              <S.Title id="login-title">로그인</S.Title>
             </S.Header>
 
             <S.Form onSubmit={handleSubmit} noValidate>
               <S.FieldGroup>
-                <S.Label htmlFor="login-id">아이디</S.Label>
+                <S.Label htmlFor="login-email">학교 이메일</S.Label>
                 <S.Input
-                  id="login-id"
-                  name="loginId"
-                  type="text"
-                  value={loginId}
+                  id="login-email"
+                  name="email"
+                  type="email"
+                  value={email}
                   onChange={(event) => {
-                    setLoginId(event.target.value);
+                    requestVersion.current += 1;
+                    setEmail(event.target.value);
+                    setEmailChecked(false);
+                    setPassword("");
+                    setShowPassword(false);
                     clearFeedback();
                   }}
-                  placeholder="아이디를 입력해 주세요"
+                  placeholder="name@hknu.ac.kr"
                   autoComplete="username"
                   required
                   aria-invalid={
                     feedback?.tone === "error" &&
-                    (feedback.reason === "credentials" || !loginId.trim())
+                    (feedback.reason === "email" || feedback.reason === "credentials")
                   }
                 />
               </S.FieldGroup>
 
-              <S.FieldGroup>
+              {emailChecked && <S.FieldGroup>
                 <S.Label htmlFor="login-password">비밀번호</S.Label>
                 <S.PasswordField>
                   <S.Input
@@ -135,7 +171,7 @@ const LoginPage = ({ onLogin }) => {
                     required
                     aria-invalid={
                       feedback?.tone === "error" &&
-                      (feedback.reason === "credentials" || !password)
+                      (feedback.reason === "password" || feedback.reason === "credentials")
                     }
                     $hasAction
                   />
@@ -150,21 +186,19 @@ const LoginPage = ({ onLogin }) => {
                     {showPassword ? "숨기기" : "보기"}
                   </S.VisibilityButton>
                 </S.PasswordField>
-              </S.FieldGroup>
+              </S.FieldGroup>}
 
               <S.OptionRow>
                 <S.CheckLabel>
                   <S.Checkbox
                     type="checkbox"
-                    checked={rememberId}
-                    onChange={(event) => setRememberId(event.target.checked)}
+                    checked={rememberEmail}
+                    onChange={(event) => setRememberEmail(event.target.checked)}
                   />
-                  아이디 저장
+                  이메일 저장
                 </S.CheckLabel>
 
                 <S.UtilityLinks aria-label="계정 찾기">
-                  <S.UtilityLink to="/find-id">아이디 찾기</S.UtilityLink>
-                  <S.LinkDivider aria-hidden="true" />
                   <S.UtilityLink to="/find-password">
                     비밀번호 찾기
                   </S.UtilityLink>
@@ -181,7 +215,7 @@ const LoginPage = ({ onLogin }) => {
                 </S.Feedback>
               )}
 
-              <S.SubmitButton type="submit">로그인</S.SubmitButton>
+              <S.SubmitButton type="submit" disabled={pending}>{emailChecked ? "로그인" : "다음"}</S.SubmitButton>
             </S.Form>
 
             <S.SignupPrompt>

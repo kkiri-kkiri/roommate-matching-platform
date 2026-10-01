@@ -13,7 +13,6 @@ import * as S from "./FindPasswordPageCss";
 import { requestPasswordReset, confirmPasswordReset } from "../../api/authApi";
 
 function FindPasswordPage() {
-    const [userId, setUserId] = useState("");
     const [email, setEmail] = useState("");
     const [lookupError, setLookupError] = useState("");
     const [resetToken, setResetToken] = useState("");
@@ -45,7 +44,7 @@ function FindPasswordPage() {
         setPending(true);
         setLookupError("");
         try {
-            await requestPasswordReset(userId.trim(), email.trim());
+            await requestPasswordReset(email.trim());
             setStage("emailSent");
         } catch (error) {
             setLookupError(error.message);
@@ -88,34 +87,9 @@ function FindPasswordPage() {
 
     const renderLookupForm = () => (
         <>
-            <S.SectionHeading>아이디와 가입 이메일을 입력해 주세요</S.SectionHeading>
-            <S.SectionCopy>
-                가입 정보와 일치하면 비밀번호 재설정 안내를 이메일로 보내 드려요.
-            </S.SectionCopy>
-
             <S.Form onSubmit={handleEmailSubmit}>
                 <S.Field>
-                    <S.Label htmlFor="find-password-id">아이디</S.Label>
-                    <S.InputWrap>
-                        <S.InputIcon>
-                            <KeyRound aria-hidden="true" />
-                        </S.InputIcon>
-                        <S.Input
-                            id="find-password-id"
-                            name="userId"
-                            type="text"
-                            autoComplete="username"
-                            placeholder="아이디를 입력해 주세요"
-                            value={userId}
-                            disabled={pending}
-                            onChange={handleLookupFieldChange(setUserId)}
-                            required
-                        />
-                    </S.InputWrap>
-                </S.Field>
-
-                <S.Field>
-                    <S.Label htmlFor="find-password-email">이메일</S.Label>
+                    <S.Label htmlFor="find-password-email">학교 이메일</S.Label>
                     <S.InputWrap>
                         <S.InputIcon>
                             <Mail aria-hidden="true" />
@@ -146,7 +120,6 @@ function FindPasswordPage() {
                         <CircleAlert aria-hidden="true" />
                     </S.ResultIcon>
                     <S.ResultContent>
-                        <S.ResultTitle>요청을 완료하지 못했어요</S.ResultTitle>
                         <S.ResultDescription>
                             {lookupError}
                         </S.ResultDescription>
@@ -167,13 +140,8 @@ function FindPasswordPage() {
             </S.LargeStatusIcon>
             <S.StepTitle>재설정 이메일을 확인해 주세요</S.StepTitle>
             <S.StepDescription>
-                가입 정보가 일치하면 <strong>{email.trim()}</strong>으로 비밀번호 재설정 안내가 전송돼요.
-                메일함을 확인해 주세요.
+                가입된 이메일이면 <strong>{email.trim()}</strong>으로 재설정 안내를 보냅니다.
             </S.StepDescription>
-            <S.InfoBox>
-                메일이 보이지 않으면 스팸 메일함을 확인하거나 입력한 이메일이 맞는지
-                확인해 주세요.
-            </S.InfoBox>
             <S.PrimaryButton type="button" onClick={() => setStage("reset")}>
                 <KeyRound aria-hidden="true" />
                 메일의 재설정 토큰 입력하기
@@ -186,15 +154,6 @@ function FindPasswordPage() {
 
     const renderResetForm = () => (
         <S.ResetSection>
-            <S.VerifiedBadge role="status" aria-live="polite">
-                <CircleCheck aria-hidden="true" />
-                메일로 받은 재설정 토큰이 필요해요
-            </S.VerifiedBadge>
-            <S.SectionHeading>새 비밀번호를 설정해 주세요</S.SectionHeading>
-            <S.SectionCopy>
-                다른 서비스에서 사용하지 않는 안전한 비밀번호를 권장해요.
-            </S.SectionCopy>
-
             <S.Form onSubmit={handleResetSubmit}>
                 <S.Field>
                     <S.Label htmlFor="reset-token">재설정 토큰</S.Label>
@@ -205,7 +164,6 @@ function FindPasswordPage() {
                             value={resetToken} disabled={pending} required
                             onChange={(event) => { setResetToken(event.target.value); setPasswordError(""); }} />
                     </S.InputWrap>
-                    <S.FieldHint>토큰이 만료되면 이메일을 다시 요청해 주세요.</S.FieldHint>
                 </S.Field>
                 <S.Field>
                     <S.Label htmlFor="new-password">새 비밀번호</S.Label>
@@ -230,15 +188,12 @@ function FindPasswordPage() {
                             aria-invalid={passwordErrorField === "newPassword"}
                             aria-describedby={
                                 passwordErrorField === "newPassword"
-                                    ? "password-requirement password-error"
-                                    : "password-requirement"
+                                    ? "password-error"
+                                    : undefined
                             }
                             required
                         />
                     </S.InputWrap>
-                    <S.FieldHint id="password-requirement">
-                        영문, 숫자, 특수문자를 조합하면 더 안전해요.
-                    </S.FieldHint>
                 </S.Field>
 
                 <S.Field>
@@ -286,7 +241,7 @@ function FindPasswordPage() {
             </S.Form>
 
             <S.TextButton type="button" onClick={resetFlow} disabled={pending}>
-                다른 계정 정보 입력하기
+                이메일 다시 입력하기
             </S.TextButton>
         </S.ResetSection>
     );
@@ -297,9 +252,6 @@ function FindPasswordPage() {
                 <CircleCheck aria-hidden="true" />
             </S.LargeStatusIcon>
             <S.StepTitle>비밀번호를 변경했어요</S.StepTitle>
-            <S.StepDescription>
-                새로 설정한 비밀번호로 로그인해 주세요.
-            </S.StepDescription>
             <S.LoginButton to="/login">로그인하러 가기</S.LoginButton>
         </S.StepPanel>
     );
@@ -323,24 +275,13 @@ function FindPasswordPage() {
 
                     <S.Card>
                         <S.Intro>
-                            <S.Eyebrow>
-                                <KeyRound aria-hidden="true" />
-                                ACCOUNT RECOVERY
-                            </S.Eyebrow>
                             <S.Title>비밀번호 찾기</S.Title>
-                            <S.Description>
-                                가입 이메일을 확인하고 새로운 비밀번호를 설정해 보세요.
-                            </S.Description>
                         </S.Intro>
 
                         <S.Panel id="find-password-panel">
                             {renderPanelContent()}
                         </S.Panel>
 
-                        <S.CardFooter>
-                            <span>아이디가 기억나지 않나요?</span>
-                            <S.FooterLink to="/find-id">아이디 찾기</S.FooterLink>
-                        </S.CardFooter>
                     </S.Card>
                 </S.PageInner>
             </S.Page>

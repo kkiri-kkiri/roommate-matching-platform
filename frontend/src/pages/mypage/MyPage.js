@@ -1157,7 +1157,6 @@ function AccountContent({ account, onSave }) {
           </S.SecondaryButton>
         </S.CardHeader>
         <S.FormGrid $compact>
-          {renderField("loginId", "아이디", { readOnly: true })}
           {renderField("nickname", "닉네임")}
           {renderField("schoolEmail", "학교 이메일", { readOnly: true })}
           {renderField("gender", "성별", { readOnly: true })}

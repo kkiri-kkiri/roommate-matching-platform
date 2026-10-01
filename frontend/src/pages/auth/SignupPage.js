@@ -42,7 +42,6 @@ const DORMITORY_OPTIONS = ["나래", "호연", "비봉", "창조"];
 const GRADE_OPTIONS = ["1학년", "2학년", "3학년", "4학년", "5학년"];
 
 const INITIAL_FORM = {
-  loginId: "",
   password: "",
   passwordConfirm: "",
   nickname: "",
@@ -63,7 +62,6 @@ const INITIAL_FORM = {
 const SCHOOL_EMAIL_DOMAIN = "@hknu.ac.kr";
 const SCHOOL_EMAIL_ID_PATTERN = /^[A-Za-z0-9_%+-]+(?:\.[A-Za-z0-9_%+-]+)*$/;
 const STUDENT_ID_PATTERN = /^\d{2}$/;
-const LOGIN_ID_PATTERN = /^[A-Za-z0-9]+$/;
 
 const findFaculty = (name) =>
   FACULTY_OPTIONS.find((faculty) => faculty.name === name);
@@ -96,7 +94,6 @@ const SignupPage = () => {
     birthYear >= 1900 &&
     birthYear <= currentYear;
   const studentIdIsValid = STUDENT_ID_PATTERN.test(form.studentId);
-  const loginIdIsValid = LOGIN_ID_PATTERN.test(form.loginId);
   const nicknameIsValid =
     form.nickname.trim().length > 0 && form.nickname.trim().length <= 20;
   const schoolEmailIdIsValid = SCHOOL_EMAIL_ID_PATTERN.test(
@@ -105,13 +102,12 @@ const SignupPage = () => {
   const verificationCodeIsValid = /^\d{6}$/.test(verificationCode);
 
   useEffect(() => {
-    const loginId = form.loginId.trim();
     const schoolEmail = schoolEmailIdIsValid
       ? `${form.schoolEmailId.trim()}${SCHOOL_EMAIL_DOMAIN}`
       : "";
     const nickname = form.nickname.trim();
 
-    if (!loginId && !schoolEmail && !nickname) {
+    if (!schoolEmail && !nickname) {
       setAvailability(null);
       setAvailabilityError(false);
       return undefined;
@@ -120,7 +116,6 @@ const SignupPage = () => {
     const timer = window.setTimeout(async () => {
       try {
         const result = await checkSignupAvailability({
-          loginId: LOGIN_ID_PATTERN.test(loginId) ? loginId : "",
           schoolEmail,
           nickname: nicknameIsValid ? nickname : "",
         });
@@ -134,7 +129,6 @@ const SignupPage = () => {
 
     return () => window.clearTimeout(timer);
   }, [
-    form.loginId,
     form.nickname,
     form.schoolEmailId,
     nicknameIsValid,
@@ -152,7 +146,7 @@ const SignupPage = () => {
 
       return nextForm;
     });
-    if (["loginId", "nickname", "schoolEmailId"].includes(name)) {
+    if (["nickname", "schoolEmailId"].includes(name)) {
       setAvailability(null);
       setAvailabilityError(false);
     }
@@ -238,7 +232,6 @@ const SignupPage = () => {
     event.preventDefault();
 
     const requiredValues = [
-      form.loginId,
       form.password,
       form.passwordConfirm,
       form.nickname,
@@ -322,7 +315,6 @@ const SignupPage = () => {
 
     try {
       await signup({
-        loginId: form.loginId.trim(),
         password: form.password,
         passwordConfirm: form.passwordConfirm,
         nickname: form.nickname.trim(),
@@ -404,52 +396,6 @@ const SignupPage = () => {
                 계정 정보
               </S.SectionTitle>
             </S.SectionHeader>
-
-            <S.FieldGroup>
-              <S.Label htmlFor="signup-id">아이디</S.Label>
-              <S.Input
-                id="signup-id"
-                name="loginId"
-                type="text"
-                value={form.loginId}
-                onChange={handleInputChange}
-                placeholder="사용할 아이디를 입력해 주세요"
-                autoComplete="username"
-                required
-                $tone={
-                  form.loginId
-                    ? loginIdIsValid && availability
-                      ? availability.loginIdAvailable
-                        ? "success"
-                        : "error"
-                      : loginIdIsValid
-                        ? "neutral"
-                        : "error"
-                    : "neutral"
-                }
-              />
-              <S.FieldFeedback
-                $tone={
-                  form.loginId
-                    ? loginIdIsValid
-                      ? "success"
-                      : "error"
-                    : "neutral"
-                }
-              >
-                {form.loginId
-                  ? loginIdIsValid
-                    ? availabilityError
-                      ? "중복 확인에 실패했어요. 잠시 후 다시 입력해 주세요."
-                      : availability
-                        ? availability.loginIdAvailable
-                          ? "사용할 수 있는 아이디예요."
-                          : "이미 사용 중인 아이디예요."
-                        : "아이디 중복을 확인하는 중이에요."
-                    : "아이디는 영문과 숫자만 사용할 수 있어요."
-                  : "영문과 숫자를 조합해 입력해 주세요."}
-              </S.FieldFeedback>
-            </S.FieldGroup>
 
             <S.TwoColumnFields>
               <S.FieldGroup>
