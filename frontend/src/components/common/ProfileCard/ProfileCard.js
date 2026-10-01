@@ -78,7 +78,14 @@ function ProfileCard({
         : location.pathname === "/" ? { ...profile, id: `main:${profile.id}` } : profile;
     const isLiked = checkLiked(profile);
     const href = `/roommates/${encodeURIComponent(getProfileKey(detailProfile))}${activeTab === "recommended" ? "?tab=recommended" : ""}`;
-    const detailState = { profile: detailProfile, activeTab, fromProfileCard: true };
+    const detailState = {
+        profile: detailProfile,
+        activeTab,
+        fromProfileCard: true,
+        ...(["/profile", "/mypage"].includes(location.pathname)
+            ? { backgroundLocation: location }
+            : {}),
+    };
     const [analysis, setAnalysis] = useState({ status: "idle", text: "" });
     const analysisRequest = useRef(null);
     useEffect(() => {
