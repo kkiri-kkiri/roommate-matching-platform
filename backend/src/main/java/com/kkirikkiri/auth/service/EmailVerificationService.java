@@ -136,12 +136,12 @@ public class EmailVerificationService {
 
 	/**
 	 * 토큰 사용과 후속 작업이 함께 커밋/롤백되도록 호출자의 쓰기 트랜잭션 안에서만 사용한다.
-	 * 회원가입/아이디 찾기 자체는 이 서비스에서 처리하지 않는다.
+	 * 회원가입 자체는 이 서비스에서 처리하지 않는다.
 	 */
 	@Transactional(propagation = Propagation.MANDATORY)
 	public void consumeToken(String email, EmailVerificationPurpose purpose, String token) {
 		if (email == null || email.isBlank() || token == null || token.isBlank()
-				|| (purpose != EmailVerificationPurpose.SIGNUP && purpose != EmailVerificationPurpose.FIND_ID)) {
+				|| purpose != EmailVerificationPurpose.SIGNUP) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
 		EmailVerification verification = repository

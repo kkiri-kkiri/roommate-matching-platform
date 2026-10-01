@@ -24,14 +24,6 @@ PK
 
 사용자 고유 ID
 
-login_id
-
-VARCHAR(50)
-
-UNIQUE
-
-로그인 아이디
-
 password
 
 VARCHAR(255)
@@ -76,7 +68,7 @@ DATETIME
 
 계정 수정 일시
 
-login_id, school_email에는 UNIQUE 제약을 적용한다.
+school_email에는 UNIQUE 제약을 적용한다.
 
 회원 탈퇴 시 실제 사용자 행을 삭제하지 않고 status = WITHDRAWN으로 처리하여 게시글·댓글·신고·채팅 등의 참조 관계를 유지한다.
 
@@ -362,7 +354,7 @@ purpose
 
 VARCHAR(30)
 
-SIGNUP / FIND_ID
+SIGNUP
 
 verification_code
 
@@ -406,7 +398,7 @@ DATETIME
 
 nullable
 
-회원가입/아이디 찾기에서 Token 사용 완료 일시
+회원가입에서 Token 사용 완료 일시
 
 created_at
 
@@ -414,7 +406,7 @@ DATETIME
 
 인증 요청 일시
 
-회원가입과 아이디 찾기에서 사용하는 학교 이메일 인증을 처리한다.
+회원가입에서 사용하는 학교 이메일 인증을 처리한다.
 
 인증번호와 Verification Token은 평문 저장을 피하고 해시 처리한다.
 

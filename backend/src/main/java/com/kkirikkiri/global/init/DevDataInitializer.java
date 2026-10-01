@@ -42,7 +42,6 @@ public class DevDataInitializer implements ApplicationRunner {
                 faculty.getFacultyId(), "소프트웨어융합전공").orElseThrow();
 
         createUserIfNotExists(
-                "user01",
                 "test1234!",
                 "user01@hknu.ac.kr",
                 UserRole.USER,
@@ -53,7 +52,6 @@ public class DevDataInitializer implements ApplicationRunner {
         );
 
         createUserIfNotExists(
-                "admin01",
                 "test1234!",
                 "admin01@hknu.ac.kr",
                 UserRole.ADMIN,
@@ -66,7 +64,6 @@ public class DevDataInitializer implements ApplicationRunner {
 
 
     private void createUserIfNotExists(
-            String loginId,
             String rawPassword,
             String schoolEmail,
             UserRole role,
@@ -75,14 +72,13 @@ public class DevDataInitializer implements ApplicationRunner {
             Faculty faculty,
             Major major
     ) {
-        if (userRepository.existsByLoginId(loginId)) {
+        if (userRepository.existsBySchoolEmail(schoolEmail)) {
             return;
         }
 
         String encodedPassword = passwordEncoder.encode(rawPassword);
 
         User user = new User(
-                loginId,
                 encodedPassword,
                 schoolEmail,
                 role

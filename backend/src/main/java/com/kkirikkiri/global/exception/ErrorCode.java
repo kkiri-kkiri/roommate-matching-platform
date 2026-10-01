@@ -17,7 +17,7 @@ public enum ErrorCode {
 	EMAIL_VERIFICATION_ALREADY_USED(HttpStatus.BAD_REQUEST, "이미 사용한 인증번호입니다. 새 인증번호를 요청해 주세요."),
 	EMAIL_VERIFICATION_TOKEN_INVALID(HttpStatus.BAD_REQUEST, "이메일 인증이 만료되었거나 유효하지 않습니다. 다시 인증해 주세요."),
 	EMAIL_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 가입된 학교 이메일입니다. 다른 이메일을 사용해 주세요."),
-	DUPLICATE_ACCOUNT_VALUE(HttpStatus.CONFLICT, "아이디, 학교 이메일 또는 닉네임이 이미 사용 중입니다."),
+	DUPLICATE_ACCOUNT_VALUE(HttpStatus.CONFLICT, "학교 이메일 또는 닉네임이 이미 사용 중입니다."),
 	DORMITORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "선택한 생활관을 사용할 수 없습니다. 다시 선택해 주세요."),
 	FACULTY_NOT_FOUND(HttpStatus.BAD_REQUEST, "선택한 학부를 사용할 수 없습니다. 다시 선택해 주세요."),
 	MAJOR_NOT_FOUND(HttpStatus.BAD_REQUEST, "선택한 전공을 사용할 수 없습니다. 다시 선택해 주세요."),

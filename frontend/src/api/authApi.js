@@ -16,9 +16,18 @@ function getApiErrorMessage(error, fallbackMessage) {
   return error.response?.data?.message || fallbackMessage;
 }
 
-export async function login(loginId, password) {
+export async function checkLoginEmail(email) {
   try {
-    const response = await apiClient.post("/auth/login", { loginId, password });
+    const response = await apiClient.post("/auth/login/email-check", { email });
+    return response.data.data;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, "이메일 확인에 실패했습니다."));
+  }
+}
+
+export async function login(email, password) {
+  try {
+    const response = await apiClient.post("/auth/login", { email, password });
     return response.data.data;
   } catch (error) {
     throw new Error(getApiErrorMessage(error, "로그인에 실패했습니다."));
@@ -58,18 +67,9 @@ export async function signup(payload) {
   }
 }
 
-export async function findId(email, emailVerificationToken) {
+export async function requestPasswordReset(email) {
   try {
-    const response = await apiClient.post("/auth/find-id", { email, emailVerificationToken });
-    return response.data.data;
-  } catch (error) {
-    throw new Error(getApiErrorMessage(error, "아이디 조회에 실패했습니다."));
-  }
-}
-
-export async function requestPasswordReset(loginId, email) {
-  try {
-    const response = await apiClient.post("/auth/password-reset/request", { loginId, email });
+    const response = await apiClient.post("/auth/password-reset/request", { email });
     return response.data.data;
   } catch (error) {
     throw new Error(getApiErrorMessage(error, "재설정 이메일 요청에 실패했습니다."));

@@ -9,15 +9,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kkirikkiri.auth.dto.FindIdRequest;
-import com.kkirikkiri.auth.dto.FindIdResponse;
 import com.kkirikkiri.auth.dto.PasswordResetConfirmRequest;
 import com.kkirikkiri.auth.dto.PasswordResetRequest;
 import com.kkirikkiri.auth.dto.PasswordResetResponse;
 import com.kkirikkiri.auth.dto.SignupRequest;
 import com.kkirikkiri.auth.dto.SignupResponse;
 import com.kkirikkiri.auth.dto.SignupAvailabilityResponse;
-import com.kkirikkiri.auth.service.FindIdService;
 import com.kkirikkiri.auth.service.PasswordResetService;
 import com.kkirikkiri.auth.service.SignupService;
 import com.kkirikkiri.global.response.ApiResponse;
@@ -28,7 +25,6 @@ import com.kkirikkiri.global.response.ApiResponse;
 public class AccountController {
 
 	private final SignupService signupService;
-	private final FindIdService findIdService;
 	private final PasswordResetService passwordResetService;
 
 	@PostMapping("/signup")
@@ -38,15 +34,9 @@ public class AccountController {
 
 	@GetMapping("/signup/availability")
 	public ApiResponse<SignupAvailabilityResponse> checkSignupAvailability(
-			@RequestParam(required = false, defaultValue = "") String loginId,
 			@RequestParam(required = false, defaultValue = "") String schoolEmail,
 			@RequestParam(required = false, defaultValue = "") String nickname) {
-		return ApiResponse.success(signupService.checkAvailability(loginId, schoolEmail, nickname));
-	}
-
-	@PostMapping("/find-id")
-	public ApiResponse<FindIdResponse> findId(@Valid @RequestBody FindIdRequest request) {
-		return ApiResponse.success(findIdService.findId(request));
+		return ApiResponse.success(signupService.checkAvailability(schoolEmail, nickname));
 	}
 
 	@PostMapping("/password-reset/request")

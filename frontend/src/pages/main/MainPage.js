@@ -1,4 +1,5 @@
 import { getCommunityPosts } from "../../api/communityApi";
+import { getRecommendedRoommates } from "../../api/roommateApi";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -18,54 +19,6 @@ import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./MainPageCss";
 import { dateKey, useCalendarData } from "../../calendar/CalendarDataContext";
 import { eventTimeLabel, overlaps } from "../../calendar/calendarDates";
-
-const ROOMMATES = [
-  {
-    id: 1,
-    name: "김서연",
-    initial: "서",
-    major: "컴퓨터공학과 · 24학번",
-    dormitory: "새빛관 희망",
-    matchScore: 96,
-    tone: "mint",
-    status: "방금 접속",
-    tags: ["비흡연", "아침형", "정리정돈"],
-    matchNote: "생활 리듬 4개가 잘 맞아요",
-    introduction:
-      "평일에는 일찍 자고 일찍 일어나요. 서로의 공부 시간을 존중하는 룸메이트를 찾고 있어요.",
-    preference: "조용한 생활 · 주 1회 함께 청소",
-  },
-  {
-    id: 2,
-    name: "이도윤",
-    initial: "윤",
-    major: "경영학과 · 23학번",
-    dormitory: "한울관 희망",
-    matchScore: 91,
-    tone: "blue",
-    status: "12분 전 접속",
-    tags: ["비흡연", "야행성", "이어폰 사용"],
-    matchNote: "소음·청소 기준이 잘 맞아요",
-    introduction:
-      "과제 때문에 늦게 자는 날이 있지만 통화나 영상은 항상 이어폰을 사용해요. 깔끔한 편입니다.",
-    preference: "개인 시간 존중 · 물건 공유 전 확인",
-  },
-  {
-    id: 3,
-    name: "박하린",
-    initial: "린",
-    major: "시각디자인학과 · 25학번",
-    dormitory: "늘봄관 희망",
-    matchScore: 88,
-    tone: "gold",
-    status: "오늘 접속",
-    tags: ["비흡연", "중간형", "주말 외출"],
-    matchNote: "공용 공간 사용 습관이 비슷해요",
-    introduction:
-      "처음엔 조금 조용하지만 친해지면 편하게 지내는 편이에요. 향에 민감해서 환기를 자주 해요.",
-    preference: "취침 전 소등 · 공용 공간 환기",
-  },
-];
 
 const POST_FILTERS = ["전체", "자유", "나눔", "택배", "민원"];
 
@@ -110,8 +63,13 @@ function getCalendarCells(month) {
   ];
 }
 
-function MainPage() {
+function MainPage({ currentUser }) {
   const { hash } = useLocation();
+  const userId = currentUser?.id;
+  const [roommates, setRoommates] = useState([]);
+  const [roommatesLoading, setRoommatesLoading] = useState(true);
+  const [roommatesError, setRoommatesError] = useState("");
+  const [roommatesRevision, setRoommatesRevision] = useState(0);
   const [visiblePosts, setVisiblePosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [postsError, setPostsError] = useState("");
@@ -139,6 +97,36 @@ function MainPage() {
 
     return () => window.cancelAnimationFrame(frameId);
   }, [hash]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setRoommates([]);
+    setRoommatesError("");
+    setRoommatesLoading(Boolean(userId));
+    if (!userId) return () => controller.abort();
+
+    getRecommendedRoommates(controller.signal)
+      .then((data) => {
+        if (controller.signal.aborted) return;
+        if (!Array.isArray(data?.content)) {
+          throw new Error("추천 룸메이트 응답을 확인할 수 없습니다.");
+        }
+        setRoommates(data.content.slice(0, 3).map((profile) => ({
+          ...profile,
+          userId: profile.id,
+          source: "backend",
+          photo: profile.profileImageUrl,
+          message: profile.introduction,
+        })));
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) setRoommatesError(error.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setRoommatesLoading(false);
+      });
+    return () => controller.abort();
+  }, [userId, roommatesRevision]);
 
   useEffect(() => {
     let cancelled = false;
@@ -294,27 +282,32 @@ function MainPage() {
             </S.MoreLink>
           </S.SectionHeader>
 
-          <S.ProfileGrid>
-            {ROOMMATES.map((roommate) => (
-              <div key={roommate.id}>
-                <ProfileCard
-                  profile={{
-                    ...roommate,
-                    nickname: roommate.name,
-                    photo: roommate.photo,
-                    admissionYear: roommate.admissionYear,
-                    major: roommate.major,
-                    dormitory: roommate.dormitory,
-                    matchScore: roommate.matchScore,
-                    message: roommate.introduction,
-                  }}
-                  activeTab="recommended"
-                  overlayText={roommate.matchNote}
-                  showOverlay={false}
-                />
-              </div>
-            ))}
-          </S.ProfileGrid>
+          {!userId ? (
+            <p role="status">로그인 후 추천 룸메이트를 확인할 수 있어요.</p>
+          ) : roommatesLoading ? (
+            <p role="status">추천 룸메이트를 불러오는 중이에요.</p>
+          ) : roommatesError ? (
+            <div role="alert">
+              {roommatesError}{" "}
+              <S.GhostButton type="button" onClick={() => setRoommatesRevision((value) => value + 1)}>
+                다시 시도
+              </S.GhostButton>
+            </div>
+          ) : roommates.length === 0 ? (
+            <p role="status">아직 추천할 룸메이트가 없어요. 프로필과 선호 설문을 확인해 주세요.</p>
+          ) : (
+            <S.ProfileGrid>
+              {roommates.map((roommate) => (
+                <div key={roommate.id}>
+                  <ProfileCard
+                    profile={roommate}
+                    activeTab="recommended"
+                    showOverlay={false}
+                  />
+                </div>
+              ))}
+            </S.ProfileGrid>
+          )}
         </S.Section>
 
         <S.Section id="popular-community" aria-labelledby="community-title">

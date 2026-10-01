@@ -32,7 +32,7 @@ public class AdminMemberQueryRepository extends AdminQuerySupport {
 			left join fetch p.dormitory left join fetch p.faculty left join fetch p.major
 			""";
 	private static final String FILTER = """
-			where (:q is null or locate(:q, u.loginId) > 0 or locate(:q, u.schoolEmail) > 0
+			where (:q is null or locate(:q, u.schoolEmail) > 0
 			       or locate(:q, p.nickname) > 0)
 			  and (:status is null or u.status = :status)
 			  and (:dormitory is null or d.dormitoryName = :dormitory)

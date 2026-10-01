@@ -165,7 +165,7 @@ public class AdminService {
 		User user = row.get("member", User.class);
 		UserProfile profile = row.get("profile", UserProfile.class);
 		AdminMemberResponse member = memberResponse(row);
-		return new AdminMemberDetailResponse(member.id(), member.loginId(), member.nickname(), member.schoolEmail(),
+		return new AdminMemberDetailResponse(member.id(), member.nickname(), member.schoolEmail(),
 				profile == null ? null : profile.getGender(), member.dormitory(),
 				profile == null ? null : profile.getFaculty().getFacultyName(), member.major(),
 				profile == null ? null : profile.getAdmissionYear(), profile == null ? null : profile.getGrade(),
@@ -225,10 +225,10 @@ public class AdminService {
 		};
 		return new AdminReportDetailResponse(report.getReportId(), report.getReportType(), targetId,
 				new AdminReportDetailResponse.TargetUser(target.getUserId(), author(target, profiles).nickname(),
-						target.getLoginId(), target.getSchoolEmail(), target.getStatus()),
+						target.getSchoolEmail(), target.getStatus()),
 				targetContent(report, profiles),
 				new AdminReportDetailResponse.Reporter(reporter.getUserId(), author(reporter, profiles).nickname(),
-						reporter.getLoginId(), reporter.getSchoolEmail()),
+						reporter.getSchoolEmail()),
 				report.getReason(), report.getDescription(), report.getCreatedAt(), report.getStatus());
 	}
 
@@ -309,7 +309,7 @@ public class AdminService {
 	private AdminMemberResponse memberResponse(Tuple row) {
 		User user = row.get("member", User.class);
 		UserProfile profile = row.get("profile", UserProfile.class);
-		return new AdminMemberResponse(user.getUserId(), user.getLoginId(),
+		return new AdminMemberResponse(user.getUserId(),
 				profile == null ? null : profile.getNickname(), user.getSchoolEmail(),
 				profile == null ? null : profile.getDormitory().getDormitoryName(),
 				profile == null || profile.getMajor() == null ? null : profile.getMajor().getMajorName(),

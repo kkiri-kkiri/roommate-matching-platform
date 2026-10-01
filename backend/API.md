@@ -157,7 +157,7 @@ Public
 Request:
 
 {
-"loginId": "test01",
+"email": "test01@hknu.ac.kr",
 "password": "test1234"
 }
 
@@ -167,7 +167,7 @@ Response:
 "accessToken": "...",
 "user": {
 "id": 1,
-"loginId": "test01",
+"schoolEmail": "test01@hknu.ac.kr",
 "nickname": "차분한하루",
 "role": "USER"
 }
@@ -175,11 +175,11 @@ Response:
 
 Validation:
 
-loginId 필수
+학교 이메일(@hknu.ac.kr) 필수
 
 password 필수
 
-아이디/비밀번호 불일치 시 동일한 인증 실패 메시지 반환
+이메일/비밀번호 불일치 시 동일한 인증 실패 메시지 반환
 
 2.2 로그아웃
 
@@ -205,7 +205,6 @@ Request:
 purpose:
 
 SIGNUP
-FIND_ID
 
 Response:
 
@@ -254,7 +253,7 @@ Validation:
 
 이미 사용된 Verification Token은 재사용할 수 없음
 
-회원가입/아이디 찾기 실행 시 인증 완료 여부를 서버에서도 다시 검증
+회원가입 실행 시 인증 완료 여부를 서버에서도 다시 검증
 
 2.5 회원가입
 
@@ -265,7 +264,6 @@ Public
 Request:
 
 {
-"loginId": "roomie24",
 "password": "password123!",
 "passwordConfirm": "password123!",
 "nickname": "차분한하루",
@@ -288,7 +286,6 @@ Response:
 
 {
 "userId": 1,
-"loginId": "roomie24",
 "nickname": "차분한하루"
 }
 
@@ -312,40 +309,33 @@ MBTI 4개 축 모두 선택
 
 학부와 전공의 조합 검증
 
-loginId, nickname, schoolEmail 중복 검증
+nickname, schoolEmail 중복 검증
 
-현재 프론트에는 별도의 아이디/닉네임 중복확인 버튼이 없으므로 별도 중복확인 API는 필수로 두지 않는다. 회원가입 응답에서 409 Conflict로 처리할 수 있다.
+GET /api/auth/signup/availability (Public)
 
-2.6 아이디 찾기
+Query: schoolEmail, nickname
 
-POST /api/auth/find-id
+Response data: { "schoolEmailAvailable": true, "nicknameAvailable": true }
+
+가입 시에도 중복 여부를 다시 확인하며 충돌은 409 Conflict로 처리한다.
+
+2.6 로그인 이메일 확인
+
+POST /api/auth/login/email-check
 
 Public
 
 Request:
 
-{
-"email": "roomie24@hknu.ac.kr",
-"emailVerificationToken": "..."
-}
+{ "email": "roomie24@hknu.ac.kr" }
 
-Response:
+Response data:
 
-{
-"loginId": "roomie24"
-}
+{ "registered": true }
 
-Validation:
-
-purpose = FIND_ID로 완료된 이메일 Verification Token이어야 함
-
-Token의 이메일과 요청 이메일이 일치해야 함
-
-Token이 만료되지 않아야 함
-
-이미 사용된 Token은 사용할 수 없음
-
-현재 프론트 UI는 아이디를 화면에 표시한다. 필요 시 마스킹 정책을 추가할 수 있다.
+학교 이메일 형식을 검증하고 계정 존재 여부만 반환한다. JWT는 발급하지 않는다.
+로그인 화면은 등록된 이메일을 확인한 뒤 비밀번호 입력을 표시한다.
+이메일을 수정하면 확인 상태와 비밀번호를 초기화한다.
 
 2.7 비밀번호 재설정 요청
 
@@ -356,7 +346,6 @@ Public
 Request:
 
 {
-"loginId": "roomie24",
 "email": "roomie24@hknu.ac.kr"
 }
 
@@ -368,7 +357,7 @@ Response:
 
 동작:
 
-loginId와 schoolEmail이 동일한 USER인지 확인
+schoolEmail로 ACTIVE 상태의 USER 조회
 
 유효한 사용자라면 일회용 Password Reset Token 생성
 
@@ -420,7 +409,6 @@ Response:
 
 {
 "id": 1,
-"loginId": "roomie24",
 "nickname": "차분한하루",
 "schoolEmail": "roomie24@hknu.ac.kr",
 "gender": "여자",
@@ -437,8 +425,6 @@ Response:
 }
 
 프론트에서 Read-only로 표시하는 값:
-
-loginId
 
 schoolEmail
 
@@ -1717,8 +1703,6 @@ WITHDRAWN
 
 검색 대상:
 
-아이디
-
 닉네임
 
 이메일
@@ -1731,7 +1715,6 @@ Response:
 
 {
 "id": 1001,
-"loginId": "roomie01",
 "nickname": "포근한구름",
 "schoolEmail": "roomie01@hknu.ac.kr",
 "gender": "여자",

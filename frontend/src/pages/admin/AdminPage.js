@@ -97,7 +97,7 @@ export default function AdminPage() {
   const dashboard = view === "dashboard" ? main.data : null;
   const stats = dashboard?.stats;
   const pendingCount = stats?.pendingReports || 0;
-  const nickname = (person) => person?.nickname || person?.loginId || "알 수 없는 회원";
+  const nickname = (person) => person?.nickname || person?.schoolEmail || "알 수 없는 회원";
   const reportBadge = (item) => <Badge>{item.reported ? "신고됨" : "없음"}</Badge>;
 
   useEffect(() => { setDraft(query); }, [query, view, isComments]);
@@ -191,7 +191,7 @@ export default function AdminPage() {
   if (view === "members") {
     listTitle = "회원 목록";
     columns = [["회원 번호", (item) => item.id], ["프로필", (item) => <ProfileImage as={S.Avatar} major={item.major} alt={`${item.nickname} 프로필`} />],
-      ["아이디", (item) => detailButton("member", item, item.loginId)], ["닉네임", (item) => item.nickname], ["이메일", (item) => item.schoolEmail],
+      ["닉네임", (item) => item.nickname], ["이메일", (item) => detailButton("member", item, item.schoolEmail)],
       ["생활관", (item) => item.dormitory], ["가입일", (item) => item.createdAt], ["회원 상태", (item) => <Badge>{item.status}</Badge>]];
   } else if (view === "community" && !isComments) {
     listTitle = "게시글 목록";
@@ -255,7 +255,7 @@ export default function AdminPage() {
               </S.Panel>)}</S.CrawlGrid>}
           </>}
           <S.Toolbar onSubmit={(event) => { event.preventDefault(); changeFilter("q", draft.trim()); }}>
-            <S.Field $grow>검색<S.Input type="search" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={view === "members" ? "아이디, 닉네임, 이메일" : view === "reports" ? "신고 번호, 내용, 사용자, 사유" : view === "schedules" ? "일정 제목, 내용, 출처" : isComments ? "댓글 내용, 작성자" : "게시글 제목, 내용, 작성자"} /></S.Field>
+            <S.Field $grow>검색<S.Input type="search" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={view === "members" ? "닉네임, 이메일" : view === "reports" ? "신고 번호, 내용, 사용자, 사유" : view === "schedules" ? "일정 제목, 내용, 출처" : isComments ? "댓글 내용, 작성자" : "게시글 제목, 내용, 작성자"} /></S.Field>
             {view === "members" && <><FilterSelect label="회원 상태" value={status} options={MEMBER_STATUSES} onChange={(value) => changeFilter("status", value)} /><FilterSelect label="생활관" value={dorm} options={DORMS} onChange={(value) => changeFilter("dorm", value)} /></>}
             {view === "community" && <>
               {!isComments && <><FilterSelect label="게시판 분류" value={category} options={BOARDS} onChange={(value) => changeFilter("category", value)} /><S.Field>정렬<S.Select value={sort} onChange={(event) => changeFilter("sort", event.target.value)}>{["최신순", "조회순", "좋아요순"].map((value) => <option key={value}>{value}</option>)}</S.Select></S.Field></>}
@@ -278,7 +278,7 @@ export default function AdminPage() {
         : detail.loading ? <S.Empty role="status">상세 정보를 불러오는 중입니다.</S.Empty> : detail.error ? <S.Notice role="alert">{detail.error}<S.Button onClick={() => setRevision((value) => value + 1)}>다시 시도</S.Button></S.Notice> : selected ? <>
           {modal.kind === "member" && <>
             <S.DialogBody><S.Row><ProfileImage as={S.Avatar} $large major={selected.major} alt={`${selected.nickname} 프로필`} /><div><h3>{selected.nickname}</h3><Badge>{selected.status}</Badge></div></S.Row></S.DialogBody>
-            <DetailFields items={[["회원 번호", selected.id], ["아이디", selected.loginId], ["닉네임", selected.nickname], ["이메일", selected.schoolEmail], ["성별", selected.gender], ["생활관", selected.dormitory], ["학부", selected.faculty], ["전공", selected.major], ["입학 연도", selected.admissionYear], ["학년", selected.grade], ["MBTI", selected.mbti], ["가입일", selected.createdAt]]} />
+            <DetailFields items={[["회원 번호", selected.id], ["닉네임", selected.nickname], ["이메일", selected.schoolEmail], ["성별", selected.gender], ["생활관", selected.dormitory], ["학부", selected.faculty], ["전공", selected.major], ["입학 연도", selected.admissionYear], ["학년", selected.grade], ["MBTI", selected.mbti], ["가입일", selected.createdAt]]} />
             <S.Activity>{[["작성 게시글", selected.activity?.postCount ?? 0], ["작성 댓글", selected.activity?.commentCount ?? 0], ["신고 받은 횟수", selected.activity?.reportsReceived ?? 0]].map(([label, count]) => <div key={label}><strong>{count}</strong><span>{label}</span></div>)}</S.Activity>
             <S.Actions>
               <S.Button type="button" $variant="danger" onClick={() => requestAction("withdraw", selected.id, "회원 탈퇴", `${selected.nickname} 회원을 탈퇴 상태로 변경합니다.`, true)}>회원 탈퇴 처리</S.Button>
@@ -297,8 +297,8 @@ export default function AdminPage() {
           </>}
           {modal.kind === "report" && <>
             <DetailFields items={[["신고 번호", `#${selected.id}`], ["현재 처리 상태", <Badge>{selected.status}</Badge>], ["신고 대상 유형", label(selected.type)], ["신고 접수일", selected.createdAt],
-              ["신고자 정보", `${nickname(selected.reporter)} (${selected.reporter?.loginId || "-"})\n${selected.reporter?.schoolEmail || "-"}`],
-              ["신고 대상 사용자 정보", <>{nickname(selected.targetUser)} ({selected.targetUser?.loginId || "-"})<S.Meta>{selected.targetUser?.schoolEmail || "-"}</S.Meta><Badge>{selected.targetUser?.status}</Badge></>],
+              ["신고자 정보", `${nickname(selected.reporter)}\n${selected.reporter?.schoolEmail || "-"}`],
+              ["신고 대상 사용자 정보", <>{nickname(selected.targetUser)}<S.Meta>{selected.targetUser?.schoolEmail || "-"}</S.Meta><Badge>{selected.targetUser?.status}</Badge></>],
               ["신고 대상 내용", selected.targetContent, true], ["신고 사유", selected.reason], ["상세 사유", selected.description, true]]} />
             {selected.type !== "USER" && <S.DialogBody>{detailButton(selected.type === "POST" ? "post" : "comment", { id: selected.targetId }, "신고 대상 상세 확인")}</S.DialogBody>}
             <S.Actions>

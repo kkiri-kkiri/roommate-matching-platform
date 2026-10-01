@@ -28,9 +28,6 @@ public class User {
 	@Column(name = "user_id")
 	private Long userId;
 
-	@Column(name = "login_id", nullable = false, unique = true, length = 50)
-	private String loginId;
-
 	@Column(name = "password", nullable = false, length = 255)
 	private String password;
 
@@ -57,16 +54,14 @@ public class User {
 	/**
 	 * encodedPassword에는 외부에서 단방향 해시 처리한 비밀번호를 전달한다.
 	 */
-	public User(String loginId, String encodedPassword, String schoolEmail) {
-		this.loginId = Objects.requireNonNull(loginId, "loginId");
+	public User(String encodedPassword, String schoolEmail) {
 		this.password = Objects.requireNonNull(encodedPassword, "encodedPassword");
 		this.schoolEmail = Objects.requireNonNull(schoolEmail, "schoolEmail");
 		this.role = UserRole.USER;
 		this.status = UserStatus.ACTIVE;
 	}
 
-	public User(String loginId, String encodedPassword, String schoolEmail, UserRole role) {
-    this.loginId = Objects.requireNonNull(loginId, "loginId");
+	public User(String encodedPassword, String schoolEmail, UserRole role) {
     this.password = Objects.requireNonNull(encodedPassword, "encodedPassword");
     this.schoolEmail = Objects.requireNonNull(schoolEmail, "schoolEmail");
     this.role = Objects.requireNonNull(role, "role");

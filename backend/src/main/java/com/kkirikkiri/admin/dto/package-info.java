@@ -14,7 +14,7 @@
  * <p>프론트 Mock의 email/dorm은 API의 schoolEmail/dormitory로 통일한다.
  * authorId/reporterId/targetUserId로 Mock 회원을 찾던 화면에는 author/reporter/targetUser
  * 객체를 제공한다. 목록 사용자 요약은 CommunityAuthorResponse를 재사용하고,
- * 신고 상세만 loginId/schoolEmail을 포함한다. 회원 status는 대상자 정보에만 추가한다.
+ * 신고 상세만 schoolEmail을 포함한다. 회원 status는 대상자 정보에만 추가한다.
  * 프론트 연동 시 한국어 상태/유형/분류 표시값은 API 코드와 매핑해야 한다.
  * 회원 상세 Mock의 studentId는 실제 학번이지만 API/Entity는 admissionYear만 제공하므로
  * 전체 학번을 임의로 생성하지 않는다.

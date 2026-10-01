@@ -52,9 +52,6 @@ public class SignupService {
 		if (request == null || !validator.validate(request).isEmpty()) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
-		if (userRepository.existsByLoginId(request.loginId())) {
-			throw new CustomException(ErrorCode.DUPLICATE_ACCOUNT_VALUE);
-		}
 		if (userRepository.existsBySchoolEmail(request.schoolEmail())) {
 			throw new CustomException(ErrorCode.DUPLICATE_ACCOUNT_VALUE);
 		}
@@ -79,7 +76,7 @@ public class SignupService {
 		emailVerificationService.consumeToken(request.schoolEmail(), EmailVerificationPurpose.SIGNUP,
 				request.emailVerificationToken());
 
-		User user = new User(request.loginId(), encodedPassword, request.schoolEmail());
+		User user = new User(encodedPassword, request.schoolEmail());
 		user.verifyEmail();
 		String mbti = request.mbtiEnergy() + request.mbtiInformation()
 				+ request.mbtiDecision() + request.mbtiLifestyle();
@@ -91,12 +88,11 @@ public class SignupService {
 			// 사전 중복 검사 이후의 동시 가입 충돌도 기존 예외 계약으로 처리한다.
 			throw new CustomException(ErrorCode.ACCOUNT_SAVE_CONFLICT);
 		}
-		return new SignupResponse(user.getUserId(), user.getLoginId(), request.nickname());
+		return new SignupResponse(user.getUserId(), request.nickname());
 	}
 
-	public SignupAvailabilityResponse checkAvailability(String loginId, String schoolEmail, String nickname) {
+	public SignupAvailabilityResponse checkAvailability(String schoolEmail, String nickname) {
 		return new SignupAvailabilityResponse(
-				!userRepository.existsByLoginId(loginId),
 				!userRepository.existsBySchoolEmail(schoolEmail),
 				!userProfileRepository.existsByNickname(nickname));
 	}

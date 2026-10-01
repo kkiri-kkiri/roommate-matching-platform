@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
@@ -9,7 +9,6 @@ import AdminPage from "./pages/admin/AdminPage";
 import CalendarPage from "./calendar/CalendarPage";
 import { CalendarDataProvider } from "./calendar/CalendarDataContext";
 import CommunityPage from "./pages/community/CommunityPage";
-import FindIdPage from "./pages/auth/FindIdPage";
 import FindPasswordPage from "./pages/auth/FindPasswordPage";
 import LoginPage from "./pages/auth/LoginPage";
 import MainPage from "./pages/main/MainPage";
@@ -19,28 +18,12 @@ import SignupPage from "./pages/auth/SignupPage";
 
 const AUTHENTICATED_USER_KEY = "roomieAuthenticatedUser";
 
-function getStoredAuthenticatedUser() {
-  if (typeof window === "undefined") {
-    return undefined;
-  }
-
+function clearStoredAuthentication() {
   try {
-    const storedUser = JSON.parse(
-      window.localStorage.getItem(AUTHENTICATED_USER_KEY) || "null",
-    );
-
-    if (!storedUser?.name) {
-      return undefined;
-    }
-
-    return {
-      id: storedUser.id,
-      role: storedUser.role,
-      name: storedUser.name,
-      initial: storedUser.initial || storedUser.name.slice(0, 1),
-    };
+    [AUTHENTICATED_USER_KEY, "accessToken", "token", "user", "profile"]
+      .forEach((key) => window.localStorage.removeItem(key));
   } catch {
-    return undefined;
+    // 저장소를 사용할 수 없어도 화면의 로그인 상태는 해제합니다.
   }
 }
 
@@ -59,10 +42,17 @@ function AdminRoute({ currentUser }) {
 }
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(getStoredAuthenticatedUser);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
 
-  const handleLogin = ({ id, displayName, loginId, role }) => {
-    const name = displayName || loginId || "내 프로필";
+  useEffect(() => {
+    // 하위 화면이 API를 호출하기 전에 이전 실행의 인증 정보를 정리합니다.
+    clearStoredAuthentication();
+    setAuthInitialized(true);
+  }, []);
+
+  const handleLogin = ({ id, displayName, schoolEmail, role }) => {
+    const name = displayName || schoolEmail || "내 프로필";
     const authenticatedUser = {
       id,
       role,
@@ -84,23 +74,12 @@ function App() {
 
   const handleLogout = () => {
     setCurrentUser(null);
-
-    try {
-      [
-        AUTHENTICATED_USER_KEY,
-        "accessToken",
-        "token",
-        "user",
-        "profile",
-      ].forEach((key) => {
-        window.localStorage.removeItem(key);
-      });
-    } catch {
-      // 저장소를 사용할 수 없는 환경에서도 화면의 로그인 상태는 해제합니다.
-    }
+    clearStoredAuthentication();
   };
 
-  const myPageElement = <MyPage currentUser={currentUser} onUserUpdated={(user) => handleLogin({ id: user.id, displayName: user.nickname, loginId: user.loginId, role: currentUser?.role })} />;
+  if (!authInitialized) return null;
+
+  const myPageElement = <MyPage currentUser={currentUser} onUserUpdated={(user) => handleLogin({ id: user.id, displayName: user.nickname, schoolEmail: user.schoolEmail, role: currentUser?.role })} />;
 
   return (
     <CalendarDataProvider userId={currentUser?.id}>
@@ -110,7 +89,7 @@ function App() {
             <MainLayout currentUser={currentUser} onLogout={handleLogout} />
           }
         >
-          <Route index element={<MainPage />} />
+          <Route index element={<MainPage currentUser={currentUser} />} />
           <Route path="/admin" element={<AdminRoute currentUser={currentUser} />} />
           <Route
             path="/roommates"
@@ -157,7 +136,6 @@ function App() {
         </Route>
         <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/find-id" element={<FindIdPage />} />
         <Route path="/find-password" element={<FindPasswordPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

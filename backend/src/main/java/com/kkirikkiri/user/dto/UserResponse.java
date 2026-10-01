@@ -5,7 +5,6 @@ import com.kkirikkiri.user.entity.UserProfile;
 
 public record UserResponse(
 		Long id,
-		String loginId,
 		String nickname,
 		String schoolEmail,
 		String gender,
@@ -25,7 +24,6 @@ public record UserResponse(
 		String mbti = profile.getMbti();
 		return new UserResponse(
 				user.getUserId(),
-				user.getLoginId(),
 				profile.getNickname(),
 				user.getSchoolEmail(),
 				profile.getGender(),
