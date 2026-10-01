@@ -11,99 +11,58 @@ const PROFILE_ALIASES = {
     "roommate-cloud": "1", "community-star": "2", "roommate-mint": "3",
     "dormitory-afternoon": "5", "roommate-forest": "7", "community-tea": "8",
 };
-const LIKES_KEY = "roomieDetailedProfileLikes";
-const LEGACY_UNLIKED_KEY = "roomieUnlikedProfileIds";
 const LIKES_EVENT = "roomieProfileLikesChanged";
-
+const pendingProfileLikes = new Set();
+const likeKey = (profile) => `${profile.source || "demo"}:${getProfileKey(profile)}`;
 export function getProfileKey(profile) {
     const id = String(profile.id);
     return Object.prototype.hasOwnProperty.call(PROFILE_ALIASES, id) ? PROFILE_ALIASES[id] : id;
 }
 
-function readProfileLikes() {
-    try {
-        const saved = JSON.parse(window.localStorage.getItem(LIKES_KEY) || "{}");
-        if (!saved || typeof saved !== "object" || Array.isArray(saved)) return {};
-        return Object.fromEntries(Object.entries(saved)
-            .filter(([, entry]) => typeof entry?.liked === "boolean" && entry.profile?.id != null && entry.profile.source !== "backend")
-            .map(([, entry]) => [getProfileKey(entry.profile), entry]));
-    } catch {
-        return {};
-    }
-}
-
-function isInitiallyLiked(profile) {
-    const key = getProfileKey(profile);
-    try {
-        const removed = JSON.parse(window.localStorage.getItem(LEGACY_UNLIKED_KEY) || "[]");
-        if (Array.isArray(removed) && removed.some((id) => getProfileKey({ id }) === key)) return false;
-    } catch {
-        // 기존 저장값이 없으면 마이페이지의 예시 좋아요 목록을 유지합니다.
-    }
-    return ["1", "2", "5"].includes(key) || key.startsWith("generated-roommate-");
-}
-
-// Provider를 추가하지 않고 각 화면의 로컬 상태와 브라우저의 예시 좋아요만 동기화합니다.
-export function useProfileLikes() {
-    const [likes, setLikes] = useState(readProfileLikes);
+// Keep only successful changes in the current view; fresh server profiles take precedence.
+export function useProfileLikes(profile) {
+    const [likes, setLikes] = useState({});
     const [likeError, setLikeError] = useState("");
     const [likePending, setLikePending] = useState(false);
     const pending = useRef(false);
-
     useEffect(() => {
-        const syncLocal = (event) => setLikes(event.detail);
-        const syncStorage = (event) => {
-            if (event.key === null || event.key === LIKES_KEY || event.key === LEGACY_UNLIKED_KEY) {
-                setLikes(readProfileLikes());
+        const syncLike = ({ detail }) => {
+            if (profile && detail.key === likeKey(profile)) {
+                setLikes((current) => ({ ...current, [detail.key]: { liked: detail.liked, profile } }));
             }
         };
-        window.addEventListener(LIKES_EVENT, syncLocal);
-        window.addEventListener("storage", syncStorage);
-        return () => {
-            window.removeEventListener(LIKES_EVENT, syncLocal);
-            window.removeEventListener("storage", syncStorage);
-        };
-    }, []);
-
-    const isLiked = (profile) => profile.source === "backend"
-        ? likes[`backend:${profile.id}`]?.liked ?? Boolean(profile.liked)
-        : likes[getProfileKey(profile)]?.liked ?? isInitiallyLiked(profile);
-    const updateLikes = (profiles, liked) => {
-        if (profiles.length === 1 && profiles[0].source === "backend") {
-            if (pending.current) return;
-            const profile = profiles[0];
-            pending.current = true;
-            setLikePending(true);
-            setLikeError("");
-            return setRoommateLike(profile.userId ?? profile.id, liked).then(() => {
-                const next = { ...likes, [`backend:${profile.id}`]: { liked, profile } };
-                setLikes(next);
-                window.dispatchEvent(new CustomEvent(LIKES_EVENT, { detail: next }));
-                return true;
-            }).catch((error) => {
-                setLikeError(error.message);
-                return false;
-            }).finally(() => {
-                pending.current = false;
-                setLikePending(false);
-            });
-        }
-        const next = { ...likes, ...readProfileLikes() };
-        for (const profile of profiles) {
-            next[getProfileKey(profile)] = { liked, profile };
-        }
-        let saved = true;
-        try {
-            window.localStorage.setItem(LIKES_KEY, JSON.stringify(next));
-        } catch {
-            saved = false;
-        }
-        setLikes(next);
-        window.dispatchEvent(new CustomEvent(LIKES_EVENT, { detail: next }));
-        return saved;
+        window.addEventListener(LIKES_EVENT, syncLike);
+        return () => window.removeEventListener(LIKES_EVENT, syncLike);
+    }, [profile]);
+    const isLiked = (profile) => {
+        const entry = likes[likeKey(profile)];
+        return entry?.profile === profile ? entry.liked : Boolean(profile.liked);
     };
-
-    return { likes, isLiked, updateLikes, likeError, likePending };
+    const updateLikes = async (profiles, liked) => {
+        if (pending.current || profiles.some((item) => pendingProfileLikes.has(likeKey(item)))) return false;
+        profiles.forEach((item) => pendingProfileLikes.add(likeKey(item)));
+        pending.current = true;
+        setLikePending(true);
+        setLikeError("");
+        try {
+            for (const profile of profiles) {
+                if (profile.source === "backend") {
+                    await setRoommateLike(profile.userId ?? profile.id, liked);
+                }
+                setLikes((current) => ({ ...current, [likeKey(profile)]: { liked, profile } }));
+                window.dispatchEvent(new CustomEvent(LIKES_EVENT, { detail: { key: likeKey(profile), liked } }));
+            }
+            return true;
+        } catch (error) {
+            setLikeError(error.message);
+            return false;
+        } finally {
+            profiles.forEach((item) => pendingProfileLikes.delete(likeKey(item)));
+            pending.current = false;
+            setLikePending(false);
+        }
+    };
+    return { isLiked, updateLikes, likeError, likePending };
 }
 
 function ProfileCard({
@@ -114,10 +73,10 @@ function ProfileCard({
 }) {
     const location = useLocation();
     const navigate = useNavigate();
-    const { isLiked: checkLiked, updateLikes, likeError, likePending } = useProfileLikes();
+    const { isLiked: checkLiked, updateLikes, likeError, likePending } = useProfileLikes(profile);
     const detailProfile = profile.source === "backend" ? { ...profile, id: profile.userId }
         : location.pathname === "/" ? { ...profile, id: `main:${profile.id}` } : profile;
-    const isLiked = checkLiked(detailProfile);
+    const isLiked = checkLiked(profile);
     const href = `/roommates/${encodeURIComponent(getProfileKey(detailProfile))}${activeTab === "recommended" ? "?tab=recommended" : ""}`;
     const detailState = { profile: detailProfile, activeTab, fromProfileCard: true };
     const [analysis, setAnalysis] = useState({ status: "idle", text: "" });
@@ -188,10 +147,10 @@ function ProfileCard({
                         title={isLiked ? "좋아요 취소" : "좋아요"}
                         $liked={isLiked}
                         disabled={likePending}
-                        onClick={(event) => {
+                        onClick={async (event) => {
                             event.stopPropagation();
-                            updateLikes([detailProfile], !isLiked);
-                            onToggleLike?.(profile.id);
+                            const success = await updateLikes([profile], !isLiked);
+                            if (success) onToggleLike?.(profile.id);
                         }}
                     >
                         <Heart

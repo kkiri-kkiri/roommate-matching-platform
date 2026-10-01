@@ -9,7 +9,7 @@ import * as S from "./DetailedProfileCss";
 import ProfileImage from "../ProfileImage";
 import { getRoommateDetail } from "../../../api/roommateApi";
 import { getProfileKey, useProfileLikes } from "./ProfileCard";
-import { getSavedSurveyProfiles, LIKED_PROFILES } from "../../../pages/mypage/MyPage";
+import { getSavedSurveyProfiles } from "../../../pages/mypage/MyPage";
 
 // 상세 화면에서 사용하는 설문 항목은 기존 내 설문의 응답 키와 일치시킵니다.
 const SECTIONS = [
@@ -93,18 +93,17 @@ export function getDetailedProfile(profileId, routeProfile) {
     return String(routeProfile.userId) === String(profileId) ? routeProfile : null;
   }
   const key = getProfileKey({ id: profileId });
-  const likedProfile = LIKED_PROFILES.find((item) => getProfileKey(item) === key);
   const savedSurvey = getSavedSurveyProfiles().find((item) => item.id === key);
   const supplied = routeProfile && getProfileKey(routeProfile) === key ? routeProfile : null;
   const demo = Object.prototype.hasOwnProperty.call(DEMO_PROFILES, key) ? DEMO_PROFILES[key] : null;
-  if (!likedProfile && !savedSurvey && !supplied && !demo) return null;
+  if (!savedSurvey && !supplied && !demo) return null;
   const profile = {
-    ...demo, ...likedProfile,
+    ...demo,
     ...(savedSurvey ? { ...savedSurvey.profile, id: savedSurvey.id, answers: savedSurvey.answers } : {}),
     ...supplied,
   };
   // 빈 응답 객체는 실제 미작성 상태이므로 다른 사람의 예시 답변으로 채우지 않습니다.
-  profile.answers = supplied?.answers ?? savedSurvey?.answers ?? demo?.answers ?? likedProfile?.answers ?? {};
+  profile.answers = supplied?.answers ?? savedSurvey?.answers ?? demo?.answers ?? {};
   const mbti = ["mbtiEnergy", "mbtiInformation", "mbtiDecision", "mbtiLifestyle"]
     .map((id) => profile[id] || "").join("");
   return {
@@ -126,8 +125,8 @@ function ProfileDialog({ profile, sourceProfile, onDismiss, returnTo, loading, e
   const tabRefs = useRef([]);
   const backdropPointer = useRef(false);
   const [activeSection, setActiveSection] = useState("pattern");
-  const { isLiked, updateLikes, likeError, likePending } = useProfileLikes();
-  const liked = profile ? isLiked(profile) : false;
+  const { isLiked, updateLikes, likeError, likePending } = useProfileLikes(sourceProfile);
+  const liked = sourceProfile ? isLiked(sourceProfile) : false;
   const section = SECTIONS.find(({ id }) => id === activeSection);
   const SectionIcon = section.icon;
   const answers = profile?.answers || {};
@@ -309,7 +308,6 @@ function DetailedProfile() {
   const { profileId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { likes } = useProfileLikes();
   const serverRoute = /^\d+$/.test(profileId) || new URLSearchParams(location.search).get("tab") === "recommended"
     || location.state?.profile?.source === "backend";
   const [remote, setRemote] = useState({ id: null, profile: null, error: "" });
@@ -329,7 +327,7 @@ function DetailedProfile() {
     return () => controller.abort();
   }, [serverRoute, profileId]);
   const selectedProfile = serverRoute ? (remote.id === profileId ? remote.profile : null) : getDetailedProfile(profileId,
-    location.state?.profile || likes[getProfileKey({ id: profileId })]?.profile,
+    location.state?.profile,
   );
   const emptyPreview = !serverRoute && new URLSearchParams(location.search).get("preview") === "empty";
   const profile = selectedProfile && (emptyPreview ? { ...selectedProfile, answers: {}, matchScore: null } : selectedProfile);
