@@ -382,6 +382,16 @@ export const ContextLink = styled(Link)`
   &:hover { text-decoration: underline; }
   ${focus}
 `;
+export const SourcePost = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-bottom: 1px solid #e2e2e4;
+  background: white;
+  > span { color: #747781; font-size: 12px; }
+  @media (max-width: 799px) { padding: 8px 12px; }
+`;
 export const MessageScroller = styled.div`
   flex: 1;
   min-height: 0;

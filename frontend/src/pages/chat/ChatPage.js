@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
-  ArrowLeft, ArrowRight, CheckCheck,
+  ArrowLeft, CheckCheck,
   BellOff, LogOut, MessageCircle, MessagesSquare, MoreHorizontal, Pin, Search, Send, X,
 } from "lucide-react";
 
@@ -135,7 +135,7 @@ function ChatPage() {
   const profileHref = `/chat?room=${encodeURIComponent(selectedId)}&view=profile`;
 
   const { connected, loadingRooms, roomError, messageLoading, messageError, searchResults,
-    updateSettings, send, leave } = useChat({
+    updateSettings, send, leave, sourcePostTitle } = useChat({
     isAuthenticated, rooms, setRooms, activeRoom, searchQuery, location, setStatus,
     onCreated: (roomId) => {
       setCategory("all"); setRoomSearch(""); setMobileOpen(true);
@@ -311,11 +311,10 @@ function ChatPage() {
             ) : (
               <S.EmptyState $compact>
                 <S.EmptyIcon><MessagesSquare size={28} aria-hidden="true" /></S.EmptyIcon>
-                <h3>아직 나눈 대화가 없어요</h3>
-                <p>{category === "all" ? "새로운 이웃을 만나 인사를 건네보세요." : `${CATEGORY_LABELS[category]}에서 시작한 대화가 여기에 모여요.`}</p>
-                {category !== "all" && rooms.length > 0
-                  ? <S.SecondaryButton type="button" onClick={() => selectCategory("all")}>전체 대화 보기</S.SecondaryButton>
-                  : <S.ContextLink to="/roommates">룸메이트 둘러보기 <ArrowRight size={15} aria-hidden="true" /></S.ContextLink>}
+                <h3>현재 채팅방이 없어요</h3>
+                {category !== "all" && rooms.length > 0 && (
+                  <S.SecondaryButton type="button" onClick={() => selectCategory("all")}>전체 대화 보기</S.SecondaryButton>
+                )}
               </S.EmptyState>
             )}
           </S.Sidebar>
@@ -340,6 +339,15 @@ function ChatPage() {
                     </div>
                   </S.ParticipantButton>
                 </S.RoomHeader>
+
+                {activeRoom.category === "community" && activeRoom.sourcePost && (
+                  <S.SourcePost>
+                    <span>대화를 시작한 게시글</span>
+                    <S.ContextLink to={`/community/posts/${encodeURIComponent(activeRoom.sourcePost)}`}>
+                      {sourcePostTitle || `게시글 #${activeRoom.sourcePost}`}
+                    </S.ContextLink>
+                  </S.SourcePost>
+                )}
 
                 <S.SearchBar role="search" aria-label="대화 내역 검색">
                   <Search size={18} aria-hidden="true" />
@@ -414,9 +422,8 @@ function ChatPage() {
             ) : (
               <S.EmptyState>
                 <S.EmptyIcon><MessagesSquare size={40} aria-hidden="true" /></S.EmptyIcon>
-                <h2>{rooms.length ? "어떤 이야기를 나눠볼까요?" : "새로운 인연의 시작, 첫 대화"}</h2>
-                <p>{rooms.length ? "목록에서 채팅방을 선택해\n이웃과의 대화를 이어가세요." : "아직 대화 중인 이웃이 없어요.\n나와 잘 맞는 룸메이트를 만나보세요."}</p>
-                {!rooms.length && <S.PrimaryLink to="/roommates">룸메이트 둘러보기 <ArrowRight size={16} aria-hidden="true" /></S.PrimaryLink>}
+                <h2>{rooms.length ? "어떤 이야기를 나눠볼까요?" : "현재 채팅방이 없어요"}</h2>
+                {rooms.length > 0 && <p>{"목록에서 채팅방을 선택해\n이웃과의 대화를 이어가세요."}</p>}
               </S.EmptyState>
             )}
           </S.RoomPanel>
