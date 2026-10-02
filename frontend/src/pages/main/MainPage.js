@@ -276,14 +276,17 @@ function MainPage({ currentUser }) {
               </S.SectionDescription>
             </div>
 
-            <S.MoreLink as={Link} to="/roommates">
+            <S.MoreLink as={Link} to="/roommates?tab=recommended">
               더보기
               <ArrowRight size={17} aria-hidden="true" />
             </S.MoreLink>
           </S.SectionHeader>
 
           {!userId ? (
-            <p role="status">로그인 후 추천 룸메이트를 확인할 수 있어요.</p>
+            <div>
+              <p role="status">로그인 후 추천 프로필을 확인할 수 있어요.</p>
+              <S.MoreLink as={Link} to="/login">로그인하기</S.MoreLink>
+            </div>
           ) : roommatesLoading ? (
             <p role="status">추천 룸메이트를 불러오는 중이에요.</p>
           ) : roommatesError ? (

@@ -35,8 +35,13 @@ export const Page = styled.main`
   box-sizing: border-box;
   background: #faf9f6;
   color: #1a1c1c;
-  font-family: "Plus Jakarta Sans", "Pretendard", -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    "Plus Jakarta Sans",
+    "Pretendard",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 
   *,
   *::before,
@@ -210,7 +215,9 @@ export const Input = styled.input`
   font: inherit;
   font-size: 16px;
   line-height: 22px;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 
   &::placeholder {
     color: #a0a1a7;
@@ -231,6 +238,21 @@ export const Input = styled.input`
   }
 
   ${reduceMotion}
+`;
+
+export const EmailInput = styled(Input)`
+  padding-right: 136px;
+`;
+
+export const EmailDomain = styled.span`
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  color: #444650;
+  font-size: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateY(-50%);
 `;
 
 export const FieldHint = styled.span`
@@ -257,7 +279,10 @@ export const PrimaryButton = styled.button`
   line-height: 22px;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(12, 50, 115, 0.14);
-  transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 
   svg {
     width: 19px;
@@ -332,8 +357,7 @@ export const ResultPanel = styled.div`
   border: 1px solid
     ${({ $tone }) => ($tone === "success" ? "#b8e4df" : "#f0cfcb")};
   border-radius: 16px;
-  background: ${({ $tone }) =>
-    $tone === "success" ? "#f1fbfa" : "#fff7f5"};
+  background: ${({ $tone }) => ($tone === "success" ? "#f1fbfa" : "#fff7f5")};
 
   @media (max-width: 480px) {
     gap: 12px;
@@ -348,8 +372,7 @@ export const ResultIcon = styled.span`
   flex: 0 0 40px;
   place-items: center;
   border-radius: 50%;
-  background: ${({ $tone }) =>
-    $tone === "success" ? "#d8f4f1" : "#ffdad6"};
+  background: ${({ $tone }) => ($tone === "success" ? "#d8f4f1" : "#ffdad6")};
   color: ${({ $tone }) => ($tone === "success" ? "#006a65" : "#ba1a1a")};
 
   svg {

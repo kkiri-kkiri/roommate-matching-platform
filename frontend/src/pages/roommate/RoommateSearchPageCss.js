@@ -684,6 +684,7 @@ export const EmptyResetButton = styled.button`
   font-size: 14px;
   font-weight: 600;
   line-height: 16px;
+  text-decoration: none;
   cursor: pointer;
   transition:
     color 160ms ease,
