@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowRight, Eye, Gift, Heart, Image, LayoutGrid,
-  MessageCircle, MessageSquare, Package, PenLine, Search, ShieldCheck, UserRound, X,
+  MessageCircle, MessageSquare, Package, PenLine, Search, ShieldCheck, X,
 } from "lucide-react";
 
 import * as api from "../../api/communityApi";
-import { normalizePost } from "./communityData";
+import { getPostAuthorDisplay, normalizePost } from "./communityData";
 import Pagination from "../../components/common/Pagination/Pagination";
 import CommunityPostPage from "./CommunityPostPage";
 import CommunityPostFormPage from "./CommunityPostFormPage";
@@ -122,8 +122,8 @@ function CommunityPage({ currentUser }) {
 
   const requireLogin = () => navigate("/login");
   const startPost = () => currentUser ? navigate("/community/posts/new") : requireLogin();
-  const savePost = async ({ category, title, content, images }) => {
-    const payload = { category, title, content };
+  const savePost = async ({ category, title, content, anonymous, images }) => {
+    const payload = { category, title, content, anonymous };
     const files = images.filter((image) => image.file instanceof File).map((image) => image.file);
     let id = post?.id;
     if (isEdit) {
@@ -216,7 +216,7 @@ function CommunityPage({ currentUser }) {
               <S.PostHeading>{category === "전체" && <S.CategoryBadge $category={item.category}>{item.category.replace("게시판", "")}</S.CategoryBadge>}<S.DormitoryBadge>{item.dormitory}</S.DormitoryBadge>{currentUser && item.author.id === currentUser.id && <S.OwnBadge>내 글</S.OwnBadge>}</S.PostHeading>
               <S.PostTitleLink to={`/community/posts/${item.id}`}><h3>{item.title}</h3>{item.hasImages && <S.ImageLabel role="img" aria-label="사진 첨부" title="사진 첨부"><Image size={16} aria-hidden="true" /></S.ImageLabel>}</S.PostTitleLink>
               <S.Excerpt>{item.contentPreview}</S.Excerpt>
-              <S.PostBottom><S.Metadata><S.Author><UserRound size={14} aria-hidden="true" />{item.author.nickname}</S.Author><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></S.Metadata><S.Stats><span aria-label={`조회 ${item.views}회`}><Eye size={15} aria-hidden="true" />{item.views}</span><span aria-label={`공감 ${item.likes}개`}><Heart size={15} aria-hidden="true" />{item.likes}</span><span aria-label={`댓글 ${item.commentCount}개`}><MessageCircle size={15} aria-hidden="true" />{item.commentCount}</span></S.Stats></S.PostBottom>
+              <S.PostBottom><S.Metadata><S.Author><S.AuthorImage src={getPostAuthorDisplay(item).image} alt="" />{getPostAuthorDisplay(item).nickname}</S.Author><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></S.Metadata><S.Stats><span aria-label={`조회 ${item.views}회`}><Eye size={15} aria-hidden="true" />{item.views}</span><span aria-label={`공감 ${item.likes}개`}><Heart size={15} aria-hidden="true" />{item.likes}</span><span aria-label={`댓글 ${item.commentCount}개`}><MessageCircle size={15} aria-hidden="true" />{item.commentCount}</span></S.Stats></S.PostBottom>
             </S.PostRow>)}
           </S.PostList> : <S.EmptyState>
             <S.EmptyIcon>{query ? <Search aria-hidden="true" /> : <MessageSquare aria-hidden="true" />}</S.EmptyIcon>

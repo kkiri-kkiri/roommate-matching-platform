@@ -27,6 +27,7 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
   const [category, setCategory] = useState(post?.category || "자유게시판");
   const [title, setTitle] = useState(post?.title || "");
   const [content, setContent] = useState(post?.content || "");
+  const [anonymous, setAnonymous] = useState(post?.anonymous === true);
   const [images, setImages] = useState(() => [...(post?.images || [])]);
   const [errors, setErrors] = useState({});
   const [imageError, setImageError] = useState("");
@@ -154,7 +155,7 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
     setSaving(true);
     setSaveError("");
     try {
-      await onSave({ category, title: title.trim(), content: content.trim(), images });
+      await onSave({ category, title: title.trim(), content: content.trim(), anonymous, images });
     } catch (error) {
       setSaveError(error.message);
     } finally {
@@ -263,6 +264,12 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
               </S.Error>
             )}
           </S.Field>
+
+          <S.AnonymousChoice>
+            <input type="checkbox" checked={anonymous} onChange={(event) => setAnonymous(event.target.checked)} disabled={saving} />
+            익명
+            <small>체크하면 닉네임과 학과 프로필이 표시되지 않아요.</small>
+          </S.AnonymousChoice>
 
           <S.ImageField>
             <S.Legend>

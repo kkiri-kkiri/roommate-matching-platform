@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { getProfileImage } from "../../components/common/ProfileImage";
 import CommunityPage from "./CommunityPage";
 import * as api from "../../api/communityApi";
 import { createChatRoom } from "../../api/chatApi";
@@ -99,7 +100,7 @@ test("creates a post and navigates using its server ID", async () => {
   fireEvent.change(screen.getByLabelText(/내용/), { target: { value: "새 내용" } });
   fireEvent.click(screen.getByRole("button", { name: "게시글 등록" }));
   await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith("/community/posts/88", { replace: true }));
-  expect(api.createCommunityPost).toHaveBeenCalledWith({ category: "자유게시판", title: "새 제목", content: "새 내용" }, []);
+  expect(api.createCommunityPost).toHaveBeenCalledWith({ category: "자유게시판", title: "새 제목", content: "새 내용", anonymous: false }, []);
 });
 
 test("shows server errors for missing posts", async () => {
@@ -121,6 +122,62 @@ test("editing retains only selected server image IDs and sends new Files separat
   fireEvent.change(screen.getByLabelText("첨부할 이미지 선택"), { target: { files: [file] } });
   await screen.findByText("new.png");
   fireEvent.click(screen.getByRole("button", { name: "수정 완료" }));
-  await waitFor(() => expect(api.updateCommunityPost).toHaveBeenCalledWith(12, { category: "자유게시판", title: "서버 게시글", content: "서버 본문", keepImageIds: [10] }, [file]));
+  await waitFor(() => expect(api.updateCommunityPost).toHaveBeenCalledWith(12, { category: "자유게시판", title: "서버 게시글", content: "서버 본문", anonymous: false, keepImageIds: [10] }, [file]));
   expect(mockNavigate).toHaveBeenCalledWith("/community/posts/12", { replace: true });
+});
+
+
+test.each(["/community", "/community/my-posts", "/community/posts/12"])("renders anonymous and public authors on %s", async (path) => {
+  mockPath = path;
+  const publicAuthor = { id: 2, nickname: "공개닉네임", major: "소프트웨어융합전공" };
+  const entry = { ...post, author: publicAuthor, anonymous: true, comments: [], commentCount: 0 };
+  const list = { content: [entry], totalElements: 1, totalPages: 1 };
+  api.getCommunityPosts.mockResolvedValue(list);
+  api.getMyCommunityPosts.mockResolvedValue(list);
+  api.getCommunityPost.mockResolvedValue(entry);
+  const { container, unmount } = render(<CommunityPage currentUser={currentUser} />);
+  await screen.findByText("익명");
+  expect(screen.queryByText("공개닉네임")).not.toBeInTheDocument();
+  expect(container.innerHTML).not.toContain("소프트웨어융합");
+  expect(container.querySelector('img')).toHaveAttribute("src", "/img/힙합 한경이.png");
+  unmount();
+  entry.anonymous = false;
+  const publicView = render(<CommunityPage currentUser={currentUser} />);
+  await screen.findByText("공개닉네임");
+  expect(publicView.container.querySelector('img')).toHaveAttribute("src", getProfileImage(publicAuthor.major));
+});
+
+test("sends anonymous=true when creating a checked post", async () => {
+  mockPath = "/community/posts/new";
+  api.createCommunityPost.mockResolvedValue(88);
+  render(<CommunityPage currentUser={currentUser} />);
+  const checkbox = screen.getByRole("checkbox", { name: /익명/ });
+  expect(checkbox).not.toBeChecked();
+  fireEvent.click(checkbox);
+  fireEvent.change(screen.getByLabelText(/제목/), { target: { value: "익명 제목" } });
+  fireEvent.change(screen.getByLabelText(/내용/), { target: { value: "익명 내용" } });
+  fireEvent.click(screen.getByRole("button", { name: "게시글 등록" }));
+  await waitFor(() => expect(api.createCommunityPost).toHaveBeenCalledWith(expect.objectContaining({ anonymous: true }), []));
+});
+
+test.each([true, false])("retains or changes anonymous state during editing: %s", async (anonymous) => {
+  mockPath = "/community/posts/12/edit";
+  api.getCommunityPost.mockResolvedValue({ ...post, anonymous: true, author: { id: 1, nickname: "익명", major: null } });
+  render(<CommunityPage currentUser={currentUser} />);
+  const checkbox = await screen.findByRole("checkbox", { name: /익명/ });
+  expect(checkbox).toBeChecked();
+  if (!anonymous) fireEvent.click(checkbox);
+  fireEvent.click(screen.getByRole("button", { name: "수정 완료" }));
+  await waitFor(() => expect(api.updateCommunityPost).toHaveBeenCalledWith(12, expect.objectContaining({ anonymous }), []));
+});
+
+test("keeps owner actions for anonymous posts", async () => {
+  mockPath = "/community/posts/12";
+  api.getCommunityPost.mockResolvedValue({ ...post, anonymous: true, author: { id: 1, nickname: "익명", major: null }, comments: [] });
+  render(<CommunityPage currentUser={currentUser} />);
+  await screen.findByText("익명 · 나");
+  expect(screen.getByRole("button", { name: "수정" })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "삭제" }));
+  fireEvent.click(screen.getByRole("button", { name: "삭제하기", hidden: true }));
+  await waitFor(() => expect(api.deleteCommunityPost).toHaveBeenCalledWith(12));
 });

@@ -192,6 +192,7 @@ public class CommunityPostService {
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
 		CommunityPost post = new CommunityPost(profile.getUser(), profile.getDormitory(),
 				request.category(), request.title(), request.content());
+		post.changeAnonymous(request.anonymous());
 		return communityPostRepository.save(post).getPostId();
 	}
 
@@ -213,6 +214,9 @@ public class CommunityPostService {
 		}
 
 		post.updateContent(request.category(), request.title(), request.content());
+		if (request.anonymous() != null) {
+			post.changeAnonymous(request.anonymous());
+		}
 		postImageRepository.deleteAll(existingImages.stream()
 				.filter(image -> !keepIds.contains(image.getPostImageId())).toList());
 		// 유지한 이미지는 기존 표시 순서를 보존한다.

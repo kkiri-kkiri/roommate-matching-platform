@@ -15,6 +15,7 @@ public record CommunityPostResponse(
 		String title,
 		String contentPreview,
 		CommunityAuthorResponse author,
+		boolean anonymous,
 		LocalDateTime createdAt,
 		int views,
 		long likes,
@@ -29,7 +30,7 @@ public record CommunityPostResponse(
 		return new CommunityPostResponse(
 				post.getPostId(), post.getCategory(),
 				post.getDormitory() == null ? null : post.getDormitory().getDormitoryName(),
-				post.getTitle(), contentPreview, author, post.getCreatedAt(), post.getViewCount(),
+				post.getTitle(), contentPreview, author.forPost(post.isAnonymous()), post.isAnonymous(), post.getCreatedAt(), post.getViewCount(),
 				likes, commentCount, hasImages, liked, reported);
 	}
 }

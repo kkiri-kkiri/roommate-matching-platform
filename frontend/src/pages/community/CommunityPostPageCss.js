@@ -182,6 +182,7 @@ export const AuthorRow = styled.div`
 `;
 
 export const Avatar = styled.span`
+  object-fit: cover;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;

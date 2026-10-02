@@ -1,4 +1,5 @@
-import { normalizePost } from "./communityData";
+import { getProfileImage } from "../../components/common/ProfileImage";
+import { getPostAuthorDisplay, normalizePost } from "./communityData";
 
 test("groups unordered flat replies and preserves numeric authors and server images", () => {
   const author = { id: 7, nickname: "동일한 닉네임" };
@@ -14,4 +15,14 @@ test("groups unordered flat replies and preserves numeric authors and server ima
   expect(normalized.comments[0]).not.toHaveProperty("liked");
   expect(normalized.comments[0]).not.toHaveProperty("reported");
   expect(post.comments[0]).not.toHaveProperty("replies");
+});
+
+
+test("defaults legacy posts to public and preserves author IDs for anonymous posts", () => {
+  const author = { id: 7, nickname: "실제이름", major: "소프트웨어융합전공" };
+  expect(normalizePost({ author }).anonymous).toBe(false);
+  const anonymous = normalizePost({ author, anonymous: true });
+  expect(anonymous.author.id).toBe(7);
+  expect(getPostAuthorDisplay(anonymous)).toEqual({ nickname: "익명", image: "/img/힙합 한경이.png" });
+  expect(getPostAuthorDisplay({ author, anonymous: false })).toEqual({ nickname: author.nickname, image: getProfileImage(author.major) });
 });

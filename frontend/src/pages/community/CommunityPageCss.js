@@ -385,3 +385,5 @@ export const EmptyIcon = styled.div`
   color: #006a65;
   svg { width: 28px; height: 28px; }
 `;
+
+export const AuthorImage = styled.img`width: 26px; height: 26px; border-radius: 8px; object-fit: cover; flex-shrink: 0;`;
