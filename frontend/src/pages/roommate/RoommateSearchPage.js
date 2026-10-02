@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Check,
   ChevronDown,
@@ -24,9 +24,11 @@ const DEFAULT_FILTERS = FILTER_GROUPS.reduce(
 );
 const PAGE_SIZE = 9;
 
-function RoommateSearchPage() {
+function RoommateSearchPage({ currentUser }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") === "recommended" ? "recommended" : "all";
+  const userId = currentUser?.id;
+  const requiresLogin = activeTab === "recommended" && !userId;
   const setActiveTab = (tab) => {
     setCurrentPage(1);
     setSearchParams((current) => {
@@ -48,6 +50,7 @@ function RoommateSearchPage() {
   const [revision, setRevision] = useState(0);
   const [results, setResults] = useState({ status: "loading", profiles: [], totalPages: 1, error: "" });
   useEffect(() => {
+    if (requiresLogin) return;
     const controller = new AbortController();
     setResults({ status: "loading", profiles: [], totalPages: 1, error: "" });
     (async () => {
@@ -82,7 +85,7 @@ function RoommateSearchPage() {
       }
     })();
     return () => controller.abort();
-  }, [activeTab, currentPage, filters, revision]);
+  }, [activeTab, currentPage, filters, revision, requiresLogin, userId]);
   const tabRefs = useRef({});
   const filterDialogRef = useRef(null);
 
@@ -400,7 +403,13 @@ function RoommateSearchPage() {
                 : "all-profile-tab"
             }
           >
-            {results.status !== "success" ? (
+            {requiresLogin ? (
+              <S.EmptyState role="status">
+                <h3>로그인 후 추천 프로필을 확인할 수 있어요.</h3>
+                <p>생활 습관과 선호 조건에 맞는 룸메이트를 추천해 드려요.</p>
+                <S.EmptyResetButton as={Link} to="/login">로그인하기</S.EmptyResetButton>
+              </S.EmptyState>
+            ) : results.status !== "success" ? (
               <S.EmptyState role={results.status === "error" ? "alert" : "status"}>
                 <h3>{results.status === "loading" ? "프로필을 불러오고 있어요" : "프로필을 불러오지 못했어요"}</h3>
                 <p>{results.error || "잠시만 기다려 주세요."}</p>

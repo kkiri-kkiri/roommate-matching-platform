@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import { startTransition, useEffect, useState } from "react";
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
 import DetailedProfile from "./components/common/ProfileCard/DetailedProfile";
@@ -43,6 +43,7 @@ function AdminRoute({ currentUser }) {
 
 function App() {
   const location = useLocation();
+  const navigate = useNavigate();
   const backgroundLocation = location.state?.backgroundLocation;
   const [currentUser, setCurrentUser] = useState(null);
   const [authInitialized, setAuthInitialized] = useState(false);
@@ -75,8 +76,12 @@ function App() {
   };
 
   const handleLogout = () => {
-    setCurrentUser(null);
     clearStoredAuthentication();
+    // 인증 상태와 경로를 함께 변경해 기존 화면의 로그인 리다이렉트를 방지합니다.
+    startTransition(() => {
+      setCurrentUser(null);
+      navigate("/", { replace: true });
+    });
   };
 
   if (!authInitialized) return null;
@@ -95,7 +100,7 @@ function App() {
           <Route path="/admin" element={<AdminRoute currentUser={currentUser} />} />
           <Route
             path="/roommates"
-            element={<><RoommateSearchPage /><Outlet /></>}
+            element={<><RoommateSearchPage currentUser={currentUser} /><Outlet /></>}
           >
             <Route path=":profileId" element={<DetailedProfile />} />
           </Route>

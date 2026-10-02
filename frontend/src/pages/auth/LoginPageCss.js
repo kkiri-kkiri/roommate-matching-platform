@@ -183,6 +183,46 @@ export const Input = styled.input`
   }
 `;
 
+export const EmailField = styled.div`
+  display: flex;
+  align-items: center;
+  height: 52px;
+  border: 1px solid ${({ $invalid }) => ($invalid ? "#ba1a1a" : "#e2e2e4")};
+  border-radius: 12px;
+  background: #ffffff;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+
+  &:hover {
+    border-color: ${({ $invalid }) => ($invalid ? "#ba1a1a" : "#c4c6d2")};
+  }
+
+  &:focus-within {
+    border-color: ${({ $invalid }) => ($invalid ? "#ba1a1a" : "#00a79f")};
+    box-shadow: 0 0 0 3px rgba(0, 167, 159, 0.14);
+  }
+`;
+
+export const EmailInput = styled(Input)`
+  flex: 1;
+  min-width: 0;
+  width: 0;
+  height: 100%;
+  padding-right: 8px;
+  border: 0;
+
+  &:focus {
+    box-shadow: none;
+  }
+`;
+
+export const EmailDomain = styled.span`
+  flex-shrink: 0;
+  padding-right: 16px;
+  color: #444650;
+  font-size: 14px;
+  white-space: nowrap;
+`;
+
 export const PasswordField = styled.div`
   position: relative;
 `;

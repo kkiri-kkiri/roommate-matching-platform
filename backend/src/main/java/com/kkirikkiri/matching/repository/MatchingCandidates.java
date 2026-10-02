@@ -19,7 +19,8 @@ public final class MatchingCandidates {
         Root<ProfileSurvey> survey = surveyQuery.from(ProfileSurvey.class);
         surveyQuery.select(survey.get("profileSurveyId")).where(
                 cb.equal(survey.get("user"), profile.get("user")), cb.isTrue(survey.get("completed")));
-        return cb.and(cb.notEqual(profile.get("user").get("userId"), requesterId),
+        return cb.and(requesterId == null ? cb.conjunction()
+                        : cb.notEqual(profile.get("user").get("userId"), requesterId),
                 cb.equal(profile.get("user").get("status"), UserStatus.ACTIVE),
                 cb.isNotNull(profile.get("faculty")), cb.isNotNull(profile.get("dormitory")),
                 cb.isNotNull(profile.get("nickname")), cb.isNotNull(profile.get("birthYear")),

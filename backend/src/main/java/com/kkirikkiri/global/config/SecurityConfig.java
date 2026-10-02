@@ -55,6 +55,8 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.PUT, "/api/users/me/profile-survey",
 								"/api/users/me/roommate-preferences")
 						.authenticated()
+						.requestMatchers(HttpMethod.GET, "/api/roommates/recommended").authenticated()
+						.requestMatchers(HttpMethod.GET, "/api/roommates", "/api/roommates/{userId}").permitAll()
 						.requestMatchers("/api/roommates/**", "/api/users/me/liked-roommates").authenticated()
 						.requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/{postId}").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/posts", "/api/posts/{postId}/likes",

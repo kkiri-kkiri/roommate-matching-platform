@@ -82,7 +82,7 @@ function ProfileCard({
         profile: detailProfile,
         activeTab,
         fromProfileCard: true,
-        ...(["/profile", "/mypage"].includes(location.pathname)
+        ...(["/", "/profile", "/mypage"].includes(location.pathname)
             ? { backgroundLocation: location }
             : {}),
     };

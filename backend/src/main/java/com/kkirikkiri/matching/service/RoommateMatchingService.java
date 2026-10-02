@@ -1,6 +1,7 @@
 package com.kkirikkiri.matching.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jakarta.persistence.criteria.Root;
@@ -38,7 +39,7 @@ public class RoommateMatchingService {
 
     public RoommatePageResponse<RoommateProfileResponse> getRoommates(
             Long userId, RoommateFilterRequest filter, Pageable pageable) {
-        validateUserId(userId);
+        if (userId != null) validateUserId(userId);
         validatePageable(pageable);
         validateFilter(filter);
         Pageable sorted = ordered(pageable, "userId", "user.userId", false);
@@ -46,7 +47,7 @@ public class RoommateMatchingService {
         Page<Long> ids = read(() -> userProfileRepository.findAll(
                 MatchingCandidates.eligible(userId).and(buildFilterSpecification(userId, filter)), sorted)
                 .map(profile -> profile.getUser().getUserId()));
-        refreshService.refreshTargets(userId, ids.getContent());
+        if (userId != null) refreshService.refreshTargets(userId, ids.getContent());
         return read(() -> toIdPage(userId, ids));
     }
 
@@ -68,16 +69,18 @@ public class RoommateMatchingService {
     }
 
     public RoommateDetailResponse getRoommateDetail(Long userId, Long targetUserId) {
-        validateDifferentUserIds(userId, targetUserId);
+        validateUserId(targetUserId);
+        if (userId != null) validateDifferentUserIds(userId, targetUserId);
         read(() -> findCandidate(userId, targetUserId));
-        refreshService.refreshTargets(userId, List.of(targetUserId));
+        if (userId != null) refreshService.refreshTargets(userId, List.of(targetUserId));
         return read(() -> {
             UserProfile profile = findCandidate(userId, targetUserId);
             ProfileSurvey survey = profileSurveyRepository.findByUser_UserId(targetUserId).orElseThrow();
-            Integer score = roommateMatchRepository.findByRequesterUser_UserIdAndTargetUser_UserId(userId, targetUserId)
+            Integer score = userId == null ? null
+                    : roommateMatchRepository.findByRequesterUser_UserIdAndTargetUser_UserId(userId, targetUserId)
                     .map(RoommateMatch::getMatchScore).orElse(null);
             return RoommateDetailResponse.from(profile, survey, createTags(survey), score,
-                    profileLikeRepository.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId));
+                    userId != null && profileLikeRepository.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId));
         });
     }
 
@@ -134,9 +137,11 @@ public class RoommateMatchingService {
                 .collect(Collectors.toMap(profile -> profile.getUser().getUserId(), profile -> profile));
         var surveys = profileSurveyRepository.findAllByUser_UserIdIn(ids.getContent()).stream()
                 .collect(Collectors.toMap(survey -> survey.getUser().getUserId(), survey -> survey));
-        var scores = roommateMatchRepository.findAllByRequesterUser_UserIdAndTargetUser_UserIdIn(userId, ids.getContent())
+        var scores = userId == null ? Map.<Long, Integer>of()
+                : roommateMatchRepository.findAllByRequesterUser_UserIdAndTargetUser_UserIdIn(userId, ids.getContent())
                 .stream().collect(Collectors.toMap(match -> match.getTargetUser().getUserId(), RoommateMatch::getMatchScore));
-        Set<Long> liked = profileLikeRepository.findAllByUser_UserIdAndTargetUser_UserIdIn(userId, ids.getContent())
+        Set<Long> liked = userId == null ? Set.of()
+                : profileLikeRepository.findAllByUser_UserIdAndTargetUser_UserIdIn(userId, ids.getContent())
                 .stream().map(like -> like.getTargetUser().getUserId()).collect(Collectors.toSet());
         return RoommatePageResponse.from(ids.map(id ->
                 RoommateProfileResponse.from(profiles.get(id), createTags(surveys.get(id)), scores.get(id), liked.contains(id))));

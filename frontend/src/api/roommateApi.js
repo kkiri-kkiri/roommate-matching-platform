@@ -6,13 +6,13 @@ const apiClient = axios.create({
   timeout: 60000,
 });
 
-async function request(config) {
+async function request(config, authenticated = true) {
   const accessToken = window.localStorage.getItem("accessToken");
-  if (!accessToken) throw new Error("로그인 후 이용해주세요.");
+  if (authenticated && !accessToken) throw new Error("로그인 후 이용해주세요.");
   try {
     const response = await apiClient.request({
       ...config,
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
     });
     return response.data.data;
   } catch (error) {
@@ -25,7 +25,7 @@ export const getRecommendedRoommates = (signal) =>
   request({ method: "get", url: "/roommates/recommended", params: { page: 0, size: 9 }, signal });
 
 export const getRoommateDetail = (userId, signal) =>
-  request({ method: "get", url: `/roommates/${userId}`, signal });
+  request({ method: "get", url: `/roommates/${userId}`, signal }, false);
 
 export const analyzeRoommateProfile = async (userId, signal) => {
   const data = await request({ method: "post", url: `/roommates/${userId}/ai-analysis`, signal });
@@ -41,7 +41,7 @@ export const getRoommates = ({ page = 0, size = 9, filters = {} } = {}, signal) 
   Object.entries(filters).forEach(([key, values]) => {
     values.forEach((value) => params.append(key, value));
   });
-  return request({ method: "get", url: "/roommates", params, signal });
+  return request({ method: "get", url: "/roommates", params, signal }, false);
 };
 
 export const setRoommateLike = (userId, liked) =>

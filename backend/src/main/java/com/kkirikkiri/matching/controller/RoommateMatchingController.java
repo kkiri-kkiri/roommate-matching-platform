@@ -32,7 +32,7 @@ public class RoommateMatchingController {
 			@Valid @ModelAttribute RoommateFilterRequest filter,
 			@PageableDefault(size = 9) Pageable pageable) {
 		return ApiResponse.success(
-				roommateMatchingService.getRoommates(user.userId(), filter, pageable));
+				roommateMatchingService.getRoommates(user == null ? null : user.userId(), filter, pageable));
 	}
 
 	@GetMapping("/api/roommates/recommended")
@@ -48,7 +48,7 @@ public class RoommateMatchingController {
 			@AuthenticationPrincipal AuthenticatedUser user,
 			@PathVariable Long userId) {
 		return ApiResponse.success(
-				roommateMatchingService.getRoommateDetail(user.userId(), userId));
+				roommateMatchingService.getRoommateDetail(user == null ? null : user.userId(), userId));
 	}
 
 	@PostMapping("/api/roommates/{userId}/likes")
