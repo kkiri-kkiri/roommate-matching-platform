@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 
+import { getPostAuthorDisplay } from "./communityData";
 import * as api from "../../api/communityApi";
 import { createChatRoom } from "../../api/chatApi";
 import * as S from "./CommunityPostPageCss";
@@ -220,6 +221,7 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
   const [otherReason, setOtherReason] = useState("");
   const comments = post.comments || [];
   const mine = Boolean(currentUser && currentUser.id === post.author.id);
+  const authorDisplay = getPostAuthorDisplay(post);
   const liked = post.liked;
   const reported = post.reported;
   const commentCount = comments.reduce((total, comment) => total + 1 + (comment.replies?.length || 0), 0);
@@ -333,16 +335,16 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
         </S.ArticleTop>
         <S.Title id="community-post-title">{post.title}</S.Title>
         <S.AuthorRow>
-          <S.Avatar $mine={mine} aria-hidden="true">{post.author.nickname.slice(0, 1)}</S.Avatar>
+          <S.Avatar as="img" $mine={mine} src={authorDisplay.image} alt="" />
           <S.AuthorInfo>
-            <strong>{post.author.nickname}{mine ? " · 나" : ""}</strong>
+            <strong>{authorDisplay.nickname}{mine ? " · 나" : ""}</strong>
             <S.Metadata>
               <time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time>
               <span><Eye size={13} aria-hidden="true" />조회 {post.views.toLocaleString()}</span>
             </S.Metadata>
           </S.AuthorInfo>
           {!mine && <S.ChatButton type="button" onClick={() => startChat(post.author.id)}
-            aria-label={`${post.author.nickname}님에게 채팅 보내기`}>
+            aria-label={`${authorDisplay.nickname}님에게 채팅 보내기`}>
             <MessageCircle size={15} aria-hidden="true" />채팅
           </S.ChatButton>}
         </S.AuthorRow>

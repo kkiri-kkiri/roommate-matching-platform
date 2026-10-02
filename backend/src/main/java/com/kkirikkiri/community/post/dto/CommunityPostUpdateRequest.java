@@ -18,7 +18,8 @@ public record CommunityPostUpdateRequest(
 		String category,
 		@NotBlank @Size(max = 100) String title,
 		@NotBlank @Size(max = 5000) String content,
-		@Size(max = 5) List<@NotNull @Positive Long> keepImageIds) {
+		@Size(max = 5) List<@NotNull @Positive Long> keepImageIds,
+		Boolean anonymous) {
 
 	public CommunityPostUpdateRequest {
 		keepImageIds = keepImageIds == null ? List.of() : keepImageIds;

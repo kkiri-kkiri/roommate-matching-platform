@@ -532,3 +532,14 @@ export const SaveButton = styled.button`
     background: ${colors.navyDark};
   }
 `;
+
+export const AnonymousChoice = styled.label`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  input { width: 16px; height: 16px; accent-color: #0c3273; }
+  small { color: #747781; }
+`;

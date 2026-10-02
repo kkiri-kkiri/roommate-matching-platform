@@ -57,6 +57,9 @@ public class CommunityPost {
 	@Column(name = "view_count", nullable = false)
 	private int viewCount;
 
+	@Column(name = "anonymous", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+	private boolean anonymous;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
 	private CommunityContentStatus status;
@@ -88,6 +91,10 @@ public class CommunityPost {
 		this.category = category;
 		this.title = title;
 		this.content = content;
+	}
+
+	public void changeAnonymous(boolean anonymous) {
+		this.anonymous = anonymous;
 	}
 
 	public void increaseViewCount() {

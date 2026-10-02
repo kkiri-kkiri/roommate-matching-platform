@@ -10,5 +10,6 @@ public record CommunityPostCreateRequest(
 		@Pattern(regexp = "자유게시판|나눔게시판|택배게시판|민원게시판")
 		String category,
 		@NotBlank @Size(max = 100) String title,
-		@NotBlank @Size(max = 5000) String content) {
+		@NotBlank @Size(max = 5000) String content,
+		boolean anonymous) {
 }
