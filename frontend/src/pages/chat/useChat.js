@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createChatRoom, getChatRooms, getChatMessages, markChatRoomRead,
   updateChatRoomSettings, leaveChatRoom } from "../../api/chatApi";
 import { createChatSocket } from "../../api/chatSocket";
+import { getCommunityPost } from "../../api/communityApi";
 
 function mapRoom(room) {
   const profile = room.counterpart;
@@ -38,6 +39,20 @@ export function useChat({ isAuthenticated, rooms, setRooms, activeRoom, searchQu
   const [messageError, setMessageError] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [broadcastVersion, setBroadcastVersion] = useState(0);
+  const [sourcePost, setSourcePost] = useState(null);
+  const sourcePostId = activeRoom?.category === "community" ? activeRoom.sourcePost : null;
+
+  useEffect(() => {
+    if (!isAuthenticated || !sourcePostId) return;
+    let cancelled = false;
+    setSourcePost(null);
+    getCommunityPost(sourcePostId).then((post) => {
+      if (!cancelled) setSourcePost({ id: sourcePostId, title: post.title });
+    }).catch(() => {
+      if (!cancelled) setSourcePost(null);
+    });
+    return () => { cancelled = true; };
+  }, [isAuthenticated, sourcePostId]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -171,5 +186,6 @@ export function useChat({ isAuthenticated, rooms, setRooms, activeRoom, searchQu
   };
 
   return { connected, loadingRooms, roomError, messageLoading, messageError,
-    searchResults, updateSettings, send, leave };
+    searchResults, updateSettings, send, leave,
+    sourcePostTitle: sourcePost?.id === sourcePostId ? sourcePost.title : "" };
 }
