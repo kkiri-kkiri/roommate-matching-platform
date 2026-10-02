@@ -43,7 +43,7 @@ public class DevDataInitializer implements ApplicationRunner {
 
         createUserIfNotExists(
                 "test1234!",
-                "user01@hknu.ac.kr",
+                "asd1234@hknu.ac.kr",
                 UserRole.USER,
                 "일반회원",
                 dormitory,
