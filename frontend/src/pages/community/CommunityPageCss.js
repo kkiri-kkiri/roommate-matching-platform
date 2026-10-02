@@ -257,6 +257,7 @@ export const SearchSummary = styled.div`
 `;
 export const PostList = styled.ul`margin: 0; padding: 0; list-style: none;`;
 export const PostRow = styled.li`
+  position: relative;
   padding: 12px 24px;
   border-bottom: 1px solid #eeeeee;
   transition: background 150ms;
@@ -302,8 +303,9 @@ export const PostTitleLink = styled(Link)`
   max-width: 100%;
   color: #1a1c1c;
   text-decoration: none;
+  &::after { content: ""; position: absolute; inset: 0; }
   h3 { min-width: 0; margin: 0; font-size: 14px; font-weight: 600; line-height: 23px; word-break: keep-all; overflow-wrap: anywhere; }
-  &:hover h3 { color: #0c3273; text-decoration: underline; text-underline-offset: 4px; }
+  &:hover h3 { color: #0c3273; }
   ${focus}
 `;
 export const ImageLabel = styled.span`display: inline-flex; align-items: center; height: 23px; flex-shrink: 0; color: #747781; font-size: 11px;`;
