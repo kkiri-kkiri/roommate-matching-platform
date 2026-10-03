@@ -18,6 +18,21 @@ import SignupPage from "./pages/auth/SignupPage";
 
 const AUTHENTICATED_USER_KEY = "roomieAuthenticatedUser";
 
+function getStoredAuthenticatedUser() {
+  try {
+    if (!window.localStorage.getItem("accessToken")) return null;
+
+    const user = JSON.parse(
+      window.localStorage.getItem(AUTHENTICATED_USER_KEY),
+    );
+    if (!user?.id || typeof user.name !== "string") return null;
+
+    return user;
+  } catch {
+    return null;
+  }
+}
+
 function clearStoredAuthentication() {
   try {
     [AUTHENTICATED_USER_KEY, "accessToken", "token", "user", "profile"]
@@ -49,8 +64,10 @@ function App() {
   const [authInitialized, setAuthInitialized] = useState(false);
 
   useEffect(() => {
-    // 하위 화면이 API를 호출하기 전에 이전 실행의 인증 정보를 정리합니다.
-    clearStoredAuthentication();
+    // 하위 화면이 로그인 여부를 판단하기 전에 저장된 인증 상태를 복원합니다.
+    const storedUser = getStoredAuthenticatedUser();
+    if (!storedUser) clearStoredAuthentication();
+    setCurrentUser(storedUser);
     setAuthInitialized(true);
   }, []);
 
