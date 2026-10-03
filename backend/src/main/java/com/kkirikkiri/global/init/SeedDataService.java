@@ -37,6 +37,7 @@ public class SeedDataService {
     private final MajorRepository majorRepository;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
+    private final CommunitySeedDataService communitySeedDataService;
 
     private static final String[] MBTI_LIST = {
             "ISTJ", "ISFJ", "INFJ", "INTJ",
@@ -214,6 +215,7 @@ public class SeedDataService {
 
         int userCreatedCount = 0;
         int surveyCreatedCount = 0;
+        int postCreatedCount = 0;
 
         for (int i = 1; i <= SEED_USER_COUNT; i++) {
 
@@ -265,12 +267,15 @@ public class SeedDataService {
             if (surveyCreated) {
                 surveyCreatedCount++;
             }
+
+            postCreatedCount += communitySeedDataService.createPosts(user, dormitory, i);
         }
 
         log.info(
-                "Seed 생성 완료 - 신규 회원: {}, 신규 설문: {}",
+                "Seed 생성 완료 - 신규 회원: {}, 신규 설문: {}, 신규 커뮤니티 게시글: {}",
                 userCreatedCount,
-                surveyCreatedCount
+                surveyCreatedCount,
+                postCreatedCount
         );
     }
 
@@ -749,6 +754,8 @@ public class SeedDataService {
                 seedUsers.stream()
                         .map(User::getUserId)
                         .toList();
+
+        communitySeedDataService.deletePosts(userIds);
 
         /*
          * 프로필 설문 다중 선택 삭제
