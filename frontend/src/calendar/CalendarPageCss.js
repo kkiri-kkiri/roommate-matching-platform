@@ -350,7 +350,10 @@ export const ColorDot = styled.span`
   background: ${({ $category }) => categoryStyle($category).color};
 `;
 export const CalendarSurface = styled.div`
+  --calendar-day-height: 128px;
   min-width: 0;
+  min-height: 0;
+  height: calc(40px + var(--calendar-day-height) * ${({ $weekCount }) => $weekCount});
   padding: 0 16px;
   --fc-border-color: #eeeef0;
   --fc-page-bg-color: #ffffff;
@@ -371,6 +374,9 @@ export const CalendarSurface = styled.div`
   }
   .fc .fc-scrollgrid-section > td {
     border-right: 0;
+  }
+  .fc .fc-scrollgrid-sync-table > tbody > tr {
+    height: calc(100% / ${({ $weekCount }) => $weekCount});
   }
   .fc .fc-col-header-cell {
     height: 40px;
@@ -395,9 +401,6 @@ export const CalendarSurface = styled.div`
   .fc .fc-daygrid-day {
     cursor: pointer;
   }
-  .fc .fc-daygrid-day-frame {
-    min-height: 104px;
-  }
   .fc .fc-daygrid-day-top {
     justify-content: flex-start;
     padding: 5px 4px 2px;
@@ -410,11 +413,10 @@ export const CalendarSurface = styled.div`
   .fc .fc-daygrid-day-events {
     margin: 0 3px 5px;
   }
-  .fc .fc-day-selected {
-    background: #f2f5fb;
-  }
-  .fc .fc-day-selected .fc-daygrid-day-frame {
-    box-shadow: inset 0 0 0 2px #0c3273;
+  .fc .fc-daygrid-day .fc-daygrid-day-frame .fc-daygrid-day-events {
+    position: absolute;
+    left: 0;
+    right: 0;
   }
   .fc .fc-day-other .fc-daygrid-day-top {
     opacity: 0.4;
@@ -427,7 +429,7 @@ export const CalendarSurface = styled.div`
     border-radius: 5px;
     font-size: 12px;
     line-height: 17px;
-    cursor: pointer;
+    cursor: default;
   }
   .fc .fc-daygrid-event-harness {
     min-width: 0;
@@ -452,7 +454,6 @@ export const CalendarSurface = styled.div`
     font-size: 11px;
     font-weight: 600;
   }
-  .fc .fc-event:focus-visible,
   .fc .fc-daygrid-more-link:focus-visible {
     outline: 2px solid #006a65;
     outline-offset: 2px;
@@ -474,12 +475,10 @@ export const CalendarSurface = styled.div`
     padding: 8px;
   }
   @media (max-width: 600px) {
+    --calendar-day-height: 112px;
     padding: 0 6px;
     .fc {
       font-size: 11px;
-    }
-    .fc .fc-daygrid-day-frame {
-      min-height: 76px;
     }
     .fc .fc-daygrid-day-top {
       padding: 3px 0 1px;
@@ -507,17 +506,12 @@ export const DayNumber = styled.button`
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: ${({ $selected, $today }) =>
-    $selected ? "#0c3273" : $today ? "#e0f5ef" : "transparent"};
-  color: ${({ $selected, $today }) =>
-    $selected ? "#ffffff" : $today ? "#006a65" : "#444650"};
+  background: ${({ $today }) => ($today ? "#e0f5ef" : "transparent")};
+  color: ${({ $today }) => ($today ? "#006a65" : "#444650")};
   font: inherit;
   font-size: 12px;
-  font-weight: ${({ $selected, $today }) => ($selected || $today ? 700 : 500)};
+  font-weight: ${({ $today }) => ($today ? 700 : 500)};
   cursor: pointer;
-  &:hover {
-    box-shadow: inset 0 0 0 1px #00a79f;
-  }
   ${focus}
 `;
 export const CalendarEvent = styled.span`
@@ -611,15 +605,19 @@ export const TabButton = styled.button`
 export const AgendaList = styled.ul`
   display: flex;
   flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
   gap: 12px;
   max-height: 620px;
   margin: 0;
   padding: 3px;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   list-style: none;
   scrollbar-width: thin;
 `;
 export const AgendaItem = styled.li`
+  flex-shrink: 0;
   min-width: 0;
 `;
 export const AgendaButton = styled.button`
@@ -711,10 +709,6 @@ export const EmptyState = styled.div`
   }
   button {
     margin-top: 4px;
-  }
-  ${CalendarCard} > & {
-    min-height: 100px;
-    padding: 12px 24px 24px;
   }
 `;
 export const EmptyIcon = styled.div`

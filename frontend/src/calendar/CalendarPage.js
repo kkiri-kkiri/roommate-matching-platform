@@ -101,6 +101,11 @@ function CalendarPage() {
   const [settingsError, setSettingsError] = useState("");
   const [selectedDate, setSelectedDate] = useState(() => dateKey(initialDate));
   const [visibleMonth, setVisibleMonth] = useState(() => dateKey(initialDate).slice(0, 7));
+  const visibleWeekCount = useMemo(() => {
+    const firstDay = localDate(`${visibleMonth}-01`);
+    const days = new Date(firstDay.getFullYear(), firstDay.getMonth() + 1, 0).getDate();
+    return Math.ceil((firstDay.getDay() + days) / 7);
+  }, [visibleMonth]);
   const [categories, setCategories] = useState(categoryIds);
   const previousCategoryIds = useRef(categoryIds);
   useEffect(() => {
@@ -186,13 +191,16 @@ function CalendarPage() {
     setErrors({});
     requestAnimationFrame(() => {
       const trigger = dialogTriggerRef.current;
-      if (trigger?.isConnected) trigger.focus({ preventScroll: true });
-      else addButtonRef.current?.focus({ preventScroll: true });
+      if (trigger?.isConnected && trigger.matches("button, a, input, select, textarea, [tabindex]")) trigger.focus({ preventScroll: true });
+      else {
+        const selectedDay = calendarRef.current?.getApi().el.querySelector(".fc-day-selected button");
+        (selectedDay || addButtonRef.current)?.focus({ preventScroll: true });
+      }
     });
   };
 
   const openCreate = (date = selectedDate) => {
-    if (!authenticated) { setStatus("로그인 후 일정을 등록할 수 있어요."); return; }
+    if (!authenticated) { window.alert("로그인 후 일정을 등록할 수 있어요."); return; }
     dialogTriggerRef.current = document.activeElement;
     setDraft({ title: "", date, startTime: "", endTime: "", category: "", description: "" });
     setErrors({});
@@ -215,7 +223,7 @@ function CalendarPage() {
   };
 
   const openCategorySettings = () => {
-    if (!authenticated) { setStatus("로그인 후 카테고리를 설정할 수 있어요."); return; }
+    if (!authenticated) { window.alert("로그인 후 카테고리를 설정할 수 있어요."); return; }
     dialogTriggerRef.current = document.activeElement;
     setSettingsDraft(categorySettings.map((item) => ({ ...item })));
     setSettingsError("");
@@ -268,7 +276,8 @@ function CalendarPage() {
       selectDate(savedEvent.date);
       savingRef.current = false;
       closeDialog();
-      setStatus(isEditing ? "일정을 수정했어요." : "일정을 등록했어요.");
+      if (isEditing) setStatus("일정을 수정했어요.");
+      else window.alert("일정을 등록했어요.");
     } catch (error) { setErrors({ submit: error.message }); }
     finally { savingRef.current = false; setSaving(false); }
   };
@@ -297,7 +306,6 @@ function CalendarPage() {
     <S.Page id="campus-calendar" style={categoryVariables}>
       <S.Content>
         <S.Status role="status" aria-live="polite" aria-atomic="true">{status}</S.Status>
-        {loading && <p role="status">일정을 불러오는 중이에요.</p>}
         {error && <div role="alert">{error} <S.SecondaryButton type="button" onClick={retry}>다시 시도</S.SecondaryButton></div>}
 
         <S.Workspace>
@@ -332,7 +340,7 @@ function CalendarPage() {
               </S.IconButton>
             </S.Filters>
 
-            <S.CalendarSurface onDoubleClick={(event) => {
+            <S.CalendarSurface aria-busy={loading} $weekCount={visibleWeekCount} onDoubleClick={(event) => {
               if (event.target.closest(".fc-event, .fc-daygrid-more-link")) return;
               const date = event.target.closest(".fc-daygrid-day[data-date]")?.dataset.date;
               if (!date) return;
@@ -346,7 +354,8 @@ function CalendarPage() {
                 initialView="dayGridMonth"
                 initialDate={dateKey(initialDate)}
                 headerToolbar={false}
-                height="auto"
+                height="100%"
+                expandRows
                 firstDay={0}
                 fixedWeekCount={false}
                 showNonCurrentDates
@@ -355,14 +364,13 @@ function CalendarPage() {
                 events={calendarEvents}
                 eventDisplay="block"
                 eventOrder="start,title"
-                eventInteractive
+                eventInteractive={false}
                 dayMaxEvents={2}
                 displayEventTime
                 eventTimeFormat={{ hour: "2-digit", minute: "2-digit", hour12: false }}
                 dayHeaderFormat={{ weekday: "short" }}
                 datesSet={handleDatesSet}
                 dateClick={({ dateStr }) => selectDate(dateStr)}
-                eventClick={({ event, jsEvent }) => { jsEvent.stopPropagation(); openDetail(event.id); }}
                 eventContent={({ event, timeText }) => (
                   <S.CalendarEvent title={`${categoryLabels[event.extendedProps.category]} · ${event.title} · ${timeText}`}>
                     <span>{timeText}</span> {event.title}
@@ -375,7 +383,7 @@ function CalendarPage() {
                 dayCellContent={({ date, isToday }) => {
                   const value = dateKey(date);
                   return (
-                    <S.DayNumber type="button" $selected={value === selectedDate} $today={isToday}
+                    <S.DayNumber type="button" $today={isToday}
                       aria-pressed={value === selectedDate} aria-current={isToday ? "date" : undefined}
                       aria-label={`${formatDate(value)}${isToday ? ", 오늘" : ""}${eventDates.has(value) ? ", 일정 있음" : ", 일정 없음"}`}
                       onClick={(event) => { event.stopPropagation(); selectDate(value); }}>
@@ -387,15 +395,8 @@ function CalendarPage() {
                 moreLinkClick="popover"
               />
             </S.CalendarSurface>
-            {!loading && !error && monthEvents.length === 0 && (
-              <S.EmptyState role="status">
-                <strong>{categories.length === 0 ? "조회할 일정 분류를 선택해 주세요" : "이번 달에 표시할 일정이 없어요"}</strong>
-                <p>{categories.length === 0 ? "위에서 원하는 분류를 하나 이상 선택해 주세요." : "다른 분류를 선택하거나 새로운 일정을 등록해 보세요."}</p>
-              </S.EmptyState>
-            )}
           </S.CalendarCard>
-
-          <S.Sidebar aria-labelledby="calendar-agenda-title">
+          <S.Sidebar aria-labelledby="calendar-agenda-title" aria-busy={loading}>
             <S.Tabs aria-label="일정 조회 범위">
               <S.TabButton type="button" $active={agendaScope === "day"} aria-pressed={agendaScope === "day"} onClick={() => setAgendaScope("day")}>선택한 날짜</S.TabButton>
               <S.TabButton type="button" $active={agendaScope === "month"} aria-pressed={agendaScope === "month"} onClick={() => setAgendaScope("month")}>이번 달 전체</S.TabButton>
@@ -410,6 +411,7 @@ function CalendarPage() {
               <S.CountBadge aria-label={`${agendaEvents.length}개 일정`}>{agendaEvents.length}</S.CountBadge>
             </S.AgendaHeader>
 
+            {error && <div role="alert">{error} <S.SecondaryButton type="button" onClick={retry}>다시 시도</S.SecondaryButton></div>}
             {agendaEvents.length > 0 ? (
               <S.AgendaList>
                 {agendaEvents.map((event) => (
@@ -435,10 +437,9 @@ function CalendarPage() {
                 {categories.length === 0 && <S.GhostButton type="button" onClick={() => setCategories(categoryIds)}>전체 분류 보기</S.GhostButton>}
               </S.EmptyState>
             )}
-            <S.SecondaryButton ref={addButtonRef} type="button" onClick={() => openCreate()}>
+            <S.SecondaryButton ref={addButtonRef} type="button" aria-haspopup="dialog" onClick={() => openCreate()}>
               <CalendarPlus size={18} aria-hidden="true" /> 일정 등록
             </S.SecondaryButton>
-            <S.FormHint>예시 일정으로 구성된 화면이에요. 변경한 일정은 새로고침하면 초기화돼요.</S.FormHint>
           </S.Sidebar>
         </S.Workspace>
 
