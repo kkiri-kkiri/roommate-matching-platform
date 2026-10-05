@@ -896,7 +896,10 @@ Query:
 &size=6
 &category=자유게시판
 &q=룸메이트
+&dormitory=나래관
 &sort=LATEST
+
+dormitory: 생략하면 전체 생활관을 조회한다. 나래관/호연관/비봉관/창조관 또는 DB 기준정보 이름인 나래/호연/비봉/창조를 받으며, 모든 정렬 방식에 적용한다.
 
 sort:
 
@@ -1066,7 +1069,8 @@ Auth
 Request:
 
 {
-"content": "댓글 내용"
+"content": "댓글 내용",
+"anonymous": false
 }
 
 Validation:
@@ -1084,10 +1088,13 @@ Auth
 Request:
 
 {
-"content": "답글 내용"
+"content": "답글 내용",
+"anonymous": false
 }
 
 Validation: 댓글과 동일.
+
+댓글과 답글의 anonymous는 생략/null이면 false(닉네임 공개)이다. 상세 조회 댓글 응답에도 anonymous를 포함한다. 익명인 경우 author.nickname은 "익명", author.major는 null로 반환하고 작성자 ID는 유지한다. 공개 댓글은 작성자의 닉네임과 학과를 반환한다. 내용 수정 시 익명 설정은 유지한다.
 
 8.3 댓글/답글 수정
 

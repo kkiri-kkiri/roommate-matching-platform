@@ -50,6 +50,9 @@ public class CommunityComment {
 	@Column(name = "content", nullable = false, columnDefinition = "TEXT")
 	private String content;
 
+	@Column(name = "anonymous", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+	private boolean anonymous;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
 	private CommunityContentStatus status;
@@ -80,6 +83,10 @@ public class CommunityComment {
 
 	public void updateContent(String content) {
 		this.content = Objects.requireNonNull(content, "content");
+	}
+
+	public void changeAnonymous(boolean anonymous) {
+		this.anonymous = anonymous;
 	}
 
 	public void delete() {

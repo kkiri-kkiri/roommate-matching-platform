@@ -10,17 +10,19 @@ import { getPostAuthorDisplay, normalizePost } from "./communityData";
 import Pagination from "../../components/common/Pagination/Pagination";
 import CommunityPostPage from "./CommunityPostPage";
 import CommunityPostFormPage from "./CommunityPostFormPage";
+import CommunityActivityActions from "./CommunityActivityActions";
 import * as S from "./CommunityPageCss";
 
 const CATEGORIES = [
   { name: "전체", icon: LayoutGrid, description: "생활관의 모든 이야기를 만나보세요." },
   { name: "자유게시판", icon: MessageCircle, description: "소소한 일상부터 궁금했던 이야기까지, 편하게 나눠요." },
-  { name: "나눔게시판", icon: Gift, description: "나에게 남는 물건이 누군가에게는 필요한 선물이 돼요." },
+  { name: "나눔게시판", icon: Gift, description: "남는 물건을 함께 나눠요." },
   { name: "택배게시판", icon: Package, description: "택배 수령과 분실물 소식을 함께 확인해요." },
   { name: "민원게시판", icon: ShieldCheck, description: "더 편안한 생활관을 위해 서로의 의견을 나눠요." },
 ];
 const PAGE_SIZE = 6;
 const SORTS = ["최신순", "조회순", "좋아요순"];
+const DORMITORIES = ["나래관", "호연관", "비봉관", "창조관"];
 function formatDate(value) {
   return new Intl.DateTimeFormat("ko-KR", {
     year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
@@ -33,6 +35,7 @@ function CommunityPage({ currentUser }) {
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [listRevision, setListRevision] = useState(0);
   const requestVersion = useRef(0);
   const [searchParams, setSearchParams] = useSearchParams();
   const { postId } = useParams();
@@ -44,10 +47,15 @@ function CommunityPage({ currentUser }) {
   const category = CATEGORIES.some(({ name }) => name === searchParams.get("category"))
     ? searchParams.get("category") : "전체";
   const sort = SORTS.includes(searchParams.get("sort")) ? searchParams.get("sort") : "최신순";
+  const dormitory = DORMITORIES.includes(searchParams.get("dormitory")) ? searchParams.get("dormitory") : "전체";
   const isMyPosts = pathname === "/community/my-posts";
   const isMyComments = pathname === "/community/my-comments";
   const isCreate = pathname === "/community/posts/new";
   const isEdit = Boolean(postId) && pathname.endsWith("/edit");
+  const returnToMyPosts = location.state?.returnToMyPosts;
+  const editReturnPath = typeof returnToMyPosts === "string" &&
+    (returnToMyPosts === "/community/my-posts" || returnToMyPosts.startsWith("/community/my-posts?"))
+    ? returnToMyPosts : null;
   const post = detail?.key === `${postId}:${isEdit}` ? detail.post : null;
   const categoryInfo = CATEGORIES.find(({ name }) => name === category);
 
@@ -79,7 +87,7 @@ function CommunityPage({ currentUser }) {
     const fetchData = postId ? api.getCommunityPost(postId)
       : isMyComments ? api.getMyCommunityComments(params)
       : isMyPosts ? api.getMyCommunityPosts(params)
-      : api.getCommunityPosts({ ...params, category, q: query });
+      : api.getCommunityPosts({ ...params, category, q: query, dormitory });
     fetchData.then((data) => {
       if (version !== requestVersion.current) return;
       if (postId) setDetail({ key: postId + ":" + isEdit, post: normalizePost(data) });
@@ -102,7 +110,7 @@ function CommunityPage({ currentUser }) {
       if (version === requestVersion.current) setLoading(false);
     });
     return () => { requestVersion.current += 1; };
-  }, [postId, isEdit, isCreate, isMyPosts, isMyComments, currentUser, page, sort, category, query, listKey, setSearchParams]);
+  }, [postId, isEdit, isCreate, isMyPosts, isMyComments, currentUser, page, sort, category, query, dormitory, listKey, listRevision, setSearchParams]);
 
   const refreshPost = async () => {
     const version = requestVersion.current;
@@ -130,7 +138,7 @@ function CommunityPage({ currentUser }) {
       payload.keepImageIds = images.filter((image) => !image.file && post.images.some((existing) => existing.id === image.id)).map((image) => image.id);
       await api.updateCommunityPost(id, payload, files);
     } else id = await api.createCommunityPost(payload, files);
-    navigate('/community/posts/' + id, { replace: true });
+    navigate(isEdit && editReturnPath ? editReturnPath : '/community/posts/' + id, { replace: true });
   };
 
   if ((isCreate || isEdit || isMyPosts || isMyComments) && !currentUser) {
@@ -156,7 +164,7 @@ function CommunityPage({ currentUser }) {
     </S.EmptyState>;
   } else if (isCreate || isEdit) {
     content = <CommunityPostFormPage key={post?.id || "new"} post={isEdit ? post : undefined}
-      onSave={savePost} onCancel={() => navigate(isEdit ? `/community/posts/${post.id}` : "/community")} />;
+      onSave={savePost} onCancel={() => navigate(isEdit ? editReturnPath || `/community/posts/${post.id}` : "/community")} />;
   } else if (post) {
     content = <CommunityPostPage key={post.id} post={post} currentUser={currentUser}
       onRequireLogin={requireLogin} onEdit={() => navigate(`/community/posts/${post.id}/edit`)}
@@ -204,18 +212,31 @@ function CommunityPage({ currentUser }) {
               </S.SearchField>
               <S.SearchButton type="submit">검색</S.SearchButton>
             </S.SearchForm>}
+            <S.SortLabel><span>생활관</span><S.SortSelect aria-label="생활관 필터" value={dormitory} onChange={(event) => updateFilters({ dormitory: event.target.value })}>
+              <option value="전체">전체</option>{DORMITORIES.map((value) => <option key={value}>{value}</option>)}
+            </S.SortSelect></S.SortLabel>
             <S.SortLabel><span>정렬</span><S.SortSelect aria-label="게시글 정렬" value={sort} onChange={(event) => updateFilters({ sort: event.target.value })}>{SORTS.map((value) => <option key={value}>{value}</option>)}</S.SortSelect></S.SortLabel>
           </S.Controls>}
           {query && !isMyComments && <S.SearchSummary role="status"><span>“{query}” 검색 결과</span></S.SearchSummary>}
           {loading ? <S.EmptyState role="status">목록을 불러오고 있어요.</S.EmptyState> : error ? null : pageItems.length ? <S.PostList>
             {pageItems.map((item) => isMyComments ? <S.PostRow key={item.id}>
               <S.CommentTop><S.CategoryBadge>{item.isReply ? "대댓글" : "댓글"}</S.CategoryBadge><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></S.CommentTop>
-              <S.MyComment>{item.content}</S.MyComment>
+              <S.ActivityContentRow $comment>
+                <S.ActivityContent><S.MyComment>{item.content}</S.MyComment></S.ActivityContent>
+                <CommunityActivityActions item={item} isComment onChanged={() => setListRevision((value) => value + 1)} />
+              </S.ActivityContentRow>
               <S.OriginalPostLink to={`/community/posts/${item.postId}#comment-${item.id}`}><MessageSquare size={16} aria-hidden="true" /><span>{item.postTitle}</span><ArrowRight size={16} aria-hidden="true" /></S.OriginalPostLink>
             </S.PostRow> : <S.PostRow key={item.id}>
               <S.PostHeading>{category === "전체" && <S.CategoryBadge $category={item.category}>{item.category.replace("게시판", "")}</S.CategoryBadge>}<S.DormitoryBadge>{item.dormitory}</S.DormitoryBadge>{currentUser && item.author.id === currentUser.id && <S.OwnBadge>내 글</S.OwnBadge>}</S.PostHeading>
-              <S.PostTitleLink to={`/community/posts/${item.id}`}><h3>{item.title}</h3>{item.hasImages && <S.ImageLabel role="img" aria-label="사진 첨부" title="사진 첨부"><Image size={16} aria-hidden="true" /></S.ImageLabel>}</S.PostTitleLink>
-              <S.Excerpt>{item.contentPreview}</S.Excerpt>
+              <S.ActivityContentRow>
+                <S.ActivityContent>
+                  <S.PostTitleLink to={`/community/posts/${item.id}`}><h3>{item.title}</h3>{item.hasImages && <S.ImageLabel role="img" aria-label="사진 첨부" title="사진 첨부"><Image size={16} aria-hidden="true" /></S.ImageLabel>}</S.PostTitleLink>
+                  <S.Excerpt>{item.contentPreview}</S.Excerpt>
+                </S.ActivityContent>
+                {isMyPosts && item.author.id === currentUser.id && <CommunityActivityActions item={item}
+                  onEdit={() => navigate(`/community/posts/${item.id}/edit`, { state: { returnToMyPosts: pathname + location.search } })}
+                  onChanged={() => setListRevision((value) => value + 1)} />}
+              </S.ActivityContentRow>
               <S.PostBottom><S.Metadata><S.Author><S.AuthorImage src={getPostAuthorDisplay(item).image} alt="" />{getPostAuthorDisplay(item).nickname}</S.Author><time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time></S.Metadata><S.Stats><span aria-label={`조회 ${item.views}회`}><Eye size={15} aria-hidden="true" />{item.views}</span><span aria-label={`공감 ${item.likes}개`}><Heart size={15} aria-hidden="true" />{item.likes}</span><span aria-label={`댓글 ${item.commentCount}개`}><MessageCircle size={15} aria-hidden="true" />{item.commentCount}</span></S.Stats></S.PostBottom>
             </S.PostRow>)}
           </S.PostList> : <S.EmptyState>
@@ -223,7 +244,7 @@ function CommunityPage({ currentUser }) {
             <h3>{query ? "검색 결과가 없어요" : isMyComments ? "아직 작성한 댓글이 없어요" : isMyPosts ? "아직 작성한 게시글이 없어요" : "아직 이야기가 없어요"}</h3>
             {!query && <>
               <p>{isMyComments ? "마음이 닿는 게시글에 첫 댓글을 남겨보세요." : "작은 일상도 좋아요. 첫 이야기를 들려주세요."}</p>
-              {category !== "전체" ? <S.SecondaryButton type="button" onClick={() => { setSearchInput(""); setSearchParams({}); }}>검색 조건 초기화</S.SecondaryButton> : isMyComments ? <S.PrimaryLink to="/community">게시글 둘러보기 <ArrowRight size={16} aria-hidden="true" /></S.PrimaryLink> : <S.PrimaryButton type="button" onClick={startPost}><PenLine size={16} aria-hidden="true" />첫 글 작성하기</S.PrimaryButton>}
+              {isMyComments ? <S.PrimaryLink to="/community">게시글 둘러보기 <ArrowRight size={16} aria-hidden="true" /></S.PrimaryLink> : <S.PrimaryButton type="button" onClick={startPost}><PenLine size={16} aria-hidden="true" />첫 글 작성하기</S.PrimaryButton>}
             </>}
           </S.EmptyState>}
           {resultCount > 0 && (

@@ -18,16 +18,20 @@ public class CommunityPostReadRepository {
 	private final EntityManager entityManager;
 
 	@SuppressWarnings("unchecked")
-	public Page<CommunityPost> findByLikes(String category, String keyword, Long authorId, Pageable pageable) {
+	public Page<CommunityPost> findByLikes(String category, String keyword, String dormitory, Long authorId, Pageable pageable) {
 		String filter = """
 				 from community_post p where p.status = 'ACTIVE'
 				 and (:category is null or :category = '' or p.category = :category)
 				 and (:keyword is null or :keyword = '' or locate(:keyword, p.title) > 0
 				      or locate(:keyword, p.content) > 0)
+				 and (:dormitory is null or :dormitory = '' or exists (
+				      select 1 from dormitory d where d.dormitory_id = p.dormitory_id
+				      and d.dormitory_name = :dormitory))
 				 and (:authorId is null or p.author_id = :authorId)
 				""";
 		var count = entityManager.createNativeQuery("select count(*)" + filter)
 				.setParameter("category", category).setParameter("keyword", keyword)
+				.setParameter("dormitory", dormitory)
 				.setParameter("authorId", authorId);
 		long total = ((Number) count.getSingleResult()).longValue();
 		var query = entityManager.createNativeQuery("select p.*" + filter + """
@@ -35,6 +39,7 @@ public class CommunityPostReadRepository {
 				 p.created_at desc, p.post_id desc
 				""", CommunityPost.class)
 				.setParameter("category", category).setParameter("keyword", keyword)
+				.setParameter("dormitory", dormitory)
 				.setParameter("authorId", authorId)
 				.setFirstResult(Math.toIntExact(pageable.getOffset())).setMaxResults(pageable.getPageSize());
 		List<CommunityPost> posts = query.getResultList();

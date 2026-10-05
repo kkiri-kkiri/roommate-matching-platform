@@ -59,6 +59,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.GET, "/api/roommates", "/api/roommates/{userId}").permitAll()
 						.requestMatchers("/api/roommates/**", "/api/users/me/liked-roommates").authenticated()
 						.requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/{postId}").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/post-images/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/posts", "/api/posts/{postId}/likes",
 								"/api/posts/{postId}/comments", "/api/comments/{commentId}/replies").authenticated()
 						.requestMatchers(HttpMethod.PATCH, "/api/posts/{postId}", "/api/comments/{commentId}").authenticated()

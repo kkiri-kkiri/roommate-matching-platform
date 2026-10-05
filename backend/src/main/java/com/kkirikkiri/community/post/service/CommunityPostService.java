@@ -45,7 +45,7 @@ import com.kkirikkiri.matching.dto.RoommatePageResponse;
 /**
  * userId에는 인증된 사용자의 ID를 전달한다.
  * 공개 조회의 userId는 비로그인 시 null을 전달한다.
- * 파일 저장 기능이 없어 새 이미지 업로드는 지원하지 않으며, 전달되면 저장 전에 거절한다.
+ * 이미지 파일은 저장소에 저장하고 DB에는 URL과 표시 순서만 기록한다.
  */
 @Service
 @RequiredArgsConstructor
@@ -55,6 +55,7 @@ public class CommunityPostService {
 	private final CommunityPostRepository communityPostRepository;
 	private final CommunityCommentRepository communityCommentRepository;
 	private final PostImageRepository postImageRepository;
+	private final PostImageStorage postImageStorage;
 	private final UserProfileRepository userProfileRepository;
 	private final Validator validator;
 	private final CommunityPostReadRepository communityPostReadRepository;
@@ -148,13 +149,13 @@ public class CommunityPostService {
 		PageRequest pageable = PageRequest.of(request.page(), request.size(), sort);
 		Page<CommunityPost> posts;
 		if ("LIKES".equals(request.sort())) {
-			posts = communityPostReadRepository.findByLikes(request.category(), request.q(), authorId, pageable);
+			posts = communityPostReadRepository.findByLikes(request.category(), request.q(), request.dormitory(), authorId, pageable);
 		} else if (authorId != null) {
 			posts = communityPostRepository.findAllByAuthor_UserIdAndStatus(authorId, CommunityContentStatus.ACTIVE,
 					pageable);
 		} else {
 			posts = communityPostRepository.searchPosts(CommunityContentStatus.ACTIVE, request.category(), request.q(),
-					pageable);
+					request.dormitory(), pageable);
 		}
 		return RoommatePageResponse.from(posts.map(post -> toListResponse(post, viewerId)));
 	}
@@ -182,31 +183,36 @@ public class CommunityPostService {
 		}
 	}
 
-	/** 새 이미지가 없는 게시글을 작성하고 생성된 게시글 ID를 반환한다. images는 생략 가능하다. */
+	/** 최대 5장의 이미지와 게시글을 작성한다. images는 생략 가능하다. */
 	@Transactional
 	public Long createPost(Long userId, CommunityPostCreateRequest request, PostImagesRequest images) {
 		validateUserId(userId);
 		validateRequest(request);
-		validateNoNewImages(images);
+		validateImages(images);
 		UserProfile profile = userProfileRepository.findByUser_UserId(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
 		CommunityPost post = new CommunityPost(profile.getUser(), profile.getDormitory(),
 				request.category(), request.title(), request.content());
 		post.changeAnonymous(request.anonymous());
-		return communityPostRepository.save(post).getPostId();
+		post = communityPostRepository.save(post);
+		saveImages(post, images, 0);
+		return post.getPostId();
 	}
 
-	/** 본문과 기존 이미지의 유지/삭제를 처리한다. 새 이미지 추가는 선행 기능 보완이 필요하다. */
+	/** 본문과 기존 이미지의 유지/삭제 및 새 이미지 추가를 처리한다. */
 	@Transactional
 	public void updatePost(Long userId, Long postId, CommunityPostUpdateRequest request,
 			PostImagesRequest images) {
 		validateUserId(userId);
 		validateRequest(request);
-		validateNoNewImages(images);
+		validateImages(images);
 		CommunityPost post = findOwnedPost(userId, postId);
 		List<PostImage> existingImages = postImageRepository
 				.findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(postId);
 		Set<Long> keepIds = new HashSet<>(request.keepImageIds());
+		if (keepIds.size() + (images == null ? 0 : images.images().size()) > 5) {
+			throw new CustomException(ErrorCode.VALIDATION_ERROR);
+		}
 		Set<Long> existingIds = existingImages.stream()
 				.map(PostImage::getPostImageId).collect(Collectors.toSet());
 		if (keepIds.size() != request.keepImageIds().size() || !existingIds.containsAll(keepIds)) {
@@ -226,6 +232,7 @@ public class CommunityPostService {
 				image.changeSortOrder(sortOrder++);
 			}
 		}
+		saveImages(post, images, sortOrder);
 	}
 
 	/** 신고 참조를 보존하도록 게시글과 활성 댓글/답글을 같은 트랜잭션에서 소프트 삭제한다. */
@@ -262,12 +269,19 @@ public class CommunityPostService {
 		}
 	}
 
-	private void validateNoNewImages(PostImagesRequest images) {
+	private void validateImages(PostImagesRequest images) {
 		if (images != null) {
 			validateRequest(images);
-			if (!images.images().isEmpty()) {
-				throw new CustomException(ErrorCode.INVALID_REQUEST);
-			}
+		}
+	}
+
+	private void saveImages(CommunityPost post, PostImagesRequest images, int sortOrder) {
+		if (images == null) return;
+		for (var file : images.images()) {
+			String url = postImageStorage.store(file);
+			String name = file.getOriginalFilename();
+			if (name != null && name.length() > 255) name = name.substring(0, 255);
+			postImageRepository.save(new PostImage(post, url, name, sortOrder++));
 		}
 	}
 }

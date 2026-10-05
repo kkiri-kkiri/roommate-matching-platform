@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -41,6 +42,19 @@ class GuestReadAccessTest {
         verify(posts).getPosts(isNull(), any(CommunityPostListRequest.class));
         mvc.perform(get("/api/posts/12")).andExpect(status().isOk());
         verify(posts).getPost(null, 12L);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"나래관,나래", "호연관,호연", "비봉관,비봉", "창조관,창조", "나래,나래"})
+    void communityDormitoryFilterBindsToStoredName(String requested, String stored) throws Exception {
+        mvc.perform(get("/api/posts").param("dormitory", requested)).andExpect(status().isOk());
+        verify(posts).getPosts(isNull(), argThat(request -> stored.equals(request.dormitory())));
+    }
+
+    @Test
+    void communityRejectsUnknownDormitory() throws Exception {
+        mvc.perform(get("/api/posts").param("dormitory", "없는생활관")).andExpect(status().isBadRequest());
+        verifyNoInteractions(posts);
     }
 
     @ParameterizedTest
