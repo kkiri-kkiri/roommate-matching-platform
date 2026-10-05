@@ -32,7 +32,7 @@ import { getMyLikedRoommates, toRoommateProfile } from "../../api/roommateApi";
 export const PROFILE_SECTIONS = [
   {
     id: "lifePattern",
-    title: "수면 패턴",
+    title: "생활 패턴",
     fields: [
       {
         id: "sleepTime",
@@ -90,26 +90,6 @@ export const PROFILE_SECTIONS = [
         options: ["밝음 (소리에 잘 깨요)", "보통", "어두움 (잘 깨지 않아요)"],
         required: true,
       },
-    ],
-  },
-  {
-    id: "livingHabits",
-    title: "생활 습관",
-    fields: [
-      {
-        id: "indoorEating",
-        label: "실내 취식",
-        type: "single",
-        options: ["가능", "불가능", "냄새 안나는 음식 가능"],
-        required: true,
-      },
-      {
-        id: "smoking",
-        label: "흡연 여부",
-        type: "single",
-        options: ["비흡연", "일반담배", "전자담배"],
-        required: true,
-      },
       {
         id: "lightingPreference",
         label: "조명 환경",
@@ -125,36 +105,18 @@ export const PROFILE_SECTIONS = [
         required: true,
       },
       {
-        id: "mediaSound",
-        label: "소리(음악, OTT 등)",
-        type: "single",
-        options: [
-          "항상 이어폰 사용해주세요",
-          "공부·과제할 때 아니면 상관없음",
-          "소리만 작게 해주세요",
-          "자유롭게 하세요",
-        ],
-        required: true,
-      },
-      {
-        id: "showerTime",
-        label: "샤워 시간대",
-        type: "single",
-        options: ["아침", "저녁", "유동적"],
-        required: true,
-      },
-      {
-        id: "showerDuration",
-        label: "샤워 소요시간",
-        type: "single",
-        options: ["10분", "20분", "30분", "40분", "그 이상"],
+        id: "dormStayDays",
+        label: "기숙사 상주 주기",
+        type: "multi",
+        options: ["월", "화", "수", "목", "금", "토", "일"],
+        allShortcut: true,
         required: true,
       },
     ],
   },
   {
-    id: "dormLife",
-    title: "청소 및 공동생활",
+    id: "livingHabits",
+    title: "청소·생활 습관",
     fields: [
       {
         id: "cleaningFrequency",
@@ -180,11 +142,63 @@ export const PROFILE_SECTIONS = [
         required: true,
       },
       {
-        id: "dormStayDays",
-        label: "기숙사 상주 주기",
-        type: "multi",
-        options: ["월", "화", "수", "목", "금", "토", "일"],
-        allShortcut: true,
+        id: "indoorEating",
+        label: "실내 취식",
+        type: "single",
+        options: ["가능", "불가능", "냄새 안나는 음식 가능"],
+        required: true,
+      },
+      {
+        id: "smoking",
+        label: "흡연 여부",
+        type: "single",
+        options: ["비흡연", "일반담배", "전자담배"],
+        required: true,
+      },
+      {
+        id: "mediaSound",
+        label: "소리",
+        type: "single",
+        options: [
+          "항상 이어폰 사용해주세요",
+          "공부·과제할 때 아니면 상관없음",
+          "소리만 작게 해주세요",
+          "자유롭게 하세요",
+        ],
+        required: true,
+      },
+      {
+        id: "showerTime",
+        label: "샤워 시간대",
+        type: "single",
+        options: ["아침", "저녁", "유동적"],
+        required: true,
+      },
+      {
+        id: "showerDuration",
+        label: "샤워 소요시간",
+        type: "single",
+        options: ["10분", "20분", "30분", "40분", "그 이상"],
+        required: true,
+      },
+      {
+        id: "temperaturePreference",
+        label: "온도 선호",
+        type: "single",
+        options: ["추위 타요", "더위 타요", "보통"],
+        required: true,
+      },
+    ],
+  },
+  {
+    id: "dormLife",
+    title: "기숙사 생활",
+    fields: [
+      {
+        id: "roommateInteraction",
+        label: "룸메이트와 교류 정도",
+        type: "single",
+        options: ["친하게 지내고 싶음", "적당히 대화", "필요한 대화만"],
         required: true,
       },
       {
@@ -196,41 +210,15 @@ export const PROFILE_SECTIONS = [
         required: true,
       },
       {
-        id: "meal",
-        label: "기숙사 식사",
-        type: "single",
-        options: [
-          "같이 먹고 싶음",
-          "각자 먹고 싶음",
-          "시간 될 때만 같이 먹고 싶음",
-          "상관없음",
-        ],
-      },
-      {
-        id: "roommateInteraction",
-        label: "룸메이트와의 교류 정도",
-        type: "single",
-        options: ["친하게 지내고 싶음", "적당히 대화", "필요한 대화만"],
-        required: true,
-      },
-      {
-        id: "temperaturePreference",
-        label: "온도 선호",
-        type: "single",
-        options: ["추위 타요", "더위 타요", "보통"],
-        required: true,
-      },
-
-      {
         id: "scentProductUse",
-        label: "향수·디퓨저 등 향 제품 사용·허용",
+        label: "향수·디퓨저 등 향 제품 사용",
         type: "single",
         options: ["자주 사용", "가끔 사용", "사용 안 함", "상관없음"],
         required: true,
       },
       {
         id: "desktopUse",
-        label: "데스크탑 사용·허용",
+        label: "데스크탑 사용",
         type: "single",
         options: ["사용해요", "사용하지 않아요", "특정 시간 제외하면 상관없음"],
         required: true,

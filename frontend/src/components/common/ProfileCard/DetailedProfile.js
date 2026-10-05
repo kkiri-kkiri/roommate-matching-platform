@@ -21,7 +21,7 @@ const SECTIONS = [
       ["sleepTalking", "잠꼬대"], ["snoring", "코골이"],
       ["teethGrinding", "이갈이"], ["sleepSensitivity", "잠귀"],
       ["lightingPreference", "조명 환경"], ["phoneCall", "전화"],
-      ["dormStayDays", "기숙사 상주 주기"], ["hairDryer", "방 안에서 드라이기 사용"],
+      ["dormStayDays", "기숙사 상주 주기"],
     ],
   },
   {
@@ -39,7 +39,7 @@ const SECTIONS = [
     description: "서로의 공간과 취향을 존중하는 공동생활 방식을 알아보세요.",
     fields: [
       ["roommateInteraction", "룸메이트와 교류 정도"], ["mealPlan", "신청한 기숙사 식사"],
-      ["bugHandling", "벌레"], ["scentProductUse", "향수·디퓨저 등 향 제품 사용"],
+      ["scentProductUse", "향수·디퓨저 등 향 제품 사용"],
       ["desktopUse", "데스크탑 사용"], ["sharedItems", "공용물품 사용"],
     ],
   },
@@ -49,12 +49,12 @@ const DEMO_ANSWERS = {
   sleepTime: "23시 ~ 24시", wakeTime: "07시 ~ 08시",
   sleepTalking: "없음", snoring: "없음", teethGrinding: "없음", sleepSensitivity: "보통",
   lightingPreference: "어두움 선호", phoneCall: "항상 밖에서",
-  dormStayDays: ["월", "화", "수", "목", "금"], hairDryer: "취침 시간 외에는 괜찮아요",
+  dormStayDays: ["월", "화", "수", "목", "금"],
   cleaningFrequency: "주 1회", cleaningStyle: "상황에 따라 협의",
   indoorEating: "냄새 안나는 음식 가능", smoking: "비흡연",
   mediaSound: "항상 이어폰 사용해주세요", showerTime: "저녁", showerDuration: "20분",
   temperaturePreference: "보통", roommateInteraction: "적당히 대화",
-  mealPlan: ["조식", "석식"], bugHandling: "작은 건 잡음", scentProductUse: "사용 안 함",
+  mealPlan: ["조식", "석식"], scentProductUse: "사용 안 함",
   desktopUse: "사용하지 않아요", sharedItems: "일부만 공유",
 };
 
@@ -82,7 +82,7 @@ const DEMO_PROFILES = {
       indoorEating: "가능", phoneCall: "방에서는 짧게만", showerDuration: "30분",
       cleaningFrequency: "주 2회", cleaningStyle: "각자 영역만 청소",
       roommateInteraction: "필요한 대화만", mealPlan: ["중식", "석식"],
-      temperaturePreference: "추위 타요", bugHandling: "못 잡음", scentProductUse: "가끔 사용",
+      temperaturePreference: "추위 타요", scentProductUse: "가끔 사용",
       sharedItems: "각자 사용",
     },
   },
