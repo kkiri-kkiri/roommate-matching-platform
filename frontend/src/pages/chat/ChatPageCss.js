@@ -494,6 +494,13 @@ export const EmptyState = styled.div`
   p { max-width: 320px; margin: 10px 0 24px; color: #747781; font-size: 14px; line-height: 24px; word-break: keep-all; white-space: pre-line; }
 `;
 export const EmptyIcon = styled.div`display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #e7f8f6; color: #006a65; svg { width: 24px; height: 24px; }`;
+export const EmptyImage = styled.img`
+  display: block;
+  width: 120px;
+  max-width: 100%;
+  height: auto;
+  flex-shrink: 0;
+`;
 export const PrimaryLink = styled(Link)`${primary}`;
 export const StatusMessage = styled.p`flex-shrink: 0; margin: 0; padding: 4px 12px; color: #006a65; font-size: 12px; line-height: 20px; &:empty { padding: 0; }`;
 export const Dialog = styled.dialog`

@@ -310,7 +310,7 @@ function ChatPage() {
               </S.EmptyState>
             ) : (
               <S.EmptyState $compact>
-                <S.EmptyIcon><MessagesSquare size={28} aria-hidden="true" /></S.EmptyIcon>
+                <S.EmptyImage src="/img/당황 한경.png" alt="당황한 한경" />
                 <h3>현재 채팅방이 없어요</h3>
                 {category !== "all" && rooms.length > 0 && (
                   <S.SecondaryButton type="button" onClick={() => selectCategory("all")}>전체 대화 보기</S.SecondaryButton>
@@ -421,7 +421,11 @@ function ChatPage() {
               </>
             ) : (
               <S.EmptyState>
-                <S.EmptyIcon><MessagesSquare size={40} aria-hidden="true" /></S.EmptyIcon>
+                {rooms.length ? (
+                  <S.EmptyIcon><MessagesSquare size={40} aria-hidden="true" /></S.EmptyIcon>
+                ) : (
+                  <S.EmptyImage src="/img/당황 한경.png" alt="당황한 한경" />
+                )}
                 <h2>{rooms.length ? "어떤 이야기를 나눠볼까요?" : "현재 채팅방이 없어요"}</h2>
                 {rooms.length > 0 && <p>{"목록에서 채팅방을 선택해\n이웃과의 대화를 이어가세요."}</p>}
               </S.EmptyState>
