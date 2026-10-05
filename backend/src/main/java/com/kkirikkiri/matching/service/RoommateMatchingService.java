@@ -212,8 +212,6 @@ public class RoommateMatchingService {
 				"roommateInteraction", filter.roommateInteraction()));
 		specification = specification.and(hasSurveyValue(
 				"temperaturePreference", filter.temperaturePreference()));
-		specification = specification.and(hasSurveyValue("hairDryerUse", filter.hairDryer()));
-		specification = specification.and(hasSurveyValue("bugHandling", filter.bugHandling()));
 		specification = specification.and(hasSurveyValue("scentProductUse", filter.scentProductUse()));
 		specification = specification.and(hasSurveyValue("desktopUse", filter.desktopUse()));
 		specification = specification.and(hasSurveyValue("sharedItems", filter.sharedItems()));

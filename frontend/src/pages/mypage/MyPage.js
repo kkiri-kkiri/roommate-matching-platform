@@ -284,7 +284,6 @@ const PROFILE_DEFAULTS = {
   mealPlan: ["조식", "석식"],
   dormStayDays: ["월", "화", "수", "목", "금"],
   temperaturePreference: "보통",
-  bugHandling: "작은 건 잡음",
   scentProductUse: "사용 안 함",
   desktopUse: "사용하지 않아요",
   sharedItems: "일부만 공유",

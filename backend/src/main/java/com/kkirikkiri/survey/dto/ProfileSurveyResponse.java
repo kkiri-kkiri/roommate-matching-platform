@@ -43,8 +43,6 @@ public record ProfileSurveyResponse(
 			String meal,
 			String roommateInteraction,
 			String temperaturePreference,
-			String hairDryer,
-			String bugHandling,
 			String scentProductUse,
 			String desktopUse,
 			String sharedItems) {
@@ -71,8 +69,6 @@ public record ProfileSurveyResponse(
 					survey.getMeal(),
 					survey.getRoommateInteraction(),
 					survey.getTemperaturePreference(),
-					survey.getHairDryerUse(),
-					survey.getBugHandling(),
 					survey.getScentProductUse(),
 					survey.getDesktopUse(),
 					survey.getSharedItems());

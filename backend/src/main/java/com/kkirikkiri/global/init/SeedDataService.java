@@ -154,12 +154,6 @@ public class SeedDataService {
             "보통"
     };
 
-    private static final String[] BUG_HANDLING = {
-            "잘 잡음",
-            "못 잡음",
-            "작은 벌레는 가능"
-    };
-
     private static final String[] SCENT_PRODUCT = {
             "자주 사용",
             "가끔 사용",
@@ -182,11 +176,6 @@ public class SeedDataService {
             "각자 먹고 싶음",
             "시간 될 때만 같이 먹고 싶음",
             "상관없음"
-    };
-
-    private static final String[] HAIR_DRYER = {
-            "사용",
-            "미사용"
     };
 
     @Transactional
@@ -552,13 +541,6 @@ public class SeedDataService {
         );
 
         values.put(
-                "bug_handling",
-                BUG_HANDLING[
-                        i % BUG_HANDLING.length
-                        ]
-        );
-
-        values.put(
                 "scent_product_use",
                 SCENT_PRODUCT[
                         i % SCENT_PRODUCT.length
@@ -576,13 +558,6 @@ public class SeedDataService {
                 "shared_items",
                 SHARED_ITEMS[
                         i % SHARED_ITEMS.length
-                        ]
-        );
-
-        values.put(
-                "hair_dryer_use",
-                HAIR_DRYER[
-                        i % HAIR_DRYER.length
                         ]
         );
 
