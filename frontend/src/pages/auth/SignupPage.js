@@ -62,6 +62,7 @@ const INITIAL_FORM = {
 const SCHOOL_EMAIL_DOMAIN = "@hknu.ac.kr";
 const SCHOOL_EMAIL_ID_PATTERN = /^[A-Za-z0-9_%+-]+(?:\.[A-Za-z0-9_%+-]+)*$/;
 const STUDENT_ID_PATTERN = /^\d{2}$/;
+const NICKNAME_PATTERN = /^[가-힣A-Za-z0-9]{2,8}$/;
 
 const findFaculty = (name) =>
   FACULTY_OPTIONS.find((faculty) => faculty.name === name);
@@ -72,12 +73,16 @@ const SignupPage = () => {
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationSent, setVerificationSent] = useState(false);
+  const [isSendingVerification, setIsSendingVerification] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [verificationToken, setVerificationToken] = useState("");
   const [verificationFeedback, setVerificationFeedback] = useState(null);
   const [submitFeedback, setSubmitFeedback] = useState(null);
   const [availability, setAvailability] = useState(null);
   const [availabilityError, setAvailabilityError] = useState(false);
+  const [nicknameCheck, setNicknameCheck] = useState(null);
+  const [nicknameCheckError, setNicknameCheckError] = useState("");
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false);
   const navigate = useNavigate();
 
   const passwordIsLongEnough = form.password.length >= 8;
@@ -94,8 +99,7 @@ const SignupPage = () => {
     birthYear >= 1900 &&
     birthYear <= currentYear;
   const studentIdIsValid = STUDENT_ID_PATTERN.test(form.studentId);
-  const nicknameIsValid =
-    form.nickname.trim().length > 0 && form.nickname.trim().length <= 20;
+  const nicknameIsValid = NICKNAME_PATTERN.test(form.nickname);
   const schoolEmailIdIsValid = SCHOOL_EMAIL_ID_PATTERN.test(
     form.schoolEmailId.trim(),
   );
@@ -105,9 +109,8 @@ const SignupPage = () => {
     const schoolEmail = schoolEmailIdIsValid
       ? `${form.schoolEmailId.trim()}${SCHOOL_EMAIL_DOMAIN}`
       : "";
-    const nickname = form.nickname.trim();
 
-    if (!schoolEmail && !nickname) {
+    if (!schoolEmail) {
       setAvailability(null);
       setAvailabilityError(false);
       return undefined;
@@ -115,10 +118,7 @@ const SignupPage = () => {
 
     const timer = window.setTimeout(async () => {
       try {
-        const result = await checkSignupAvailability({
-          schoolEmail,
-          nickname: nicknameIsValid ? nickname : "",
-        });
+        const result = await checkSignupAvailability({ schoolEmail });
         setAvailability(result);
         setAvailabilityError(false);
       } catch {
@@ -128,12 +128,7 @@ const SignupPage = () => {
     }, 400);
 
     return () => window.clearTimeout(timer);
-  }, [
-    form.nickname,
-    form.schoolEmailId,
-    nicknameIsValid,
-    schoolEmailIdIsValid,
-  ]);
+  }, [form.schoolEmailId, schoolEmailIdIsValid]);
 
   const setFormValue = (name, value) => {
     setForm((current) => {
@@ -149,6 +144,10 @@ const SignupPage = () => {
     if (["nickname", "schoolEmailId"].includes(name)) {
       setAvailability(null);
       setAvailabilityError(false);
+    }
+    if (name === "nickname") {
+      setNicknameCheck(null);
+      setNicknameCheckError("");
     }
     setSubmitFeedback(null);
   };
@@ -179,35 +178,49 @@ const SignupPage = () => {
   const handleSendCode = async () => {
     const schoolEmailId = form.schoolEmailId.trim();
 
-    if (!SCHOOL_EMAIL_ID_PATTERN.test(schoolEmailId)) {
-      setVerificationFeedback({
-        tone: "error",
-        text: "학교 이메일의 @ 앞부분을 정확히 입력해 주세요.",
-      });
+    if (!schoolEmailId) {
+      window.alert("학교 이메일을 입력해 주세요.");
       return;
     }
 
+    if (!SCHOOL_EMAIL_ID_PATTERN.test(schoolEmailId)) {
+      return;
+    }
+
+    const schoolEmail = `${schoolEmailId}${SCHOOL_EMAIL_DOMAIN}`;
+    const sendRequest = sendEmailVerification(schoolEmail);
+    setIsSendingVerification(true);
+
     try {
-      await sendEmailVerification(`${schoolEmailId}${SCHOOL_EMAIL_DOMAIN}`);
+      await sendRequest;
       setVerificationCode("");
       setVerificationSent(true);
       setIsVerified(false);
       setVerificationToken("");
-      setVerificationFeedback({
-        tone: "info",
-        text: `${schoolEmailId}${SCHOOL_EMAIL_DOMAIN}로 인증번호를 전송했어요.`,
-      });
+      setVerificationFeedback(null);
+      window.alert("인증번호가 전송되었습니다.");
     } catch (error) {
-      setVerificationFeedback({ tone: "error", text: error.message });
+      if (error.message.includes("인증번호는 잠시 후 다시 요청해 주세요")) {
+        window.alert(error.message);
+        return;
+      }
+      if (error.message.includes("이미 가입된 학교 이메일")) {
+        window.alert(error.message);
+        return;
+      }
+      setVerificationFeedback({
+        tone: "error",
+        text: error.message || "학교 이메일 중복 확인에 실패했습니다.",
+      });
+    } finally {
+      setIsSendingVerification(false);
     }
   };
 
   const handleVerifyCode = async () => {
     if (!/^\d{6}$/.test(verificationCode)) {
-      setVerificationFeedback({
-        tone: "error",
-        text: "인증번호 숫자 6자리를 입력해 주세요.",
-      });
+      setVerificationFeedback(null);
+      window.alert("인증번호는 숫자 6자리로 입력해 주세요.");
       return;
     }
 
@@ -218,13 +231,35 @@ const SignupPage = () => {
       );
       setVerificationToken(token);
       setIsVerified(true);
-      setVerificationFeedback({
-        tone: "success",
-        text: "재학생 인증이 완료되었습니다.",
-      });
+      setVerificationFeedback(null);
       setSubmitFeedback(null);
+      window.alert("재학생 인증이 완료되었습니다.");
     } catch (error) {
-      setVerificationFeedback({ tone: "error", text: error.message });
+      setVerificationFeedback(null);
+      window.alert(error.message);
+    }
+  };
+
+  const handleCheckNickname = async () => {
+    const nickname = form.nickname.trim();
+
+    if (!nicknameIsValid) {
+      setNicknameCheck(null);
+      setNicknameCheckError("");
+      return;
+    }
+
+    setIsCheckingNickname(true);
+    setNicknameCheck(null);
+    setNicknameCheckError("");
+
+    try {
+      const result = await checkSignupAvailability({ nickname });
+      setNicknameCheck({ nickname, available: result.nicknameAvailable });
+    } catch {
+      setNicknameCheckError(nickname);
+    } finally {
+      setIsCheckingNickname(false);
     }
   };
 
@@ -246,9 +281,23 @@ const SignupPage = () => {
     ];
 
     if (requiredValues.some((value) => !value.trim())) {
+      setSubmitFeedback(null);
+      window.alert("모든 항목을 작성해주세요.");
+      return;
+    }
+
+    if (nicknameCheck?.nickname !== form.nickname.trim()) {
       setSubmitFeedback({
         tone: "error",
-        text: "필수 입력 항목을 모두 작성해 주세요.",
+        text: "닉네임 중복 확인을 완료해 주세요.",
+      });
+      return;
+    }
+
+    if (!nicknameCheck.available) {
+      setSubmitFeedback({
+        tone: "error",
+        text: "이미 사용 중인 닉네임이에요. 다른 닉네임을 입력해 주세요.",
       });
       return;
     }
@@ -369,11 +418,6 @@ const SignupPage = () => {
           );
         })}
       </S.ChoiceGrid>
-      <S.FieldFeedback $tone={form[name] ? "success" : "neutral"}>
-        {form[name]
-          ? `${label}을(를) 선택했어요.`
-          : `${label}을(를) 선택해 주세요.`}
-      </S.FieldFeedback>
     </S.ChoiceFieldset>
   );
 
@@ -389,9 +433,174 @@ const SignupPage = () => {
         </S.Header>
 
         <S.Form onSubmit={handleSubmit} noValidate>
-          <S.FormSection aria-labelledby="account-section-title">
+          <S.FormSection aria-labelledby="verification-section-title">
             <S.SectionHeader>
               <S.SectionNumber aria-hidden="true">1</S.SectionNumber>
+              <S.SectionHeadingGroup>
+                <S.SectionTitle id="verification-section-title">
+                  재학생 인증
+                </S.SectionTitle>
+                <S.SectionDescription>
+                  한경국립대학교 학교 이메일로 재학생 여부를 확인합니다.
+                </S.SectionDescription>
+              </S.SectionHeadingGroup>
+            </S.SectionHeader>
+
+            <S.FieldGroup>
+              <S.Label htmlFor="signup-school-email">학교 이메일</S.Label>
+              <S.ActionRow>
+                <S.EmailInputGroup
+                  $readOnly={isVerified}
+                  $tone={
+                    form.schoolEmailId
+                      ? schoolEmailIdIsValid
+                        ? "success"
+                        : "error"
+                      : "neutral"
+                  }
+                >
+                  <S.EmailLocalInput
+                    id="signup-school-email"
+                    name="schoolEmailId"
+                    type="text"
+                    inputMode="email"
+                    value={form.schoolEmailId}
+                    onChange={handleInputChange}
+                    placeholder="학교 이메일 아이디"
+                    autoComplete="email"
+                    maxLength={64}
+                    required
+                    readOnly={isVerified}
+                    aria-describedby="school-email-domain verification-status"
+                    aria-invalid={Boolean(
+                      form.schoolEmailId && !schoolEmailIdIsValid,
+                    )}
+                    $tone={
+                      form.schoolEmailId
+                        ? schoolEmailIdIsValid
+                          ? "success"
+                          : "error"
+                        : "neutral"
+                    }
+                  />
+                  <S.EmailDomain id="school-email-domain">
+                    {SCHOOL_EMAIL_DOMAIN}
+                  </S.EmailDomain>
+                </S.EmailInputGroup>
+                <S.OutlineButton
+                  type="button"
+                  onClick={handleSendCode}
+                  disabled={isVerified || isSendingVerification}
+                >
+                  {isVerified
+                    ? "인증 완료"
+                    : isSendingVerification
+                      ? "전송 요청 중..."
+                      : verificationSent
+                        ? "재전송"
+                        : "인증번호 전송"}
+                </S.OutlineButton>
+              </S.ActionRow>
+              <S.FieldFeedback
+                $tone={
+                  form.schoolEmailId
+                    ? schoolEmailIdIsValid && availability
+                      ? availability.schoolEmailAvailable
+                        ? "success"
+                        : "error"
+                      : schoolEmailIdIsValid
+                        ? "neutral"
+                        : "error"
+                    : "neutral"
+                }
+              >
+                {form.schoolEmailId
+                  ? schoolEmailIdIsValid
+                    ? availabilityError
+                      ? "중복 확인에 실패했어요. 잠시 후 다시 입력해 주세요."
+                      : availability
+                        ? availability.schoolEmailAvailable
+                          ? ""
+                          : "이미 가입된 학교 이메일이에요."
+                        : ""
+                    : "이메일 아이디에는 영문, 숫자와 일부 기호만 입력할 수 있어요."
+                  : ""}
+              </S.FieldFeedback>
+            </S.FieldGroup>
+
+            {verificationSent && !isVerified && (
+              <S.FieldGroup>
+                <S.Label htmlFor="signup-verification-code">인증번호</S.Label>
+                <S.ActionRow>
+                  <S.Input
+                    id="signup-verification-code"
+                    name="verificationCode"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={verificationCode}
+                    onChange={(event) => {
+                      setVerificationCode(
+                        event.target.value.replace(/\D/g, "").slice(0, 6),
+                      );
+                      setVerificationFeedback(null);
+                    }}
+                    placeholder="숫자 6자리"
+                    autoComplete="one-time-code"
+                    aria-invalid={Boolean(
+                      verificationCode && !verificationCodeIsValid,
+                    )}
+                    $tone={
+                      verificationCode
+                        ? verificationCodeIsValid
+                          ? "success"
+                          : "error"
+                        : "neutral"
+                    }
+                  />
+                  <S.OutlineButton type="button" onClick={handleVerifyCode}>
+                    인증 확인
+                  </S.OutlineButton>
+                </S.ActionRow>
+                <S.FieldFeedback
+                  $tone={
+                    verificationCode
+                      ? verificationCodeIsValid
+                        ? "success"
+                        : "error"
+                      : "neutral"
+                  }
+                >
+                  {verificationCode
+                    ? verificationCodeIsValid
+                      ? ""
+                      : "인증번호는 숫자 6자리로 입력해 주세요."
+                    : ""}
+                </S.FieldFeedback>
+              </S.FieldGroup>
+            )}
+
+            {verificationFeedback && (
+              <S.VerificationStatus
+                id="verification-status"
+                role={
+                  verificationFeedback.tone === "error" ? "alert" : "status"
+                }
+                aria-live={
+                  verificationFeedback.tone === "error" ? "assertive" : "polite"
+                }
+                $tone={verificationFeedback.tone}
+              >
+                {verificationFeedback.text}
+              </S.VerificationStatus>
+            )}
+          </S.FormSection>
+
+          <S.Divider />
+
+          <S.FormSection aria-labelledby="account-section-title">
+            <S.SectionHeader>
+              <S.SectionNumber aria-hidden="true">2</S.SectionNumber>
               <S.SectionTitle id="account-section-title">
                 계정 정보
               </S.SectionTitle>
@@ -407,7 +616,7 @@ const SignupPage = () => {
                     type={showPassword ? "text" : "password"}
                     value={form.password}
                     onChange={handleInputChange}
-                    placeholder="8자 이상 입력"
+                    placeholder="비밀번호 입력"
                     autoComplete="new-password"
                     required
                     aria-describedby="password-guide"
@@ -464,7 +673,7 @@ const SignupPage = () => {
                     type={showPasswordConfirm ? "text" : "password"}
                     value={form.passwordConfirm}
                     onChange={handleInputChange}
-                    placeholder="한 번 더 입력"
+                    placeholder="비밀번호 확인"
                     autoComplete="new-password"
                     required
                     aria-describedby="password-confirm-guide"
@@ -517,213 +726,66 @@ const SignupPage = () => {
 
             <S.FieldGroup>
               <S.Label htmlFor="signup-nickname">닉네임</S.Label>
-              <S.Input
-                id="signup-nickname"
-                name="nickname"
-                type="text"
-                value={form.nickname}
-                onChange={handleInputChange}
-                placeholder="표시할 닉네임"
-                autoComplete="nickname"
-                required
-                aria-invalid={Boolean(form.nickname && !nicknameIsValid)}
-                $tone={
-                  form.nickname
-                    ? nicknameIsValid && availability
-                      ? availability.nicknameAvailable
-                        ? "success"
-                        : "error"
-                      : nicknameIsValid
-                        ? "neutral"
-                        : "error"
-                    : "neutral"
-                }
-              />
+              <S.ActionRow>
+                <S.Input
+                  id="signup-nickname"
+                  name="nickname"
+                  type="text"
+                  value={form.nickname}
+                  onChange={handleInputChange}
+                  placeholder="닉네임 입력"
+                  autoComplete="nickname"
+                  maxLength={8}
+                  required
+                  aria-invalid={Boolean(form.nickname && !nicknameIsValid)}
+                  $tone={
+                    form.nickname
+                      ? !nicknameIsValid
+                        ? "error"
+                        : nicknameCheck?.nickname === form.nickname.trim()
+                          ? nicknameCheck.available
+                            ? "success"
+                            : "error"
+                          : "neutral"
+                      : "neutral"
+                  }
+                />
+                <S.OutlineButton
+                  type="button"
+                  onClick={handleCheckNickname}
+                  disabled={isCheckingNickname}
+                >
+                  {isCheckingNickname ? "확인 중..." : "중복 확인"}
+                </S.OutlineButton>
+              </S.ActionRow>
               <S.FieldFeedback
                 $tone={
                   form.nickname
                     ? nicknameIsValid
-                      ? "success"
+                      ? nicknameCheckError === form.nickname.trim()
+                        ? "error"
+                        : nicknameCheck?.nickname === form.nickname.trim()
+                          ? nicknameCheck.available
+                            ? "success"
+                            : "error"
+                          : "neutral"
                       : "error"
                     : "neutral"
                 }
               >
                 {form.nickname
                   ? nicknameIsValid
-                    ? availabilityError
-                      ? "중복 확인에 실패했어요. 잠시 후 다시 입력해 주세요."
-                      : availability
-                        ? availability.nicknameAvailable
+                    ? nicknameCheckError === form.nickname.trim()
+                      ? "중복 확인에 실패했어요. 다시 시도해 주세요."
+                      : nicknameCheck?.nickname === form.nickname.trim()
+                        ? nicknameCheck.available
                           ? "사용할 수 있는 닉네임이에요."
                           : "이미 사용 중인 닉네임이에요."
-                        : "닉네임 중복을 확인하는 중이에요."
-                    : "닉네임은 1자 이상 20자 이하로 입력해 주세요."
-                  : "다른 사람에게 보여질 닉네임을 입력해 주세요."}
+                        : "중복 확인 버튼을 눌러 주세요."
+                    : "닉네임은 한글, 영문, 숫자만 사용해 2~8자로 입력해 주세요."
+                  : "한글, 영문, 숫자만 사용해 2~8자로 입력해 주세요."}
               </S.FieldFeedback>
             </S.FieldGroup>
-          </S.FormSection>
-
-          <S.Divider />
-
-          <S.FormSection aria-labelledby="verification-section-title">
-            <S.SectionHeader>
-              <S.SectionNumber aria-hidden="true">2</S.SectionNumber>
-              <S.SectionHeadingGroup>
-                <S.SectionTitle id="verification-section-title">
-                  재학생 인증
-                </S.SectionTitle>
-                <S.SectionDescription>
-                  한경국립대학교 학교 이메일로 재학생 여부를 확인합니다.
-                </S.SectionDescription>
-              </S.SectionHeadingGroup>
-            </S.SectionHeader>
-
-            <S.FieldGroup>
-              <S.Label htmlFor="signup-school-email">학교 이메일</S.Label>
-              <S.ActionRow>
-                <S.EmailInputGroup
-                  $readOnly={isVerified}
-                  $tone={
-                    form.schoolEmailId
-                      ? schoolEmailIdIsValid
-                        ? "success"
-                        : "error"
-                      : "neutral"
-                  }
-                >
-                  <S.EmailLocalInput
-                    id="signup-school-email"
-                    name="schoolEmailId"
-                    type="text"
-                    inputMode="email"
-                    value={form.schoolEmailId}
-                    onChange={handleInputChange}
-                    placeholder="학교 이메일 아이디"
-                    autoComplete="email"
-                    maxLength={64}
-                    required
-                    readOnly={isVerified}
-                    aria-describedby="school-email-domain verification-status"
-                    aria-invalid={Boolean(
-                      form.schoolEmailId && !schoolEmailIdIsValid,
-                    )}
-                    $tone={
-                      form.schoolEmailId
-                        ? schoolEmailIdIsValid
-                          ? "success"
-                          : "error"
-                        : "neutral"
-                    }
-                  />
-                  <S.EmailDomain id="school-email-domain">
-                    {SCHOOL_EMAIL_DOMAIN}
-                  </S.EmailDomain>
-                </S.EmailInputGroup>
-                <S.OutlineButton
-                  type="button"
-                  onClick={handleSendCode}
-                  disabled={isVerified}
-                >
-                  {isVerified
-                    ? "인증 완료"
-                    : verificationSent
-                      ? "재전송"
-                      : "인증번호 전송"}
-                </S.OutlineButton>
-              </S.ActionRow>
-              <S.FieldFeedback
-                $tone={
-                  form.schoolEmailId
-                    ? schoolEmailIdIsValid && availability
-                      ? availability.schoolEmailAvailable
-                        ? "success"
-                        : "error"
-                      : schoolEmailIdIsValid
-                        ? "neutral"
-                        : "error"
-                    : "neutral"
-                }
-              >
-                {form.schoolEmailId
-                  ? schoolEmailIdIsValid
-                    ? availabilityError
-                      ? "중복 확인에 실패했어요. 잠시 후 다시 입력해 주세요."
-                      : availability
-                        ? availability.schoolEmailAvailable
-                          ? "사용할 수 있는 학교 이메일이에요."
-                          : "이미 가입된 학교 이메일이에요."
-                        : "학교 이메일 중복을 확인하는 중이에요."
-                    : "이메일 아이디에는 영문, 숫자와 일부 기호만 입력할 수 있어요."
-                  : "학교 이메일에서 @ 앞부분만 입력해 주세요."}
-              </S.FieldFeedback>
-            </S.FieldGroup>
-
-            {verificationSent && !isVerified && (
-              <S.FieldGroup>
-                <S.Label htmlFor="signup-verification-code">인증번호</S.Label>
-                <S.ActionRow>
-                  <S.Input
-                    id="signup-verification-code"
-                    name="verificationCode"
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={verificationCode}
-                    onChange={(event) => {
-                      setVerificationCode(
-                        event.target.value.replace(/\D/g, "").slice(0, 6),
-                      );
-                      setVerificationFeedback({
-                        tone: "info",
-                        text: "인증번호 숫자 6자리를 입력해 주세요.",
-                      });
-                    }}
-                    placeholder="숫자 6자리"
-                    autoComplete="one-time-code"
-                    aria-invalid={Boolean(
-                      verificationCode && !verificationCodeIsValid,
-                    )}
-                    $tone={
-                      verificationCode
-                        ? verificationCodeIsValid
-                          ? "success"
-                          : "error"
-                        : "neutral"
-                    }
-                  />
-                  <S.OutlineButton type="button" onClick={handleVerifyCode}>
-                    인증 확인
-                  </S.OutlineButton>
-                </S.ActionRow>
-                <S.FieldFeedback
-                  $tone={
-                    verificationCode
-                      ? verificationCodeIsValid
-                        ? "success"
-                        : "error"
-                      : "neutral"
-                  }
-                >
-                  {verificationCode
-                    ? verificationCodeIsValid
-                      ? "인증번호 형식이 맞아요."
-                      : "인증번호는 숫자 6자리로 입력해 주세요."
-                    : "인증번호 숫자 6자리를 입력해 주세요."}
-                </S.FieldFeedback>
-              </S.FieldGroup>
-            )}
-
-            <S.VerificationStatus
-              id="verification-status"
-              role={verificationFeedback?.tone === "error" ? "alert" : "status"}
-              aria-live={
-                verificationFeedback?.tone === "error" ? "assertive" : "polite"
-              }
-              $tone={verificationFeedback?.tone || "neutral"}
-            >
-              {verificationFeedback?.text ||
-                "학교 이메일 입력 후 인증번호를 받아 주세요."}
-            </S.VerificationStatus>
           </S.FormSection>
 
           <S.Divider />
@@ -753,7 +815,6 @@ const SignupPage = () => {
                     name="faculty"
                     value={form.faculty}
                     onChange={handleInputChange}
-                    aria-describedby="faculty-guide"
                     required
                   >
                     <option value="">학부 선택</option>
@@ -765,14 +826,6 @@ const SignupPage = () => {
                   </S.Select>
                   <ChevronDown size={18} aria-hidden="true" />
                 </S.SelectShell>
-                <S.FieldFeedback
-                  id="faculty-guide"
-                  $tone={form.faculty ? "success" : "neutral"}
-                >
-                  {form.faculty
-                    ? "학부를 선택했어요."
-                    : "학부를 선택해 주세요."}
-                </S.FieldFeedback>
               </S.FieldGroup>
 
               <S.FieldGroup>
@@ -787,7 +840,6 @@ const SignupPage = () => {
                     value={form.major}
                     onChange={handleInputChange}
                     disabled={!selectedFaculty || hasNoMajor}
-                    aria-describedby="major-guide"
                     required
                   >
                     {hasNoMajor ? (
@@ -807,16 +859,6 @@ const SignupPage = () => {
                   </S.Select>
                   <ChevronDown size={18} aria-hidden="true" />
                 </S.SelectShell>
-                <S.FieldFeedback
-                  id="major-guide"
-                  $tone={form.major ? "success" : "neutral"}
-                >
-                  {hasNoMajor
-                    ? "선택한 학부는 별도 세부전공이 없어요."
-                    : form.major
-                      ? "전공을 선택했어요."
-                      : "전공을 선택해 주세요."}
-                </S.FieldFeedback>
               </S.FieldGroup>
             </S.TwoColumnFields>
 
@@ -837,6 +879,13 @@ const SignupPage = () => {
                   required
                   aria-invalid={Boolean(form.birthYear && !birthYearIsValid)}
                   aria-describedby="birth-year-guide"
+                  $tone={
+                    form.birthYear
+                      ? birthYearIsValid
+                        ? "success"
+                        : "error"
+                      : "neutral"
+                  }
                 />
                 <S.FieldFeedback
                   id="birth-year-guide"
@@ -850,9 +899,9 @@ const SignupPage = () => {
                 >
                   {form.birthYear
                     ? birthYearIsValid
-                      ? "올바른 출생연도예요."
-                      : `1900년부터 ${currentYear}년 사이의 네 자리 숫자를 입력해 주세요.`
-                    : `1900년부터 ${currentYear}년 사이의 네 자리 숫자를 입력해 주세요.`}
+                      ? ""
+                      : "출생연도를 확인해 주세요."
+                    : ""}
                 </S.FieldFeedback>
               </S.FieldGroup>
 
@@ -872,6 +921,13 @@ const SignupPage = () => {
                   required
                   aria-invalid={Boolean(form.studentId && !studentIdIsValid)}
                   aria-describedby="student-id-guide"
+                  $tone={
+                    form.studentId
+                      ? studentIdIsValid
+                        ? "success"
+                        : "error"
+                      : "neutral"
+                  }
                 />
                 <S.FieldFeedback
                   id="student-id-guide"
@@ -885,16 +941,16 @@ const SignupPage = () => {
                 >
                   {form.studentId
                     ? studentIdIsValid
-                      ? "올바른 학번 형식이에요."
-                      : "학번은 숫자 두 자리로 입력해 주세요."
-                    : "학번은 숫자 두 자리로 입력해 주세요."}
+                      ? ""
+                      : "학번 형식을 확인해 주세요."
+                    : ""}
                 </S.FieldFeedback>
               </S.FieldGroup>
             </S.TwoColumnFields>
 
             {renderChoiceField("grade", "학년", GRADE_OPTIONS)}
 
-            <S.MbtiFieldset aria-describedby="mbti-guide">
+            <S.MbtiFieldset>
               <S.ChoiceLegend>MBTI</S.ChoiceLegend>
               <S.MbtiLayout>
                 <S.MbtiGrid>
@@ -938,9 +994,6 @@ const SignupPage = () => {
                   </small>
                 </S.MbtiPreview>
               </S.MbtiLayout>
-              <S.HelperText id="mbti-guide">
-                네 가지 기준을 모두 선택해 주세요.
-              </S.HelperText>
             </S.MbtiFieldset>
           </S.FormSection>
 

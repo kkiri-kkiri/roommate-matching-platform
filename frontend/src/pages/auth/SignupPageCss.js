@@ -603,6 +603,10 @@ export const FieldFeedback = styled.p`
   font-size: 12px;
   font-weight: 500;
   line-height: 18px;
+
+  &:empty {
+    display: none;
+  }
 `;
 
 export const Divider = styled.hr`
@@ -695,6 +699,10 @@ export const VerificationStatus = styled.p`
   }};
   font-size: 13px;
   line-height: 20px;
+
+  &:empty {
+    display: none;
+  }
 `;
 
 export const SubmitFeedback = styled.p`

@@ -7,8 +7,8 @@ import jakarta.validation.constraints.Size;
  * null인 필드는 변경하지 않는다. MBTI 부분 수정값은 서비스에서 기존 값과 조합한다.
  */
 public record UserUpdateRequest(
-		@Size(max = 20, message = "닉네임은 20자 이하여야 합니다.")
-		@Pattern(regexp = "(?s).*\\S.*", message = "닉네임은 공백일 수 없습니다.")
+		@Size(min = 2, max = 8, message = "닉네임은 2자 이상 8자 이하여야 합니다.")
+		@Pattern(regexp = "[가-힣A-Za-z0-9]+", message = "닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.")
 		String nickname,
 		@Size(max = 30, message = "생활관명은 30자 이하여야 합니다.")
 		@Pattern(regexp = "(?s).*\\S.*", message = "생활관명은 공백일 수 없습니다.")

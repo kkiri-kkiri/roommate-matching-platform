@@ -719,6 +719,8 @@ function AccountContent({ account, onSave }) {
   const academicEditing = academicFields.some((id) => editingFields[id]);
   const mbtiEditing = mbtiFields.some((id) => editingFields[id]);
 
+  const nicknameIsValid = /^[가-힣A-Za-z0-9]{2,8}$/.test(draft.nickname);
+
   const update = (id, value) => {
     setDraft((current) => ({
       ...current,
@@ -747,6 +749,10 @@ function AccountContent({ account, onSave }) {
       if (!(id === "major" && noMajor) && !String(draft[id] || "").trim())
         nextErrors[id] = `${id} 항목을 입력하거나 선택해 주세요.`;
     });
+    if (ids.includes("nickname") && !nicknameIsValid) {
+      nextErrors.nickname =
+        "닉네임은 한글, 영문, 숫자만 사용해 2~8자로 입력해 주세요.";
+    }
     if (
       ids.includes("faculty") &&
       faculty?.majors.length &&
@@ -874,7 +880,7 @@ function AccountContent({ account, onSave }) {
             id={`account-${id}`}
             type={type}
             value={draft[id]}
-            maxLength={id === "nickname" ? 20 : undefined}
+            maxLength={id === "nickname" ? 8 : undefined}
             autoComplete={
               type === "password"
                 ? id === "currentPassword"
