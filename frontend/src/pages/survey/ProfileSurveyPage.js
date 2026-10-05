@@ -200,13 +200,6 @@ const SURVEY_STEPS = [
         required: true,
       },
       {
-        id: "bugHandling",
-        label: "벌레",
-        type: "single",
-        options: ["잘 잡음", "못 잡음", "작은 건 잡음"],
-        required: true,
-      },
-      {
         id: "scentProductUse",
         label: "향수·디퓨저 등 향 제품 사용·허용",
         type: "single",

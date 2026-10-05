@@ -68,7 +68,6 @@ public record RoommateDetailResponse(
             String mediaSound,
             String showerTime,
             String showerDuration,
-            String hairDryer,
 
             String cleaningFrequency,
             String cleaningStyle,
@@ -76,7 +75,6 @@ public record RoommateDetailResponse(
             String meal,
             String roommateInteraction,
             String temperaturePreference,
-            String bugHandling,
             String scentProductUse,
             String desktopUse,
             String sharedItems,
@@ -101,7 +99,6 @@ public record RoommateDetailResponse(
                     survey.getMediaSound(),
                     survey.getShowerTime(),
                     survey.getShowerDuration(),
-                    survey.getHairDryerUse(),
 
                     survey.getCleaningFrequency(),
                     survey.getCleaningStyle(),
@@ -109,7 +106,6 @@ public record RoommateDetailResponse(
                     survey.getMeal(),
                     survey.getRoommateInteraction(),
                     survey.getTemperaturePreference(),
-                    survey.getBugHandling(),
                     survey.getScentProductUse(),
                     survey.getDesktopUse(),
                     survey.getSharedItems(),

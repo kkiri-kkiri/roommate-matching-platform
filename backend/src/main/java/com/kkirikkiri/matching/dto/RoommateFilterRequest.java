@@ -30,8 +30,6 @@ public record RoommateFilterRequest(
 		List<@NotBlank @Size(max = 60) String> meal,
 		List<@NotBlank @Size(max = 50) String> roommateInteraction,
 		List<@NotBlank @Size(max = 30) String> temperaturePreference,
-		List<@NotBlank @Size(max = 30) String> hairDryer,
-		List<@NotBlank @Size(max = 30) String> bugHandling,
 		List<@NotBlank @Size(max = 50) String> scentProductUse,
 		List<@NotBlank @Size(max = 50) String> desktopUse,
 		List<@NotBlank @Size(max = 50) String> sharedItems) {

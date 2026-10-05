@@ -8,7 +8,6 @@ import jakarta.validation.constraints.Size;
 
 /**
  * 전체 설문 답변을 저장한다. 필드별 선택지, 중복 및 선택 조합은 서비스에서 검증한다.
- * API 17.2에 따라 hairDryer와 bugHandling도 포함한다.
  */
 public record ProfileSurveyRequest(
 		@NotBlank(message = "취침시간을 선택해 주세요.") @Size(max = 50, message = "취침시간은 50자 이하여야 합니다.") String sleepTime,
@@ -31,8 +30,6 @@ public record ProfileSurveyRequest(
 		@NotBlank(message = "룸메이트와의 식사 방식을 선택해 주세요.") @Size(max = 60, message = "룸메이트와의 식사 방식은 60자 이하여야 합니다.") String meal,
 		@NotBlank(message = "룸메이트와의 교류 정도를 선택해 주세요.") @Size(max = 50, message = "룸메이트와의 교류 정도는 50자 이하여야 합니다.") String roommateInteraction,
 		@NotBlank(message = "온도 선호를 선택해 주세요.") @Size(max = 30, message = "온도 선호는 30자 이하여야 합니다.") String temperaturePreference,
-		@NotBlank(message = "드라이기 사용 여부를 선택해 주세요.") @Size(max = 30, message = "드라이기 사용 여부는 30자 이하여야 합니다.") String hairDryer,
-		@NotBlank(message = "벌레 처리 가능 정도를 선택해 주세요.") @Size(max = 30, message = "벌레 처리 가능 정도는 30자 이하여야 합니다.") String bugHandling,
 		@NotBlank(message = "향 제품 사용 여부를 선택해 주세요.") @Size(max = 50, message = "향 제품 사용 여부는 50자 이하여야 합니다.") String scentProductUse,
 		@NotBlank(message = "데스크탑 사용 여부를 선택해 주세요.") @Size(max = 50, message = "데스크탑 사용 여부는 50자 이하여야 합니다.") String desktopUse,
 		@NotBlank(message = "공용물품 사용 방식을 선택해 주세요.") @Size(max = 50, message = "공용물품 사용 방식은 50자 이하여야 합니다.") String sharedItems) {

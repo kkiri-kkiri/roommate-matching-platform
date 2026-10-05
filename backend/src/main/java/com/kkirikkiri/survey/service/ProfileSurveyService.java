@@ -47,8 +47,6 @@ public class ProfileSurveyService {
 			"항상 이어폰 사용해주세요", "공부·과제할 때 아니면 상관없음", "소리만 작게 해주세요", "자유롭게 하세요");
 	private static final Set<String> SHOWER_TIME_OPTIONS = Set.of("아침", "저녁", "유동적");
 	private static final Set<String> SHOWER_DURATION_OPTIONS = Set.of("10분", "20분", "30분", "40분", "그 이상");
-	private static final Set<String> HAIR_DRYER_OPTIONS = Set.of("사용", "미사용");
-	private static final Set<String> BUG_HANDLING_OPTIONS = Set.of("잘 잡음", "못 잡음", "작은 벌레는 가능");
 	private static final Set<String> CLEANING_FREQUENCY_OPTIONS = Set.of(
 			"안함", "주 1회", "주 2회", "주 3회", "주 4회", "주 5회", "매일", "유동적");
 	private static final Set<String> CLEANING_STYLE_OPTIONS = Set.of("같이 청소", "각자 영역만 청소", "상황에 따라 협의");
@@ -103,9 +101,9 @@ public class ProfileSurveyService {
 		return new ProfileSurvey(user, request.sleepTime(), request.wakeTime(), request.sleepTalking(),
 				request.snoring(), request.teethGrinding(), request.sleepSensitivity(), request.indoorEating(),
 				request.smoking(), request.lightingPreference(), request.phoneCall(), request.mediaSound(),
-				request.showerTime(), request.showerDuration(), request.hairDryer(), request.cleaningFrequency(),
+				request.showerTime(), request.showerDuration(), request.cleaningFrequency(),
 				request.cleaningStyle(), request.meal(), request.roommateInteraction(),
-				request.temperaturePreference(), request.bugHandling(), request.scentProductUse(),
+				request.temperaturePreference(), request.scentProductUse(),
 				request.desktopUse(), request.sharedItems(), true);
 	}
 
@@ -113,9 +111,9 @@ public class ProfileSurveyService {
 		survey.updateAnswers(request.sleepTime(), request.wakeTime(), request.sleepTalking(), request.snoring(),
 				request.teethGrinding(), request.sleepSensitivity(), request.indoorEating(), request.smoking(),
 				request.lightingPreference(), request.phoneCall(), request.mediaSound(), request.showerTime(),
-				request.showerDuration(), request.hairDryer(), request.cleaningFrequency(), request.cleaningStyle(),
+				request.showerDuration(), request.cleaningFrequency(), request.cleaningStyle(),
 				request.meal(), request.roommateInteraction(), request.temperaturePreference(),
-				request.bugHandling(), request.scentProductUse(), request.desktopUse(), request.sharedItems(), true);
+				request.scentProductUse(), request.desktopUse(), request.sharedItems(), true);
 	}
 
 	private void replaceOptions(ProfileSurvey survey, ProfileSurveyRequest request) {
@@ -150,8 +148,6 @@ public class ProfileSurveyService {
 		validateOption(request.mediaSound(), MEDIA_SOUND_OPTIONS);
 		validateOption(request.showerTime(), SHOWER_TIME_OPTIONS);
 		validateOption(request.showerDuration(), SHOWER_DURATION_OPTIONS);
-		validateOption(request.hairDryer(), HAIR_DRYER_OPTIONS);
-		validateOption(request.bugHandling(), BUG_HANDLING_OPTIONS);
 		validateOption(request.cleaningFrequency(), CLEANING_FREQUENCY_OPTIONS);
 		validateOption(request.cleaningStyle(), CLEANING_STYLE_OPTIONS);
 		validateOptions(request.dormStayDays(), DORM_STAY_DAY_OPTIONS);

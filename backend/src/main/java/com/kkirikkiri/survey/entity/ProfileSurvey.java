@@ -74,9 +74,6 @@ public class ProfileSurvey {
 	@Column(name = "shower_duration", nullable = false, length = 30)
 	private String showerDuration;
 
-	@Column(name = "hair_dryer_use", nullable = false, length = 30)
-	private String hairDryerUse;
-
 	@Column(name = "cleaning_frequency", nullable = false, length = 30)
 	private String cleaningFrequency;
 
@@ -91,9 +88,6 @@ public class ProfileSurvey {
 
 	@Column(name = "temperature_preference", nullable = false, length = 30)
 	private String temperaturePreference;
-
-	@Column(name = "bug_handling", nullable = false, length = 30)
-	private String bugHandling;
 
 	@Column(name = "scent_product_use", nullable = false, length = 50)
 	private String scentProductUse;
@@ -116,15 +110,15 @@ public class ProfileSurvey {
 	public ProfileSurvey(User user, String sleepTime, String wakeTime, String sleepTalking,
 			String snoring, String teethGrinding, String sleepSensitivity, String indoorEating,
 			String smoking, String lightingPreference, String phoneCall, String mediaSound,
-			String showerTime, String showerDuration, String hairDryerUse, String cleaningFrequency,
+			String showerTime, String showerDuration, String cleaningFrequency,
 			String cleaningStyle, String meal, String roommateInteraction, String temperaturePreference,
-			String bugHandling, String scentProductUse, String desktopUse, String sharedItems,
+			String scentProductUse, String desktopUse, String sharedItems,
 			boolean completed) {
 		this.user = Objects.requireNonNull(user, "user");
 		updateAnswers(sleepTime, wakeTime, sleepTalking, snoring, teethGrinding, sleepSensitivity,
 				indoorEating, smoking, lightingPreference, phoneCall, mediaSound, showerTime,
-				showerDuration, hairDryerUse, cleaningFrequency, cleaningStyle, meal,
-				roommateInteraction, temperaturePreference, bugHandling, scentProductUse,
+				showerDuration, cleaningFrequency, cleaningStyle, meal,
+				roommateInteraction, temperaturePreference, scentProductUse,
 				desktopUse, sharedItems, completed);
 	}
 
@@ -135,9 +129,9 @@ public class ProfileSurvey {
 	public void updateAnswers(String sleepTime, String wakeTime, String sleepTalking,
 			String snoring, String teethGrinding, String sleepSensitivity, String indoorEating,
 			String smoking, String lightingPreference, String phoneCall, String mediaSound,
-			String showerTime, String showerDuration, String hairDryerUse, String cleaningFrequency,
+			String showerTime, String showerDuration, String cleaningFrequency,
 			String cleaningStyle, String meal, String roommateInteraction, String temperaturePreference,
-			String bugHandling, String scentProductUse, String desktopUse, String sharedItems,
+			String scentProductUse, String desktopUse, String sharedItems,
 			boolean completed) {
 		this.sleepTime = Objects.requireNonNull(sleepTime, "sleepTime");
 		this.wakeTime = Objects.requireNonNull(wakeTime, "wakeTime");
@@ -152,13 +146,11 @@ public class ProfileSurvey {
 		this.mediaSound = Objects.requireNonNull(mediaSound, "mediaSound");
 		this.showerTime = Objects.requireNonNull(showerTime, "showerTime");
 		this.showerDuration = Objects.requireNonNull(showerDuration, "showerDuration");
-		this.hairDryerUse = Objects.requireNonNull(hairDryerUse, "hairDryerUse");
 		this.cleaningFrequency = Objects.requireNonNull(cleaningFrequency, "cleaningFrequency");
 		this.cleaningStyle = Objects.requireNonNull(cleaningStyle, "cleaningStyle");
 		this.meal = Objects.requireNonNull(meal, "meal");
 		this.roommateInteraction = Objects.requireNonNull(roommateInteraction, "roommateInteraction");
 		this.temperaturePreference = Objects.requireNonNull(temperaturePreference, "temperaturePreference");
-		this.bugHandling = Objects.requireNonNull(bugHandling, "bugHandling");
 		this.scentProductUse = Objects.requireNonNull(scentProductUse, "scentProductUse");
 		this.desktopUse = Objects.requireNonNull(desktopUse, "desktopUse");
 		this.sharedItems = Objects.requireNonNull(sharedItems, "sharedItems");
