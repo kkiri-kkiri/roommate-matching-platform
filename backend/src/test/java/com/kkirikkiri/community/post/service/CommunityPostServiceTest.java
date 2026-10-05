@@ -9,6 +9,24 @@ import java.util.Optional;
 import java.util.Set;
 
 import jakarta.validation.Validator;
+import jakarta.validation.ConstraintViolation;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
+import com.kkirikkiri.community.comment.entity.CommunityComment;
+import com.kkirikkiri.community.comment.repository.CommunityCommentRepository;
+import com.kkirikkiri.community.comment.repository.CommentLikeRepository;
+import com.kkirikkiri.community.post.entity.PostImage;
+import com.kkirikkiri.community.post.entity.PostLike;
+import com.kkirikkiri.community.post.repository.PostLikeRepository;
+import com.kkirikkiri.global.exception.ErrorCode;
+import com.kkirikkiri.user.entity.Dormitory;
+import com.kkirikkiri.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,6 +59,12 @@ class CommunityPostServiceTest {
 	@Mock PostImageStorage postImageStorage;
 	@Mock UserProfileRepository userProfileRepository;
 	@Mock Validator validator;
+	@Mock ConstraintViolation<Object> violation;
+	@Mock ConstraintViolation<PostImagesRequest> imageViolation;
+	@Mock CommunityCommentRepository communityCommentRepository;
+	@Mock CommentLikeRepository commentLikeRepository;
+	@Mock PostLikeRepository postLikeRepository;
+	@Mock UserRepository userRepository;
 	@InjectMocks CommunityPostService service;
 	User user;
 	CommunityPost post;
@@ -170,5 +194,370 @@ class CommunityPostServiceTest {
 		assertNull(CommunityAuthorResponse.from(profile).major());
 		when(profile.getMajor()).thenReturn(new Major(null, "소프트웨어융합전공", true));
 		assertEquals("소프트웨어융합전공", CommunityAuthorResponse.from(profile).major());
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void savesPostLikeOnlyWhenNotAlreadyLiked(boolean alreadyLiked) {
+		// given
+		stubPostForLike();
+		when(postLikeRepository.findByPost_PostIdAndUser_UserId(1L, 7L))
+				.thenReturn(alreadyLiked ? Optional.of(new PostLike(post, user)) : Optional.empty());
+		// when
+		service.likePost(7L, 1L);
+		// then
+		if (alreadyLiked) {
+			verify(postLikeRepository, never()).save(any());
+		} else {
+			var captor = ArgumentCaptor.forClass(PostLike.class);
+			verify(postLikeRepository).save(captor.capture());
+			assertSame(post, captor.getValue().getPost());
+			assertSame(user, captor.getValue().getUser());
+		}
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void removesOnlyExistingPostLikeForCurrentUser(boolean alreadyLiked) {
+		// given
+		stubPostForLike();
+		PostLike like = new PostLike(post, user);
+		when(postLikeRepository.findByPost_PostIdAndUser_UserId(1L, 7L))
+				.thenReturn(alreadyLiked ? Optional.of(like) : Optional.empty());
+		// when
+		service.unlikePost(7L, 1L);
+		// then
+		if (alreadyLiked) verify(postLikeRepository).delete(like);
+		else verify(postLikeRepository, never()).delete(any(PostLike.class));
+	}
+
+	@Test
+	void rejectsPostLikesWhenUserNoLongerExists() {
+		// given
+		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE))
+				.thenReturn(Optional.of(post));
+		// when / then
+		assertError(ErrorCode.UNAUTHORIZED, () -> service.likePost(7L, 1L));
+		assertError(ErrorCode.UNAUTHORIZED, () -> service.unlikePost(7L, 1L));
+		verifyNoInteractions(postLikeRepository);
+	}
+
+	@ParameterizedTest
+	@NullSource
+	@ValueSource(longs = {0, -1})
+	void rejectsUnauthenticatedWritesAndPersonalPostReads(Long userId) {
+		// when / then
+		assertError(ErrorCode.UNAUTHORIZED, () -> service.createPost(userId, createRequest(), null));
+		assertError(ErrorCode.UNAUTHORIZED, () -> service.updatePost(userId, 1L, updateRequest(List.of()), null));
+		assertError(ErrorCode.UNAUTHORIZED, () -> service.deletePost(userId, 1L));
+		assertError(ErrorCode.UNAUTHORIZED, () -> service.likePost(userId, 1L));
+		assertError(ErrorCode.UNAUTHORIZED, () -> service.unlikePost(userId, 1L));
+		assertError(ErrorCode.UNAUTHORIZED, () -> service.getMyPosts(userId, 0, 6, "LATEST"));
+		verifyNoInteractions(communityPostRepository, postLikeRepository, userProfileRepository, postImageStorage);
+	}
+
+	@ParameterizedTest
+	@NullSource
+	@ValueSource(longs = {0, -1, 99})
+	void rejectsInvalidOrMissingPostWithoutChangingData(Long postId) {
+		// given: positive IDs are absent from the mocked repository.
+		// when / then
+		assertError(ErrorCode.INVALID_REQUEST, () -> service.getPost(null, postId));
+		assertError(ErrorCode.INVALID_REQUEST, () -> service.updatePost(7L, postId, updateRequest(List.of()), null));
+		assertError(ErrorCode.INVALID_REQUEST, () -> service.deletePost(7L, postId));
+		assertError(ErrorCode.INVALID_REQUEST, () -> service.likePost(7L, postId));
+		assertError(ErrorCode.INVALID_REQUEST, () -> service.unlikePost(7L, postId));
+		verifyNoInteractions(postImageStorage, postImageRepository, communityCommentRepository, postLikeRepository);
+	}
+
+	@ParameterizedTest
+	@ValueSource(longs = {0, -1})
+	void rejectsInvalidOptionalViewerId(Long userId) {
+		// when / then
+		assertError(ErrorCode.UNAUTHORIZED, () -> service.getPosts(userId, new CommunityPostListRequest(null, null, null, null, null)));
+		assertError(ErrorCode.UNAUTHORIZED, () -> service.getPost(userId, 1L));
+		verifyNoInteractions(communityPostRepository, communityPostReadRepository);
+	}
+
+	@Test
+	void rejectsNullPostRequestsBeforeRepositoryAccess() {
+		// when / then
+		assertError(ErrorCode.VALIDATION_ERROR, () -> service.createPost(7L, null, null));
+		assertError(ErrorCode.VALIDATION_ERROR, () -> service.updatePost(7L, 1L, null, null));
+		assertError(ErrorCode.VALIDATION_ERROR, () -> service.getPosts(null, null));
+		verifyNoInteractions(communityPostRepository, userProfileRepository, postImageStorage);
+	}
+
+	@Test
+	void rejectsConstraintViolationsBeforeRepositoryAccess() {
+		// given
+		when(validator.validate(any())).thenReturn(Set.of(violation));
+		// when / then
+		assertError(ErrorCode.VALIDATION_ERROR, () -> service.createPost(7L, createRequest(), null));
+		assertError(ErrorCode.VALIDATION_ERROR, () -> service.updatePost(7L, 1L, updateRequest(List.of()), null));
+		assertError(ErrorCode.VALIDATION_ERROR, () -> service.getPosts(null, new CommunityPostListRequest(-1, 6, null, null, null)));
+		verifyNoInteractions(communityPostRepository, userProfileRepository, postImageStorage);
+	}
+
+	@Test
+	void rejectsInvalidImageRequestBeforeSavingPostOrFiles() {
+		// given
+		var images = new PostImagesRequest(List.of(new MockMultipartFile("images", new byte[0])));
+		when(validator.validate(any())).thenReturn(Set.of());
+		when(validator.validate(images)).thenReturn(Set.of(imageViolation));
+		// when / then
+		assertError(ErrorCode.VALIDATION_ERROR, () -> service.createPost(7L, createRequest(), images));
+		assertError(ErrorCode.VALIDATION_ERROR, () -> service.updatePost(7L, 1L, updateRequest(List.of()), images));
+		verifyNoInteractions(communityPostRepository, userProfileRepository, postImageStorage);
+	}
+
+	@Test
+	void rejectsPostCreationWhenAuthorProfileIsMissing() {
+		// when / then
+		assertError(ErrorCode.INVALID_REQUEST, () -> service.createPost(7L, createRequest(), null));
+		verify(communityPostRepository, never()).save(any());
+		verifyNoInteractions(postImageStorage);
+	}
+
+	@Test
+	void createsPostUsingProfileDormitoryAndReturnsSavedId() {
+		// given
+		UserProfile profile = mock(UserProfile.class);
+		Dormitory dormitory = new Dormitory("NARAE", "나래", true);
+		when(profile.getUser()).thenReturn(user);
+		when(profile.getDormitory()).thenReturn(dormitory);
+		when(userProfileRepository.findByUser_UserId(7L)).thenReturn(Optional.of(profile));
+		when(communityPostRepository.save(any())).thenAnswer(invocation -> {
+			CommunityPost saved = invocation.getArgument(0);
+			ReflectionTestUtils.setField(saved, "postId", 42L);
+			return saved;
+		});
+		// when
+		Long id = service.createPost(7L, createRequest(), null);
+		// then
+		assertEquals(42L, id);
+		var captor = ArgumentCaptor.forClass(CommunityPost.class);
+		verify(communityPostRepository).save(captor.capture());
+		assertSame(dormitory, captor.getValue().getDormitory());
+		assertEquals("제목", captor.getValue().getTitle());
+		assertEquals("내용", captor.getValue().getContent());
+		verifyNoInteractions(postImageStorage, postImageRepository);
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void rejectsForeignOrDuplicateKeptImagesBeforeEditingPost(boolean duplicate) {
+		// given
+		stubOwnedPost();
+		when(postImageRepository.findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(1L))
+				.thenReturn(List.of(image(10L, 0)));
+		List<Long> keepIds = duplicate ? List.of(10L, 10L) : List.of(99L);
+		// when / then
+		assertError(ErrorCode.INVALID_REQUEST, () -> service.updatePost(7L, 1L, updateRequest(keepIds), null));
+		assertEquals("제목", post.getTitle());
+		assertEquals("내용", post.getContent());
+		verify(postImageRepository, never()).deleteAll(any());
+		verifyNoInteractions(postImageStorage);
+	}
+
+	@Test
+	void updatesContentAndPreservesExistingImageOrderBeforeAppendingUpToFiveImages() {
+		// given
+		stubOwnedPost();
+		PostImage first = image(10L, 2);
+		PostImage removed = image(11L, 3);
+		PostImage last = image(12L, 4);
+		when(postImageRepository.findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(1L))
+				.thenReturn(List.of(first, removed, last));
+		var file = new MockMultipartFile("images", "a".repeat(256), "image/png", new byte[]{1});
+		when(postImageStorage.store(file)).thenReturn("/api/post-images/new.png");
+		// when
+		service.updatePost(7L, 1L, updateRequest(List.of(12L, 10L)),
+				new PostImagesRequest(java.util.Collections.nCopies(3, file)));
+		// then
+		assertEquals("수정 제목", post.getTitle());
+		assertEquals("수정 내용", post.getContent());
+		assertEquals("나눔게시판", post.getCategory());
+		assertEquals(0, first.getSortOrder());
+		assertEquals(1, last.getSortOrder());
+		verify(postImageRepository).deleteAll(List.of(removed));
+		var captor = ArgumentCaptor.forClass(PostImage.class);
+		verify(postImageRepository, times(3)).save(captor.capture());
+		assertEquals(List.of(2, 3, 4), captor.getAllValues().stream().map(PostImage::getSortOrder).toList());
+		assertTrue(captor.getAllValues().stream().allMatch(saved -> saved.getPost() == post
+				&& saved.getOriginalName().equals("a".repeat(255))
+				&& saved.getImageUrl().equals("/api/post-images/new.png")));
+	}
+
+	@Test
+	void removesAllImagesWhenNoneAreKept() {
+		// given
+		stubOwnedPost();
+		var images = List.of(image(10L, 0), image(11L, 1));
+		when(postImageRepository.findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(1L)).thenReturn(images);
+		// when
+		service.updatePost(7L, 1L, updateRequest(List.of()), null);
+		// then
+		verify(postImageRepository).deleteAll(images);
+		verifyNoInteractions(postImageStorage);
+	}
+
+	@Test
+	void softDeletesPostTogetherWithCommentsAndReplies() {
+		// given
+		stubOwnedPost();
+		CommunityComment comment = new CommunityComment(post, user, null, "댓글");
+		CommunityComment reply = new CommunityComment(post, user, comment, "답글");
+		when(communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(1L, CommunityContentStatus.ACTIVE))
+				.thenReturn(List.of(comment, reply));
+		// when
+		service.deletePost(7L, 1L);
+		// then
+		assertEquals(CommunityContentStatus.DELETED, post.getStatus());
+		assertEquals(CommunityContentStatus.DELETED, comment.getStatus());
+		assertEquals(CommunityContentStatus.DELETED, reply.getStatus());
+		assertSame(comment, reply.getParentComment());
+		verify(communityPostRepository, never()).delete(any(CommunityPost.class));
+		verify(communityCommentRepository, never()).delete(any(CommunityComment.class));
+	}
+
+	@ParameterizedTest
+	@ValueSource(ints = {99, 100, 101})
+	void truncatesPreviewAtOneHundredUnicodeCodePoints(int length) {
+		// given
+		String content = "😀".repeat(length);
+		post.updateContent("자유게시판", "제목", content);
+		when(user.getUserId()).thenReturn(7L);
+		when(communityPostRepository.searchPosts(eq(CommunityContentStatus.ACTIVE), isNull(), isNull(), isNull(), any()))
+				.thenReturn(new PageImpl<>(List.of(post)));
+		// when
+		var result = service.getPosts(null, new CommunityPostListRequest(null, null, null, null, null));
+		// then
+		assertEquals("😀".repeat(Math.min(length, 100)) + (length > 100 ? "..." : ""), result.content().getFirst().contentPreview());
+		assertEquals(7L, result.content().getFirst().author().id());
+		assertNull(result.content().getFirst().author().nickname());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"LATEST", "VIEWS", "LIKES"})
+	void readsOnlyCurrentUsersActivePostsWithRequestedSort(String sort) {
+		// given
+		PageRequest expected = PageRequest.of(0, 6, "VIEWS".equals(sort)
+				? Sort.by(Sort.Direction.DESC, "viewCount", "createdAt", "postId")
+				: Sort.by(Sort.Direction.DESC, "createdAt", "postId"));
+		if ("LIKES".equals(sort)) {
+			when(communityPostReadRepository.findByLikes(null, null, null, 7L, expected)).thenReturn(Page.empty(expected));
+		} else {
+			when(communityPostRepository.findAllByAuthor_UserIdAndStatus(7L, CommunityContentStatus.ACTIVE, expected))
+					.thenReturn(Page.empty(expected));
+		}
+		// when
+		var result = service.getMyPosts(7L, null, null, sort);
+		// then
+		assertTrue(result.content().isEmpty());
+		assertEquals(0, result.page());
+		assertEquals(6, result.size());
+		assertEquals(0, result.totalElements());
+		verify(communityPostRepository, never()).searchPosts(any(), any(), any(), any(), any());
+	}
+
+	@Test
+	void rejectsPaginationOffsetOverflowBeforeQueryingPosts() {
+		// when / then
+		assertError(ErrorCode.VALIDATION_ERROR, () -> service.getPosts(null,
+				new CommunityPostListRequest(Integer.MAX_VALUE, 2, null, null, null)));
+		verifyNoInteractions(communityPostRepository, communityPostReadRepository);
+	}
+
+	@Test
+	void acceptsMaximumSupportedPaginationOffset() {
+		// given
+		var pageable = PageRequest.of(Integer.MAX_VALUE, 1, Sort.by(Sort.Direction.DESC, "createdAt", "postId"));
+		when(communityPostRepository.searchPosts(CommunityContentStatus.ACTIVE, null, null, null, pageable))
+				.thenReturn(Page.empty(pageable));
+		// when
+		var result = service.getPosts(null, new CommunityPostListRequest(Integer.MAX_VALUE, 1, null, null, null));
+		// then
+		assertEquals(Integer.MAX_VALUE, result.page());
+	}
+
+	@Test
+	void readsGuestDetailAndIncrementsViewsWithoutQueryingCommentLikesForEmptyComments() {
+		// given
+		when(user.getUserId()).thenReturn(7L);
+		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+		// when
+		var result = service.getPost(null, 1L);
+		// then
+		assertEquals(1, result.views());
+		assertEquals(1, post.getViewCount());
+		assertTrue(result.comments().isEmpty());
+		assertTrue(result.images().isEmpty());
+		assertFalse(result.liked());
+		verifyNoInteractions(commentLikeRepository);
+	}
+
+	@ParameterizedTest
+	@NullSource
+	@ValueSource(longs = {8})
+	void combinesCommentLikeCountsAndViewerStateInPostDetail(Long viewerId) {
+		// given
+		when(user.getUserId()).thenReturn(7L);
+		CommunityComment comment = new CommunityComment(post, user, null, "댓글");
+		CommunityComment reply = new CommunityComment(post, user, comment, "답글");
+		ReflectionTestUtils.setField(comment, "commentId", 10L);
+		ReflectionTestUtils.setField(reply, "commentId", 11L);
+		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+		when(communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(1L, CommunityContentStatus.ACTIVE))
+				.thenReturn(List.of(comment, reply));
+		var count = mock(CommentLikeRepository.LikeCount.class);
+		when(count.getCommentId()).thenReturn(10L);
+		when(count.getLikes()).thenReturn(3L);
+		when(commentLikeRepository.countLikesByCommentIds(List.of(10L, 11L))).thenReturn(List.of(count));
+		if (viewerId != null) {
+			when(commentLikeRepository.findLikedCommentIds(List.of(10L, 11L), viewerId)).thenReturn(List.of(11L));
+		}
+		when(communityPostReadRepository.countLikes(1L)).thenReturn(4L);
+		when(communityPostReadRepository.isLiked(1L, viewerId)).thenReturn(viewerId != null);
+		when(communityPostReadRepository.isReported(1L, viewerId)).thenReturn(viewerId != null);
+		// when
+		var result = service.getPost(viewerId, 1L);
+		// then
+		assertEquals(List.of(3L, 0L), result.comments().stream().map(c -> c.likes()).toList());
+		assertFalse(result.comments().getFirst().liked());
+		assertEquals(viewerId != null, result.comments().getLast().liked());
+		assertEquals(10L, result.comments().getLast().parentCommentId());
+		assertEquals(4L, result.likes());
+		assertEquals(viewerId != null, result.liked());
+		assertEquals(viewerId != null, result.reported());
+		if (viewerId == null) verify(commentLikeRepository, never()).findLikedCommentIds(any(), any());
+	}
+
+	private void stubPostForLike() {
+		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+		when(userRepository.findById(7L)).thenReturn(Optional.of(user));
+	}
+
+	private void stubOwnedPost() {
+		when(user.getUserId()).thenReturn(7L);
+		when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+	}
+
+	private PostImage image(Long id, int order) {
+		PostImage image = new PostImage(post, "/api/post-images/" + id + ".png", "photo.png", order);
+		ReflectionTestUtils.setField(image, "postImageId", id);
+		return image;
+	}
+
+	private CommunityPostCreateRequest createRequest() {
+		return new CommunityPostCreateRequest("자유게시판", "제목", "내용", false);
+	}
+
+	private CommunityPostUpdateRequest updateRequest(List<Long> keepIds) {
+		return new CommunityPostUpdateRequest("나눔게시판", "수정 제목", "수정 내용", keepIds, null);
+	}
+
+	private void assertError(ErrorCode code, org.junit.jupiter.api.function.Executable action) {
+		assertEquals(code, assertThrows(CustomException.class, action).getErrorCode());
 	}
 }
