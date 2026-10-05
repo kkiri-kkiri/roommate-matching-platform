@@ -1294,6 +1294,12 @@ TEXT
 
 댓글 내용
 
+anonymous
+
+BOOLEAN NOT NULL DEFAULT FALSE
+
+댓글·답글 익명 여부. 기존 댓글은 닉네임 공개(false).
+
 status
 
 VARCHAR(20)

@@ -115,8 +115,9 @@ public class CommunityCommentService {
 			CommunityCommentCreateRequest request) {
 		User author = userRepository.findById(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
-		return communityCommentRepository.save(new CommunityComment(post, author, parent, request.content()))
-				.getCommentId();
+		CommunityComment comment = new CommunityComment(post, author, parent, request.content());
+		comment.changeAnonymous(request.anonymous());
+		return communityCommentRepository.save(comment).getCommentId();
 	}
 
 	private CommunityComment findCommentForLikeUpdate(Long commentId) {

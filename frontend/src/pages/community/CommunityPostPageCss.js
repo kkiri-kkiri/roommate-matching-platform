@@ -196,6 +196,15 @@ export const Avatar = styled.span`
   font-weight: 700;
 `;
 
+export const PostAuthorImage = styled.img`
+  display: block;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  object-fit: cover;
+`;
+
 export const AuthorInfo = styled.div`
   min-width: 0;
 
@@ -205,6 +214,20 @@ export const AuthorInfo = styled.div`
     line-height: 22px;
     overflow-wrap: anywhere;
   }
+`;
+
+export const CommentAuthorImage = styled(PostAuthorImage)`
+  width: 30px;
+  height: 30px;
+`;
+
+export const AnonymousChoice = styled.label`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  input { width: 16px; height: 16px; accent-color: #0c3273; }
 `;
 
 export const Metadata = styled.div`

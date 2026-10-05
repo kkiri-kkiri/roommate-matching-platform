@@ -88,11 +88,15 @@ function PostDialog({ title, description, onDismiss, children }) {
 
 function CommentComposer({ id, label, onSubmit, onCancel, compact = false, busy }) {
   const [value, setValue] = useState("");
+  const [anonymous, setAnonymous] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!value.trim()) return;
-    if (await onSubmit(value.trim())) setValue("");
+    if (await onSubmit(value.trim(), anonymous)) {
+      setValue("");
+      setAnonymous(false);
+    }
   };
 
   return (
@@ -113,6 +117,11 @@ function CommentComposer({ id, label, onSubmit, onCancel, compact = false, busy 
       <S.FormFooter>
         <small id={`${id}-count`}>{value.length} / {COMMENT_LIMIT.toLocaleString()}자</small>
         <div>
+          <S.AnonymousChoice>
+            <input type="checkbox" aria-label={compact ? "답글 익명" : "댓글 익명"} checked={anonymous}
+              onChange={(event) => setAnonymous(event.target.checked)} disabled={busy} />
+            익명
+          </S.AnonymousChoice>
           {onCancel && <S.TextButton type="button" onClick={onCancel}>취소</S.TextButton>}
           <S.PrimaryButton type="submit" disabled={busy || !value.trim()}>
             <Send size={15} aria-hidden="true" />
@@ -124,11 +133,11 @@ function CommentComposer({ id, label, onSubmit, onCancel, compact = false, busy 
   );
 }
 
-function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onReport, onReply, replying, onChat, replyAuthor, busy }) {
+function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onReport, onReply, onToggleLike, replying, onChat, replyAuthor, busy }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(entry.content);
   const mine = Boolean(currentUser && currentUser.id === entry.author.id);
-  // Comment DTO has no liked/count/reported fields; do not invent server state.
+  const authorDisplay = getPostAuthorDisplay(entry);
   const editActions = mine && !editing && (
     <S.ActionGroup>
       <S.TextButton type="button" onClick={() => {
@@ -148,15 +157,15 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
         </S.ReplyHeading>
       )}
       <S.CommentHeader>
-        <S.Avatar $small $mine={mine} aria-hidden="true">{entry.author.nickname.slice(0, 1)}</S.Avatar>
+        <S.CommentAuthorImage src={authorDisplay.image} alt="" />
         <div>
-          <strong>{entry.author.nickname}</strong>
+          <strong>{authorDisplay.nickname}</strong>
           {entry.author.id === postAuthorId && <S.AuthorBadge>작성자</S.AuthorBadge>}
           {mine && <S.AuthorBadge>나</S.AuthorBadge>}
           <time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time>
         </div>
         {replyAuthor == null && editActions}
-        {!mine && <S.ChatButton type="button" onClick={onChat} aria-label={`${entry.author.nickname}님에게 채팅 보내기`}>
+        {!mine && <S.ChatButton type="button" onClick={onChat} aria-label={`${authorDisplay.nickname}님에게 채팅 보내기`}>
           <MessageCircle size={14} aria-hidden="true" />채팅
         </S.ChatButton>}
       </S.CommentHeader>
@@ -188,8 +197,9 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
         <>
           <S.CommentText>{entry.content}</S.CommentText>
           <S.ActionGroup>
-            <S.LikeButton type="button" disabled aria-label="댓글 좋아요 (지원 준비 중)" title="서버에서 댓글 좋아요 상태와 개수를 제공하지 않습니다.">
-              <Heart size={14} aria-hidden="true" /><span>좋아요</span>
+            <S.LikeButton type="button" $active={entry.liked} aria-pressed={entry.liked}
+              aria-label={`${replyAuthor == null ? "댓글" : "대댓글"} 좋아요 ${(entry.likes ?? 0).toLocaleString()}개`} onClick={onToggleLike} disabled={busy}>
+              <Heart size={14} aria-hidden="true" /><span>{(entry.likes ?? 0).toLocaleString()}</span>
             </S.LikeButton>
             {onReply && (
               <S.TextButton type="button" aria-expanded={replying} onClick={onReply}>
@@ -265,9 +275,14 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
     await onRefresh();
   });
 
-  const addComment = (content, commentId) => runAction(async () => {
-    if (commentId == null) await api.createCommunityComment(post.id, content);
-    else await api.createCommunityReply(commentId, content);
+  const toggleCommentLike = (commentId, liked) => runAction(async () => {
+    await (liked ? api.unlikeCommunityComment(commentId) : api.likeCommunityComment(commentId));
+    await onRefresh();
+  });
+
+  const addComment = (content, anonymous, commentId) => runAction(async () => {
+    if (commentId == null) await api.createCommunityComment(post.id, content, anonymous);
+    else await api.createCommunityReply(commentId, content, anonymous);
     await onRefresh();
     if (commentId != null) setReplyTarget(null);
   });
@@ -335,7 +350,7 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
         </S.ArticleTop>
         <S.Title id="community-post-title">{post.title}</S.Title>
         <S.AuthorRow>
-          <S.Avatar as="img" $mine={mine} src={authorDisplay.image} alt="" />
+          <S.PostAuthorImage src={authorDisplay.image} alt="" />
           <S.AuthorInfo>
             <strong>{authorDisplay.nickname}{mine ? " · 나" : ""}</strong>
             <S.Metadata>
@@ -383,20 +398,22 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
                   onSave={(content) => saveComment(comment.id, null, content)}
                   onDelete={() => setDeleteTarget({ kind: "comment", commentId: comment.id })}
                   onReport={() => openReport(comment)}
+                  onToggleLike={() => toggleCommentLike(comment.id, comment.liked)}
                   replying={replyTarget === comment.id}
                   onReply={() => {
                     if (requireUser()) setReplyTarget(replyTarget === comment.id ? null : comment.id);
                   }}
                 />
                 {comment.replies?.length > 0 && (
-                  <S.ReplyList aria-label={`${comment.author.nickname}님 댓글의 답글`}>
+                  <S.ReplyList aria-label={`${getPostAuthorDisplay(comment).nickname}님 댓글의 답글`}>
                     {comment.replies.map((reply) => (
                       <li key={reply.id}>
                         <CommentEntry
                           busy={busy}
                           entry={reply}
                           onReport={() => openReport(reply)}
-                          replyAuthor={comment.author.nickname}
+                          onToggleLike={() => toggleCommentLike(reply.id, reply.liked)}
+                          replyAuthor={getPostAuthorDisplay(comment).nickname}
                           onChat={() => startChat(reply.author.id, reply.id)}
                           currentUser={currentUser}
                           postAuthorId={post.author.id}
@@ -411,9 +428,9 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
                   <CommentComposer
                     busy={busy}
                     id={`reply-to-${comment.id}`}
-                    label={`${comment.author.nickname}님에게 답글 남기기`}
+                    label={`${getPostAuthorDisplay(comment).nickname}님에게 답글 남기기`}
                     compact
-                    onSubmit={(content) => addComment(content, comment.id)}
+                    onSubmit={(content, anonymous) => addComment(content, anonymous, comment.id)}
                     onCancel={() => setReplyTarget(null)}
                   />
                 )}
@@ -430,7 +447,7 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
 
         {currentUser ? (
           <CommentComposer
-            busy={busy} id="community-new-comment" label={`${currentUser.name}님의 댓글`} onSubmit={(content) => addComment(content)} />
+            busy={busy} id="community-new-comment" label={`${currentUser.name}님의 댓글`} onSubmit={(content, anonymous) => addComment(content, anonymous)} />
         ) : (
           <S.CommentForm onSubmit={(event) => event.preventDefault()}>
             <label htmlFor="community-guest-comment">댓글 남기기</label>

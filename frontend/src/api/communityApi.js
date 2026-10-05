@@ -24,16 +24,16 @@ function multipart(payload, images = []) {
   return data;
 }
 
-export const getCommunityPosts = ({ page = 0, size = 6, category, q, sort = "LATEST" } = {}) =>
-  request({ method: "get", url: "/posts", params: { page, size, category: category === "전체" ? undefined : category, q, sort } }, false);
+export const getCommunityPosts = ({ page = 0, size = 6, category, q, dormitory, sort = "LATEST" } = {}) =>
+  request({ method: "get", url: "/posts", params: { page, size, category: category === "전체" ? undefined : category, q, dormitory: dormitory === "전체" ? undefined : dormitory, sort } }, false);
 export const getCommunityPost = (id) => request({ method: "get", url: `/posts/${id}` }, false);
 export const createCommunityPost = (payload, images) => request({ method: "post", url: "/posts", data: multipart(payload, images) });
 export const updateCommunityPost = (id, payload, images) => request({ method: "patch", url: `/posts/${id}`, data: multipart(payload, images) });
 export const deleteCommunityPost = (id) => request({ method: "delete", url: `/posts/${id}` });
 export const likeCommunityPost = (id) => request({ method: "post", url: `/posts/${id}/likes` });
 export const unlikeCommunityPost = (id) => request({ method: "delete", url: `/posts/${id}/likes` });
-export const createCommunityComment = (id, content) => request({ method: "post", url: `/posts/${id}/comments`, data: { content } });
-export const createCommunityReply = (id, content) => request({ method: "post", url: `/comments/${id}/replies`, data: { content } });
+export const createCommunityComment = (id, content, anonymous = false) => request({ method: "post", url: `/posts/${id}/comments`, data: { content, anonymous } });
+export const createCommunityReply = (id, content, anonymous = false) => request({ method: "post", url: `/comments/${id}/replies`, data: { content, anonymous } });
 export const updateCommunityComment = (id, content) => request({ method: "patch", url: `/comments/${id}`, data: { content } });
 export const deleteCommunityComment = (id) => request({ method: "delete", url: `/comments/${id}` });
 export const likeCommunityComment = (id) => request({ method: "post", url: `/comments/${id}/likes` });

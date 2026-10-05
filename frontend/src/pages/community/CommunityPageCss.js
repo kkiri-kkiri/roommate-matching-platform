@@ -352,6 +352,57 @@ export const CommentTop = styled.div`
   time { color: #747781; font-size: 11px; }
 `;
 export const MyComment = styled.p`margin: 16px 0; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere;`;
+export const ActivityContentRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin: ${({ $comment }) => $comment ? "16px 0" : "0 0 10px"};
+`;
+export const ActivityContent = styled.div`
+  flex: 1;
+  min-width: 0;
+  > ${Excerpt} { margin-bottom: 0; }
+  > ${MyComment} { margin: 0; }
+`;
+export const ActivityControls = styled.div`
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  min-width: 0;
+  ${({ $expanded }) => $expanded && css`flex-basis: 100%;`}
+`;
+export const ActivityButtons = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  small { margin-right: auto; color: #747781; font-size: 12px; }
+`;
+export const ActivityButton = styled.button`
+  ${button}
+  gap: 5px;
+  padding: 6px 10px;
+  color: ${({ $danger }) => $danger ? "#b42318" : "#0c3273"};
+  background: ${({ $danger }) => $danger ? "#fff1f0" : "#eef3fa"};
+  &:hover:not(:disabled) { filter: brightness(0.97); }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+`;
+export const ActivityForm = styled.form`display: grid; gap: 8px;`;
+export const ActivityTextarea = styled.textarea`
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid #c8ced8;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  ${focus}
+`;
+export const DeleteQuestion = styled.p`margin: 0 0 8px; font-size: 13px; color: #444650;`;
+export const ActivityError = styled.p`margin: 8px 0 0; font-size: 13px; color: #b42318;`;
 export const OriginalPostLink = styled(Link)`
   display: flex;
   align-items: center;

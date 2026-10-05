@@ -28,12 +28,14 @@ public interface CommunityPostRepository extends JpaRepository<CommunityPost, Lo
 			select p from CommunityPost p
 			where p.status = :status
 			  and (:category is null or :category = '' or p.category = :category)
+			  and (:dormitory is null or :dormitory = '' or p.dormitory.dormitoryName = :dormitory)
 			  and (:keyword is null or :keyword = ''
 			       or locate(:keyword, p.title) > 0
 			       or locate(:keyword, p.content) > 0)
 			""")
 	Page<CommunityPost> searchPosts(@Param("status") CommunityContentStatus status,
-			@Param("category") String category, @Param("keyword") String keyword, Pageable pageable);
+			@Param("category") String category, @Param("keyword") String keyword,
+			@Param("dormitory") String dormitory, Pageable pageable);
 
 	Optional<CommunityPost> findByPostIdAndStatus(Long postId, CommunityContentStatus status);
 
