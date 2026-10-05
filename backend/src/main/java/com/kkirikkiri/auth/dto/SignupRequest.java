@@ -23,7 +23,8 @@ public record SignupRequest(
 		@NotBlank(message = "비밀번호 확인을 입력해 주세요.")
 		String passwordConfirm,
 		@NotBlank(message = "닉네임을 입력해 주세요.")
-		@Size(max = 20, message = "닉네임은 20자 이하여야 합니다.")
+		@Size(min = 2, max = 8, message = "닉네임은 2자 이상 8자 이하여야 합니다.")
+		@Pattern(regexp = "[가-힣A-Za-z0-9]+", message = "닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.")
 		String nickname,
 		@NotBlank(message = "이메일을 입력해 주세요.")
 		@Email(message = "올바른 이메일 형식이어야 합니다.")
