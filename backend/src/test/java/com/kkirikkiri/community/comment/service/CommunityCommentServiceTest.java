@@ -5,17 +5,29 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
+import java.util.List;
 import java.util.Set;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.kkirikkiri.community.comment.dto.*;
 import com.kkirikkiri.community.comment.entity.CommunityComment;
+import com.kkirikkiri.community.comment.entity.CommentLike;
+import com.kkirikkiri.community.comment.repository.CommentLikeRepository;
 import com.kkirikkiri.community.comment.repository.CommunityCommentRepository;
 import com.kkirikkiri.community.common.entity.CommunityContentStatus;
 import com.kkirikkiri.community.post.dto.CommunityAuthorResponse;
@@ -23,6 +35,8 @@ import com.kkirikkiri.community.post.entity.CommunityPost;
 import com.kkirikkiri.community.post.repository.CommunityPostRepository;
 import com.kkirikkiri.user.entity.User;
 import com.kkirikkiri.user.repository.UserRepository;
+import com.kkirikkiri.global.exception.CustomException;
+import com.kkirikkiri.global.exception.ErrorCode;
 
 @ExtendWith(MockitoExtension.class)
 class CommunityCommentServiceTest {
@@ -30,7 +44,19 @@ class CommunityCommentServiceTest {
     @Mock CommunityPostRepository communityPostRepository;
     @Mock UserRepository userRepository;
     @Mock Validator validator;
+    @Mock ConstraintViolation<Object> violation;
+    @Mock CommentLikeRepository commentLikeRepository;
     @InjectMocks CommunityCommentService service;
+    User author;
+    CommunityPost activePost;
+    CommunityComment activeComment;
+
+    @BeforeEach
+    void setUp() {
+        author = mock(User.class);
+        activePost = new CommunityPost(author, null, "자유게시판", "제목", "내용");
+        activeComment = new CommunityComment(activePost, author, null, "댓글");
+    }
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
@@ -70,5 +96,282 @@ class CommunityCommentServiceTest {
         assertEquals(7L, response.author().id());
         assertEquals("익명", response.author().nickname());
         assertNull(response.author().major());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void savesCommentOrReplyWithCorrectParentAndReturnsId(boolean reply) {
+        // given
+        if (reply) stubActiveComment();
+        else when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(activePost));
+        when(userRepository.findById(7L)).thenReturn(Optional.of(author));
+        when(communityCommentRepository.save(any())).thenAnswer(invocation -> {
+            CommunityComment saved = invocation.getArgument(0);
+            ReflectionTestUtils.setField(saved, "commentId", 42L);
+            return saved;
+        });
+        // when
+        Long id = reply ? service.createReply(7L, 2L, createRequest())
+                : service.createComment(7L, 1L, createRequest());
+        // then
+        assertEquals(42L, id);
+        var captor = ArgumentCaptor.forClass(CommunityComment.class);
+        verify(communityCommentRepository).save(captor.capture());
+        assertSame(activePost, captor.getValue().getPost());
+        assertSame(reply ? activeComment : null, captor.getValue().getParentComment());
+    }
+
+    @Test
+    void rejectsReplyToAnotherReplyBeforeSaving() {
+        // given
+        CommunityComment reply = new CommunityComment(activePost, author, activeComment, "답글");
+        when(communityCommentRepository.findByCommentIdAndStatus(3L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(reply));
+        // when / then
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.createReply(7L, 3L, createRequest()));
+        verify(communityCommentRepository, never()).save(any());
+        verifyNoInteractions(userRepository);
+    }
+
+    @Test
+    void rejectsCommentCreationOnMissingOrInactivePost() {
+        // when / then
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.createComment(7L, 99L, createRequest()));
+        verify(communityCommentRepository, never()).save(any());
+    }
+
+    @Test
+    void rejectsCommentAndReplyCreationWhenUserNoLongerExists() {
+        // given
+        stubActiveComment();
+        when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(activePost));
+        // when / then
+        assertError(ErrorCode.UNAUTHORIZED, () -> service.createComment(7L, 1L, createRequest()));
+        assertError(ErrorCode.UNAUTHORIZED, () -> service.createReply(7L, 2L, createRequest()));
+        verify(communityCommentRepository, never()).save(any());
+    }
+
+    @Test
+    void updatesOwnedCommentContentWithoutChangingAnonymousChoice() {
+        // given
+        stubOwnedComment();
+        activeComment.changeAnonymous(true);
+        // when
+        service.updateComment(7L, 2L, new CommunityCommentUpdateRequest("수정 내용"));
+        // then
+        assertEquals("수정 내용", activeComment.getContent());
+        assertTrue(activeComment.isAnonymous());
+        assertEquals(CommunityContentStatus.ACTIVE, activeComment.getStatus());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void softDeletesOnlyOwnedTargetAndPreservesRelatedComments(boolean deleteReply) {
+        // given
+        when(author.getUserId()).thenReturn(7L);
+        CommunityComment reply = new CommunityComment(activePost, author, activeComment, "답글");
+        CommunityComment target = deleteReply ? reply : activeComment;
+        when(communityCommentRepository.findByCommentIdAndStatus(2L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(target));
+        // when
+        service.deleteComment(7L, 2L);
+        // then
+        assertEquals(CommunityContentStatus.DELETED, target.getStatus());
+        assertEquals(CommunityContentStatus.ACTIVE, (deleteReply ? activeComment : reply).getStatus());
+        assertEquals(CommunityContentStatus.ACTIVE, activePost.getStatus());
+        assertSame(activeComment, reply.getParentComment());
+        verify(communityCommentRepository, never()).delete(any(CommunityComment.class));
+    }
+
+    @Test
+    void forbidsUpdatingOrDeletingAnotherUsersComment() {
+        // given
+        stubOwnedComment();
+        // when / then
+        assertError(ErrorCode.FORBIDDEN, () -> service.updateComment(8L, 2L, new CommunityCommentUpdateRequest("수정")));
+        assertError(ErrorCode.FORBIDDEN, () -> service.deleteComment(8L, 2L));
+        assertEquals("댓글", activeComment.getContent());
+        assertEquals(CommunityContentStatus.ACTIVE, activeComment.getStatus());
+    }
+
+    @Test
+    void rejectsReplyEditDeleteAndLikesWhenContainingPostIsDeleted() {
+        // given
+        activePost.delete();
+        stubActiveComment();
+        when(communityCommentRepository.findForLikeUpdate(2L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(activeComment));
+        // when / then
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.createReply(7L, 2L, createRequest()));
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.updateComment(7L, 2L, new CommunityCommentUpdateRequest("수정")));
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.deleteComment(7L, 2L));
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.likeComment(7L, 2L));
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.unlikeComment(7L, 2L));
+        assertEquals("댓글", activeComment.getContent());
+        assertEquals(CommunityContentStatus.ACTIVE, activeComment.getStatus());
+        verify(communityCommentRepository, never()).save(any());
+        verifyNoInteractions(commentLikeRepository, userRepository);
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(longs = {0, -1, 99})
+    void rejectsInvalidOrMissingCommentIds(Long id) {
+        // given: positive IDs are absent from the mocked repository.
+        // when / then
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.createReply(7L, id, createRequest()));
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.updateComment(7L, id, new CommunityCommentUpdateRequest("수정")));
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.deleteComment(7L, id));
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.likeComment(7L, id));
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.unlikeComment(7L, id));
+        verify(communityCommentRepository, never()).save(any());
+        verifyNoInteractions(commentLikeRepository, userRepository);
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(longs = {0, -1})
+    void rejectsUnauthenticatedCommentOperations(Long userId) {
+        // when / then
+        assertError(ErrorCode.UNAUTHORIZED, () -> service.createComment(userId, 1L, createRequest()));
+        assertError(ErrorCode.UNAUTHORIZED, () -> service.createReply(userId, 2L, createRequest()));
+        assertError(ErrorCode.UNAUTHORIZED, () -> service.updateComment(userId, 2L, new CommunityCommentUpdateRequest("수정")));
+        assertError(ErrorCode.UNAUTHORIZED, () -> service.deleteComment(userId, 2L));
+        assertError(ErrorCode.UNAUTHORIZED, () -> service.likeComment(userId, 2L));
+        assertError(ErrorCode.UNAUTHORIZED, () -> service.unlikeComment(userId, 2L));
+        assertError(ErrorCode.UNAUTHORIZED, () -> service.getMyComments(userId, null, null));
+        verifyNoInteractions(communityCommentRepository, communityPostRepository, commentLikeRepository);
+    }
+
+    @Test
+    void rejectsNullCommentRequestsBeforeRepositoryAccess() {
+        // when / then
+        assertError(ErrorCode.VALIDATION_ERROR, () -> service.createComment(7L, 1L, null));
+        assertError(ErrorCode.VALIDATION_ERROR, () -> service.createReply(7L, 2L, null));
+        assertError(ErrorCode.VALIDATION_ERROR, () -> service.updateComment(7L, 2L, null));
+        verifyNoInteractions(communityCommentRepository, communityPostRepository);
+    }
+
+    @Test
+    void rejectsConstraintViolationsBeforeSavingOrUpdatingComment() {
+        // given
+        when(validator.validate(any())).thenReturn(Set.of(violation));
+        // when / then
+        assertError(ErrorCode.VALIDATION_ERROR, () -> service.createComment(7L, 1L, createRequest()));
+        assertError(ErrorCode.VALIDATION_ERROR, () -> service.createReply(7L, 2L, createRequest()));
+        assertError(ErrorCode.VALIDATION_ERROR, () -> service.updateComment(7L, 2L, new CommunityCommentUpdateRequest(" ")));
+        verifyNoInteractions(communityCommentRepository, communityPostRepository);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void savesCommentLikeOnlyWhenNotAlreadyLiked(boolean alreadyLiked) {
+        // given
+        stubCommentForLike();
+        when(commentLikeRepository.existsByComment_CommentIdAndUser_UserId(2L, 7L)).thenReturn(alreadyLiked);
+        // when
+        service.likeComment(7L, 2L);
+        // then
+        if (alreadyLiked) verify(commentLikeRepository, never()).save(any());
+        else {
+            var captor = ArgumentCaptor.forClass(CommentLike.class);
+            verify(commentLikeRepository).save(captor.capture());
+            assertSame(activeComment, captor.getValue().getComment());
+            assertSame(author, captor.getValue().getUser());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void removesOnlyExistingCommentLikeForCurrentUser(boolean alreadyLiked) {
+        // given
+        stubCommentForLike();
+        CommentLike like = new CommentLike(activeComment, author);
+        when(commentLikeRepository.findByComment_CommentIdAndUser_UserId(2L, 7L))
+                .thenReturn(alreadyLiked ? Optional.of(like) : Optional.empty());
+        // when
+        service.unlikeComment(7L, 2L);
+        // then
+        if (alreadyLiked) verify(commentLikeRepository).delete(like);
+        else verify(commentLikeRepository, never()).delete(any(CommentLike.class));
+    }
+
+    @Test
+    void rejectsCommentLikesWhenUserNoLongerExists() {
+        // given
+        when(communityCommentRepository.findForLikeUpdate(2L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(activeComment));
+        // when / then
+        assertError(ErrorCode.UNAUTHORIZED, () -> service.likeComment(7L, 2L));
+        assertError(ErrorCode.UNAUTHORIZED, () -> service.unlikeComment(7L, 2L));
+        verifyNoInteractions(commentLikeRepository);
+    }
+
+    @Test
+    void readsOwnActiveCommentsAndRepliesWithDefaultPaginationAndLatestSort() {
+        // given
+        CommunityComment reply = new CommunityComment(activePost, author, activeComment, "답글");
+        ReflectionTestUtils.setField(activePost, "postId", 1L);
+        PageRequest pageable = PageRequest.of(0, 6, Sort.by(Sort.Direction.DESC, "createdAt", "commentId"));
+        when(communityCommentRepository.findAllByAuthor_UserIdAndStatus(7L, CommunityContentStatus.ACTIVE, pageable))
+                .thenReturn(new PageImpl<>(List.of(reply, activeComment), pageable, 2));
+        // when
+        var result = service.getMyComments(7L, null, null);
+        // then
+        assertEquals(0, result.page());
+        assertEquals(6, result.size());
+        assertEquals(2, result.totalElements());
+        assertEquals(List.of("답글", "댓글"), result.content().stream().map(MyCommunityCommentResponse::content).toList());
+        assertTrue(result.content().getFirst().isReply());
+        assertFalse(result.content().getLast().isReply());
+        assertEquals(1L, result.content().getFirst().postId());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"-1,6", "0,0", "0,-1", "2147483647,2"})
+    void rejectsInvalidCommentPaginationBeforeQuerying(int page, int size) {
+        // when / then
+        assertError(ErrorCode.VALIDATION_ERROR, () -> service.getMyComments(7L, page, size));
+        verifyNoInteractions(communityCommentRepository);
+    }
+
+    @Test
+    void acceptsMaximumCommentOffsetAndReturnsEmptyPage() {
+        // given
+        PageRequest pageable = PageRequest.of(Integer.MAX_VALUE, 1, Sort.by(Sort.Direction.DESC, "createdAt", "commentId"));
+        when(communityCommentRepository.findAllByAuthor_UserIdAndStatus(7L, CommunityContentStatus.ACTIVE, pageable))
+                .thenReturn(org.springframework.data.domain.Page.empty(pageable));
+        // when
+        var result = service.getMyComments(7L, Integer.MAX_VALUE, 1);
+        // then
+        assertTrue(result.content().isEmpty());
+        assertEquals(Integer.MAX_VALUE, result.page());
+        assertEquals(0, result.totalElements());
+    }
+
+    private void stubActiveComment() {
+        when(communityCommentRepository.findByCommentIdAndStatus(2L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(activeComment));
+    }
+
+    private void stubOwnedComment() {
+        stubActiveComment();
+        when(author.getUserId()).thenReturn(7L);
+    }
+
+    private void stubCommentForLike() {
+        when(communityCommentRepository.findForLikeUpdate(2L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(activeComment));
+        when(userRepository.findById(7L)).thenReturn(Optional.of(author));
+    }
+
+    private CommunityCommentCreateRequest createRequest() {
+        return new CommunityCommentCreateRequest("내용");
+    }
+
+    private void assertError(ErrorCode code, org.junit.jupiter.api.function.Executable action) {
+        assertEquals(code, assertThrows(CustomException.class, action).getErrorCode());
     }
 }
