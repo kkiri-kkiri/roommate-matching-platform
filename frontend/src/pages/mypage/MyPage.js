@@ -94,7 +94,7 @@ export const PROFILE_SECTIONS = [
         id: "lightingPreference",
         label: "조명 환경",
         type: "single",
-        options: ["밝음 선호", "어두움 선호", "상관 없음"],
+        options: ["밝음 선호", "어두움 선호", "상관없음"],
         required: true,
       },
       {
@@ -207,6 +207,18 @@ export const PROFILE_SECTIONS = [
         type: "multi",
         options: ["조식", "중식", "석식", "신청 안 함"],
         exclusiveOptions: ["신청 안 함"],
+        required: true,
+      },
+      {
+        id: "meal",
+        label: "룸메이트와의 식사 방식",
+        type: "single",
+        options: [
+          "같이 먹고 싶음",
+          "각자 먹고 싶음",
+          "시간 될 때만 같이 먹고 싶음",
+          "상관없음",
+        ],
         required: true,
       },
       {

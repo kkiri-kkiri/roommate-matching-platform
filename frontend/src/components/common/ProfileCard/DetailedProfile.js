@@ -39,6 +39,7 @@ const SECTIONS = [
     description: "서로의 공간과 취향을 존중하는 공동생활 방식을 알아보세요.",
     fields: [
       ["roommateInteraction", "룸메이트와 교류 정도"], ["mealPlan", "신청한 기숙사 식사"],
+      ["meal", "룸메이트와의 식사 방식"],
       ["scentProductUse", "향수·디퓨저 등 향 제품 사용"],
       ["desktopUse", "데스크탑 사용"], ["sharedItems", "공용물품 사용"],
     ],
@@ -55,6 +56,7 @@ const DEMO_ANSWERS = {
   mediaSound: "항상 이어폰 사용해주세요", showerTime: "저녁", showerDuration: "20분",
   temperaturePreference: "보통", roommateInteraction: "적당히 대화",
   mealPlan: ["조식", "석식"], scentProductUse: "사용 안 함",
+  meal: "시간 될 때만 같이 먹고 싶음",
   desktopUse: "사용하지 않아요", sharedItems: "일부만 공유",
 };
 
