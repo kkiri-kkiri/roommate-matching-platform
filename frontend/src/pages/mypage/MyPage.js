@@ -1,5 +1,8 @@
 import { PREFERENCE_STEPS } from "../../data/preferenceSurvey";
-import { getMyPreferences, saveMyPreferences } from "../../api/surveyApi";
+import {
+  getMyProfileSurvey, saveMyProfileSurvey,
+  getMyPreferences, saveMyPreferences,
+} from "../../api/surveyApi";
 import { getMyInfo, updateMyInfo, changePassword } from "../../api/userApi";
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -246,60 +249,12 @@ export const PROFILE_SECTIONS = [
   },
 ];
 
-export const PROFILE_SURVEYS_STORAGE_KEY = "roomieProfileSurveys";
-
-export function getSavedSurveyProfiles() {
-  try {
-    const profiles = JSON.parse(
-      window.localStorage.getItem(PROFILE_SURVEYS_STORAGE_KEY) || "[]",
-    );
-    return Array.isArray(profiles)
-      ? profiles.filter(
-        (profile) =>
-          typeof profile?.id === "string" &&
-          profile.profile &&
-          profile.answers &&
-          typeof profile.answers === "object" &&
-          !Array.isArray(profile.answers),
-      )
-      : [];
-  } catch {
-    return [];
-  }
-}
-
 const MBTI_DIMENSIONS = [
   { id: "mbtiEnergy", label: "에너지 방향", options: ["E", "I"] },
   { id: "mbtiInformation", label: "인식 방식", options: ["N", "S"] },
   { id: "mbtiDecision", label: "판단 방식", options: ["F", "T"] },
   { id: "mbtiLifestyle", label: "생활 양식", options: ["P", "J"] },
 ];
-
-const PROFILE_DEFAULTS = {
-  sleepTime: "23시 ~ 24시",
-  wakeTime: "07시 ~ 08시",
-  sleepTalking: "없음",
-  snoring: "없음",
-  teethGrinding: "없음",
-  sleepSensitivity: "보통",
-  indoorEating: "냄새 안나는 음식 가능",
-  smoking: "비흡연",
-  lightingPreference: "어두움 선호",
-  phoneCall: "항상 밖에서",
-  mediaSound: "항상 이어폰 사용해주세요",
-  showerTime: "저녁",
-  showerDuration: "20분",
-  cleaningFrequency: "주 2회",
-  cleaningStyle: "상황에 따라 협의",
-  roommateInteraction: "적당히 대화",
-  meal: "시간 될 때만 같이 먹고 싶음",
-  mealPlan: ["조식", "석식"],
-  dormStayDays: ["월", "화", "수", "목", "금"],
-  temperaturePreference: "보통",
-  scentProductUse: "사용 안 함",
-  desktopUse: "사용하지 않아요",
-  sharedItems: "일부만 공유",
-};
 
 const PREFERENCE_WEIGHT_OPTIONS = [
   { value: 1, label: "매우 낮음" },
@@ -1111,10 +1066,6 @@ function AccountContent({ account, onSave }) {
 }
 
 function MyPage({ currentUser, onUserUpdated }) {
-  const surveyProfileId = `survey:${currentUser?.name || ""}`;
-  const [savedSurvey] = useState(() =>
-    getSavedSurveyProfiles().find((profile) => profile.id === surveyProfileId),
-  );
   const [searchParams] = useSearchParams();
   const activeTab = MENU_ITEMS.some(
     (item) => item.id === searchParams.get("tab"),
@@ -1133,9 +1084,11 @@ function MyPage({ currentUser, onUserUpdated }) {
   useEffect(() => {
     let cancelled = false;
     setAccountLoading(true); setAccountError(""); setAccount(null);
-    Promise.all([getMyInfo(), getMyPreferences()]).then(([user, preference]) => {
+    Promise.all([getMyInfo(), getMyProfileSurvey(), getMyPreferences()]).then(([user, profileSurvey, preference]) => {
       if (!cancelled) {
         setAccount({ ...user, major: user.major || "", studentId: user.admissionYear });
+        setProfileAnswers(profileSurvey?.answers || {});
+        setProfileCompleted(Boolean(profileSurvey?.completed));
         setPreferences(preference.answers || {});
         setPreferencesCompleted(preference.completed);
       }
@@ -1150,16 +1103,12 @@ function MyPage({ currentUser, onUserUpdated }) {
     onUserUpdated?.(user);
     return saved;
   };
-  const [profileAnswers, setProfileAnswers] = useState(
-    savedSurvey?.answers || PROFILE_DEFAULTS,
-  );
-  const [surveySaveError, setSurveySaveError] = useState("");
+  const [profileAnswers, setProfileAnswers] = useState({});
+  const [profileCompleted, setProfileCompleted] = useState(false);
   const [preferences, setPreferences] = useState({});
   const [preferencesCompleted, setPreferencesCompleted] = useState(false);
   const hasSurveyAnswers = {
-    survey: PROFILE_SECTIONS.some((section) =>
-      section.fields.some((field) => hasAnswer(profileAnswers[field.id])),
-    ),
+    survey: profileCompleted,
     preferences: preferencesCompleted,
   };
   const [likesPage, setLikesPage] = useState(1);
@@ -1372,9 +1321,6 @@ function MyPage({ currentUser, onUserUpdated }) {
             )}
             {(activeTab === "survey" || activeTab === "preferences") && (
               <>
-                {activeTab === "survey" && surveySaveError && (
-                  <S.Banner $error role="alert">{surveySaveError}</S.Banner>
-                )}
                 <SurveyContent
                   key={activeTab}
                   type={activeTab}
@@ -1382,32 +1328,10 @@ function MyPage({ currentUser, onUserUpdated }) {
                   isEmpty={!hasSurveyAnswers[activeTab]}
                   onSave={async (savedAnswers) => {
                     if (activeTab === "survey") {
-                      const savedProfile = {
-                        id: surveyProfileId,
-                        profile: {
-                          nickname: account.nickname,
-                          major: account.major,
-                          dormitory: account.dormitory,
-                          grade: account.grade,
-                        },
-                        answers: savedAnswers,
-                      };
-                      try {
-                        window.localStorage.setItem(
-                          PROFILE_SURVEYS_STORAGE_KEY,
-                          JSON.stringify([
-                            ...getSavedSurveyProfiles().filter(
-                              (profile) => profile.id !== surveyProfileId,
-                            ),
-                            savedProfile,
-                          ]),
-                        );
-                      } catch {
-                        setSurveySaveError("설문을 저장하지 못했어요. 브라우저 저장소 설정을 확인한 뒤 다시 시도해 주세요.");
-                        return false;
-                      }
-                      setSurveySaveError("");
-                      setProfileAnswers(savedAnswers);
+                      await saveMyProfileSurvey(savedAnswers);
+                      const profileSurvey = await getMyProfileSurvey();
+                      setProfileAnswers(profileSurvey?.answers || {});
+                      setProfileCompleted(Boolean(profileSurvey?.completed));
                     } else {
                       await saveMyPreferences(savedAnswers);
                       setPreferences(savedAnswers);

@@ -19,6 +19,12 @@ async function request(config) {
   }
 }
 
+export const getMyProfileSurvey = () =>
+  request({ method: "get", url: "/users/me/profile-survey" });
+
+export const saveMyProfileSurvey = (answers) =>
+  request({ method: "put", url: "/users/me/profile-survey", data: answers });
+
 export const getMyPreferences = () =>
   request({ method: "get", url: "/users/me/roommate-preferences" });
 

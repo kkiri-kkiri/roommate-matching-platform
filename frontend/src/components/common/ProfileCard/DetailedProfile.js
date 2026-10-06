@@ -9,7 +9,6 @@ import * as S from "./DetailedProfileCss";
 import ProfileImage from "../ProfileImage";
 import { getRoommateDetail } from "../../../api/roommateApi";
 import { getProfileKey, useProfileLikes } from "./ProfileCard";
-import { getSavedSurveyProfiles } from "../../../pages/mypage/MyPage";
 
 // 상세 화면에서 사용하는 설문 항목은 기존 내 설문의 응답 키와 일치시킵니다.
 const SECTIONS = [
@@ -95,17 +94,15 @@ export function getDetailedProfile(profileId, routeProfile) {
     return String(routeProfile.userId) === String(profileId) ? routeProfile : null;
   }
   const key = getProfileKey({ id: profileId });
-  const savedSurvey = getSavedSurveyProfiles().find((item) => item.id === key);
   const supplied = routeProfile && getProfileKey(routeProfile) === key ? routeProfile : null;
   const demo = Object.prototype.hasOwnProperty.call(DEMO_PROFILES, key) ? DEMO_PROFILES[key] : null;
-  if (!savedSurvey && !supplied && !demo) return null;
+  if (!supplied && !demo) return null;
   const profile = {
     ...demo,
-    ...(savedSurvey ? { ...savedSurvey.profile, id: savedSurvey.id, answers: savedSurvey.answers } : {}),
     ...supplied,
   };
   // 빈 응답 객체는 실제 미작성 상태이므로 다른 사람의 예시 답변으로 채우지 않습니다.
-  profile.answers = supplied?.answers ?? savedSurvey?.answers ?? demo?.answers ?? {};
+  profile.answers = supplied?.answers ?? demo?.answers ?? {};
   const mbti = ["mbtiEnergy", "mbtiInformation", "mbtiDecision", "mbtiLifestyle"]
     .map((id) => profile[id] || "").join("");
   return {
