@@ -16,6 +16,13 @@ const CATEGORIES = [
 ];
 const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map(({ id, label }) => [id, label]));
 const MAX_MESSAGE_LENGTH = 2000;
+const SOURCE_POST_MESSAGES = {
+  loading: "게시글 정보를 불러오는 중입니다.",
+  deleted: "삭제된 게시글입니다.",
+  error: "게시글 정보를 불러올 수 없습니다.",
+  unauthorized: "로그인 상태를 확인한 후 게시글을 조회해 주세요.",
+  forbidden: "게시글을 조회할 권한이 없습니다.",
+};
 function lastActivity(room) { return room.lastMessage?.sentAt; }
 
 function dateKey(timestamp) {
@@ -135,7 +142,7 @@ function ChatPage() {
   const profileHref = `/chat?room=${encodeURIComponent(selectedId)}&view=profile`;
 
   const { connected, loadingRooms, roomError, messageLoading, messageError, searchResults,
-    updateSettings, send, leave, sourcePostTitle } = useChat({
+    updateSettings, send, leave, sourcePost } = useChat({
     isAuthenticated, rooms, setRooms, activeRoom, searchQuery, location, setStatus,
     onCreated: (roomId) => {
       setCategory("all"); setRoomSearch(""); setMobileOpen(true);
@@ -340,12 +347,26 @@ function ChatPage() {
                   </S.ParticipantButton>
                 </S.RoomHeader>
 
+                {activeRoom.category === "roommate" && (
+                  <S.SourcePost>
+                    <span>룸메찾기를 통해 시작된 채팅</span>
+                    {activeRoom.counterpartId ? (
+                      <S.ContextLink to={`/roommates/${encodeURIComponent(activeRoom.counterpartId)}`}
+                        state={{ chatRoomId: activeRoom.id }}>
+                        상대방 룸메이트 프로필 보기
+                      </S.ContextLink>
+                    ) : <span>상대방 프로필을 확인할 수 없습니다.</span>}
+                  </S.SourcePost>
+                )}
+
                 {activeRoom.category === "community" && activeRoom.sourcePost && (
                   <S.SourcePost>
                     <span>대화를 시작한 게시글</span>
-                    <S.ContextLink to={`/community/posts/${encodeURIComponent(activeRoom.sourcePost)}`}>
-                      {sourcePostTitle || `게시글 #${activeRoom.sourcePost}`}
-                    </S.ContextLink>
+                    {sourcePost.status === "success" ? (
+                      <S.ContextLink to={`/community/posts/${encodeURIComponent(activeRoom.sourcePost)}`}>
+                        {sourcePost.title}
+                      </S.ContextLink>
+                    ) : <span role="status">{SOURCE_POST_MESSAGES[sourcePost.status]}</span>}
                   </S.SourcePost>
                 )}
 
@@ -445,9 +466,8 @@ function ChatPage() {
           <S.ProfileDetails>
             <div><dt>생활관</dt><dd>{activeRoom.dormitory} 생활관</dd></div>
             <div><dt>대화 시작</dt><dd>{CATEGORY_LABELS[activeRoom.category]}</dd></div>
-            {activeRoom.matchScore != null && <div><dt>매칭점수</dt><dd>{activeRoom.matchScore}점</dd></div>}
+            {activeRoom.category === "roommate" && activeRoom.matchScore != null && <div><dt>매칭점수</dt><dd>{activeRoom.matchScore}점</dd></div>}
           </S.ProfileDetails>
-          <S.ProfileTags aria-label="생활 습관">{activeRoom.tags.map((tag) => <span key={tag}>#{tag}</span>)}</S.ProfileTags>
           <S.DialogActions><S.SecondaryButton type="button" onClick={closeProfile}>대화로 돌아가기</S.SecondaryButton></S.DialogActions>
         </ChatDialog>
       )}

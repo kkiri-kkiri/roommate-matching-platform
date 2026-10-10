@@ -45,11 +45,21 @@ export function useChat({ isAuthenticated, rooms, setRooms, activeRoom, searchQu
   useEffect(() => {
     if (!isAuthenticated || !sourcePostId) return;
     let cancelled = false;
-    setSourcePost(null);
+    setSourcePost({ id: sourcePostId, status: "loading" });
+    // getPost는 유효한 양수 ID의 활성 게시글이 없을 때 400 / INVALID_REQUEST를 반환합니다.
+    // 다른 API의 INVALID_REQUEST나 잘못된 ID를 삭제로 해석하지 않습니다.
+    if (!Number.isSafeInteger(Number(sourcePostId)) || Number(sourcePostId) <= 0 || !/^\d+$/.test(String(sourcePostId))) {
+      setSourcePost({ id: sourcePostId, status: "error" });
+      return;
+    }
     getCommunityPost(sourcePostId).then((post) => {
-      if (!cancelled) setSourcePost({ id: sourcePostId, title: post.title });
-    }).catch(() => {
-      if (!cancelled) setSourcePost(null);
+      if (!post || typeof post.title !== "string" || !post.title.trim()) throw new Error("Invalid post response");
+      if (!cancelled) setSourcePost({ id: sourcePostId, status: "success", title: post.title });
+    }).catch((error) => {
+      const status = error.status === 401 || error.errorCode === "UNAUTHORIZED" ? "unauthorized"
+        : error.status === 403 || error.errorCode === "FORBIDDEN" ? "forbidden"
+          : error.status === 400 && error.errorCode === "INVALID_REQUEST" ? "deleted" : "error";
+      if (!cancelled) setSourcePost({ id: sourcePostId, status });
     });
     return () => { cancelled = true; };
   }, [isAuthenticated, sourcePostId]);
@@ -187,5 +197,5 @@ export function useChat({ isAuthenticated, rooms, setRooms, activeRoom, searchQu
 
   return { connected, loadingRooms, roomError, messageLoading, messageError,
     searchResults, updateSettings, send, leave,
-    sourcePostTitle: sourcePost?.id === sourcePostId ? sourcePost.title : "" };
+    sourcePost: sourcePost && sourcePost.id === sourcePostId ? sourcePost : { status: "loading" } };
 }
