@@ -28,7 +28,7 @@ public record ChatRoomResponse(
 				sourcePost, unreadCount, pinned, muted, lastMessage);
 	}
 
-	/** 프로필/설문/매칭 데이터의 조회와 조합은 서비스의 책임이다. */
+	/** 익명 작성자는 nickname="익명", tags=[], 나머지 필드=null. 조합은 서비스의 책임이다. */
 	public record CounterpartResponse(
 			Long id,
 			String nickname,

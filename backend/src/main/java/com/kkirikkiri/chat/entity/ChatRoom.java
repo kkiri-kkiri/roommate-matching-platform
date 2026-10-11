@@ -61,7 +61,7 @@ public class ChatRoom {
 	 */
 	public ChatRoom(Long firstUserId, Long secondUserId, ChatRoomCategory category,
 			CommunityPost sourcePost, CommunityComment sourceComment) {
-		this.roomKey = createRoomKey(firstUserId, secondUserId, category);
+		this.roomKey = createRoomKey(firstUserId, secondUserId, category, sourcePost, sourceComment);
 		if (category == ChatRoomCategory.ROOMMATE && (sourcePost != null || sourceComment != null)) {
 			throw new IllegalArgumentException("roommate chat cannot have a community source");
 		}
@@ -86,6 +86,32 @@ public class ChatRoom {
 		}
 		return category.name() + ":" + Math.min(firstUserId, secondUserId)
 				+ ":" + Math.max(firstUserId, secondUserId);
+	}
+
+	/** 익명 출처는 방 키에 고정하여 게시글 수정/삭제 후에도 익명성을 유지한다. */
+	public static String createRoomKey(Long firstUserId, Long secondUserId, ChatRoomCategory category,
+			CommunityPost post, CommunityComment comment) {
+		String key = createRoomKey(firstUserId, secondUserId, category);
+		if (post != null && post.isAnonymous()) return key + ":POST:" + post.getPostId();
+		if (comment != null && comment.isAnonymous()) return key + ":COMMENT:" + comment.getCommentId();
+		return key;
+	}
+
+	public boolean isAnonymousAuthor(Long userId) {
+		return (roomKey.contains(":POST:") && sourcePost != null
+				&& sourcePost.getAuthor().getUserId().equals(userId))
+				|| (roomKey.contains(":COMMENT:") && sourceComment != null
+				&& sourceComment.getAuthor().getUserId().equals(userId));
+	}
+
+	/** 생성 API로 일반 게시글에서 진입한 경우에만 호출한다. */
+	public void updateSourcePost(CommunityPost post) {
+		if (category != ChatRoomCategory.COMMUNITY || post == null || post.isAnonymous()
+				|| roomKey.contains(":POST:") || roomKey.contains(":COMMENT:")) {
+			throw new IllegalArgumentException("only regular community rooms can update their source");
+		}
+		this.sourcePost = post;
+		this.sourceComment = null;
 	}
 
 	@PrePersist

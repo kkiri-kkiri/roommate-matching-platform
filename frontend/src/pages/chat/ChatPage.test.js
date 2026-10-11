@@ -49,6 +49,50 @@ beforeEach(() => {
 
 afterEach(() => localStorage.clear());
 
+test("anonymous authors have no profile link or profile modal even via a direct URL", async () => {
+  mockLocation.search = "?room=42&view=profile";
+  chatApi.getChatRooms.mockResolvedValue([{ ...rooms[1], counterpart: {
+    id: null, nickname: "익명", profileImageUrl: null, dormitory: null,
+    admissionYear: null, major: null, matchScore: null, introduction: null, tags: [],
+  } }]);
+  render(<ChatPage />);
+  expect(await screen.findByLabelText("익명 참여자")).toBeInTheDocument();
+  expect(screen.queryByRole("dialog", { name: "상대방 프로필" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: "익명님 프로필 보기" })).not.toBeInTheDocument();
+  expect(screen.queryByText("같은상대")).not.toBeInTheDocument();
+  expect(await screen.findByRole("link", { name: "원래 게시글" })).toHaveAttribute("href", "/community/posts/31");
+});
+
+test.each([true, false])("chat avatars preserve anonymous=%s identity in the list, header and messages", async (anonymous) => {
+  mockLocation.search = "?room=42";
+  chatApi.getChatRooms.mockResolvedValue([{ ...rooms[1], counterpart: {
+    ...counterpart, id: anonymous ? null : counterpart.id,
+    profileImageUrl: "/real-user-photo.jpg", major: "컴퓨터공학",
+  } }]);
+  chatApi.getChatMessages.mockResolvedValue({ content: [
+    { id: 1, text: "프로필 확인 메시지", senderType: "OTHER", sentAt: "2026-10-10T12:00:00" },
+  ] });
+  const { container } = render(<ChatPage />);
+  await screen.findByText("프로필 확인 메시지");
+  const nickname = anonymous ? "익명" : counterpart.nickname;
+  const expectedImage = anonymous
+    ? "/img/한경이 이미지/감정/힙합 한경이.png" : "/real-user-photo.jpg";
+  const list = screen.getByRole("list", { name: "전체 채팅 목록" });
+  expect(within(list).getByRole("img", { name: `${nickname} 프로필` })).toHaveAttribute("src", expectedImage);
+  const header = screen.getByLabelText(anonymous ? "익명 참여자" : `${nickname}님 프로필 보기`);
+  expect(header.querySelector("img")).toHaveAttribute("src", expectedImage);
+  const panel = container.querySelector("#chat-room-panel");
+  expect(panel.querySelectorAll("img")).toHaveLength(2);
+  panel.querySelectorAll("img").forEach((img) => expect(img).toHaveAttribute("src", expectedImage));
+  if (anonymous) {
+    expect(screen.queryByText(counterpart.nickname)).not.toBeInTheDocument();
+    // 이미지 로드 실패 시에도 실제 프로필 사진으로 되돌아가지 않는다.
+    fireEvent.error(header.querySelector("img"));
+    expect(header.querySelector("img").getAttribute("src")).toMatch(/^data:image\/svg\+xml/);
+    expect(container.querySelector('img[src="/real-user-photo.jpg"]')).toBeNull();
+  }
+});
+
 test.each([
   ["ROOMMATE", "룸메찾기", 0], ["ROOMMATE", "룸메찾기", 1], ["ROOMMATE", "룸메찾기", 5],
   ["COMMUNITY", "커뮤니티", 0], ["COMMUNITY", "커뮤니티", 1], ["COMMUNITY", "커뮤니티", 5],

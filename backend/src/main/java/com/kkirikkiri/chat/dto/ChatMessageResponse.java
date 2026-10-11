@@ -14,7 +14,8 @@ public record ChatMessageResponse(
 		boolean read) {
 
 	public static ChatMessageResponse from(ChatMessage message, String senderType, boolean read) {
-		return new ChatMessageResponse(message.getMessageId(), message.getSender().getUserId(),
+		return new ChatMessageResponse(message.getMessageId(), message.getChatRoom().isAnonymousAuthor(message.getSender().getUserId())
+						? null : message.getSender().getUserId(),
 				senderType, message.getContent(), message.getSentAt(), read);
 	}
 }

@@ -1552,7 +1552,14 @@ DATETIME
 
 게시글에서 시작하면 source_post_id, 댓글에서 시작하면 source_comment_id를 저장한다.
 
-room_key는 사용자 두 명의 ID와 채팅 분류를 조합하여 생성함으로써 동일한 채팅방이 중복 생성되는 것을 방지할 수 있다.
+room_key는 정렬한 두 사용자 ID로 생성하며 기존 UNIQUE 및 VARCHAR(100)을 유지한다.
+
+- 룸메이트: `ROOMMATE:{minUserId}:{maxUserId}`
+- 일반 커뮤니티: `COMMUNITY:{minUserId}:{maxUserId}`
+- 익명 게시글: `COMMUNITY:{minUserId}:{maxUserId}:POST:{postId}`
+- 익명 댓글: `COMMUNITY:{minUserId}:{maxUserId}:COMMENT:{commentId}`
+
+익명 접미사는 생성 시점의 익명성을 보존한다. 일반 게시글로 재진입할 때는 기존 일반 방의 source_post_id를 갱신하고 source_comment_id를 비운다. 익명 방의 출처와 기존 메시지/참여자는 유지한다. 컬럼 추가 없이 기존 익명 방의 키만 전환하며 `migrations/README.md`의 배포 절차를 따른다.
 
 채팅방 참여자 (CHAT_ROOM_MEMBER)
 

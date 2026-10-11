@@ -4,10 +4,15 @@ import { createChatRoom, getChatRooms, getChatMessages, markChatRoomRead,
 import { createChatSocket } from "../../api/chatSocket";
 import { getCommunityPost } from "../../api/communityApi";
 
+const ANONYMOUS_PROFILE_IMAGE = `${process.env.PUBLIC_URL || ""}/img/한경이 이미지/감정/힙합 한경이.png`;
+
 function mapRoom(room) {
   const profile = room.counterpart;
+  const anonymous = profile.id == null;
   return { ...room, id: String(room.id), category: room.category.toLowerCase(),
-    counterpartId: profile.id, nickname: profile.nickname, photo: profile.profileImageUrl,
+    counterpartId: profile.id, anonymous,
+    nickname: anonymous ? "익명" : profile.nickname,
+    photo: anonymous ? ANONYMOUS_PROFILE_IMAGE : profile.profileImageUrl,
     dormitory: profile.dormitory, year: profile.admissionYear, major: profile.major,
     matchScore: profile.matchScore, introduction: profile.introduction,
     tags: profile.tags || [], unread: room.unreadCount, messages: [] };
@@ -28,6 +33,7 @@ export function useChat({ isAuthenticated, rooms, setRooms, activeRoom, searchQu
   location, setStatus, onCreated }) {
   const socketRef = useRef(null);
   const creationRef = useRef(null);
+  const roomRevisionRef = useRef(0);
   const mutationRef = useRef(new Set());
   const onCreatedRef = useRef(onCreated);
   onCreatedRef.current = onCreated;
@@ -67,16 +73,21 @@ export function useChat({ isAuthenticated, rooms, setRooms, activeRoom, searchQu
   useEffect(() => {
     if (!isAuthenticated) return;
     let cancelled = false;
+    const revision = roomRevisionRef.current;
     getChatRooms({ category: "ALL" }).then((data) => {
       if (!cancelled) setRooms((current) => {
         const existing = new Map(current.map((room) => [room.id, room]));
-        const fetched = data.map(mapRoom).map((room) => existing.get(room.id) || room);
+        const fetched = data.map(mapRoom).map((room) => {
+          const previous = existing.get(room.id);
+          if (previous && revision !== roomRevisionRef.current) return previous;
+          return { ...previous, ...room, messages: previous?.messages || [] };
+        });
         return [...fetched, ...current.filter((room) => !fetched.some((item) => item.id === room.id))];
       });
     }).catch((error) => { if (!cancelled) setRoomError(error.message); })
       .finally(() => { if (!cancelled) setLoadingRooms(false); });
     return () => { cancelled = true; };
-  }, [isAuthenticated, setRooms]);
+  }, [isAuthenticated, setRooms, location.key]);
 
   const incomingProfile = location.state?.roommateProfile;
   const communityChat = location.state?.communityChat;
@@ -106,7 +117,10 @@ export function useChat({ isAuthenticated, rooms, setRooms, activeRoom, searchQu
     creationRef.current.promise.then((data) => {
       if (cancelled) return;
       const room = mapRoom(data);
-      setRooms((current) => [room, ...current.filter((item) => item.id !== room.id)]);
+      roomRevisionRef.current += 1;
+      setRooms((current) => [{ ...room,
+        messages: current.find((item) => item.id === room.id)?.messages || [],
+      }, ...current.filter((item) => item.id !== room.id)]);
       onCreatedRef.current(room.id);
       creationRef.current = null;
     }).catch((error) => { if (!cancelled) setStatus(error.message); });

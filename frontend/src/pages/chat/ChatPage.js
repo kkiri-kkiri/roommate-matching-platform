@@ -123,7 +123,7 @@ function ChatPage() {
   const activeRoom = rooms.find((room) => room.id === selectedId);
   const showMobileRoom = mobileOpen && Boolean(activeRoom);
   const leaveRoom = rooms.find((room) => room.id === leaveRoomId);
-  const profileOpen = searchParams.get("view") === "profile" && Boolean(activeRoom);
+  const profileOpen = searchParams.get("view") === "profile" && Boolean(activeRoom) && !activeRoom.anonymous;
   const roomSearchQuery = roomSearch.trim().toLocaleLowerCase();
   const pinnedCount = rooms.filter((room) => room.pinned).length;
   const categoryCounts = Object.fromEntries(CATEGORIES.map(({ id }) => [
@@ -334,7 +334,9 @@ function ChatPage() {
                     setMobileOpen(false);
                     requestAnimationFrame(() => listHeadingRef.current?.focus());
                   }}><ArrowLeft size={21} aria-hidden="true" /></S.MobileBackButton>
-                  <S.ParticipantButton as={Link} to={profileHref} aria-label={`${activeRoom.nickname}님 프로필 보기`}>
+                  <S.ParticipantButton as={activeRoom.anonymous ? "div" : Link}
+                    to={activeRoom.anonymous ? undefined : profileHref}
+                    aria-label={activeRoom.anonymous ? "익명 참여자" : `${activeRoom.nickname}님 프로필 보기`}>
                     <ProfileImage as={S.Avatar} major={activeRoom.photo ? undefined : activeRoom.major} fallbackSrc={activeRoom.photo} alt="" />
                     <div>
                       <S.ParticipantName>
@@ -342,7 +344,7 @@ function ChatPage() {
                         {activeRoom.pinned && <Pin size={15} aria-hidden="true" />}
                         {activeRoom.muted && <BellOff size={15} aria-label="알림 끔" />}
                       </S.ParticipantName>
-                      <S.ParticipantMeta>{activeRoom.dormitory} 생활관 · {activeRoom.year}학번</S.ParticipantMeta>
+                      {!activeRoom.anonymous && <S.ParticipantMeta>{activeRoom.dormitory} 생활관 · {activeRoom.year}학번</S.ParticipantMeta>}
                     </div>
                   </S.ParticipantButton>
                 </S.RoomHeader>
