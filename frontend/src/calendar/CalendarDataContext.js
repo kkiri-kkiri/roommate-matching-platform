@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { getCalendarEvents, getCalendarCategories, createCalendarEvent, updateCalendarEvent, deleteCalendarEvent,
   saveCalendarCategories, createCalendarCategory, deleteCalendarCategory } from "../api/calendarApi";
 import * as S from "./CalendarPageCss";
+import { normalizeEventTimes } from "./calendarDates";
 export { dateKey } from "./calendarDates";
 
 export const FIXED_CATEGORY_IDS = ["school", "dormitory"];
@@ -42,8 +43,9 @@ export function CalendarDataProvider({ children, userId }) {
   const saveEvent = async (draft, id) => {
     const category = categorySettings.find((item) => item.id === draft.category);
     if (!category?.serverId || category.fixed) throw new Error("등록 가능한 일정 분류를 선택해 주세요.");
-    const payload = { title: draft.title.trim(), startDate: draft.date, endDate: draft.endDate || draft.date,
-      startTime: draft.startTime, endTime: draft.endTime, categoryId: category.serverId, description: draft.description.trim() };
+    const normalized = normalizeEventTimes(draft);
+    const payload = { title: draft.title.trim(), startDate: normalized.date, endDate: normalized.endDate,
+      startTime: normalized.startTime, endTime: normalized.endTime, categoryId: category.serverId, description: draft.description.trim() };
     const saved = id ? await updateCalendarEvent(id, payload) : await createCalendarEvent(payload);
     setEvents((current) => [...current.filter((event) => event.id !== saved.id), saved]);
     return saved;

@@ -323,18 +323,6 @@ export const LinkDivider = styled.span`
   background: #e2e2e4;
 `;
 
-export const Feedback = styled.p`
-  margin: -4px 0 0;
-  padding: 12px 14px;
-  border: 1px solid
-    ${({ $tone }) => ($tone === "error" ? "#ffb4ab" : "#9edbd7")};
-  border-radius: 12px;
-  background: ${({ $tone }) => ($tone === "error" ? "#fff1ef" : "#eefaf8")};
-  color: ${({ $tone }) => ($tone === "error" ? "#93000a" : "#005b56")};
-  font-size: 13px;
-  line-height: 20px;
-`;
-
 export const SubmitButton = styled.button`
   width: 100%;
   min-height: 52px;

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   ArrowLeft,
-  CircleAlert,
   CircleCheck,
   KeyRound,
   Mail,
@@ -11,6 +10,10 @@ import {
 import * as S from "./FindPasswordPageCss";
 
 import { requestPasswordReset, confirmPasswordReset } from "../../api/authApi";
+import {
+  meetsPasswordRequirements,
+  PASSWORD_REQUIREMENTS_MESSAGE,
+} from "../../utils/passwordValidation";
 
 const SCHOOL_EMAIL_DOMAIN = "@hknu.ac.kr";
 
@@ -26,8 +29,11 @@ function FindPasswordPage() {
   const [stage, setStage] = useState("lookup");
   const [newPassword, setNewPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [passwordErrorField, setPasswordErrorField] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const passwordMeetsRequirements = meetsPasswordRequirements(newPassword);
+  const passwordMatches =
+    passwordConfirm.length > 0 && newPassword === passwordConfirm;
 
   const resetFlow = () => {
     setLookupError("");
@@ -35,16 +41,20 @@ function FindPasswordPage() {
     setStage("lookup");
     setNewPassword("");
     setPasswordConfirm("");
-    setPasswordError("");
-    setPasswordErrorField("");
+    setShowPassword(false);
+    setShowPasswordConfirm(false);
   };
 
   const handleEmailSubmit = async (event) => {
     event.preventDefault();
     if (pending) return;
     const emailLocalPart = email.trim();
+    if (!emailLocalPart) {
+      window.alert("이메일을 입력해주세요.");
+      return;
+    }
     if (!/^[^@\s]{1,64}$/.test(emailLocalPart)) {
-      setLookupError("학교 이메일의 @ 앞부분을 입력해 주세요.");
+      setLookupError("이메일 형식이 잘못되었습니다.");
       return;
     }
 
@@ -64,20 +74,21 @@ function FindPasswordPage() {
     event.preventDefault();
     if (pending) return;
 
-    if (newPassword.length < 8) {
-      setPasswordError("새 비밀번호는 8자 이상으로 입력해 주세요.");
-      setPasswordErrorField("newPassword");
+    if (!resetToken.trim()) {
+      window.alert("비밀번호 재설정 토큰을 입력해 주세요.");
       return;
     }
 
-    if (newPassword !== passwordConfirm) {
-      setPasswordError("새 비밀번호가 서로 일치하지 않아요.");
-      setPasswordErrorField("passwordConfirm");
+    if (!newPassword || !passwordConfirm) {
+      window.alert("모든 항목을 작성해주세요.");
       return;
     }
 
-    setPasswordError("");
-    setPasswordErrorField("");
+    if (!passwordMeetsRequirements || !passwordMatches) {
+      window.alert("비밀번호 조건과 비밀번호 확인을 다시 확인해 주세요.");
+      return;
+    }
+
     setPending(true);
     try {
       await confirmPasswordReset(
@@ -90,7 +101,7 @@ function FindPasswordPage() {
       setPasswordConfirm("");
       setStage("complete");
     } catch (error) {
-      setPasswordError(error.message);
+      window.alert(error.message);
     } finally {
       setPending(false);
     }
@@ -118,7 +129,6 @@ function FindPasswordPage() {
                 setEmail(getEmailLocalPart(event.target.value));
                 resetFlow();
               }}
-              required
             />
             <S.EmailDomain>{SCHOOL_EMAIL_DOMAIN}</S.EmailDomain>
           </S.InputWrap>
@@ -131,18 +141,13 @@ function FindPasswordPage() {
       </S.Form>
 
       {lookupError && (
-        <S.ResultPanel $tone="empty" role="alert" aria-live="polite">
-          <S.ResultIcon $tone="empty">
-            <CircleAlert aria-hidden="true" />
-          </S.ResultIcon>
-          <S.ResultContent>
-            <S.ResultDescription>{lookupError}</S.ResultDescription>
-            <S.TextButton type="button" onClick={() => setLookupError("")}>
-              <RotateCcw aria-hidden="true" />
-              다시 입력하기
-            </S.TextButton>
-          </S.ResultContent>
-        </S.ResultPanel>
+        <S.ResultContent role="alert" aria-live="assertive">
+          <S.ResultDescription>{lookupError}</S.ResultDescription>
+          <S.TextButton type="button" onClick={() => setLookupError("")}>
+            <RotateCcw aria-hidden="true" />
+            다시 입력하기
+          </S.TextButton>
+        </S.ResultContent>
       )}
     </>
   );
@@ -170,7 +175,7 @@ function FindPasswordPage() {
 
   const renderResetForm = () => (
     <S.ResetSection>
-      <S.Form onSubmit={handleResetSubmit}>
+      <S.Form onSubmit={handleResetSubmit} noValidate>
         <S.Field>
           <S.Label htmlFor="reset-token">재설정 토큰</S.Label>
           <S.InputWrap>
@@ -185,82 +190,133 @@ function FindPasswordPage() {
               placeholder="메일로 받은 재설정 토큰을 붙여 넣어 주세요"
               value={resetToken}
               disabled={pending}
-              required
               onChange={(event) => {
                 setResetToken(event.target.value);
-                setPasswordError("");
               }}
             />
           </S.InputWrap>
         </S.Field>
         <S.Field>
           <S.Label htmlFor="new-password">새 비밀번호</S.Label>
-          <S.InputWrap>
+          <S.PasswordField>
             <S.InputIcon>
               <KeyRound aria-hidden="true" />
             </S.InputIcon>
             <S.Input
               id="new-password"
               name="newPassword"
-              type="password"
+              type={showPassword ? "text" : "password"}
               autoComplete="new-password"
-              placeholder="8자 이상 입력해 주세요"
-              minLength="8"
+              placeholder="비밀번호 입력"
               value={newPassword}
               disabled={pending}
               onChange={(event) => {
                 setNewPassword(event.target.value);
-                setPasswordError("");
-                setPasswordErrorField("");
               }}
-              aria-invalid={passwordErrorField === "newPassword"}
-              aria-describedby={
-                passwordErrorField === "newPassword"
-                  ? "password-error"
-                  : undefined
-              }
               required
+              aria-describedby="password-guide"
+              aria-invalid={Boolean(
+                newPassword && !passwordMeetsRequirements,
+              )}
+              $hasAction
+              $tone={
+                newPassword
+                  ? passwordMeetsRequirements
+                    ? "success"
+                    : "error"
+                  : "neutral"
+              }
             />
-          </S.InputWrap>
+            <S.VisibilityButton
+              type="button"
+              onClick={() => setShowPassword((current) => !current)}
+              aria-label={
+                showPassword ? "비밀번호 숨기기" : "비밀번호 표시하기"
+              }
+              aria-pressed={showPassword}
+            >
+              {showPassword ? "숨기기" : "보기"}
+            </S.VisibilityButton>
+          </S.PasswordField>
+          <S.FieldFeedback
+            id="password-guide"
+            aria-live="polite"
+            $tone={
+              newPassword
+                ? passwordMeetsRequirements
+                  ? "success"
+                  : "error"
+                : "neutral"
+            }
+          >
+            {newPassword
+              ? passwordMeetsRequirements
+                ? "사용할 수 있는 비밀번호예요."
+                : PASSWORD_REQUIREMENTS_MESSAGE
+              : PASSWORD_REQUIREMENTS_MESSAGE}
+          </S.FieldFeedback>
         </S.Field>
 
         <S.Field>
           <S.Label htmlFor="new-password-confirm">새 비밀번호 확인</S.Label>
-          <S.InputWrap>
+          <S.PasswordField>
             <S.InputIcon>
               <ShieldCheck aria-hidden="true" />
             </S.InputIcon>
             <S.Input
               id="new-password-confirm"
               name="newPasswordConfirm"
-              type="password"
+              type={showPasswordConfirm ? "text" : "password"}
               autoComplete="new-password"
-              placeholder="한 번 더 입력해 주세요"
-              minLength="8"
+              placeholder="비밀번호 확인"
               value={passwordConfirm}
               disabled={pending}
               onChange={(event) => {
                 setPasswordConfirm(event.target.value);
-                setPasswordError("");
-                setPasswordErrorField("");
               }}
-              aria-invalid={passwordErrorField === "passwordConfirm"}
-              aria-describedby={
-                passwordErrorField === "passwordConfirm"
-                  ? "password-error"
-                  : undefined
-              }
               required
+              aria-describedby="password-confirm-guide"
+              aria-invalid={Boolean(passwordConfirm && !passwordMatches)}
+              $hasAction
+              $tone={
+                passwordConfirm
+                  ? passwordMatches
+                    ? "success"
+                    : "error"
+                  : "neutral"
+              }
             />
-          </S.InputWrap>
+            <S.VisibilityButton
+              type="button"
+              onClick={() => setShowPasswordConfirm((current) => !current)}
+              aria-label={
+                showPasswordConfirm
+                  ? "비밀번호 확인 값 숨기기"
+                  : "비밀번호 확인 값 표시하기"
+              }
+              aria-pressed={showPasswordConfirm}
+            >
+              {showPasswordConfirm ? "숨기기" : "보기"}
+            </S.VisibilityButton>
+          </S.PasswordField>
+          <S.FieldFeedback
+            id="password-confirm-guide"
+            aria-live="polite"
+            $tone={
+              passwordConfirm
+                ? passwordMatches
+                  ? "success"
+                  : "error"
+                : "neutral"
+            }
+          >
+            {passwordConfirm
+              ? passwordMatches
+                ? "비밀번호가 일치해요."
+                : "비밀번호가 일치하지 않아요."
+              : "같은 비밀번호를 입력해 주세요."}
+          </S.FieldFeedback>
         </S.Field>
-
-        {passwordError && (
-          <S.ErrorMessage id="password-error" role="alert">
-            <CircleAlert aria-hidden="true" />
-            {passwordError}
-          </S.ErrorMessage>
-        )}
 
         <S.PrimaryButton type="submit" disabled={pending}>
           <ShieldCheck aria-hidden="true" />

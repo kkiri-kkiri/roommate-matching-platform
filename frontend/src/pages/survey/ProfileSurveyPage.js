@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  CheckCircle2,
   Clock3,
   Info,
   ShieldCheck,
@@ -278,10 +277,7 @@ function SurveyPage() {
   const [values, setValues] = useState(createInitialValues);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [errors, setErrors] = useState({});
-  const [showValidation, setShowValidation] = useState(false);
-  const [showComplete, setShowComplete] = useState(false);
   const titleRef = useRef(null);
-  const completeRef = useRef(null);
 
   const currentStep = SURVEY_STEPS[currentStepIndex];
   const allFields = SURVEY_STEPS.flatMap((step) => step.fields);
@@ -302,7 +298,6 @@ function SurveyPage() {
   const setFieldValue = (fieldId, value) => {
     setValues((currentValues) => ({ ...currentValues, [fieldId]: value }));
     clearError(fieldId);
-    setShowComplete(false);
   };
 
   const toggleMultiValue = (field, option) => {
@@ -342,8 +337,6 @@ function SurveyPage() {
   const goToStep = (stepIndex) => {
     setCurrentStepIndex(stepIndex);
     setErrors({});
-    setShowValidation(false);
-    setShowComplete(false);
     focusTitle();
   };
 
@@ -362,13 +355,12 @@ function SurveyPage() {
     const nextErrors = validateStep(currentStep, values);
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
-      setShowValidation(true);
+      window.alert("아직 입력하지 않은 항목이 있어요. 표시된 항목을 확인해 주세요.");
       focusFirstError(nextErrors);
       return;
     }
 
     setErrors({});
-    setShowValidation(false);
 
     if (currentStepIndex < SURVEY_STEPS.length - 1) {
       setCurrentStepIndex((index) => index + 1);
@@ -381,14 +373,13 @@ function SurveyPage() {
       if (Object.keys(sectionErrors).length > 0) {
         setCurrentStepIndex(stepIndex);
         setErrors(sectionErrors);
-        setShowValidation(true);
+        window.alert("아직 입력하지 않은 항목이 있어요. 표시된 항목을 확인해 주세요.");
         focusFirstError(sectionErrors);
         return;
       }
     }
 
-    setShowComplete(true);
-    window.requestAnimationFrame(() => completeRef.current?.focus());
+    window.alert("모든 답변을 확인했어요. 현재 화면은 UI 확인용이며 실제 저장은 진행되지 않습니다.");
   };
 
   const handleSubmit = (event) => {
@@ -566,26 +557,7 @@ function SurveyPage() {
             </S.FormHeader>
 
             <S.FormBody>
-              {showValidation && Object.keys(errors).length > 0 && (
-                <S.ValidationBanner role="alert">
-                  <AlertCircle size={18} aria-hidden="true" />
-                  <div>
-                    <strong>아직 입력하지 않은 항목이 있어요.</strong>
-                  </div>
-                </S.ValidationBanner>
-              )}
               {currentStep.fields.map(renderChoiceField)}
-              {showComplete && (
-                <S.CompleteBanner ref={completeRef} tabIndex="-1" role="status">
-                  <CheckCircle2 size={21} aria-hidden="true" />
-                  <div>
-                    <strong>모든 답변을 확인했어요.</strong>
-                    <span>
-                      현재 화면은 UI 확인용이며 실제 저장은 진행되지 않습니다.
-                    </span>
-                  </div>
-                </S.CompleteBanner>
-              )}
             </S.FormBody>
 
             <S.FormFooter>

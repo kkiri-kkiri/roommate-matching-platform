@@ -1,13 +1,11 @@
 import { PREFERENCE_STEPS } from "../../data/preferenceSurvey";
 import { getMyPreferences, saveMyPreferences } from "../../api/surveyApi";
-import { Link } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
   Check,
-  CheckCircle2,
   Clock3,
   Info,
   ShieldCheck,
@@ -69,7 +67,6 @@ function RoommatePreferenceSurvey() {
   const [loadError, setLoadError] = useState("");
   const [revision, setRevision] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState("");
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -83,9 +80,7 @@ function RoommatePreferenceSurvey() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [errors, setErrors] = useState({});
   const [showValidation, setShowValidation] = useState(false);
-  const [showComplete, setShowComplete] = useState(false);
   const titleRef = useRef(null);
-  const completeRef = useRef(null);
   const stepListRef = useRef(null);
   const stepButtonRefs = useRef([]);
 
@@ -151,7 +146,6 @@ function RoommatePreferenceSurvey() {
       ...currentValues,
       [fieldId]: option,
     }));
-    setShowComplete(false);
   };
 
   const toggleMultiValue = (field, option) => {
@@ -182,7 +176,6 @@ function RoommatePreferenceSurvey() {
         [field.id]: nextValues,
       };
     });
-    setShowComplete(false);
   };
 
   const goToStep = (stepIndex) => {
@@ -191,7 +184,6 @@ function RoommatePreferenceSurvey() {
     setCurrentStepIndex(stepIndex);
     setErrors({});
     setShowValidation(false);
-    setShowComplete(false);
     focusAndScrollTitle();
   };
 
@@ -213,7 +205,7 @@ function RoommatePreferenceSurvey() {
     if (Object.keys(currentErrors).length > 0) {
       setErrors(currentErrors);
       setShowValidation(true);
-      setShowComplete(false);
+      window.alert("아직 응답하지 않은 문항이 있어요. 표시된 문항을 확인해 주세요.");
       focusFirstError(currentErrors);
       return;
     }
@@ -223,7 +215,6 @@ function RoommatePreferenceSurvey() {
 
     if (currentStepIndex < SURVEY_STEPS.length - 1) {
       setCurrentStepIndex((stepIndex) => stepIndex + 1);
-      setShowComplete(false);
       focusAndScrollTitle();
       return;
     }
@@ -238,31 +229,23 @@ function RoommatePreferenceSurvey() {
       setCurrentStepIndex(firstInvalidStep.stepIndex);
       setErrors(firstInvalidStep.stepErrors);
       setShowValidation(true);
-      setShowComplete(false);
+      window.alert("아직 응답하지 않은 문항이 있어요. 표시된 문항을 확인해 주세요.");
       focusAndScrollTitle(firstFieldId);
       return;
     }
 
     setSaving(true);
-    setSaveError("");
     try {
       await saveMyPreferences({ ...values, weights: Object.fromEntries(
         ALL_FIELDS.map((field) => [field.id, values.weights?.[field.id] ?? 3]),
       ) });
     } catch (error) {
-      setSaveError(error.message);
+      window.alert(error.message);
       return;
     } finally {
       setSaving(false);
     }
-    setShowComplete(true);
-    window.requestAnimationFrame(() => {
-      completeRef.current?.scrollIntoView?.({
-        behavior: prefersReducedMotion() ? "auto" : "smooth",
-        block: "nearest",
-      });
-      completeRef.current?.focus({ preventScroll: true });
-    });
+    window.alert("선호 설문을 저장했어요. 추천 프로필에서 결과를 확인해 주세요.");
   };
 
   const handleSubmit = (event) => {
@@ -455,31 +438,7 @@ function RoommatePreferenceSurvey() {
             </S.FormHeader>
 
             <S.FormBody>
-              {saveError && <S.ValidationBanner role="alert">{saveError}</S.ValidationBanner>}
-              {showValidation && Object.keys(errors).length > 0 && (
-                <S.ValidationBanner role="alert">
-                  <AlertCircle size={18} aria-hidden="true" />
-                  <div>
-                    <strong>아직 응답하지 않은 문항이 있어요.</strong>
-                    <span>표시된 문항을 확인해 주세요.</span>
-                  </div>
-                </S.ValidationBanner>
-              )}
-
               {currentStep.fields.map(renderChoiceField)}
-
-              {showComplete && (
-                <S.CompleteBanner ref={completeRef} tabIndex="-1">
-                  <CheckCircle2 size={21} aria-hidden="true" />
-                  <div>
-                    <strong>원하는 룸메이트 조건 입력을 완료했어요.</strong>
-                    <span>
-                      선호 설문을 저장했어요. 추천 프로필에서 결과를 확인해 주세요.
-                    </span>
-                    <Link to="/roommates?tab=recommended">추천 프로필 보기</Link>
-                  </div>
-                </S.CompleteBanner>
-              )}
             </S.FormBody>
 
             <S.FormFooter>

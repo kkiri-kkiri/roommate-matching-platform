@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
-  CheckCircle2,
   Eye,
   Flag,
   Heart,
@@ -212,8 +211,6 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
   const navigate = useNavigate();
   const busyRef = useRef(false);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const [replyTarget, setReplyTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [reportTarget, setReportTarget] = useState(null);
@@ -236,12 +233,11 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
     if (!requireUser() || busyRef.current) return false;
     busyRef.current = true;
     setBusy(true);
-    setError("");
     try {
       await action();
       return true;
     } catch (failure) {
-      setError(failure.message);
+      window.alert(failure.message);
       return false;
     } finally {
       busyRef.current = false;
@@ -291,7 +287,6 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
 
   const openReport = (comment) => {
     if (!requireUser() || (!comment && post.reported)) return;
-    setError("");
     setReportReason("");
     setOtherReason("");
     setReportTarget(comment ? { kind: "comment", id: comment.id } : { kind: "post", id: post.id });
@@ -307,7 +302,7 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
         description: reportReason === "기타" ? otherReason.trim() : null,
       });
       setReportTarget(null);
-      setNotice("신고를 접수했어요. 더 편안한 커뮤니티를 위해 확인할게요.");
+      window.alert("신고를 접수했어요. 더 편안한 커뮤니티를 위해 확인할게요.");
       if (reportTarget.kind === "post") await onRefresh();
     });
   };
@@ -316,11 +311,8 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
 
   return (
     <S.Detail aria-labelledby="community-post-title" aria-busy={busy}>
-      {error && !reportTarget && !deleteTarget && <p role="alert">{error}</p>}
       {busy && <p role="status">처리하고 있어요.</p>}
       <S.BackLink as={Link} to="/community"><ArrowLeft size={17} aria-hidden="true" />커뮤니티 목록</S.BackLink>
-      {notice && <S.Notice role="status"><CheckCircle2 size={18} aria-hidden="true" />{notice}</S.Notice>}
-
       <S.Article>
         <S.ArticleTop>
           <S.Category $category={post.category}>{post.category}</S.Category>
@@ -453,7 +445,6 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
               : "이 댓글에 달린 답글도 함께 삭제돼요.\n삭제한 내용은 되돌릴 수 없어요."}
           onDismiss={() => setDeleteTarget(null)}
         >
-          {error && <p role="alert">{error}</p>}
             <S.DialogActions>
             <S.SecondaryButton type="button" onClick={() => setDeleteTarget(null)}>취소</S.SecondaryButton>
             <S.PrimaryButton type="button" $danger onClick={confirmDelete} disabled={busy}>삭제하기</S.PrimaryButton>
@@ -482,7 +473,6 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
                 <S.Textarea id="community-other-reason" value={otherReason} onChange={(event) => setOtherReason(event.target.value)} placeholder="신고 사유를 입력해 주세요." maxLength={500} required />
               </S.OtherReason>
             )}
-            {error && <p role="alert">{error}</p>}
           <S.DialogActions>
               <S.SecondaryButton type="button" onClick={() => setReportTarget(null)}>취소</S.SecondaryButton>
               <S.PrimaryButton type="submit" disabled={busy || !reportReason || (reportReason === "기타" && !otherReason.trim())}>신고하기</S.PrimaryButton>

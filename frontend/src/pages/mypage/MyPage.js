@@ -27,6 +27,10 @@ import ProfileImage from "../../components/common/ProfileImage";
 import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./MyPageCss";
 import { getMyLikedRoommates, toRoommateProfile } from "../../api/roommateApi";
+import {
+  meetsPasswordRequirements,
+  PASSWORD_REQUIREMENTS_MESSAGE,
+} from "../../utils/passwordValidation";
 
 // Search filters share the survey's field names and answer options.
 export const PROFILE_SECTIONS = [
@@ -400,7 +404,6 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
   const sections = isPreference ? PREFERENCE_STEPS : PROFILE_SECTIONS;
   const [draft, setDraft] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState("");
   const [errors, setErrors] = useState({});
   const formRef = useRef(null);
   const titleRef = useRef(null);
@@ -459,11 +462,10 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
       }
       : draft;
     setSaving(true);
-    setSaveError("");
     try {
       if (await onSave(saved) === false) return;
     } catch (error) {
-      setSaveError(error.message);
+      window.alert(error.message);
       return;
     } finally {
       setSaving(false);
@@ -535,7 +537,6 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
         <EmptyState type={type} onStart={() => startEditing()} />
       ) : (
         <>
-          {saveError && <S.Banner $error role="alert">{saveError}</S.Banner>}
           <S.Stack as="form" ref={formRef} onSubmit={save} noValidate>
             <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0, display: "grid", gap: 24 }}>
             {sections.map((section, index) => (
@@ -698,8 +699,6 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
 function AccountContent({ account, onSave }) {
   const [saving, setSaving] = useState(false);
   const pendingRef = useRef(false);
-  const [saveError, setSaveError] = useState("");
-  const [saveStatus, setSaveStatus] = useState("");
   const [draft, setDraft] = useState({
     ...account,
     currentPassword: "",
@@ -768,13 +767,13 @@ function AccountContent({ account, onSave }) {
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
-    pendingRef.current = true; setSaving(true); setSaveError(""); setSaveStatus("");
+    pendingRef.current = true; setSaving(true);
     try {
       const payload = Object.fromEntries(ids.filter((id) => !(id === "major" && noMajor)).map((id) => [id, draft[id]]));
       const saved = await onSave(payload);
       setDraft((current) => ({ ...current, ...saved }));
-      setSaveStatus("회원정보를 저장했어요.");
-    } catch (error) { setSaveError(error.message); return; }
+      window.alert("회원정보를 저장했어요.");
+    } catch (error) { window.alert(error.message); return; }
     finally { pendingRef.current = false; setSaving(false); }
     setEditingFields((current) =>
       Object.fromEntries(Object.keys(current).map((id) => [id, false])),
@@ -804,17 +803,17 @@ function AccountContent({ account, onSave }) {
       nextErrors.currentPassword = "현재 비밀번호를 입력해 주세요.";
     if (!draft.newPassword.trim())
       nextErrors.newPassword = "변경할 비밀번호를 입력해 주세요.";
-    else if (draft.newPassword.length < 8)
-      nextErrors.newPassword = "비밀번호는 8자 이상 입력해 주세요.";
+    else if (!meetsPasswordRequirements(draft.newPassword))
+      nextErrors.newPassword = PASSWORD_REQUIREMENTS_MESSAGE;
     if (!draft.confirmPassword)
       nextErrors.confirmPassword = "변경할 비밀번호를 한 번 더 입력해 주세요.";
     else if (draft.newPassword !== draft.confirmPassword)
       nextErrors.confirmPassword = "새 비밀번호가 일치하지 않아요.";
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
-    pendingRef.current = true; setSaving(true); setSaveError(""); setSaveStatus("");
-    try { await changePassword(draft.currentPassword, draft.newPassword, draft.confirmPassword); setSaveStatus("비밀번호를 변경했어요."); }
-    catch (error) { setSaveError(error.message); return; }
+    pendingRef.current = true; setSaving(true);
+    try { await changePassword(draft.currentPassword, draft.newPassword, draft.confirmPassword); window.alert("비밀번호를 변경했어요."); }
+    catch (error) { window.alert(error.message); return; }
     finally { pendingRef.current = false; setSaving(false); }
     setPasswordEditing(false);
     setDraft((current) => ({
@@ -907,8 +906,6 @@ function AccountContent({ account, onSave }) {
 
   return (
     <S.Stack as="form" ref={formRef} onSubmit={save} noValidate aria-busy={saving}>
-      {saveError && <S.Banner $error role="alert">{saveError}</S.Banner>}
-      {saveStatus && <p role="status">{saveStatus}</p>}
       <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0, display: "flex", flexDirection: "column", gap: 24 }}>
       <S.SectionHeading>
         <div>
@@ -1098,6 +1095,7 @@ function AccountContent({ account, onSave }) {
               })}
               {renderField("newPassword", "변경할 비밀번호", {
                 type: "password",
+                helper: PASSWORD_REQUIREMENTS_MESSAGE,
               })}
               {renderField("confirmPassword", "변경할 비밀번호 확인", {
                 type: "password",
@@ -1154,7 +1152,6 @@ function MyPage({ currentUser, onUserUpdated }) {
   const [profileAnswers, setProfileAnswers] = useState(
     savedSurvey?.answers || PROFILE_DEFAULTS,
   );
-  const [surveySaveError, setSurveySaveError] = useState("");
   const [preferences, setPreferences] = useState({});
   const [preferencesCompleted, setPreferencesCompleted] = useState(false);
   const hasSurveyAnswers = {
@@ -1373,9 +1370,6 @@ function MyPage({ currentUser, onUserUpdated }) {
             )}
             {(activeTab === "survey" || activeTab === "preferences") && (
               <>
-                {activeTab === "survey" && surveySaveError && (
-                  <S.Banner $error role="alert">{surveySaveError}</S.Banner>
-                )}
                 <SurveyContent
                   key={activeTab}
                   type={activeTab}
@@ -1404,10 +1398,9 @@ function MyPage({ currentUser, onUserUpdated }) {
                           ]),
                         );
                       } catch {
-                        setSurveySaveError("설문을 저장하지 못했어요. 브라우저 저장소 설정을 확인한 뒤 다시 시도해 주세요.");
+                        window.alert("설문을 저장하지 못했어요. 브라우저 저장소 설정을 확인한 뒤 다시 시도해 주세요.");
                         return false;
                       }
-                      setSurveySaveError("");
                       setProfileAnswers(savedAnswers);
                     } else {
                       await saveMyPreferences(savedAnswers);
