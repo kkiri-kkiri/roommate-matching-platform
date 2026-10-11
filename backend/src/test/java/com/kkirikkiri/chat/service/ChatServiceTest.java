@@ -22,6 +22,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -801,6 +802,107 @@ class ChatServiceTest {
         var ownMessage = service.getMessages(8L, 10L, null).content().getFirst();
         assertNull(ownMessage.senderId());
         assertEquals("ME", ownMessage.senderType());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void rejectsSourceRemovedDuringConcurrentCreationRecovery(boolean fromComment) {
+        // given
+        stubUsers();
+        CommunityPost post = post(20L, target);
+        var postLookup = when(communityPostRepository.findByPostIdAndStatus(20L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(post));
+        if (fromComment) {
+            CommunityComment comment = new CommunityComment(post, target, null, "comment");
+            when(communityCommentRepository.findByCommentIdAndStatus(30L, CommunityContentStatus.ACTIVE))
+                    .thenReturn(Optional.of(comment), Optional.empty());
+        } else {
+            postLookup.thenReturn(Optional.empty());
+        }
+        when(chatRoomRepository.save(any())).thenThrow(new DataIntegrityViolationException("duplicate room key"));
+
+        // when / then
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.createOrGetRoom(7L, communityRequest(fromComment)));
+        verify(chatRoomRepository, times(1)).findByRoomKey("COMMUNITY:7:8");
+        verify(chatRoomMemberRepository, never()).saveAll(any());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"7,UNAUTHORIZED", "8,INVALID_REQUEST"})
+    void rejectsParticipantSuspendedDuringConcurrentCreationRecovery(long suspendedId, ErrorCode expected) {
+        // given
+        stubUsers();
+        User suspended = suspendedId == 7 ? user : target;
+        when(chatRoomRepository.save(any())).thenAnswer(invocation -> {
+            suspended.changeStatus(UserStatus.SUSPENDED);
+            throw new DataIntegrityViolationException("duplicate room key");
+        });
+
+        // when / then
+        assertError(expected, () -> service.createOrGetRoom(7L, roommateRequest()));
+        verify(chatRoomRepository, times(1)).findByRoomKey("ROOMMATE:7:8");
+        verify(chatRoomMemberRepository, never()).saveAll(any());
+    }
+
+    @Test
+    void rollsBackRoomCreationAndPropagatesParticipantStorageFailure() {
+        // given
+        stubUsers();
+        stubNewRoomSave();
+        var transaction = new SimpleTransactionStatus();
+        when(transactionManager.getTransaction(any())).thenReturn(transaction);
+        var failure = new DataAccessResourceFailureException("storage unavailable");
+        when(chatRoomMemberRepository.saveAll(any())).thenThrow(failure);
+
+        // when / then
+        assertSame(failure, assertThrows(DataAccessResourceFailureException.class,
+                () -> service.createOrGetRoom(7L, roommateRequest())));
+        verify(transactionManager).rollback(transaction);
+        verify(transactionManager, never()).commit(any());
+        verify(chatRoomRepository, times(1)).findByRoomKey("ROOMMATE:7:8");
+        verifyNoInteractions(chatMessageRepository, userProfileRepository);
+    }
+
+    @Test
+    void preservesAnonymousCommentIdentityInHistoryAndSendingAfterCommentChanges() {
+        // given
+        CommunityPost post = post(20L, user);
+        CommunityComment comment = new CommunityComment(post, target, null, "comment");
+        ReflectionTestUtils.setField(comment, "commentId", 30L);
+        comment.changeAnonymous(true);
+        room = new ChatRoom(7L, 8L, ChatRoomCategory.COMMUNITY, null, comment);
+        ReflectionTestUtils.setField(room, "chatRoomId", 10L);
+        member = new ChatRoomMember(room, user);
+        counterpart = new ChatRoomMember(room, target);
+        comment.changeAnonymous(false);
+        comment.delete();
+        when(chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalse(7L)).thenReturn(List.of(member));
+        stubActiveMember();
+        stubCounterpart();
+        when(chatRoomMemberRepository.findByChatRoom_ChatRoomIdAndUser_UserId(10L, 8L))
+                .thenReturn(Optional.of(counterpart));
+        when(chatMessageRepository.findAllByChatRoom_ChatRoomId(10L, messagePage(0, 50)))
+                .thenReturn(new PageImpl<>(List.of(message(room, target, SENT_AT))));
+        when(chatMessageRepository.save(any())).thenAnswer(invocation -> {
+            ChatMessage saved = invocation.getArgument(0);
+            ReflectionTestUtils.setField(saved, "sentAt", SENT_AT);
+            return saved;
+        });
+
+        // when
+        var listed = service.getRooms(7L, null).getFirst();
+        var history = service.getMessages(7L, 10L, null).content().getFirst();
+        var broadcast = service.sendMessage(8L, 10L, new ChatMessageSendRequest("hello"));
+
+        // then
+        assertEquals(20L, listed.sourcePost());
+        assertEquals(new ChatRoomResponse.CounterpartResponse(null, "익명", null, null, null, null, null, null, List.of()),
+                listed.counterpart());
+        assertNull(history.senderId());
+        assertEquals("OTHER", history.senderType());
+        assertNull(broadcast.senderId());
+        assertEquals("hello", broadcast.text());
+        verifyNoInteractions(userProfileRepository, profileSurveyRepository, roommateMatchRepository);
     }
 
     private ChatRoomCreateRequest postRequest(Long id) {
