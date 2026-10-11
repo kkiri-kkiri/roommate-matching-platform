@@ -87,20 +87,23 @@ public class PasswordResetService {
 	public void resetPassword(PasswordResetConfirmRequest request) {
 		validateRequest(request);
 		PasswordResetToken token = tokenRepository.findByTokenHash(hash(request.resetToken()))
-				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+				.orElseThrow(() -> new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_INVALID));
 		LocalDateTime now = LocalDateTime.now(clock);
-		if (token.isUsed() || token.isExpired(now)) {
-			throw new CustomException(ErrorCode.INVALID_REQUEST);
+		if (token.isUsed()) {
+			throw new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_ALREADY_USED);
+		}
+		if (token.isExpired(now)) {
+			throw new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_EXPIRED);
 		}
 		User user = token.getUser();
 		if (user.getStatus() != UserStatus.ACTIVE) {
-			throw new CustomException(ErrorCode.INVALID_REQUEST);
+			throw new CustomException(ErrorCode.PASSWORD_RESET_ACCOUNT_INACTIVE);
 		}
 		String encodedPassword = passwordEncoder.encode(request.newPassword());
 		// BCrypt 처리 중 만료된 토큰도 거절한다.
 		now = LocalDateTime.now(clock);
 		if (token.isExpired(now)) {
-			throw new CustomException(ErrorCode.INVALID_REQUEST);
+			throw new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_EXPIRED);
 		}
 		user.changePassword(encodedPassword);
 		token.markUsed(now);

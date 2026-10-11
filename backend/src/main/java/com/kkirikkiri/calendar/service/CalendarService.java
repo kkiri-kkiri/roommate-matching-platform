@@ -71,8 +71,8 @@ public class CalendarService {
 		validateEventCategory(category);
 		LocalTime start = parseTime(request.startTime());
 		LocalTime end = parseTime(request.endTime());
-		validateTimeRange(start, end);
 		validateDateRange(request.startDate(), request.endDate());
+		validateTimeRange(start, end, request.startDate(), request.endDate());
 		CalendarEvent event = new CalendarEvent(user, category, request.title(), request.startDate(), request.endDate(),
 				start, end, start == null && end == null, request.description(),
 				CalendarEventSourceType.USER, null, null, null);
@@ -89,10 +89,10 @@ public class CalendarService {
 		validateEventCategory(category);
 		LocalTime start = request.startTime() == null ? event.getStartTime() : parseTime(request.startTime());
 		LocalTime end = request.endTime() == null ? event.getEndTime() : parseTime(request.endTime());
-		validateTimeRange(start, end);
 		LocalDate startDate = request.startDate() == null ? event.getStartDate() : request.startDate();
 		LocalDate endDate = request.endDate() == null ? event.getEndDate() : request.endDate();
 		validateDateRange(startDate, endDate);
+		validateTimeRange(start, end, startDate, endDate);
 		event.update(category, request.title() == null ? event.getTitle() : request.title(),
 				startDate, endDate,
 				start, end, start == null && end == null,
@@ -288,8 +288,8 @@ public class CalendarService {
 		}
 	}
 
-	private void validateTimeRange(LocalTime start, LocalTime end) {
-		if (start != null && end != null && !end.isAfter(start)) {
+	private void validateTimeRange(LocalTime start, LocalTime end, LocalDate startDate, LocalDate endDate) {
+		if (start != null && end != null && startDate.equals(endDate) && !end.isAfter(start)) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
 	}

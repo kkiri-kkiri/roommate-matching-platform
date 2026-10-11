@@ -34,6 +34,7 @@ public record CalendarEventUpdateRequest(
 	@JsonIgnore
 	@AssertTrue(message = "종료시간은 시작시간보다 늦어야 합니다.")
 	public boolean isTimeRangeValid() {
-		return startTime == null || endTime == null || endTime.compareTo(startTime) > 0;
+		return startDate == null || endDate == null || !startDate.equals(endDate)
+				|| startTime == null || endTime == null || endTime.compareTo(startTime) > 0;
 	}
 }

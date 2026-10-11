@@ -674,49 +674,6 @@ export const OutlineButton = styled.button`
   }
 `;
 
-export const VerificationStatus = styled.p`
-  margin: -4px 0 0;
-  padding: 12px 14px;
-  border: 1px solid
-    ${({ $tone }) => {
-      if ($tone === "success") return "#9edbd7";
-      if ($tone === "error") return "#ffb4ab";
-      if ($tone === "info") return "#c7d7ff";
-      return "#e2e2e4";
-    }};
-  border-radius: 12px;
-  background: ${({ $tone }) => {
-    if ($tone === "success") return "#eefaf8";
-    if ($tone === "error") return "#fff1ef";
-    if ($tone === "info") return "#f3f6ff";
-    return "#f9f9f9";
-  }};
-  color: ${({ $tone }) => {
-    if ($tone === "success") return "#005b56";
-    if ($tone === "error") return "#93000a";
-    if ($tone === "info") return "#244485";
-    return "#747781";
-  }};
-  font-size: 13px;
-  line-height: 20px;
-
-  &:empty {
-    display: none;
-  }
-`;
-
-export const SubmitFeedback = styled.p`
-  margin: 0;
-  padding: 14px 16px;
-  border: 1px solid
-    ${({ $tone }) => ($tone === "error" ? "#ffb4ab" : "#9edbd7")};
-  border-radius: 12px;
-  background: ${({ $tone }) => ($tone === "error" ? "#fff1ef" : "#eefaf8")};
-  color: ${({ $tone }) => ($tone === "error" ? "#93000a" : "#005b56")};
-  font-size: 13px;
-  line-height: 20px;
-`;
-
 export const SubmitButton = styled.button`
   width: 100%;
   min-height: 54px;

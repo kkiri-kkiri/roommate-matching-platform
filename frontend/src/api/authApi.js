@@ -30,6 +30,9 @@ export async function login(email, password) {
     const response = await apiClient.post("/auth/login", { email, password });
     return response.data.data;
   } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error("비밀번호가 일치하지 않습니다.");
+    }
     throw new Error(getApiErrorMessage(error, "로그인에 실패했습니다."));
   }
 }
