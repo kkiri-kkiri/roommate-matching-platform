@@ -41,25 +41,30 @@ const LoginPage = ({ onLogin }) => {
     feedback?.tone === "error" &&
     (feedback.reason === "email" || feedback.reason === "credentials");
 
+  const showFeedback = (nextFeedback) => {
+    setFeedback(nextFeedback);
+    window.alert(nextFeedback.text);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (inFlight.current) return;
     const normalizedEmail = `${emailLocalPart.trim()}${SCHOOL_EMAIL_DOMAIN}`;
 
     if (!/^[^@\s]{1,64}@hknu\.ac\.kr$/.test(normalizedEmail)) {
-      setFeedback({
+      showFeedback({
         tone: "error",
         reason: "email",
-        text: "학교 이메일의 @ 앞부분을 입력해 주세요.",
+        text: "학교 이메일을 입력해 주세요.",
       });
       return;
     }
 
-    if (emailChecked && !password) {
-      setFeedback({
+    if (emailChecked && !password.trim()) {
+      showFeedback({
         tone: "error",
         reason: "password",
-        text: "비밀번호를 입력해 주세요.",
+        text: "비밀번호가 일치하지 않습니다.",
       });
       return;
     }
@@ -75,7 +80,7 @@ const LoginPage = ({ onLogin }) => {
         if (result.registered) {
           setEmailChecked(true);
         } else {
-          setFeedback({
+          showFeedback({
             tone: "error",
             reason: "email",
             text: "가입된 이메일을 확인해 주세요.",
@@ -108,7 +113,7 @@ const LoginPage = ({ onLogin }) => {
       });
     } catch (error) {
       if (version !== requestVersion.current) return;
-      setFeedback({
+      showFeedback({
         tone: "error",
         reason: "credentials",
         text: error.message,
@@ -227,16 +232,6 @@ const LoginPage = ({ onLogin }) => {
                   </S.UtilityLinks>
                 )}
               </S.OptionRow>
-
-              {feedback && (
-                <S.Feedback
-                  role={feedback.tone === "error" ? "alert" : "status"}
-                  aria-live={feedback.tone === "error" ? "assertive" : "polite"}
-                  $tone={feedback.tone}
-                >
-                  {feedback.text}
-                </S.Feedback>
-              )}
 
               <S.SubmitButton type="submit" disabled={pending}>
                 {emailChecked ? "로그인" : "다음"}

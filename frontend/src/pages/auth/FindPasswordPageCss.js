@@ -207,8 +207,13 @@ export const InputIcon = styled.span`
 export const Input = styled.input`
   width: 100%;
   min-height: 52px;
-  padding: 14px 16px 14px 48px;
-  border: 1px solid #e2e2e4;
+  padding: 14px ${({ $hasAction }) => ($hasAction ? "76px" : "16px")} 14px 48px;
+  border: 1px solid
+    ${({ $tone }) => {
+      if ($tone === "success") return "#72c8c1";
+      if ($tone === "error") return "#e07a70";
+      return "#e2e2e4";
+    }};
   border-radius: 12px;
   background: #ffffff;
   color: #1a1c1c;
@@ -234,10 +239,54 @@ export const Input = styled.input`
   }
 
   &[aria-invalid="true"] {
-    border-color: #ba1a1a;
+    border-color: #e07a70;
   }
 
   ${reduceMotion}
+`;
+
+export const PasswordField = styled.div`
+  position: relative;
+`;
+
+export const VisibilityButton = styled.button`
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  min-width: 48px;
+  padding: 8px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #3478f6;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+  cursor: pointer;
+  transform: translateY(-50%);
+
+  &:hover {
+    background: #f3f6ff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #00a79f;
+    outline-offset: 1px;
+  }
+`;
+
+export const FieldFeedback = styled.p`
+  min-height: 18px;
+  margin: 0;
+  color: ${({ $tone }) => {
+    if ($tone === "success") return "#007c76";
+    if ($tone === "error") return "#ba1a1a";
+    return "#8e8e93";
+  }};
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
 `;
 
 export const EmailInput = styled(Input)`
@@ -348,55 +397,13 @@ export const DemoBadge = styled.span`
   letter-spacing: 0.04em;
 `;
 
-export const ResultPanel = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  margin-top: 24px;
-  padding: 20px;
-  border: 1px solid
-    ${({ $tone }) => ($tone === "success" ? "#b8e4df" : "#f0cfcb")};
-  border-radius: 16px;
-  background: ${({ $tone }) => ($tone === "success" ? "#f1fbfa" : "#fff7f5")};
-
-  @media (max-width: 480px) {
-    gap: 12px;
-    padding: 18px 16px;
-  }
-`;
-
-export const ResultIcon = styled.span`
-  display: grid;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-  place-items: center;
-  border-radius: 50%;
-  background: ${({ $tone }) => ($tone === "success" ? "#d8f4f1" : "#ffdad6")};
-  color: ${({ $tone }) => ($tone === "success" ? "#006a65" : "#ba1a1a")};
-
-  svg {
-    width: 21px;
-    height: 21px;
-  }
-`;
-
 export const ResultContent = styled.div`
-  min-width: 0;
-  flex: 1;
-`;
-
-export const ResultTitle = styled.h3`
-  margin: 1px 0 5px;
-  color: #1a1c1c;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 23px;
+  margin-top: 24px;
 `;
 
 export const ResultDescription = styled.p`
-  margin: 0;
-  color: #656872;
+  margin: 0 0 8px;
+  color: #ba1a1a;
   font-size: 13px;
   line-height: 20px;
 `;
@@ -508,22 +515,6 @@ export const VerifiedBadge = styled.div`
   svg {
     width: 16px;
     height: 16px;
-  }
-`;
-
-export const ErrorMessage = styled.p`
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin: -4px 0 0;
-  color: #ba1a1a;
-  font-size: 13px;
-  line-height: 20px;
-
-  svg {
-    width: 16px;
-    height: 16px;
-    flex: 0 0 auto;
   }
 `;
 

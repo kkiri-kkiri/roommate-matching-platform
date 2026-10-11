@@ -720,26 +720,6 @@ export const EmptyIcon = styled.div`
   background: #e6f7f3;
   color: #006a65;
 `;
-export const Status = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding: 12px 16px;
-  border: 1px solid #bce5da;
-  border-radius: 12px;
-  background: #e6f7f3;
-  color: #006a65;
-  font-size: 14px;
-  line-height: 22px;
-  overflow-wrap: anywhere;
-  &:empty {
-    margin: 0;
-    padding: 0;
-    border: 0;
-  }
-`;
 export const Dialog = styled.dialog`
   width: min(560px, calc(100vw - 32px));
   max-width: 560px;

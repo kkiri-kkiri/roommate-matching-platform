@@ -8,6 +8,10 @@ import {
   signup,
   verifyEmailVerification,
 } from "../../api/authApi";
+import {
+  meetsPasswordRequirements,
+  PASSWORD_REQUIREMENTS_MESSAGE,
+} from "../../utils/passwordValidation";
 import * as S from "./SignupPageCss";
 
 const MBTI_DIMENSIONS = [
@@ -76,8 +80,6 @@ const SignupPage = () => {
   const [isSendingVerification, setIsSendingVerification] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [verificationToken, setVerificationToken] = useState("");
-  const [verificationFeedback, setVerificationFeedback] = useState(null);
-  const [submitFeedback, setSubmitFeedback] = useState(null);
   const [availability, setAvailability] = useState(null);
   const [availabilityError, setAvailabilityError] = useState(false);
   const [nicknameCheck, setNicknameCheck] = useState(null);
@@ -85,7 +87,7 @@ const SignupPage = () => {
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
   const navigate = useNavigate();
 
-  const passwordIsLongEnough = form.password.length >= 8;
+  const passwordMeetsRequirements = meetsPasswordRequirements(form.password);
   const passwordMatches =
     form.passwordConfirm.length > 0 && form.password === form.passwordConfirm;
   const selectedFaculty = findFaculty(form.faculty);
@@ -149,7 +151,6 @@ const SignupPage = () => {
       setNicknameCheck(null);
       setNicknameCheckError("");
     }
-    setSubmitFeedback(null);
   };
 
   const handleInputChange = (event) => {
@@ -171,7 +172,6 @@ const SignupPage = () => {
       setVerificationSent(false);
       setIsVerified(false);
       setVerificationToken("");
-      setVerificationFeedback(null);
     }
   };
 
@@ -197,7 +197,6 @@ const SignupPage = () => {
       setVerificationSent(true);
       setIsVerified(false);
       setVerificationToken("");
-      setVerificationFeedback(null);
       window.alert("인증번호가 전송되었습니다.");
     } catch (error) {
       if (error.message.includes("인증번호는 잠시 후 다시 요청해 주세요")) {
@@ -208,10 +207,7 @@ const SignupPage = () => {
         window.alert(error.message);
         return;
       }
-      setVerificationFeedback({
-        tone: "error",
-        text: error.message || "학교 이메일 중복 확인에 실패했습니다.",
-      });
+      window.alert(error.message || "학교 이메일 중복 확인에 실패했습니다.");
     } finally {
       setIsSendingVerification(false);
     }
@@ -219,7 +215,6 @@ const SignupPage = () => {
 
   const handleVerifyCode = async () => {
     if (!/^\d{6}$/.test(verificationCode)) {
-      setVerificationFeedback(null);
       window.alert("인증번호는 숫자 6자리로 입력해 주세요.");
       return;
     }
@@ -231,11 +226,8 @@ const SignupPage = () => {
       );
       setVerificationToken(token);
       setIsVerified(true);
-      setVerificationFeedback(null);
-      setSubmitFeedback(null);
       window.alert("재학생 인증이 완료되었습니다.");
     } catch (error) {
-      setVerificationFeedback(null);
       window.alert(error.message);
     }
   };
@@ -281,56 +273,37 @@ const SignupPage = () => {
     ];
 
     if (requiredValues.some((value) => !value.trim())) {
-      setSubmitFeedback(null);
       window.alert("모든 항목을 작성해주세요.");
       return;
     }
 
     if (nicknameCheck?.nickname !== form.nickname.trim()) {
-      setSubmitFeedback({
-        tone: "error",
-        text: "닉네임 중복 확인을 완료해 주세요.",
-      });
+      window.alert("닉네임 중복 확인을 완료해 주세요.");
       return;
     }
 
     if (!nicknameCheck.available) {
-      setSubmitFeedback({
-        tone: "error",
-        text: "이미 사용 중인 닉네임이에요. 다른 닉네임을 입력해 주세요.",
-      });
+      window.alert("이미 사용 중인 닉네임이에요. 다른 닉네임을 입력해 주세요.");
       return;
     }
 
-    if (!passwordIsLongEnough || !passwordMatches) {
-      setSubmitFeedback({
-        tone: "error",
-        text: "비밀번호 조건과 비밀번호 확인을 다시 확인해 주세요.",
-      });
+    if (!passwordMeetsRequirements || !passwordMatches) {
+      window.alert("비밀번호 조건과 비밀번호 확인을 다시 확인해 주세요.");
       return;
     }
 
     if (!SCHOOL_EMAIL_ID_PATTERN.test(form.schoolEmailId.trim())) {
-      setSubmitFeedback({
-        tone: "error",
-        text: "학교 이메일 형식을 다시 확인해 주세요.",
-      });
+      window.alert("학교 이메일 형식을 다시 확인해 주세요.");
       return;
     }
 
     if (!isVerified) {
-      setSubmitFeedback({
-        tone: "error",
-        text: "학교 이메일 재학생 인증을 완료해 주세요.",
-      });
+      window.alert("학교 이메일 재학생 인증을 완료해 주세요.");
       return;
     }
 
     if (MBTI_DIMENSIONS.some((dimension) => !form[dimension.id])) {
-      setSubmitFeedback({
-        tone: "error",
-        text: "MBTI 네 가지 기준을 모두 선택해 주세요.",
-      });
+      window.alert("MBTI 네 가지 기준을 모두 선택해 주세요.");
       return;
     }
 
@@ -339,26 +312,17 @@ const SignupPage = () => {
       (selectedFaculty.majors.length > 0 &&
         !selectedFaculty.majors.includes(form.major))
     ) {
-      setSubmitFeedback({
-        tone: "error",
-        text: "학부와 전공을 다시 확인해 주세요.",
-      });
+      window.alert("학부와 전공을 다시 확인해 주세요.");
       return;
     }
 
     if (!birthYearIsValid) {
-      setSubmitFeedback({
-        tone: "error",
-        text: `출생연도는 1900년부터 ${currentYear}년 사이의 네 자리 숫자로 입력해 주세요.`,
-      });
+      window.alert(`출생연도는 1900년부터 ${currentYear}년 사이의 네 자리 숫자로 입력해 주세요.`);
       return;
     }
 
     if (!studentIdIsValid) {
-      setSubmitFeedback({
-        tone: "error",
-        text: "학번은 숫자 두 자리로 입력해 주세요.",
-      });
+      window.alert("학번은 숫자 두 자리로 입력해 주세요.");
       return;
     }
 
@@ -381,13 +345,10 @@ const SignupPage = () => {
         mbtiDecision: form.mbtiDecision,
         mbtiLifestyle: form.mbtiLifestyle,
       });
-      setSubmitFeedback({
-        tone: "success",
-        text: "회원가입이 완료되었습니다. 로그인해 주세요.",
-      });
+      window.alert("회원가입이 완료되었습니다. 로그인해 주세요.");
       navigate("/login");
     } catch (error) {
-      setSubmitFeedback({ tone: "error", text: error.message });
+      window.alert(error.message);
     }
   };
 
@@ -543,7 +504,6 @@ const SignupPage = () => {
                       setVerificationCode(
                         event.target.value.replace(/\D/g, "").slice(0, 6),
                       );
-                      setVerificationFeedback(null);
                     }}
                     placeholder="숫자 6자리"
                     autoComplete="one-time-code"
@@ -580,20 +540,6 @@ const SignupPage = () => {
               </S.FieldGroup>
             )}
 
-            {verificationFeedback && (
-              <S.VerificationStatus
-                id="verification-status"
-                role={
-                  verificationFeedback.tone === "error" ? "alert" : "status"
-                }
-                aria-live={
-                  verificationFeedback.tone === "error" ? "assertive" : "polite"
-                }
-                $tone={verificationFeedback.tone}
-              >
-                {verificationFeedback.text}
-              </S.VerificationStatus>
-            )}
           </S.FormSection>
 
           <S.Divider />
@@ -621,12 +567,12 @@ const SignupPage = () => {
                     required
                     aria-describedby="password-guide"
                     aria-invalid={Boolean(
-                      form.password && !passwordIsLongEnough,
+                      form.password && !passwordMeetsRequirements,
                     )}
                     $hasAction
                     $tone={
                       form.password
-                        ? passwordIsLongEnough
+                        ? passwordMeetsRequirements
                           ? "success"
                           : "error"
                         : "neutral"
@@ -648,17 +594,17 @@ const SignupPage = () => {
                   aria-live="polite"
                   $tone={
                     form.password
-                      ? passwordIsLongEnough
+                      ? passwordMeetsRequirements
                         ? "success"
                         : "error"
                       : "neutral"
                   }
                 >
                   {form.password
-                    ? passwordIsLongEnough
+                    ? passwordMeetsRequirements
                       ? "사용할 수 있는 비밀번호예요."
-                      : "8자 이상 입력해 주세요."
-                    : "8자 이상 입력해 주세요."}
+                      : PASSWORD_REQUIREMENTS_MESSAGE
+                    : PASSWORD_REQUIREMENTS_MESSAGE}
                 </S.FieldFeedback>
               </S.FieldGroup>
 
@@ -996,18 +942,6 @@ const SignupPage = () => {
               </S.MbtiLayout>
             </S.MbtiFieldset>
           </S.FormSection>
-
-          {submitFeedback && (
-            <S.SubmitFeedback
-              role={submitFeedback.tone === "error" ? "alert" : "status"}
-              aria-live={
-                submitFeedback.tone === "error" ? "assertive" : "polite"
-              }
-              $tone={submitFeedback.tone}
-            >
-              {submitFeedback.text}
-            </S.SubmitFeedback>
-          )}
 
           <S.SubmitButton type="submit">회원가입</S.SubmitButton>
         </S.Form>

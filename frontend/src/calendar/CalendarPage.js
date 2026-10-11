@@ -9,10 +9,12 @@ import {
 } from "lucide-react";
 
 import * as S from "./CalendarPageCss";
-import { dateKey, FIXED_CATEGORY_IDS, useCalendarData } from "./CalendarDataContext";
-import { calendarEventDates, eventTimeLabel, nextDate, overlaps } from "./calendarDates";
+import { dateKey, useCalendarData } from "./CalendarDataContext";
+import CategorySettingsForm from "./CategorySettingsForm";
+import { CALENDAR_TIME_OPTIONS, calendarEventDates, defaultEventTimes, eventTimeLabel, formatTimeLabel, nextDate, normalizeEventTimes, overlaps } from "./calendarDates";
 
 const CALENDAR_PLUGINS = [dayGridPlugin, interactionPlugin];
+const CALENDAR_TIME_FORMAT = ({ date }) => formatTimeLabel(`${date.hour}:${date.minute}`);
 
 function colorStyle(color) {
   const channels = [1, 3, 5].map((offset) => parseInt(color.slice(offset, offset + 2), 16));
@@ -37,18 +39,33 @@ function monthTitle(value) {
   return localDate(`${value}-01`).toLocaleDateString("ko-KR", { year: "numeric", month: "long" });
 }
 
+function isValidCalendarDate(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && value >= "1900-01-01" &&
+    value <= "2100-12-31" && dateKey(localDate(value)) === value;
+}
+
 function validateDraft(draft, categoryIds) {
   const errors = {};
   if (!draft.title.trim()) errors.title = "일정 제목을 입력해 주세요.";
   else if (draft.title.trim().length > 80) errors.title = "제목은 80자 이내로 입력해 주세요.";
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.date) || draft.date < "1900-01-01" ||
-      draft.date > "2100-12-31" || dateKey(localDate(draft.date)) !== draft.date) {
-    errors.date = "1900년부터 2100년 사이의 올바른 날짜를 선택해 주세요.";
+  if (!isValidCalendarDate(draft.date)) {
+    errors.date = "1900년부터 2100년 사이의 올바른 시작일을 선택해 주세요.";
   }
-  const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
-  if (!timePattern.test(draft.startTime)) errors.startTime = "시작 시간을 선택해 주세요.";
-  if (!timePattern.test(draft.endTime)) errors.endTime = "종료 시간을 선택해 주세요.";
-  else if (!errors.startTime && draft.endTime <= draft.startTime) errors.endTime = "종료 시간은 시작 시간보다 늦어야 해요.";
+  if (!isValidCalendarDate(draft.endDate)) {
+    errors.endDate = "1900년부터 2100년 사이의 올바른 종료일을 선택해 주세요.";
+  } else if (!errors.date && draft.endDate < draft.date) {
+    errors.endDate = "종료일은 시작일과 같거나 늦어야 해요.";
+  }
+  if (!CALENDAR_TIME_OPTIONS.includes(draft.startTime)) errors.startTime = "시작 시간을 15분 단위로 선택해 주세요.";
+  if (!CALENDAR_TIME_OPTIONS.includes(draft.endTime)) errors.endTime = "종료 시간을 15분 단위로 선택해 주세요.";
+  if (!errors.date && !errors.endDate && !errors.startTime && !errors.endTime) {
+    const normalized = normalizeEventTimes(draft);
+    if (!isValidCalendarDate(normalized.date)) errors.startTime = "24:00은 다음 날 00:00이에요. 시작일을 앞당겨 주세요.";
+    if (!isValidCalendarDate(normalized.endDate)) errors.endTime = "24:00은 다음 날 00:00이에요. 종료일을 앞당겨 주세요.";
+    else if (`${normalized.endDate}T${normalized.endTime}` <= `${normalized.date}T${normalized.startTime}`) {
+      errors.endTime = "종료 시간은 시작 시간보다 늦어야 해요.";
+    }
+  }
   if (!categoryIds.includes(draft.category)) errors.category = "일정 분류를 선택해 주세요.";
   if (draft.description.length > 2000) errors.description = "내용은 2,000자 이내로 입력해 주세요.";
   return errors;
@@ -97,8 +114,6 @@ function CalendarPage() {
   const savingRef = useRef(false);
   const categoryIds = categorySettings.map(({ id }) => id);
   const categoryLabels = Object.fromEntries(categorySettings.map(({ id, label }) => [id, label]));
-  const [settingsDraft, setSettingsDraft] = useState([]);
-  const [settingsError, setSettingsError] = useState("");
   const [selectedDate, setSelectedDate] = useState(() => dateKey(initialDate));
   const [visibleMonth, setVisibleMonth] = useState(() => dateKey(initialDate).slice(0, 7));
   const visibleWeekCount = useMemo(() => {
@@ -125,11 +140,9 @@ function CalendarPage() {
   const [dialog, setDialog] = useState(null);
   const [draft, setDraft] = useState(null);
   const [errors, setErrors] = useState({});
-  const [status, setStatus] = useState("");
   const calendarRef = useRef(null);
   const addButtonRef = useRef(null);
   const dialogTriggerRef = useRef(null);
-  const eventSequence = useRef(0);
 
   const filteredEvents = useMemo(() => events
     .filter((event) => categories.includes(event.category))
@@ -202,14 +215,12 @@ function CalendarPage() {
   const openCreate = (date = selectedDate) => {
     if (!authenticated) { window.alert("로그인 후 일정을 등록할 수 있어요."); return; }
     dialogTriggerRef.current = document.activeElement;
-    setDraft({ title: "", date, startTime: "", endTime: "", category: "", description: "" });
+    setDraft({ title: "", date, ...defaultEventTimes(date), category: "", description: "" });
     setErrors({});
-    setStatus("");
     setDialog({ mode: "create" });
   };
 
   const openDetail = (eventId) => {
-    setStatus("");
     dialogTriggerRef.current = document.activeElement;
     setErrors({});
     setDialog({ mode: "detail", eventId });
@@ -217,7 +228,7 @@ function CalendarPage() {
 
   const openEdit = () => {
     if (savingRef.current || activeEvent.editable === false) return;
-    setDraft({ ...activeEvent });
+    setDraft({ ...activeEvent, endDate: activeEvent.endDate || activeEvent.date });
     setErrors({});
     setDialog({ mode: "edit", eventId: activeEvent.id });
   };
@@ -225,38 +236,22 @@ function CalendarPage() {
   const openCategorySettings = () => {
     if (!authenticated) { window.alert("로그인 후 카테고리를 설정할 수 있어요."); return; }
     dialogTriggerRef.current = document.activeElement;
-    setSettingsDraft(categorySettings.map((item) => ({ ...item })));
-    setSettingsError("");
     setDialog({ mode: "categories" });
-  };
-
-  const updateCategory = (id, field, value) => {
-    if (field === "label" && FIXED_CATEGORY_IDS.includes(id)) return;
-    setSettingsDraft((current) => current.map((item) => item.id === id ? { ...item, [field]: value } : item));
-    setSettingsError("");
-  };
-
-  const saveCategorySettings = async (event) => {
-    event.preventDefault();
-    if (savingRef.current) return;
-    const next = settingsDraft.map((item) => ({ ...item, label: item.label.trim() }));
-    if (next.some(({ label }) => !label || label.length > 30) || new Set(next.map(({ label }) => label)).size !== next.length) {
-      setSettingsError("카테고리 이름은 중복 없이 1~30자로 입력해 주세요.");
-      return;
-    }
-    savingRef.current = true; setSaving(true); setSettingsError("");
-    try {
-      await saveCategories(next);
-      savingRef.current = false;
-      closeDialog();
-    } catch (error) { setSettingsDraft(next); setSettingsError(error.message); }
-    finally { savingRef.current = false; setSaving(false); }
   };
 
   const updateDraft = (event) => {
     const { name, value } = event.target;
-    setDraft((current) => ({ ...current, [name]: value }));
-    setErrors((current) => ({ ...current, [name]: undefined, ...(name === "startTime" ? { endTime: undefined } : {}) }));
+    setDraft((current) => ({
+      ...current,
+      [name]: value,
+      ...(name === "date" && current.endDate < value ? { endDate: value } : {}),
+    }));
+    setErrors((current) => ({
+      ...current,
+      [name]: undefined,
+      ...(name === "date" ? { endDate: undefined, endTime: undefined } : {}),
+      ...(name === "endDate" || name === "startTime" ? { endTime: undefined } : {}),
+    }));
   };
 
   const saveEvent = async (event) => {
@@ -271,14 +266,13 @@ function CalendarPage() {
     const isEditing = dialog.mode === "edit";
     savingRef.current = true; setSaving(true);
     try {
-      const savedEvent = await persistEvent({ ...draft, endDate: draft.date }, isEditing ? dialog.eventId : undefined);
+      const savedEvent = await persistEvent(draft, isEditing ? dialog.eventId : undefined);
       setCategories((current) => current.includes(savedEvent.category) ? current : [...current, savedEvent.category]);
       selectDate(savedEvent.date);
       savingRef.current = false;
       closeDialog();
-      if (isEditing) setStatus("일정을 수정했어요.");
-      else window.alert("일정을 등록했어요.");
-    } catch (error) { setErrors({ submit: error.message }); }
+      window.alert(isEditing ? "일정을 수정했어요." : "일정을 등록했어요.");
+    } catch (error) { window.alert(error.message); }
     finally { savingRef.current = false; setSaving(false); }
   };
 
@@ -288,8 +282,9 @@ function CalendarPage() {
     try {
       await removeEvent(activeEvent.id);
       savingRef.current = false;
-      closeDialog(); setStatus("일정을 삭제했어요.");
-    } catch (error) { setErrors({ submit: error.message }); }
+      closeDialog();
+      window.alert("일정을 삭제했어요.");
+    } catch (error) { window.alert(error.message); }
     finally { savingRef.current = false; setSaving(false); }
   };
 
@@ -305,7 +300,6 @@ function CalendarPage() {
   return (
     <S.Page id="campus-calendar" style={categoryVariables}>
       <S.Content>
-        <S.Status role="status" aria-live="polite" aria-atomic="true">{status}</S.Status>
         {error && <div role="alert">{error} <S.SecondaryButton type="button" onClick={retry}>다시 시도</S.SecondaryButton></div>}
 
         <S.Workspace>
@@ -367,7 +361,7 @@ function CalendarPage() {
                 eventInteractive={false}
                 dayMaxEvents={2}
                 displayEventTime
-                eventTimeFormat={{ hour: "2-digit", minute: "2-digit", hour12: false }}
+                eventTimeFormat={CALENDAR_TIME_FORMAT}
                 dayHeaderFormat={{ weekday: "short" }}
                 datesSet={handleDatesSet}
                 dateClick={({ dateStr }) => selectDate(dateStr)}
@@ -446,78 +440,47 @@ function CalendarPage() {
         {dialog?.mode === "categories" && (
           <CalendarDialog key="categories" title="카테고리 설정" onDismiss={closeDialog}
             description="학교 일정과 기숙사 일정은 고정 카테고리예요. 색상은 자유롭게 변경할 수 있어요.">
-            <S.Form onSubmit={saveCategorySettings}>
-              <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
-              <S.SettingsList>
-                {settingsDraft.map(({ id, label, color }) => {
-                  const fixed = FIXED_CATEGORY_IDS.includes(id);
-                  const inUse = events.some((event) => event.category === id);
-                  return (
-                    <S.SettingsRow key={id}>
-                      <S.Field>
-                        <label htmlFor={`category-name-${id}`}>카테고리 이름 {fixed && <span>· 고정</span>}</label>
-                        <S.Input id={`category-name-${id}`} value={label} readOnly={fixed} required maxLength={30}
-                          onChange={(event) => updateCategory(id, "label", event.target.value)} />
-                        {!fixed && inUse && <S.FormHint>사용 중인 카테고리는 삭제할 수 없어요.</S.FormHint>}
-                      </S.Field>
-                      <S.Field>
-                        <label htmlFor={`category-color-${id}`}>색상</label>
-                        <S.ColorPicker id={`category-color-${id}`} type="color" value={color}
-                          aria-label={`${label || "새 카테고리"} 색상 설정`}
-                          onChange={(event) => updateCategory(id, "color", event.target.value)} />
-                      </S.Field>
-                      {!fixed && <S.IconButton type="button" aria-label={`${label || "새 카테고리"} 삭제`} disabled={inUse}
-                        onClick={() => {
-                          if (FIXED_CATEGORY_IDS.includes(id) || events.some((event) => event.category === id)) return;
-                          setSettingsDraft((current) => current.filter((item) => item.id !== id));
-                          setSettingsError("");
-                        }}><Trash2 size={18} aria-hidden="true" /></S.IconButton>}
-                    </S.SettingsRow>
-                  );
-                })}
-              </S.SettingsList>
-              <S.GhostButton type="button" onClick={() => {
-                setSettingsDraft((current) => [...current, {
-                  id: `custom-${Date.now()}-${eventSequence.current++}`, label: "", color: "#006a65",
-                }]);
-                setSettingsError("");
-              }}><Plus size={18} aria-hidden="true" /> 카테고리 추가</S.GhostButton>
-              {settingsError && <S.FieldError role="alert">{settingsError}</S.FieldError>}
-              <S.DialogActions>
-                <S.GhostButton type="button" onClick={closeDialog}>취소</S.GhostButton>
-                <S.PrimaryButton type="submit">설정 저장</S.PrimaryButton>
-              </S.DialogActions>
-              </fieldset>
-            </S.Form>
+            <CategorySettingsForm initialCategories={categorySettings} events={events}
+              onSave={saveCategories} onDismiss={closeDialog} savingRef={savingRef} />
           </CalendarDialog>
         )}
 
         {isFormOpen && draft && (
           <CalendarDialog key={dialog.mode} title={dialog.mode === "edit" ? "일정 수정" : "새 일정 등록"}
-            description="기억하고 싶은 일정을 차근차근 채워 주세요." onDismiss={closeDialog}>
+            onDismiss={closeDialog}>
             <S.Form onSubmit={saveEvent} noValidate>
               <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
               {fieldError("submit")}
-              <S.FormHint>* 표시는 필수 입력 항목이에요.</S.FormHint>
               <S.FormGrid>
                 <S.Field $wide>
                   <label htmlFor="calendar-title">일정 제목 *</label>
                   <S.Input {...fieldProps("title")} required maxLength={80} placeholder="어떤 일정인가요?" />
                   {fieldError("title")}
                 </S.Field>
-                <S.Field $wide>
-                  <label htmlFor="calendar-date">날짜 *</label>
+                <S.Field>
+                  <label htmlFor="calendar-date">시작일 *</label>
                   <S.Input {...fieldProps("date")} type="date" required min="1900-01-01" max="2100-12-31" />
                   {fieldError("date")}
                 </S.Field>
                 <S.Field>
+                  <label htmlFor="calendar-endDate">종료일 *</label>
+                  <S.Input {...fieldProps("endDate")} type="date" required min={draft.date || "1900-01-01"} max="2100-12-31" />
+                  {fieldError("endDate")}
+                </S.Field>
+                <S.Field>
                   <label htmlFor="calendar-startTime">시작 시간 *</label>
-                  <S.Input {...fieldProps("startTime")} type="time" required />
+                  <S.Select {...fieldProps("startTime")} required>
+                    <option value="">시작 시간을 선택해 주세요</option>
+                    {CALENDAR_TIME_OPTIONS.map((time) => <option key={time} value={time}>{formatTimeLabel(time)}</option>)}
+                  </S.Select>
                   {fieldError("startTime")}
                 </S.Field>
                 <S.Field>
                   <label htmlFor="calendar-endTime">종료 시간 *</label>
-                  <S.Input {...fieldProps("endTime")} type="time" required />
+                  <S.Select {...fieldProps("endTime")} required>
+                    <option value="">종료 시간을 선택해 주세요</option>
+                    {CALENDAR_TIME_OPTIONS.map((time) => <option key={time} value={time}>{formatTimeLabel(time)}</option>)}
+                  </S.Select>
                   {fieldError("endTime")}
                 </S.Field>
                 <S.Field $wide>
@@ -527,10 +490,6 @@ function CalendarPage() {
                     {categorySettings.filter((item) => !item.fixed).map(({ id, label }) => <option key={id} value={id}>{label}</option>)}
                   </S.Select>
                   {fieldError("category")}
-                  {draft.category && <S.CategoryPreview>
-                    <S.CategoryBadge $category={draft.category}><S.ColorDot $category={draft.category} aria-hidden="true" />{categoryLabels[draft.category]}</S.CategoryBadge>
-                    <span>이 분류의 색상으로 표시돼요.</span>
-                  </S.CategoryPreview>}
                 </S.Field>
                 <S.Field $wide>
                   <label htmlFor="calendar-description">일정 내용 <span>(선택)</span></label>
