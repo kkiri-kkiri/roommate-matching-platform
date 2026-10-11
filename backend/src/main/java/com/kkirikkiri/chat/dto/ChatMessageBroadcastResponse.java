@@ -15,7 +15,8 @@ public record ChatMessageBroadcastResponse(
 
 	public static ChatMessageBroadcastResponse from(ChatMessage message, boolean read) {
 		return new ChatMessageBroadcastResponse(message.getMessageId(),
-				message.getChatRoom().getChatRoomId(), message.getSender().getUserId(),
+				message.getChatRoom().getChatRoomId(), message.getChatRoom().isAnonymousAuthor(message.getSender().getUserId())
+						? null : message.getSender().getUserId(),
 				message.getContent(), message.getSentAt(), read);
 	}
 }

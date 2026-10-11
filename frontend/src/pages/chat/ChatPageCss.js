@@ -541,12 +541,6 @@ export const ProfileDetails = styled.dl`
   dt { color: #747781; font-size: 12px; }
   dd { margin: 0; color: #30343d; font-size: 13px; overflow-wrap: anywhere; }
 `;
-export const ProfileTags = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  span { padding: 5px 10px; border-radius: 999px; background: #e7f8f6; color: #006a65; font-size: 12px; }
-`;
 export const DialogActions = styled.div`display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin-top: 16px;`;
 export const DangerButton = styled.button`${button} background: #ba1a1a; color: white; &:hover { background: #93000a; }`;
 export const ScreenReaderOnly = styled.span`

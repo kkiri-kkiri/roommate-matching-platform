@@ -3,9 +3,11 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { useChat } from "./useChat";
 import * as api from "../../api/chatApi";
 import { createChatSocket } from "../../api/chatSocket";
+import { getCommunityPost } from "../../api/communityApi";
 
 jest.mock("../../api/chatApi");
 jest.mock("../../api/chatSocket");
+jest.mock("../../api/communityApi");
 const room = (id) => ({ id, category: "ROOMMATE", counterpart: {
   id: id + 10, nickname: "이웃" + id, tags: ["비흡연"], matchScore: 85,
 }, unreadCount: 2, pinned: false, muted: false, lastMessage: null });
@@ -17,11 +19,11 @@ let receive;
 let socket;
 let setStatus;
 let onCreated;
-function useHarness({ selected = "1", searchQuery = "", state = null } = {}) {
+function useHarness({ selected = "1", searchQuery = "", state = null, locationKey = "initial" } = {}) {
   const [rooms, setRooms] = useState([]);
   const chat = useChat({ isAuthenticated: true, rooms, setRooms,
     activeRoom: rooms.find((item) => item.id === selected), searchQuery,
-    location: { state }, setStatus, onCreated });
+    location: { state, key: locationKey }, setStatus, onCreated });
   return { ...chat, rooms };
 }
 beforeEach(() => {
@@ -33,6 +35,7 @@ beforeEach(() => {
   api.markChatRoomRead.mockResolvedValue();
   api.updateChatRoomSettings.mockResolvedValue();
   api.leaveChatRoom.mockResolvedValue();
+  getCommunityPost.mockImplementation((id) => Promise.resolve({ id, title: `post ${id}` }));
   socket = { connect: jest.fn(), disconnect: jest.fn(),
     subscribe: jest.fn((id, cb) => { receive = cb; return jest.fn(); }), publish: jest.fn() };
   createChatSocket.mockImplementation((options) => { callbacks = options; return socket; });
@@ -123,4 +126,50 @@ test("searches the server without replacing the room history", async () => {
   await waitFor(() => expect(result.current.searchResults).toHaveLength(1));
   expect(api.getChatMessages).toHaveBeenLastCalledWith("1", { page: 0, size: 50, q: "청소" });
   expect(result.current.rooms[0].messages[0].id).toBe(1);
+});
+
+test("reentering regular posts updates the source and preserves loaded messages despite a stale room list", async () => {
+  let resolveList;
+  api.getChatRooms.mockImplementationOnce(() => new Promise((resolve) => { resolveList = resolve; }));
+  api.getChatMessages.mockResolvedValue({ content: [{ ...message(1), senderType: "OTHER" }] });
+  api.createChatRoom.mockImplementation(({ sourcePostId }) => Promise.resolve({
+    ...room(1), category: "COMMUNITY", sourcePost: sourcePostId,
+  }));
+  const stateFor = (id) => ({ communityChat: { recipientId: 11, sourcePost: { id, from: "게시글" } } });
+  const { result, rerender } = renderHook(useHarness, { initialProps: { state: stateFor(31) } });
+  await waitFor(() => expect(result.current.rooms[0]?.messages).toHaveLength(1));
+  rerender({ state: stateFor(32) });
+  await waitFor(() => expect(result.current.sourcePost.title).toBe("post 32"));
+  await act(async () => resolveList([{ ...room(1), category: "COMMUNITY", sourcePost: 31 }]));
+  expect(result.current.rooms).toHaveLength(1);
+  expect(result.current.rooms[0].sourcePost).toBe(32);
+  expect(result.current.rooms[0].messages[0].id).toBe(1);
+  rerender({ state: stateFor(31) });
+  await waitFor(() => expect(result.current.sourcePost.title).toBe("post 31"));
+  expect(result.current.rooms[0].messages).toHaveLength(1);
+  expect(api.createChatRoom).toHaveBeenCalledTimes(3);
+});
+
+test("opening a room refreshes its latest source without creating a room or clearing history", async () => {
+  api.getChatRooms.mockResolvedValue([{ ...room(1), category: "COMMUNITY", sourcePost: 31 }]);
+  api.getChatMessages.mockResolvedValue({ content: [{ ...message(1), senderType: "OTHER" }] });
+  const { result, rerender } = renderHook(useHarness);
+  await waitFor(() => expect(result.current.rooms[0]?.messages).toHaveLength(1));
+  api.getChatRooms.mockResolvedValue([{ ...room(1), category: "COMMUNITY", sourcePost: 32 }]);
+  rerender({ locationKey: "reopen" });
+  await waitFor(() => expect(result.current.sourcePost.title).toBe("post 32"));
+  expect(result.current.rooms[0].messages).toHaveLength(1);
+  expect(api.createChatRoom).not.toHaveBeenCalled();
+});
+
+test.each([true, false])("anonymous broadcasts keep sender direction for viewerIsAuthor=%s", async (viewerIsAuthor) => {
+  api.getChatRooms.mockResolvedValue([{ ...room(1), category: "COMMUNITY", sourcePost: 31,
+    counterpart: viewerIsAuthor ? room(1).counterpart : { id: null, nickname: "익명", tags: [] },
+  }]);
+  const { result } = renderHook(useHarness);
+  await waitFor(() => expect(socket.subscribe).toHaveBeenCalled());
+  await act(async () => receive({ ...message(1), senderId: null }));
+  await act(async () => receive({ ...message(2), senderId: 11 }));
+  expect(result.current.rooms[0].messages.map((item) => item.sender))
+    .toEqual(viewerIsAuthor ? ["me", "other"] : ["other", "me"]);
 });

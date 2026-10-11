@@ -127,8 +127,9 @@ class ChatServiceTest {
         when(transactionManager.getTransaction(any())).thenAnswer(invocation -> {
             TransactionDefinition definition = invocation.getArgument(0);
             assertEquals(TransactionDefinition.PROPAGATION_REQUIRES_NEW, definition.getPropagationBehavior());
-            return definition.isReadOnly() ? recovery : creation;
-        });
+            assertFalse(definition.isReadOnly());
+            return creation;
+        }).thenReturn(recovery);
         when(chatRoomRepository.findByRoomKey("ROOMMATE:7:8"))
                 .thenReturn(Optional.empty(), Optional.of(room));
         when(chatRoomRepository.save(any())).thenThrow(new DataIntegrityViolationException("duplicate room key"));
@@ -627,6 +628,190 @@ class ChatServiceTest {
         assertError(ErrorCode.VALIDATION_ERROR, () -> service.createOrGetRoom(7L, roommateRequest()));
         assertError(ErrorCode.VALIDATION_ERROR, () -> service.sendMessage(7L, 10L, new ChatMessageSendRequest(" ")));
         verifyNoInteractions(chatRoomRepository, chatRoomMemberRepository, chatMessageRepository);
+    }
+
+    @Test
+    void regularPostReentryUpdatesLatestSourceAndPreservesMessages() {
+        stubUsers();
+        CommunityPost first = post(20L, target);
+        CommunityPost second = post(21L, target);
+        useCommunityRoom(first);
+        when(communityPostRepository.findByPostIdAndStatus(20L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(first));
+        when(communityPostRepository.findByPostIdAndStatus(21L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(second));
+        when(chatRoomRepository.findByRoomKey("COMMUNITY:7:8")).thenReturn(Optional.of(room));
+        stubActiveMember();
+        stubResponse(member, counterpart, "Target");
+        ChatMessage history = message(room, target, SENT_AT);
+        when(chatMessageRepository.findAllByChatRoom_ChatRoomId(10L, messagePage(0, 50)))
+                .thenReturn(new PageImpl<>(List.of(history)));
+
+        for (long postId : new long[]{20L, 21L, 20L}) {
+            var result = service.createOrGetRoom(7L, postRequest(postId));
+            assertEquals(10L, result.id());
+            assertEquals(postId, result.sourcePost());
+            assertEquals("Target", result.counterpart().nickname());
+        }
+        assertEquals("hello", service.getMessages(7L, 10L, null).content().getFirst().text());
+        assertSame(first, room.getSourcePost());
+        when(chatMessageRepository.save(any())).thenAnswer(invocation -> {
+            ChatMessage saved = invocation.getArgument(0);
+            ReflectionTestUtils.setField(saved, "sentAt", SENT_AT);
+            return saved;
+        });
+        service.sendMessage(7L, 10L, new ChatMessageSendRequest("new message"));
+        service.markRead(7L, 10L);
+        when(chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalse(7L)).thenReturn(List.of(member));
+        assertEquals(20L, service.getRooms(7L, null).getFirst().sourcePost());
+        assertSame(first, room.getSourcePost());
+        verify(chatRoomRepository, never()).save(any());
+        verify(chatMessageRepository, never()).delete(any(ChatMessage.class));
+        verify(chatRoomMemberRepository, never()).saveAll(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void anonymousAndRegularPostsHaveSeparateRoomsInEitherOrder(boolean anonymousFirst) {
+        stubUsers();
+        CommunityPost regular = post(20L, target);
+        CommunityPost anonymous = post(21L, target);
+        anonymous.changeAnonymous(true);
+        CommunityPost another = post(22L, target);
+        another.changeAnonymous(true);
+        for (CommunityPost post : List.of(regular, anonymous, another)) {
+            when(communityPostRepository.findByPostIdAndStatus(post.getPostId(), CommunityContentStatus.ACTIVE))
+                    .thenReturn(Optional.of(post));
+        }
+        var saved = new java.util.HashMap<String, ChatRoom>();
+        when(chatRoomRepository.findByRoomKey(any())).thenAnswer(invocation -> Optional.ofNullable(saved.get(invocation.getArgument(0))));
+        when(chatRoomRepository.save(any())).thenAnswer(invocation -> {
+            ChatRoom created = invocation.getArgument(0);
+            ReflectionTestUtils.setField(created, "chatRoomId", (long) saved.size() + 10);
+            saved.put(created.getRoomKey(), created);
+            return created;
+        });
+        when(chatRoomMemberRepository.findAllByChatRoom_ChatRoomId(any())).thenAnswer(invocation -> {
+            ChatRoom found = saved.values().stream().filter(r -> r.getChatRoomId().equals(invocation.getArgument(0))).findFirst().orElseThrow();
+            return List.of(new ChatRoomMember(found, user), new ChatRoomMember(found, target));
+        });
+        when(chatRoomMemberRepository.findByChatRoom_ChatRoomIdAndUser_UserId(any(), any())).thenAnswer(invocation -> {
+            ChatRoom found = saved.values().stream().filter(r -> r.getChatRoomId().equals(invocation.getArgument(0))).findFirst().orElseThrow();
+            return Optional.of(new ChatRoomMember(found, user));
+        });
+        UserProfile profile = new UserProfile(target, "Target", "F", mock(Dormitory.class), mock(Faculty.class), null,
+                (short) 2000, "20", "1", "INTJ");
+        when(userProfileRepository.findByUser_UserId(8L)).thenReturn(Optional.of(profile));
+
+        var first = service.createOrGetRoom(7L, postRequest(anonymousFirst ? 21L : 20L));
+        var second = service.createOrGetRoom(7L, postRequest(anonymousFirst ? 20L : 21L));
+        var otherAnonymous = service.createOrGetRoom(7L, postRequest(22L));
+        var reentry = service.createOrGetRoom(7L, postRequest(21L));
+        assertNotEquals(first.id(), second.id());
+        assertNotEquals(otherAnonymous.id(), reentry.id());
+        assertEquals((anonymousFirst ? first : second).id(), reentry.id());
+        assertEquals("익명", reentry.counterpart().nickname());
+        assertNull(reentry.counterpart().id());
+        assertEquals(Set.of("COMMUNITY:7:8", "COMMUNITY:7:8:POST:21", "COMMUNITY:7:8:POST:22"), saved.keySet());
+        verify(chatRoomRepository, times(3)).save(any());
+    }
+
+    @Test
+    void anonymousIdentityIsHiddenInListHistoryAndBroadcastEvenAfterPostEditOrDeletion() {
+        CommunityPost post = post(20L, target);
+        post.changeAnonymous(true);
+        useCommunityRoom(post);
+        // 방 생성 당시 익명성을 유지한다.
+        post.changeAnonymous(false);
+        post.delete();
+        stubActiveMember();
+        stubCounterpart();
+        when(chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalse(7L)).thenReturn(List.of(member));
+        var profile = service.getRooms(7L, null).getFirst().counterpart();
+        assertEquals(new ChatRoomResponse.CounterpartResponse(null, "익명", null, null, null, null, null, null, List.of()), profile);
+        assertTrue(service.getRooms(7L, new ChatRoomListRequest(null, "Target")).isEmpty());
+        ChatMessage message = message(room, target, SENT_AT);
+        when(chatMessageRepository.findAllByChatRoom_ChatRoomId(10L, messagePage(0, 50)))
+                .thenReturn(new PageImpl<>(List.of(message)));
+        var history = service.getMessages(7L, 10L, null).content().getFirst();
+        assertNull(history.senderId());
+        assertEquals("OTHER", history.senderType());
+        assertNull(ChatMessageBroadcastResponse.from(message, false).senderId());
+        assertEquals(7L, ChatMessageBroadcastResponse.from(message(room, user, SENT_AT), false).senderId());
+        verifyNoInteractions(userProfileRepository, profileSurveyRepository, roommateMatchRepository);
+    }
+
+    @Test
+    void concurrentRegularCreationRecoveryStillUpdatesLatestPost() {
+        stubUsers();
+        CommunityPost first = post(20L, target);
+        CommunityPost latest = post(21L, target);
+        useCommunityRoom(first);
+        when(communityPostRepository.findByPostIdAndStatus(21L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(latest));
+        when(chatRoomRepository.findByRoomKey("COMMUNITY:7:8")).thenReturn(Optional.empty(), Optional.of(room));
+        when(chatRoomRepository.save(any())).thenThrow(new DataIntegrityViolationException("duplicate"));
+        stubActiveMember();
+        stubResponse(member, counterpart, "Target");
+        assertEquals(21L, service.createOrGetRoom(7L, postRequest(21L)).sourcePost());
+        assertSame(latest, room.getSourcePost());
+    }
+
+    @Test
+    void anonymousCommentHasItsOwnKeyAndDoesNotHideOtherPostAuthors() {
+        CommunityPost post = post(20L, user);
+        CommunityComment comment = new CommunityComment(post, target, null, "comment");
+        ReflectionTestUtils.setField(comment, "commentId", 30L);
+        comment.changeAnonymous(true);
+        ChatRoom commentRoom = new ChatRoom(7L, 8L, ChatRoomCategory.COMMUNITY, null, comment);
+        assertEquals("COMMUNITY:7:8:COMMENT:30", commentRoom.getRoomKey());
+        assertTrue(commentRoom.isAnonymousAuthor(8L));
+        assertFalse(commentRoom.isAnonymousAuthor(7L));
+    }
+
+    @Test
+    void concurrentAnonymousCreationReusesThePostSpecificWinner() {
+        stubUsers();
+        CommunityPost anonymous = post(20L, target);
+        anonymous.changeAnonymous(true);
+        useCommunityRoom(anonymous);
+        when(communityPostRepository.findByPostIdAndStatus(20L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(anonymous));
+        when(chatRoomRepository.findByRoomKey("COMMUNITY:7:8:POST:20")).thenReturn(Optional.empty(), Optional.of(room));
+        when(chatRoomRepository.save(any())).thenThrow(new DataIntegrityViolationException("duplicate"));
+        stubActiveMember();
+        stubCounterpart();
+        var result = service.createOrGetRoom(7L, postRequest(20L));
+        assertEquals(10L, result.id());
+        assertEquals(20L, result.sourcePost());
+        assertNull(result.counterpart().id());
+        verify(chatRoomRepository, never()).findByRoomKey("COMMUNITY:7:8");
+        verify(chatRoomMemberRepository, never()).saveAll(any());
+    }
+
+    @Test
+    void anonymousAuthorStillSeesTheOtherParticipantsOrdinaryProfileAndOwnMessageDirection() {
+        CommunityPost anonymous = post(20L, target);
+        anonymous.changeAnonymous(true);
+        useCommunityRoom(anonymous);
+        when(chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalse(8L)).thenReturn(List.of(counterpart));
+        when(chatRoomMemberRepository.findByChatRoom_ChatRoomIdAndUser_UserId(10L, 8L)).thenReturn(Optional.of(counterpart));
+        stubResponse(counterpart, member, "Visitor");
+        var response = service.getRooms(8L, null).getFirst();
+        assertEquals(7L, response.counterpart().id());
+        assertEquals("Visitor", response.counterpart().nickname());
+        when(chatMessageRepository.findAllByChatRoom_ChatRoomId(10L, messagePage(0, 50)))
+                .thenReturn(new PageImpl<>(List.of(message(room, target, SENT_AT))));
+        var ownMessage = service.getMessages(8L, 10L, null).content().getFirst();
+        assertNull(ownMessage.senderId());
+        assertEquals("ME", ownMessage.senderType());
+    }
+
+    private ChatRoomCreateRequest postRequest(Long id) {
+        return new ChatRoomCreateRequest(8L, ChatRoomCategory.COMMUNITY, id, null, "POST");
+    }
+
+    private void useCommunityRoom(CommunityPost post) {
+        room = new ChatRoom(7L, 8L, ChatRoomCategory.COMMUNITY, post, null);
+        ReflectionTestUtils.setField(room, "chatRoomId", 10L);
+        member = new ChatRoomMember(room, user);
+        counterpart = new ChatRoomMember(room, target);
     }
 
     private User user(Long id) {

@@ -110,13 +110,8 @@ public class ChatService {
 		try {
 			return transaction.execute(status -> createRoom(userId, request));
 		} catch (DataIntegrityViolationException exception) {
-			transaction.setReadOnly(true);
-			return transaction.execute(status -> {
-				ChatRoom room = chatRoomRepository.findByRoomKey(ChatRoom.createRoomKey(
-						userId, request.targetUserId(), request.category()))
-						.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
-				return toRoomResponse(findActiveMember(userId, room.getChatRoomId()));
-			});
+			// UNIQUE 충돌 롤백 후 출처 검증과 갱신도 새 트랜잭션에서 수행한다.
+			return transaction.execute(status -> createRoom(userId, request, true));
 		}
 	}
 
@@ -179,6 +174,10 @@ public class ChatService {
 	}
 
 	private ChatRoomResponse createRoom(Long userId, ChatRoomCreateRequest request) {
+		return createRoom(userId, request, false);
+	}
+
+	private ChatRoomResponse createRoom(Long userId, ChatRoomCreateRequest request, boolean recovery) {
 		User user = findUser(userId, ErrorCode.UNAUTHORIZED);
 		User target = findUser(request.targetUserId(), ErrorCode.INVALID_REQUEST);
 		CommunityPost post = null;
@@ -210,10 +209,13 @@ public class ChatService {
 			}
 		}
 		var existing = chatRoomRepository.findByRoomKey(
-				ChatRoom.createRoomKey(userId, target.getUserId(), request.category()));
+				ChatRoom.createRoomKey(userId, target.getUserId(), request.category(), post, comment));
 		if (existing.isPresent()) {
-			return toRoomResponse(findActiveMember(userId, existing.get().getChatRoomId()));
+			ChatRoomMember activeMember = findActiveMember(userId, existing.get().getChatRoomId());
+			if (post != null && !post.isAnonymous()) existing.get().updateSourcePost(post);
+			return toRoomResponse(activeMember);
 		}
+		if (recovery) throw new CustomException(ErrorCode.INVALID_REQUEST);
 		ChatRoom room = chatRoomRepository.save(new ChatRoom(userId, target.getUserId(), request.category(), post, comment));
 		ChatRoomMember member = new ChatRoomMember(room, user);
 		chatRoomMemberRepository.saveAll(List.of(member, new ChatRoomMember(room, target)));
@@ -225,19 +227,9 @@ public class ChatService {
 		Long roomId = room.getChatRoomId();
 		Long userId = member.getUser().getUserId();
 		Long targetId = findCounterpart(roomId, userId).getUser().getUserId();
-		UserProfile profile = userProfileRepository.findByUser_UserId(targetId)
-				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
-		// RoommateMatchingService의 기존 태그 규칙: 흡연, 취침 시간, 청소 빈도 순서.
-		// 해당 생성 메서드는 private이므로 동일한 기존 규칙을 유지한다.
-		List<String> tags = profileSurveyRepository.findByUser_UserId(targetId).filter(ProfileSurvey::isCompleted)
-				.map(survey -> Stream.of(survey.getSmoking(), survey.getSleepTime(), survey.getCleaningFrequency())
-						.filter(Objects::nonNull).toList()).orElse(List.of());
-		Integer score = roommateMatchRepository.findByRequesterUser_UserIdAndTargetUser_UserId(userId, targetId)
-				.map(RoommateMatch::getMatchScore).orElse(null);
-		var counterpart = new ChatRoomResponse.CounterpartResponse(targetId, profile.getNickname(),
-				profile.getProfileImageUrl(),
-				profile.getDormitory() == null ? null : profile.getDormitory().getDormitoryName(), profile.getAdmissionYear(),
-				profile.getMajor() == null ? null : profile.getMajor().getMajorName(), score, profile.getIntroduction(), tags);
+		var counterpart = room.isAnonymousAuthor(targetId)
+				? new ChatRoomResponse.CounterpartResponse(null, "익명", null, null, null, null, null, null, List.of())
+				: toCounterpartResponse(userId, targetId);
 		Long sourcePost = room.getSourcePost() != null ? room.getSourcePost().getPostId()
 				: room.getSourceComment() == null ? null : room.getSourceComment().getPost().getPostId();
 		var lastMessage = chatMessageRepository.findFirstByChatRoom_ChatRoomIdOrderBySentAtDescMessageIdDesc(roomId)
@@ -251,6 +243,22 @@ public class ChatService {
 	/** 해당 방의 현재 활성 참여자가 아니면 기존 권한 예외를 발생시킨다. */
 	public void validateActiveMember(Long userId, Long roomId) {
 		findActiveMember(userId, roomId);
+	}
+
+	private ChatRoomResponse.CounterpartResponse toCounterpartResponse(Long userId, Long targetId) {
+		UserProfile profile = userProfileRepository.findByUser_UserId(targetId)
+				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+		// RoommateMatchingService의 기존 태그 규칙: 흡연, 취침 시간, 청소 빈도 순서.
+		// 해당 생성 메서드는 private이므로 동일한 기존 규칙을 유지한다.
+		List<String> tags = profileSurveyRepository.findByUser_UserId(targetId).filter(ProfileSurvey::isCompleted)
+				.map(survey -> Stream.of(survey.getSmoking(), survey.getSleepTime(), survey.getCleaningFrequency())
+						.filter(Objects::nonNull).toList()).orElse(List.of());
+		Integer score = roommateMatchRepository.findByRequesterUser_UserIdAndTargetUser_UserId(userId, targetId)
+				.map(RoommateMatch::getMatchScore).orElse(null);
+		return new ChatRoomResponse.CounterpartResponse(targetId, profile.getNickname(),
+				profile.getProfileImageUrl(),
+				profile.getDormitory() == null ? null : profile.getDormitory().getDormitoryName(), profile.getAdmissionYear(),
+				profile.getMajor() == null ? null : profile.getMajor().getMajorName(), score, profile.getIntroduction(), tags);
 	}
 
 	private ChatRoomMember findActiveMember(Long userId, Long roomId) {

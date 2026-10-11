@@ -13,7 +13,10 @@ async function request(config, authenticated = true) {
     });
     return response.data.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || error.message || "커뮤니티 요청에 실패했습니다.");
+    const failure = new Error(error.response?.data?.message || error.message || "커뮤니티 요청에 실패했습니다.");
+    failure.status = error.response?.status;
+    failure.errorCode = error.response?.data?.errorCode;
+    throw failure;
   }
 }
 

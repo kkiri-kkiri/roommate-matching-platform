@@ -297,7 +297,7 @@ function ProfileDialog({ profile, sourceProfile, onDismiss, returnTo, loading, e
           <S.EmptyIcon><UserRound size={32} aria-hidden="true" /></S.EmptyIcon>
           <h1 id="detailed-profile-title">{loading ? "프로필을 불러오고 있어요" : "프로필을 찾을 수 없어요"}</h1>
           <p>{loading ? "잠시만 기다려 주세요." : error || "존재하지 않거나 더 이상 공개되지 않는 프로필이에요."}</p>
-          <S.ChatButton as={Link} to={returnTo}>룸메찾기로 돌아가기<ArrowUpRight size={17} aria-hidden="true" /></S.ChatButton>
+          <S.ChatButton as={Link} to={returnTo}>{returnTo.startsWith("/chat?") ? "채팅으로 돌아가기" : "룸메찾기로 돌아가기"}<ArrowUpRight size={17} aria-hidden="true" /></S.ChatButton>
         </S.MissingProfile>
       )}
     </S.Dialog>
@@ -331,7 +331,10 @@ function DetailedProfile() {
   );
   const emptyPreview = !serverRoute && new URLSearchParams(location.search).get("preview") === "empty";
   const profile = selectedProfile && (emptyPreview ? { ...selectedProfile, answers: {}, matchScore: null } : selectedProfile);
-  const returnTo = new URLSearchParams(location.search).get("tab") === "recommended"
+  const chatRoomId = location.state?.chatRoomId;
+  const returnTo = /^\d+$/.test(String(chatRoomId)) && Number(chatRoomId) > 0
+    ? `/chat?room=${encodeURIComponent(chatRoomId)}`
+    : new URLSearchParams(location.search).get("tab") === "recommended"
     || location.state?.activeTab === "recommended" ? "/roommates?tab=recommended" : "/roommates";
   const dismiss = useCallback(() => {
     if (location.state?.fromProfileCard) navigate(-1);
