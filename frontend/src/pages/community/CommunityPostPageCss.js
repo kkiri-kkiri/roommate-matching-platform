@@ -552,8 +552,6 @@ export const ReplyList = styled.ol`
     position: relative;
     min-width: 0;
     padding: 8px 12px;
-    border: 1px solid #dfebe7;
-    border-radius: 14px;
     background: transparent;
   }
 
@@ -574,30 +572,6 @@ export const ReplyList = styled.ol`
     > li { padding: 6px 10px; }
     > li::before { left: -17px; width: 10px; }
   }
-`;
-
-export const ReplyHeading = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 4px;
-
-  > ${ActionGroup} {
-    flex-shrink: 0;
-    flex-wrap: nowrap;
-  }
-`;
-
-export const ReplyTarget = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: ${colors.mintDark};
-  font-size: 12px;
-  line-height: 18px;
-  overflow-wrap: anywhere;
-  svg { flex-shrink: 0; }
 `;
 
 export const EmptyComments = styled.div`

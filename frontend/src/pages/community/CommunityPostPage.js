@@ -149,12 +149,6 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
 
   return (
     <S.CommentItem id={`comment-${entry.id}`}>
-      {replyAuthor != null && (
-        <S.ReplyHeading>
-          <S.ReplyTarget><Reply size={14} aria-hidden="true" />{replyAuthor}님에게 답글</S.ReplyTarget>
-          {editActions}
-        </S.ReplyHeading>
-      )}
       <S.CommentHeader>
         <S.CommentAuthorImage src={authorDisplay.image} alt="" />
         <div>
@@ -163,7 +157,7 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
           {mine && <S.AuthorBadge>나</S.AuthorBadge>}
           <time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time>
         </div>
-        {replyAuthor == null && editActions}
+        {editActions}
         {!mine && <S.ChatButton type="button" onClick={onChat} aria-label={`${authorDisplay.nickname}님에게 채팅 보내기`}>
           <MessageCircle size={14} aria-hidden="true" />채팅
         </S.ChatButton>}
