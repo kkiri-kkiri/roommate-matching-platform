@@ -1,4 +1,5 @@
 import { Client } from "@stomp/stompjs";
+import { getAccessToken } from "../auth/session";
 
 function socketUrl() {
   const url = new URL(process.env.REACT_APP_API_BASE_URL || "http://localhost:8080/api", window.location.origin);
@@ -26,7 +27,12 @@ export function createChatSocket({ onConnect, onStatus, onError }) {
   const client = new Client({
     brokerURL: socketUrl(), reconnectDelay: 5000, connectionTimeout: 10000,
     beforeConnect: () => {
-      client.connectHeaders = { Authorization: `Bearer ${window.localStorage.getItem("accessToken") || ""}` };
+      const token = getAccessToken();
+      if (!token) {
+        void client.deactivate();
+        return;
+      }
+      client.connectHeaders = { Authorization: `Bearer ${token}` };
     },
     onConnect: () => {
       if (stopped) return;

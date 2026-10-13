@@ -1,17 +1,19 @@
-import axios from "axios";
+import { createApiClient } from "./apiClient";
+import { getAccessToken } from "../auth/session";
 
-const apiClient = axios.create({
+const apiClient = createApiClient({
   baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:8080/api",
   headers: { "Content-Type": "application/json" },
   timeout: 60000,
 });
 
 async function request(config, authenticated = true) {
-  const accessToken = window.localStorage.getItem("accessToken");
+  const accessToken = getAccessToken();
   if (authenticated && !accessToken) throw new Error("로그인 후 이용해주세요.");
   try {
     const response = await apiClient.request({
       ...config,
+      optionalAuth: !authenticated,
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
     });
     return response.data.data;

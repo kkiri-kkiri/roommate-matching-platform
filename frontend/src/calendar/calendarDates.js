@@ -1,4 +1,4 @@
-export const CALENDAR_TIME_OPTIONS = Array.from({ length: 97 }, (_, index) => {
+export const CALENDAR_TIME_OPTIONS = Array.from({ length: 96 }, (_, index) => {
   const minutes = index * 15;
   return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 });
@@ -15,10 +15,13 @@ export function nextDate(value) {
 export function defaultEventTimes(date, now = new Date()) {
   const startIndex = Math.floor((now.getHours() * 60 + now.getMinutes()) / 15) + 1;
   const endIndex = startIndex + 1;
+  const startDayOffset = Math.floor(startIndex / CALENDAR_TIME_OPTIONS.length);
+  const endDayOffset = Math.floor(endIndex / CALENDAR_TIME_OPTIONS.length);
   return {
-    startTime: CALENDAR_TIME_OPTIONS[startIndex],
-    endTime: CALENDAR_TIME_OPTIONS[endIndex > 96 ? endIndex - 96 : endIndex],
-    endDate: endIndex > 96 ? nextDate(date) : date,
+    date: startDayOffset ? nextDate(date) : date,
+    startTime: CALENDAR_TIME_OPTIONS[startIndex % CALENDAR_TIME_OPTIONS.length],
+    endTime: CALENDAR_TIME_OPTIONS[endIndex % CALENDAR_TIME_OPTIONS.length],
+    endDate: endDayOffset ? nextDate(date) : date,
   };
 }
 

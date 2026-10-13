@@ -30,6 +30,15 @@ public class AuthService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final Validator validator;
 
+	public LoginResponse.LoginUser getAuthenticatedUser(Long userId) {
+		User user = userRepository.findById(userId)
+				.filter(account -> account.getStatus() == UserStatus.ACTIVE)
+				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
+		String nickname = userProfileRepository.findByUser_UserId(userId)
+				.map(UserProfile::getNickname).orElse(user.getSchoolEmail());
+		return new LoginResponse.LoginUser(user.getUserId(), user.getSchoolEmail(), nickname, user.getRole().name());
+	}
+
 	public LoginEmailCheckResponse checkEmail(LoginEmailCheckRequest request) {
 		if (request == null || !validator.validate(request).isEmpty()) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);

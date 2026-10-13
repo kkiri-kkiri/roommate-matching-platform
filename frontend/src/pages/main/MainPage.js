@@ -283,10 +283,18 @@ function MainPage({ currentUser }) {
           </S.SectionHeader>
 
           {!userId ? (
-            <div>
-              <p role="status">로그인 후 추천 프로필을 확인할 수 있어요.</p>
-              <S.MoreLink as={Link} to="/login">로그인하기</S.MoreLink>
-            </div>
+            <S.GuestRecommendation>
+              <S.GuestCharacterFrame>
+                <S.GuestCharacter
+                  src={`${process.env.PUBLIC_URL}/img/(다운로드용)NEW 한경이 캐릭터/PNG/감정/15.png`}
+                  alt="궁금한 표정의 한경이 캐릭터"
+                />
+              </S.GuestCharacterFrame>
+              <S.GuestRecommendationContent>
+                <p role="status">로그인 후 추천 프로필을 확인할 수 있어요.</p>
+                <S.MoreLink as={Link} to="/login">로그인하기</S.MoreLink>
+              </S.GuestRecommendationContent>
+            </S.GuestRecommendation>
           ) : roommatesLoading ? (
             <p role="status">추천 룸메이트를 불러오는 중이에요.</p>
           ) : roommatesError ? (
