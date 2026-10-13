@@ -41,7 +41,7 @@ public class RoommatePreferenceService {
 	private static final Set<String> GRADE_OPTIONS = Set.of(
 			"1학년", "2학년", "3학년", "4학년", "5학년", NO_PREFERENCE);
 	private static final Set<String> BEDTIME_OPTIONS = Set.of(
-			"22시 ~ 23시", "23시 ~ 24시", "24시 ~ 01시", "01시 ~ 02시", "02시 ~ 03시", "03시 이후",
+			"22시 이전", "22시 ~ 23시", "23시 ~ 24시", "24시 ~ 01시", "01시 ~ 02시", "02시 ~ 03시", "03시 이후",
 			NO_PREFERENCE);
 	private static final Set<String> WAKE_TIME_OPTIONS = Set.of(
 			"07시 이전", "07시 ~ 08시", "08시 ~ 09시", "09시 ~ 10시", "10시 이후", "수업 시간에 따라 유동적",

@@ -33,7 +33,7 @@ public class ProfileSurveyService {
 	private static final String NO_PREFERENCE = "상관없음";
 
 	private static final Set<String> SLEEP_TIMES = Set.of(
-			"22시 ~ 23시", "23시 ~ 24시", "24시 ~ 01시", "01시 ~ 02시", "02시 ~ 03시", "03시 이후");
+			"22시 이전", "22시 ~ 23시", "23시 ~ 24시", "24시 ~ 01시", "01시 ~ 02시", "02시 ~ 03시", "03시 이후");
 	private static final Set<String> WAKE_TIMES = Set.of(
 			"07시 이전", "07시 ~ 08시", "08시 ~ 09시", "09시 ~ 10시", "10시 이후", "수업 시간에 따라 유동적");
 	private static final Set<String> SLEEP_HABIT_LEVELS = Set.of("없음", "적음", "보통", "심함");
@@ -71,15 +71,32 @@ public class ProfileSurveyService {
 	public ProfileSurveyResponse getMyProfileSurvey(Long userId) {
 		validateUserId(userId);
 		return profileSurveyRepository.findByUser_UserId(userId)
-				.map(survey -> ProfileSurveyResponse.from(survey,
+				.map(survey -> checkedResponse(ProfileSurveyResponse.from(survey,
 						profileSurveyOptionRepository
 								.findAllByProfileSurvey_ProfileSurveyIdOrderByProfileSurveyOptionIdAsc(
-										survey.getProfileSurveyId())))
+										survey.getProfileSurveyId()))))
 				.orElseGet(() -> ProfileSurveyResponse.from(null, List.of()));
 	}
 
+	private ProfileSurveyResponse checkedResponse(ProfileSurveyResponse response) {
+		if (!response.completed()) return response;
+		var a = response.answers();
+		try {
+			validateRequest(new ProfileSurveyRequest(a.sleepTime(), a.wakeTime(), a.sleepTalking(),
+					a.snoring(), a.teethGrinding(), a.sleepSensitivity(), a.indoorEating(), a.smoking(),
+					a.lightingPreference(), a.phoneCall(), a.mediaSound(), a.showerTime(), a.showerDuration(),
+					a.cleaningFrequency(), a.cleaningStyle(), a.dormStayDays(), a.mealPlan(), a.meal(),
+					a.roommateInteraction(), a.temperaturePreference(), a.scentProductUse(), a.desktopUse(),
+					a.sharedItems()));
+			return response;
+		} catch (CustomException invalidSavedAnswers) {
+			// Do not rewrite legacy records during a read; allow the owner to repair them.
+			return new ProfileSurveyResponse(false, a);
+		}
+	}
+
 	@Transactional
-	public void saveOrUpdateMyProfileSurvey(Long userId, ProfileSurveyRequest request) {
+	public ProfileSurveyResponse saveOrUpdateMyProfileSurvey(Long userId, ProfileSurveyRequest request) {
 		validateUserId(userId);
 		validateRequest(request);
 
@@ -95,6 +112,7 @@ public class ProfileSurveyService {
 		profileSurveyRepository.save(survey);
 		replaceOptions(survey, request);
         events.publishEvent(new com.kkirikkiri.matching.service.MatchingInputsChanged(userId, true, false));
+		return getMyProfileSurvey(userId);
 	}
 
 	private ProfileSurvey createSurvey(User user, ProfileSurveyRequest request) {

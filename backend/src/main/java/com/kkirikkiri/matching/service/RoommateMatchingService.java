@@ -21,6 +21,7 @@ import com.kkirikkiri.matching.entity.*;
 import com.kkirikkiri.matching.repository.*;
 import com.kkirikkiri.survey.entity.*;
 import com.kkirikkiri.survey.repository.ProfileSurveyRepository;
+import com.kkirikkiri.survey.repository.ProfileSurveyOptionRepository;
 import com.kkirikkiri.user.entity.*;
 import com.kkirikkiri.user.repository.*;
 
@@ -36,6 +37,7 @@ public class RoommateMatchingService {
     private final UserRepository userRepository;
     private final MatchingRefreshService refreshService;
     private final Validator validator;
+    private final ProfileSurveyOptionRepository surveyOptions;
 
     public RoommatePageResponse<RoommateProfileResponse> getRoommates(
             Long userId, RoommateFilterRequest filter, Pageable pageable) {
@@ -79,7 +81,9 @@ public class RoommateMatchingService {
             Integer score = userId == null ? null
                     : roommateMatchRepository.findByRequesterUser_UserIdAndTargetUser_UserId(userId, targetUserId)
                     .map(RoommateMatch::getMatchScore).orElse(null);
-            return RoommateDetailResponse.from(profile, survey, createTags(survey), score,
+            var options = surveyOptions.findAllByProfileSurvey_ProfileSurveyIdOrderByProfileSurveyOptionIdAsc(
+                    survey.getProfileSurveyId());
+            return RoommateDetailResponse.from(profile, survey, options, createTags(survey), score,
                     userId != null && profileLikeRepository.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId));
         });
     }

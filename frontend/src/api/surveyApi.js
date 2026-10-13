@@ -15,6 +15,7 @@ async function request(config) {
     });
     return response.data.data;
   } catch (error) {
+    if (error.code === "ERR_CANCELED") throw error;
     throw new Error(error.response?.data?.message || "설문 요청에 실패했어요. 다시 시도해 주세요.");
   }
 }
@@ -24,3 +25,20 @@ export const getMyPreferences = () =>
 
 export const saveMyPreferences = (answers) =>
   request({ method: "put", url: "/users/me/roommate-preferences", data: answers });
+
+function profileSurveyResponse(data) {
+  if (typeof data?.completed !== "boolean"
+      || (data.answers !== null && (typeof data.answers !== "object" || Array.isArray(data.answers)))
+      || (data.completed && !data.answers)) {
+    throw new Error("내 설문 응답을 확인할 수 없습니다. 다시 조회해 주세요.");
+  }
+  return data;
+}
+
+export const getMyProfileSurvey = async (signal) => profileSurveyResponse(
+  await request({ method: "get", url: "/users/me/profile-survey", signal }),
+);
+
+export const saveMyProfileSurvey = async (answers) => profileSurveyResponse(
+  await request({ method: "put", url: "/users/me/profile-survey", data: answers }),
+);

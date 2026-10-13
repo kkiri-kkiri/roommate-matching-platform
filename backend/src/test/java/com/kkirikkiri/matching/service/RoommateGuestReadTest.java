@@ -21,7 +21,10 @@ import org.springframework.transaction.TransactionStatus;
 
 import com.kkirikkiri.matching.repository.*;
 import com.kkirikkiri.survey.entity.ProfileSurvey;
+import com.kkirikkiri.survey.entity.ProfileSurveyOption;
+import com.kkirikkiri.survey.entity.ProfileSurveyFieldCode;
 import com.kkirikkiri.survey.repository.ProfileSurveyRepository;
+import com.kkirikkiri.survey.repository.ProfileSurveyOptionRepository;
 import com.kkirikkiri.user.entity.UserProfile;
 import com.kkirikkiri.user.repository.*;
 
@@ -35,13 +38,14 @@ class RoommateGuestReadTest {
     @Mock UserRepository users;
     @Mock MatchingRefreshService refresh;
     @Mock Validator validator;
+    @Mock ProfileSurveyOptionRepository surveyOptions;
     RoommateMatchingService service;
     UserProfile profile;
     ProfileSurvey survey;
 
     @BeforeEach
     void setUp() {
-        service = new RoommateMatchingService(matches, likes, transactions, profiles, surveys, users, refresh, validator);
+        service = new RoommateMatchingService(matches, likes, transactions, profiles, surveys, users, refresh, validator, surveyOptions);
         when(transactions.getTransaction(any())).thenReturn(mock(TransactionStatus.class));
         profile = mock(UserProfile.class, RETURNS_DEEP_STUBS);
         when(profile.getUser().getUserId()).thenReturn(42L);
@@ -69,11 +73,27 @@ class RoommateGuestReadTest {
     @Test
     void guestDetailIncludesSurveyWithoutPersonalScoresOrLikes() {
         when(surveys.findByUser_UserId(42L)).thenReturn(Optional.of(survey));
+        when(survey.getProfileSurveyId()).thenReturn(9L);
+        when(surveyOptions.findAllByProfileSurvey_ProfileSurveyIdOrderByProfileSurveyOptionIdAsc(9L))
+                .thenReturn(List.of(new ProfileSurveyOption(survey, ProfileSurveyFieldCode.MEAL_PLAN, "석식"),
+                        new ProfileSurveyOption(survey, ProfileSurveyFieldCode.DORM_STAY_DAY, "금")));
         var detail = service.getRoommateDetail(null, 42L);
         assertEquals(42L, detail.id());
         assertEquals("23시", detail.answers().sleepTime());
+        assertEquals(List.of("석식"), detail.answers().mealPlan());
+        assertEquals(List.of("금"), detail.answers().dormStayDays());
         assertNull(detail.matchScore());
         assertFalse(detail.liked());
         verifyNoInteractions(refresh, matches, likes);
+    }
+
+    @Test
+    void otherAccountReadsLatestAnswersAfterScoreRefresh() {
+        when(surveys.findByUser_UserId(42L)).thenReturn(Optional.of(survey));
+        when(survey.getSleepTime()).thenReturn("22시 이전");
+        assertEquals("22시 이전", service.getRoommateDetail(8L, 42L).answers().sleepTime());
+        when(survey.getSleepTime()).thenReturn("22시 ~ 23시");
+        assertEquals("22시 ~ 23시", service.getRoommateDetail(8L, 42L).answers().sleepTime());
+        verify(refresh, times(2)).refreshTargets(8L, List.of(42L));
     }
 }
