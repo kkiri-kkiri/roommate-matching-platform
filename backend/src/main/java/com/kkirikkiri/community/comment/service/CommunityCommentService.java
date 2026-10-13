@@ -34,6 +34,7 @@ public class CommunityCommentService {
 	private final UserRepository userRepository;
 	private final Validator validator;
 	private final CommentLikeRepository commentLikeRepository;
+	private final CommunityAnonymousAuthorService anonymousAuthorService;
 
 	/** 댓글 또는 답글에 인증 사용자의 좋아요를 등록한다. 이미 좋아요한 경우 변경 없이 완료한다. */
 	@Transactional
@@ -117,6 +118,9 @@ public class CommunityCommentService {
 				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
 		CommunityComment comment = new CommunityComment(post, author, parent, request.content());
 		comment.changeAnonymous(request.anonymous());
+		if (comment.isAnonymous()) {
+			anonymousAuthorService.resolveNumbers(post.getPostId(), author);
+		}
 		return communityCommentRepository.save(comment).getCommentId();
 	}
 

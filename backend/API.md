@@ -1019,7 +1019,8 @@ Response:
 비로그인 요청의 liked는 false다.
 상세의 comments는 댓글·답글을 parentCommentId로 연결하는 기존 배열 구조를 유지한다.
 각 항목은 id, parentCommentId(일반 댓글은 null), content, author, createdAt,
-likes(전체 좋아요 수, 없으면 0), liked(본인 좋아요 여부, 비로그인은 false)를 포함한다.
+likes(전체 좋아요 수, 없으면 0), liked(본인 좋아요 여부, 비로그인은 false), anonymous,
+anonymousNumber(일반 댓글은 null), mine(인증된 본인 댓글 여부, 비로그인은 false)를 포함한다.
 댓글·답글의 좋아요 상태는 표시할 댓글 ID 기준으로 일괄 조회한다.
 
 7.3 게시글 작성
@@ -1143,7 +1144,9 @@ Request:
 
 Validation: 댓글과 동일.
 
-댓글과 답글의 anonymous는 생략/null이면 false(닉네임 공개)이다. 상세 조회 댓글 응답에도 anonymous를 포함한다. 익명인 경우 author.nickname은 "익명", author.major는 null로 반환하고 작성자 ID는 유지한다. 공개 댓글은 작성자의 닉네임과 학과를 반환한다. 내용 수정 시 익명 설정은 유지한다.
+댓글과 답글의 anonymous는 생략/null이면 false(닉네임 공개)이다. 익명인 경우 author.nickname은 "익명1"처럼 게시글별 번호를 포함하고 author.id와 author.major는 null이다. anonymousNumber는 해당 게시글에서 처음 익명으로 참여한 순서대로 배정하며 댓글과 답글이 공유한다. 일반 댓글의 anonymousNumber는 null이며 작성자 ID·닉네임·학과는 기존대로 반환한다. 내용 수정·소프트 삭제·재작성은 기존 번호를 유지한다.
+
+수정·삭제 UI는 실제 작성자 ID 비교 대신 mine을 사용한다. 서버의 권한 검증은 인증 사용자와 내부 작성자 관계로 계속 수행한다. 익명 댓글에는 게시글의 실제 작성자와 연결되는 작성자 배지를 표시하지 않는다. 기존 클라이언트는 author.id의 null 처리가 필요하므로 프론트엔드와 백엔드를 함께 배포한다. 게시글 자체의 익명 표시 계약은 이번 변경 대상이 아니다.
 
 8.3 댓글/답글 수정
 
@@ -1348,7 +1351,7 @@ sourceFrom:
 
 필드 기준:
 
-* `targetUserId`: 채팅을 시작할 상대 사용자 ID
+* `targetUserId`: 채팅을 시작할 상대 사용자 ID. COMMUNITY / COMMENT는 생략 또는 null 가능하며 서버가 댓글 작성자를 조회한다.
 * `category`: `ROOMMATE` 또는 `COMMUNITY`
 * `sourcePostId`: 커뮤니티에서 시작한 경우 원 게시글 ID
 * `sourceCommentId`: 댓글에서 시작한 경우 원 댓글 ID
@@ -1361,7 +1364,7 @@ Validation:
 * `sourceFrom = POST`인 경우 `sourcePostId`가 필수이며 `sourceCommentId`는 사용하지 않는다.
 * `sourceFrom = COMMENT`인 경우 `sourcePostId`, `sourceCommentId`가 모두 필수이다.
 * `sourceCommentId`는 해당 `sourcePostId`에 속한 댓글이어야 한다.
-* `targetUserId`는 채팅 시작 대상 게시글 또는 댓글의 작성자와 일치하는지 서버에서 검증한다.
+* 게시글 출처의 `targetUserId`는 작성자와 일치해야 한다. 일반 댓글에서 전달한 `targetUserId`도 일치를 검증한다. 익명 댓글에서는 작성자 ID 추측 검증에 악용되지 않도록 전달된 값을 무시하고 댓글의 실제 작성자를 사용한다.
 * 자기 자신을 대상으로 채팅방을 생성할 수 없다.
 
 방 재사용 및 출처 표시 규칙:

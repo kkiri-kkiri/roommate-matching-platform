@@ -242,8 +242,9 @@ class ChatServiceTest {
     @ValueSource(strings = {"missingPost", "wrongPostAuthor", "extraComment", "missingComment", "wrongCommentAuthor", "wrongCommentPost"})
     void rejectsInvalidCommunitySourceBeforeSaving(String scenario) {
         // given
-        stubUsers();
         boolean fromComment = scenario.contains("Comment") && !scenario.equals("extraComment");
+        when(userRepository.findById(7L)).thenReturn(Optional.of(user));
+        if (!fromComment) when(userRepository.findById(8L)).thenReturn(Optional.of(target));
         if (!scenario.equals("missingPost")) {
             CommunityPost post = post(20L, scenario.equals("wrongPostAuthor") ? user : target);
             when(communityPostRepository.findByPostIdAndStatus(20L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
@@ -268,7 +269,8 @@ class ChatServiceTest {
     @CsvSource({",,POST", "0,,POST", "-1,,POST", "20,,COMMENT", "20,0,COMMENT", "20,-1,COMMENT"})
     void rejectsMissingOrNonPositiveCommunitySourceIds(Long postId, Long commentId, String source) {
         // given
-        stubUsers();
+        when(userRepository.findById(7L)).thenReturn(Optional.of(user));
+        if (!"COMMENT".equals(source)) when(userRepository.findById(8L)).thenReturn(Optional.of(target));
         if (postId != null && postId > 0) {
             when(communityPostRepository.findByPostIdAndStatus(postId, CommunityContentStatus.ACTIVE))
                     .thenReturn(Optional.of(post(postId, target)));
@@ -903,6 +905,31 @@ class ChatServiceTest {
         assertNull(broadcast.senderId());
         assertEquals("hello", broadcast.text());
         verifyNoInteractions(userProfileRepository, profileSurveyRepository, roommateMatchRepository);
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(longs = {7, 8, 999})
+    void resolvesAnonymousCommentTargetWithoutExposingOrTestingSuppliedIdentity(Long suppliedTarget) {
+        stubUsers();
+        CommunityPost post = post(20L, user);
+        CommunityComment comment = new CommunityComment(post, target, null, "anonymous");
+        ReflectionTestUtils.setField(comment, "commentId", 30L);
+        comment.changeAnonymous(true);
+        room = new ChatRoom(7L, 8L, ChatRoomCategory.COMMUNITY, null, comment);
+        ReflectionTestUtils.setField(room, "chatRoomId", 10L);
+        member = new ChatRoomMember(room, user);
+        counterpart = new ChatRoomMember(room, target);
+        when(communityPostRepository.findByPostIdAndStatus(20L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+        when(communityCommentRepository.findByCommentIdAndStatus(30L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(comment));
+        stubNewRoomSave();
+        stubCounterpart();
+        var result = service.createOrGetRoom(7L,
+                new ChatRoomCreateRequest(suppliedTarget, ChatRoomCategory.COMMUNITY, 20L, 30L, "COMMENT"));
+        assertNull(result.counterpart().id());
+        assertEquals("익명", result.counterpart().nickname());
+        verifyNoInteractions(userProfileRepository);
+        verify(userRepository, never()).findById(999L);
     }
 
     private ChatRoomCreateRequest postRequest(Long id) {

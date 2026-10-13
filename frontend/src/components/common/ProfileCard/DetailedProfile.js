@@ -49,7 +49,7 @@ function displayAnswer(value) {
   return typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
 }
 
-function ProfileDialog({ profile, sourceProfile, onDismiss, returnTo, loading, error }) {
+function ProfileDialog({ profile, sourceProfile, onDismiss, returnTo, loading, error, embedded }) {
   const navigate = useNavigate();
   const dialogRef = useRef(null);
   const tabRefs = useRef([]);
@@ -218,24 +218,32 @@ function ProfileDialog({ profile, sourceProfile, onDismiss, returnTo, loading, e
 
             </S.DetailsArea>
           </S.ScrollArea>
-          <S.Actions>
-            <S.ChatButton type="button" onClick={startChat}><MessageCircle size={19} aria-hidden="true" />채팅하기</S.ChatButton>
-          </S.Actions>
+          {!embedded && (
+            <S.Actions>
+              <S.ChatButton type="button" onClick={startChat}><MessageCircle size={19} aria-hidden="true" />채팅하기</S.ChatButton>
+            </S.Actions>
+          )}
         </>
       ) : (
         <S.MissingProfile role={error ? "alert" : "status"}>
           <S.EmptyIcon><UserRound size={32} aria-hidden="true" /></S.EmptyIcon>
           <h1 id="detailed-profile-title">{loading ? "프로필을 불러오고 있어요" : "프로필을 찾을 수 없어요"}</h1>
           <p>{loading ? "잠시만 기다려 주세요." : error || "존재하지 않거나 더 이상 공개되지 않는 프로필이에요."}</p>
-          <S.ChatButton as={Link} to={returnTo}>{returnTo.startsWith("/chat?") ? "채팅으로 돌아가기" : "룸메찾기로 돌아가기"}<ArrowUpRight size={17} aria-hidden="true" /></S.ChatButton>
+          {embedded ? (
+            <S.ChatButton type="button" onClick={onDismiss}>채팅으로 돌아가기</S.ChatButton>
+          ) : (
+            <S.ChatButton as={Link} to={returnTo}>{returnTo.startsWith("/chat?") ? "채팅으로 돌아가기" : "룸메찾기로 돌아가기"}<ArrowUpRight size={17} aria-hidden="true" /></S.ChatButton>
+          )}
         </S.MissingProfile>
       )}
     </S.Dialog>
   );
 }
 
-function DetailedProfile() {
-  const { profileId } = useParams();
+function DetailedProfile({ profileId: providedProfileId, onDismiss } = {}) {
+  const { profileId: routeProfileId } = useParams();
+  const profileId = String(providedProfileId ?? routeProfileId);
+  const embedded = providedProfileId != null && typeof onDismiss === "function";
   const location = useLocation();
   const navigate = useNavigate();
   const serverRoute = /^\d+$/.test(profileId) || new URLSearchParams(location.search).get("tab") === "recommended"
@@ -264,12 +272,16 @@ function DetailedProfile() {
     : new URLSearchParams(location.search).get("tab") === "recommended"
     || location.state?.activeTab === "recommended" ? "/roommates?tab=recommended" : "/roommates";
   const dismiss = useCallback(() => {
+    if (embedded) {
+      onDismiss();
+      return;
+    }
     if (location.state?.fromProfileCard) navigate(-1);
     else navigate(returnTo, { replace: true });
-  }, [location.state?.fromProfileCard, navigate, returnTo]);
+  }, [embedded, onDismiss, location.state?.fromProfileCard, navigate, returnTo]);
 
   return <ProfileDialog key={profileId} profile={profile} sourceProfile={selectedProfile}
-    onDismiss={dismiss} returnTo={returnTo}
+    onDismiss={dismiss} returnTo={returnTo} embedded={embedded}
     loading={serverRoute && !selectedProfile && !(remote.id === profileId && remote.error)}
     error={serverRoute && remote.id === profileId ? remote.error : ""} />;
 }

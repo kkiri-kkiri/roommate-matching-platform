@@ -7,6 +7,7 @@ import {
 
 import * as S from "./ChatPageCss";
 import ProfileImage from "../../components/common/ProfileImage";
+import DetailedProfile from "../../components/common/ProfileCard/DetailedProfile";
 import { useChat } from "./useChat";
 
 const CATEGORIES = [
@@ -92,6 +93,7 @@ function ChatPage({ currentUser }) {
   const [mobileOpen, setMobileOpen] = useState(Boolean(searchParams.get("room")));
   const [drafts, setDrafts] = useState({});
   const [messageSearch, setMessageSearch] = useState("");
+  const [roommateProfile, setRoommateProfile] = useState(null);
   const [leaveRoomId, setLeaveRoomId] = useState(null);
   const [optionsRoomId, setOptionsRoomId] = useState(null);
   const optionsRef = useRef(null);
@@ -123,7 +125,10 @@ function ChatPage({ currentUser }) {
   const activeRoom = rooms.find((room) => room.id === selectedId);
   const showMobileRoom = mobileOpen && Boolean(activeRoom);
   const leaveRoom = rooms.find((room) => room.id === leaveRoomId);
-  const profileOpen = searchParams.get("view") === "profile" && Boolean(activeRoom) && !activeRoom.anonymous;
+  const profileView = activeRoom?.category === "roommate" && roommateProfile?.roomId === selectedId
+    ? roommateProfile.view : searchParams.get("view") === "profile" ? "summary" : null;
+  const profileOpen = profileView === "summary" && Boolean(activeRoom) && !activeRoom.anonymous;
+  const detailedProfileOpen = profileView === "detail" && activeRoom?.category === "roommate" && !activeRoom.anonymous;
   const roomSearchQuery = roomSearch.trim().toLocaleLowerCase();
   const pinnedCount = rooms.filter((room) => room.pinned).length;
   const categoryCounts = Object.fromEntries(CATEGORIES.map(({ id }) => [
@@ -159,6 +164,7 @@ function ChatPage({ currentUser }) {
   }, [selectedId, lastMessageId, mobileOpen, searchQuery, messageLoading]);
 
   const selectRoom = (roomId) => {
+    setRoommateProfile(null);
     setSearchParams({ room: roomId }, { replace: true });
     setMobileOpen(true);
     setStatus("");
@@ -177,6 +183,10 @@ function ChatPage({ currentUser }) {
   const toggleMute = (roomId) => updateSettings(roomId, "muted");
 
   const closeProfile = () => {
+    if (activeRoom?.category === "roommate") {
+      setRoommateProfile({ roomId: selectedId, view: null });
+      return;
+    }
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
       next.delete("view");
@@ -334,8 +344,11 @@ function ChatPage({ currentUser }) {
                     setMobileOpen(false);
                     requestAnimationFrame(() => listHeadingRef.current?.focus());
                   }}><ArrowLeft size={21} aria-hidden="true" /></S.MobileBackButton>
-                  <S.ParticipantButton as={activeRoom.anonymous ? "div" : Link}
-                    to={activeRoom.anonymous ? undefined : profileHref}
+                  <S.ParticipantButton as={activeRoom.anonymous ? "div" : activeRoom.category === "roommate" ? "button" : Link}
+                    type={!activeRoom.anonymous && activeRoom.category === "roommate" ? "button" : undefined}
+                    to={activeRoom.anonymous || activeRoom.category === "roommate" ? undefined : profileHref}
+                    onClick={!activeRoom.anonymous && activeRoom.category === "roommate"
+                      ? () => setRoommateProfile({ roomId: selectedId, view: "summary" }) : undefined}
                     aria-label={activeRoom.anonymous ? "익명 참여자" : `${activeRoom.nickname}님 프로필 보기`}>
                     <ProfileImage as={S.Avatar} major={activeRoom.photo ? undefined : activeRoom.major} fallbackSrc={activeRoom.photo} alt="" />
                     <div>
@@ -348,18 +361,6 @@ function ChatPage({ currentUser }) {
                     </div>
                   </S.ParticipantButton>
                 </S.RoomHeader>
-
-                {activeRoom.category === "roommate" && (
-                  <S.SourcePost>
-                    <span>룸메찾기를 통해 시작된 채팅</span>
-                    {activeRoom.counterpartId ? (
-                      <S.ContextLink to={`/roommates/${encodeURIComponent(activeRoom.counterpartId)}`}
-                        state={{ chatRoomId: activeRoom.id }}>
-                        상대방 룸메이트 프로필 보기
-                      </S.ContextLink>
-                    ) : <span>상대방 프로필을 확인할 수 없습니다.</span>}
-                  </S.SourcePost>
-                )}
 
                 {activeRoom.category === "community" && activeRoom.sourcePost && (
                   <S.SourcePost>
@@ -470,8 +471,18 @@ function ChatPage({ currentUser }) {
             <div><dt>대화 시작</dt><dd>{CATEGORY_LABELS[activeRoom.category]}</dd></div>
             {activeRoom.category === "roommate" && activeRoom.matchScore != null && <div><dt>매칭점수</dt><dd>{activeRoom.matchScore}점</dd></div>}
           </S.ProfileDetails>
-          <S.DialogActions><S.SecondaryButton type="button" onClick={closeProfile}>대화로 돌아가기</S.SecondaryButton></S.DialogActions>
+          {activeRoom.category === "roommate" && (
+            <S.DialogActions>
+              <S.SecondaryButton type="button" disabled={!activeRoom.counterpartId} onClick={() => {
+                setRoommateProfile({ roomId: selectedId, view: "detail" });
+              }}>상세 프로필 보기</S.SecondaryButton>
+            </S.DialogActions>
+          )}
         </ChatDialog>
+      )}
+
+      {detailedProfileOpen && (
+        <DetailedProfile profileId={activeRoom.counterpartId} onDismiss={closeProfile} />
       )}
 
       {leaveRoom && (

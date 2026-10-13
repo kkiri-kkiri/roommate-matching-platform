@@ -101,9 +101,11 @@ public class ChatService {
 	public ChatRoomResponse createOrGetRoom(Long userId, ChatRoomCreateRequest request) {
 		validateUserId(userId);
 		validateRequest(request);
-		validateId(request.targetUserId());
-		if (userId.equals(request.targetUserId())) {
-			throw new CustomException(ErrorCode.INVALID_REQUEST);
+		if (request.category() != ChatRoomCategory.COMMUNITY || !"COMMENT".equals(request.sourceFrom())) {
+			validateId(request.targetUserId());
+			if (userId.equals(request.targetUserId())) {
+				throw new CustomException(ErrorCode.INVALID_REQUEST);
+			}
 		}
 		TransactionTemplate transaction = new TransactionTemplate(transactionManager);
 		transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -179,7 +181,8 @@ public class ChatService {
 
 	private ChatRoomResponse createRoom(Long userId, ChatRoomCreateRequest request, boolean recovery) {
 		User user = findUser(userId, ErrorCode.UNAUTHORIZED);
-		User target = findUser(request.targetUserId(), ErrorCode.INVALID_REQUEST);
+		boolean commentSource = request.category() == ChatRoomCategory.COMMUNITY && "COMMENT".equals(request.sourceFrom());
+		User target = commentSource ? null : findUser(request.targetUserId(), ErrorCode.INVALID_REQUEST);
 		CommunityPost post = null;
 		CommunityComment comment = null;
 		if (request.category() == ChatRoomCategory.ROOMMATE) {
@@ -199,15 +202,21 @@ public class ChatService {
 				comment = communityCommentRepository.findByCommentIdAndStatus(
 						request.sourceCommentId(), CommunityContentStatus.ACTIVE)
 						.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
-				if (!post.getPostId().equals(comment.getPost().getPostId())
-						|| !target.getUserId().equals(comment.getAuthor().getUserId())) {
+				if (!post.getPostId().equals(comment.getPost().getPostId())) {
 					throw new CustomException(ErrorCode.INVALID_REQUEST);
 				}
+				// 익명 출처에서는 전달된 ID를 비교하지 않아 작성자 ID 추측에 대한 응답 차이를 없앤다.
+				if (!comment.isAnonymous() && request.targetUserId() != null
+						&& !request.targetUserId().equals(comment.getAuthor().getUserId())) {
+					throw new CustomException(ErrorCode.INVALID_REQUEST);
+				}
+				target = findUser(comment.getAuthor().getUserId(), ErrorCode.INVALID_REQUEST);
 				post = null;
 			} else {
 				throw new CustomException(ErrorCode.VALIDATION_ERROR);
 			}
 		}
+		if (userId.equals(target.getUserId())) throw new CustomException(ErrorCode.INVALID_REQUEST);
 		var existing = chatRoomRepository.findByRoomKey(
 				ChatRoom.createRoomKey(userId, target.getUserId(), request.category(), post, comment));
 		if (existing.isPresent()) {
