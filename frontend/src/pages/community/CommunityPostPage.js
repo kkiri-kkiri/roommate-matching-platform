@@ -135,7 +135,7 @@ function CommentComposer({ id, label, onSubmit, onCancel, compact = false, busy 
 function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onReport, onReply, onToggleLike, replying, onChat, replyAuthor, busy }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(entry.content);
-  const mine = Boolean(currentUser && currentUser.id === entry.author.id);
+  const mine = Boolean(currentUser && (entry.mine ?? (currentUser.id === entry.author.id)));
   const authorDisplay = getPostAuthorDisplay(entry);
   const editActions = mine && !editing && (
     <S.ActionGroup>
@@ -153,7 +153,7 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
         <S.CommentAuthorImage src={authorDisplay.image} alt="" />
         <div>
           <strong>{authorDisplay.nickname}</strong>
-          {entry.author.id === postAuthorId && <S.AuthorBadge>작성자</S.AuthorBadge>}
+          {!entry.anonymous && entry.author.id != null && entry.author.id === postAuthorId && <S.AuthorBadge>작성자</S.AuthorBadge>}
           {mine && <S.AuthorBadge>나</S.AuthorBadge>}
           <time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time>
         </div>

@@ -471,15 +471,13 @@ function ChatPage({ currentUser }) {
             <div><dt>대화 시작</dt><dd>{CATEGORY_LABELS[activeRoom.category]}</dd></div>
             {activeRoom.category === "roommate" && activeRoom.matchScore != null && <div><dt>매칭점수</dt><dd>{activeRoom.matchScore}점</dd></div>}
           </S.ProfileDetails>
-          <S.DialogActions>
-            {activeRoom.category === "roommate" ? (
+          {activeRoom.category === "roommate" && (
+            <S.DialogActions>
               <S.SecondaryButton type="button" disabled={!activeRoom.counterpartId} onClick={() => {
                 setRoommateProfile({ roomId: selectedId, view: "detail" });
               }}>상세 프로필 보기</S.SecondaryButton>
-            ) : (
-              <S.SecondaryButton type="button" onClick={closeProfile}>대화로 돌아가기</S.SecondaryButton>
-            )}
-          </S.DialogActions>
+            </S.DialogActions>
+          )}
         </ChatDialog>
       )}
 

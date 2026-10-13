@@ -46,6 +46,7 @@ class CommunityCommentServiceTest {
     @Mock Validator validator;
     @Mock ConstraintViolation<Object> violation;
     @Mock CommentLikeRepository commentLikeRepository;
+    @Mock CommunityAnonymousAuthorService anonymousAuthorService;
     @InjectMocks CommunityCommentService service;
     User author;
     CommunityPost activePost;
@@ -88,13 +89,15 @@ class CommunityCommentServiceTest {
         var author = new CommunityAuthorResponse(7L, "닉네임", "소프트웨어융합전공");
         assertFalse(new CommunityCommentCreateRequest("내용", null).anonymous());
         assertFalse(comment.isAnonymous());
-        assertEquals(author, CommunityCommentResponse.from(comment, author, 0, false).author());
+        assertEquals(author, CommunityCommentResponse.from(comment, author, 0, false, null, null).author());
         comment.changeAnonymous(true);
         comment.updateContent("수정");
-        var response = CommunityCommentResponse.from(comment, author, 0, false);
+        var response = CommunityCommentResponse.from(comment, author, 0, false, 1L, null);
         assertTrue(response.anonymous());
-        assertEquals(7L, response.author().id());
-        assertEquals("익명", response.author().nickname());
+        assertNull(response.author().id());
+        assertEquals("익명1", response.author().nickname());
+        assertEquals(1L, response.anonymousNumber());
+        assertFalse(response.mine());
         assertNull(response.author().major());
     }
 

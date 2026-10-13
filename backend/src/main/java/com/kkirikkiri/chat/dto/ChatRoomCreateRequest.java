@@ -9,9 +9,10 @@ import com.kkirikkiri.chat.entity.ChatRoomCategory;
  * 채팅방 생성 또는 기존 방 조회 요청.
  * 출처별 필수 필드, 댓글의 게시글 소속 및 대상 작성자 일치는 서비스에서 검증한다.
  * COMMENT 출처는 API 계약에 따라 sourcePostId와 sourceCommentId를 모두 받는다.
+ * COMMENT의 targetUserId는 생략 가능하며, 익명 댓글은 서버에서 작성자를 결정한다.
  */
 public record ChatRoomCreateRequest(
-		@NotNull Long targetUserId,
+		Long targetUserId,
 		@NotNull ChatRoomCategory category,
 		Long sourcePostId,
 		Long sourceCommentId,

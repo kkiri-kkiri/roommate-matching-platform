@@ -128,7 +128,7 @@ test.each([
   expect(dialog.getByText("서로 배려하며 지내요.")).toBeInTheDocument();
   expect(profile.tags).toEqual(Array.from({ length: count }, (_, index) => `생활습관${index}`));
   fireEvent.click(dialog.getByRole("button", {
-    name: category === "ROOMMATE" ? "상세 프로필 보기" : "대화로 돌아가기",
+    name: category === "ROOMMATE" ? "상세 프로필 보기" : "닫기",
   }));
   expect(screen.queryByRole("dialog", { name: "상대방 프로필" })).not.toBeInTheDocument();
   if (category === "ROOMMATE") {

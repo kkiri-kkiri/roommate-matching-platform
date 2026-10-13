@@ -63,6 +63,7 @@ class CommunityPostServiceTest {
 	@Mock ConstraintViolation<PostImagesRequest> imageViolation;
 	@Mock CommunityCommentRepository communityCommentRepository;
 	@Mock CommentLikeRepository commentLikeRepository;
+	@Mock com.kkirikkiri.community.comment.service.CommunityAnonymousAuthorService anonymousAuthorService;
 	@Mock PostLikeRepository postLikeRepository;
 	@Mock UserRepository userRepository;
 	@InjectMocks CommunityPostService service;
@@ -531,6 +532,28 @@ class CommunityPostServiceTest {
 		assertEquals(viewerId != null, result.liked());
 		assertEquals(viewerId != null, result.reported());
 		if (viewerId == null) verify(commentLikeRepository, never()).findLikedCommentIds(any(), any());
+	}
+
+	@ParameterizedTest
+	@NullSource
+	@ValueSource(longs = {7, 8})
+	void returnsStoredAnonymousNumberAndViewerOwnershipWithoutRealProfile(Long viewerId) {
+		when(user.getUserId()).thenReturn(7L);
+		CommunityComment comment = new CommunityComment(post, user, null, "익명 댓글");
+		comment.changeAnonymous(true);
+		ReflectionTestUtils.setField(comment, "commentId", 10L);
+		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+		when(anonymousAuthorService.resolveNumbers(1L, null)).thenReturn(java.util.Map.of(7L, 4L));
+		when(communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(1L, CommunityContentStatus.ACTIVE))
+				.thenReturn(List.of(comment));
+		var response = service.getPost(viewerId, 1L).comments().getFirst();
+		assertEquals(4L, response.anonymousNumber());
+		assertEquals("익명4", response.author().nickname());
+		assertNull(response.author().id());
+		assertNull(response.author().major());
+		assertEquals(Long.valueOf(7).equals(viewerId), response.mine());
+		// 게시글 프로필 조회 1회 외에 익명 댓글의 프로필은 조회하지 않는다.
+		verify(userProfileRepository, times(1)).findByUser_UserId(7L);
 	}
 
 	private void stubPostForLike() {

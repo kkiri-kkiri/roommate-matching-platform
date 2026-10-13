@@ -17,6 +17,10 @@ import com.kkirikkiri.community.common.entity.CommunityContentStatus;
 public interface CommunityCommentRepository extends JpaRepository<CommunityComment, Long> {
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select c from CommunityComment c where c.post.postId = :postId and c.anonymous = true order by c.createdAt, c.commentId")
+	List<CommunityComment> findAnonymousHistory(@Param("postId") Long postId);
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("select c from CommunityComment c where c.commentId = :commentId and c.status = :status")
 	Optional<CommunityComment> findForLikeUpdate(@Param("commentId") Long commentId,
 			@Param("status") CommunityContentStatus status);

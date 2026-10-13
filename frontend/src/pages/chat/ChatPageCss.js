@@ -538,6 +538,7 @@ export const ProfileDetails = styled.dl`
   padding: 16px;
   border-radius: 16px;
   background: #f7f8fa;
+  &:last-child { margin-bottom: 0; }
   dt { color: #747781; font-size: 12px; }
   dd { margin: 0; color: #30343d; font-size: 13px; overflow-wrap: anywhere; }
 `;
