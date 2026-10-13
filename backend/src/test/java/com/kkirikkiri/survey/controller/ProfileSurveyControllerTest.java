@@ -37,7 +37,7 @@ class ProfileSurveyControllerTest {
         return new ProfileSurveyRequest("22시 이전", "07시 이전", "없음", "없음", "없음", "보통",
                 "가능", "비흡연", "상관없음", "항상 밖에서", "항상 이어폰 사용해주세요",
                 "저녁", "20분", "주 2회", "같이 청소", List.of("월"), List.of("조식"),
-                meal, "적당히 대화", "보통", "사용 안 함", "사용하지 않아요", "일부만 공유");
+                meal, "적당히 대화", "보통", "사용 안 함", "사용하지 않아요", "일부만 공유", null);
     }
 
     @Test void requiresAuthentication() throws Exception {
@@ -72,5 +72,24 @@ class ProfileSurveyControllerTest {
                 .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(request(null))))
                 .andExpect(status().isBadRequest());
         verify(service, times(1)).saveOrUpdateMyProfileSurvey(eq(7L), any());
+    }
+
+    @Test void introductionLimitAndJwtOwnershipAreEnforced() throws Exception {
+        login();
+        var payload = new java.util.LinkedHashMap<String, Object>(json.readValue(
+                json.writeValueAsString(request("같이 먹고 싶음")), java.util.Map.class));
+        payload.put("userId", 99L);
+        payload.put("introduction", "가".repeat(201));
+        mvc.perform(put("/api/users/me/profile-survey").header("Authorization", "Bearer test-token")
+                .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(payload)))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(service);
+        payload.put("introduction", "한글\n소개");
+        when(service.saveOrUpdateMyProfileSurvey(eq(7L), any()))
+                .thenReturn(new ProfileSurveyResponse(false, null, "한글\n소개"));
+        mvc.perform(put("/api/users/me/profile-survey").header("Authorization", "Bearer test-token")
+                .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(payload)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.introduction").value("한글\n소개"));
+        verify(service).saveOrUpdateMyProfileSurvey(eq(7L), argThat(r -> "한글\n소개".equals(r.introduction())));
     }
 }

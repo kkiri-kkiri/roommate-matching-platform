@@ -32,5 +32,6 @@ public record ProfileSurveyRequest(
 		@NotBlank(message = "온도 선호를 선택해 주세요.") @Size(max = 30, message = "온도 선호는 30자 이하여야 합니다.") String temperaturePreference,
 		@NotBlank(message = "향 제품 사용 여부를 선택해 주세요.") @Size(max = 50, message = "향 제품 사용 여부는 50자 이하여야 합니다.") String scentProductUse,
 		@NotBlank(message = "데스크탑 사용 여부를 선택해 주세요.") @Size(max = 50, message = "데스크탑 사용 여부는 50자 이하여야 합니다.") String desktopUse,
-		@NotBlank(message = "공용물품 사용 방식을 선택해 주세요.") @Size(max = 50, message = "공용물품 사용 방식은 50자 이하여야 합니다.") String sharedItems) {
+		@NotBlank(message = "공용물품 사용 방식을 선택해 주세요.") @Size(max = 50, message = "공용물품 사용 방식은 50자 이하여야 합니다.") String sharedItems,
+		@Size(max = 200, message = "나의 한마디는 200자 이하여야 합니다.") String introduction) {
 }

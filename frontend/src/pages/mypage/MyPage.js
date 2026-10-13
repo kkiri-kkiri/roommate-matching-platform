@@ -166,6 +166,10 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
   const save = async (event) => {
     event.preventDefault();
     if (saving) return;
+    if (!isPreference && (draft.introduction || "").length > 200) {
+      setErrors({ introduction: "나의 한마디는 200자 이하여야 합니다." });
+      return;
+    }
     const missing = sections
       .flatMap((section) => section.fields)
       .filter((field) => !hasAnswer(draft[field.id]));
@@ -417,6 +421,36 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
                   )}
                 </S.Card>
               ))}
+              {!isPreference && (
+                <S.Card>
+                  <S.CardHeader><S.CardTitle>나의 한마디</S.CardTitle></S.CardHeader>
+                  <S.Description id="introduction-help">함께 생활할 룸메이트에게 나를 소개해 보세요.</S.Description>
+                  {draft ? (
+                    <S.Field>
+                      <S.Label htmlFor="survey-introduction">나의 한마디 (선택)</S.Label>
+                      <S.IntroductionInput
+                        id="survey-introduction"
+                        rows={4}
+                        maxLength={200}
+                        value={draft.introduction || ""}
+                        placeholder="안녕하세요! 저는 조용한 환경을 좋아하고 서로 배려하면서 편안하게 생활할 룸메이트를 찾고 있어요."
+                        aria-describedby="introduction-help introduction-count introduction-error"
+                        aria-invalid={Boolean(errors.introduction)}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          if (value.length <= 200 || value.length < (draft.introduction || "").length) {
+                            updateValue({ id: "introduction" }, value);
+                          }
+                        }}
+                      />
+                      <S.Description id="introduction-count">{(draft.introduction || "").length} / 200</S.Description>
+                      <S.FieldError id="introduction-error" role={errors.introduction ? "alert" : undefined}>{errors.introduction}</S.FieldError>
+                    </S.Field>
+                  ) : (
+                    <S.IntroductionText>{values.introduction?.trim() ? values.introduction : "아직 한마디를 작성하지 않았어요."}</S.IntroductionText>
+                  )}
+                </S.Card>
+              )}
               {draft && (
                 <S.FormActions>
                   <S.GhostButton
@@ -963,7 +997,7 @@ function MyPage({ currentUser, onUserUpdated }) {
     setProfileAnswers(createEmptyProfileAnswers());
     getMyProfileSurvey(controller.signal).then((survey) => {
       if (controller.signal.aborted) return;
-      setProfileAnswers({ ...createEmptyProfileAnswers(), ...survey.answers });
+      setProfileAnswers({ ...createEmptyProfileAnswers(), ...survey.answers, introduction: survey.introduction ?? "" });
       setSurveyState({ status: "success", completed: survey.completed, error: "" });
     }).catch((error) => {
       if (!controller.signal.aborted) setSurveyState({ status: "error", completed: false, error: error.message });
@@ -1257,7 +1291,7 @@ function MyPage({ currentUser, onUserUpdated }) {
                       const version = surveyRequestVersion.current;
                       const survey = await saveMyProfileSurvey(savedAnswers);
                       if (version !== surveyRequestVersion.current) return false;
-                      setProfileAnswers({ ...createEmptyProfileAnswers(), ...survey.answers });
+                      setProfileAnswers({ ...createEmptyProfileAnswers(), ...survey.answers, introduction: survey.introduction ?? "" });
                       setSurveyState({ status: "success", completed: survey.completed, error: "" });
                     } else {
                       await saveMyPreferences(savedAnswers);

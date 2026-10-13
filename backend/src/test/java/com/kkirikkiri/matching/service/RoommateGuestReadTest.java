@@ -96,4 +96,25 @@ class RoommateGuestReadTest {
         assertEquals("22시 ~ 23시", service.getRoommateDetail(8L, 42L).answers().sleepTime());
         verify(refresh, times(2)).refreshTargets(8L, List.of(42L));
     }
+
+    @Test
+    void listDetailAndFavoritesReadTheSameLatestIntroduction() {
+        when(profiles.findAllByUser_UserIdIn(List.of(42L))).thenReturn(List.of(profile));
+        var targetUser = profile.getUser();
+        when(survey.getUser()).thenReturn(targetUser);
+        when(surveys.findAllByUser_UserIdIn(List.of(42L))).thenReturn(List.of(survey));
+        when(surveys.findByUser_UserId(42L)).thenReturn(Optional.of(survey));
+        var like = mock(com.kkirikkiri.matching.entity.ProfileLike.class);
+        when(like.getTargetUser()).thenReturn(targetUser);
+        when(likes.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(like)));
+        for (String text : List.of("첫 소개\n안녕하세요", "수정된 소개", "")) {
+            when(profile.getIntroduction()).thenReturn(text);
+            assertEquals(text, service.getRoommates(8L, null, PageRequest.of(0, 9)).content().getFirst().introduction());
+            assertEquals(text, service.getRoommateDetail(8L, 42L).introduction());
+            assertEquals(text, service.getLikedRoommates(8L, PageRequest.of(0, 6)).content().getFirst().introduction());
+        }
+        verify(likes, never()).saveAndFlush(any());
+        verify(likes, never()).delete(any(com.kkirikkiri.matching.entity.ProfileLike.class));
+    }
 }
