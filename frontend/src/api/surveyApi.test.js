@@ -40,3 +40,13 @@ test("propagates server failure without manufacturing successful answers", async
   mockRequest.mockRejectedValue({ response: { data: { message: "저장 실패" } } });
   await expect(saveMyProfileSurvey({})).rejects.toThrow("저장 실패");
 });
+
+test("transports introduction with the survey and returns server-normalized text", async () => {
+  const answers = { sleepTime: "22시 이전", introduction: " \n " };
+  const data = { completed: true, answers: { sleepTime: "22시 이전" }, introduction: "" };
+  mockRequest.mockResolvedValue({ data: { success: true, data } });
+  await expect(saveMyProfileSurvey(answers)).resolves.toEqual(data);
+  expect(mockRequest).toHaveBeenCalledWith(expect.objectContaining({ data: answers }));
+  mockRequest.mockResolvedValue({ data: { success: true, data: { ...data, introduction: "한글\n소개" } } });
+  expect((await getMyProfileSurvey()).introduction).toBe("한글\n소개");
+});

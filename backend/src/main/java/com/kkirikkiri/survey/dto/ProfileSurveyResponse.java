@@ -9,7 +9,12 @@ import com.kkirikkiri.survey.entity.ProfileSurveyOption;
 
 public record ProfileSurveyResponse(
 		boolean completed,
-		@JsonInclude(JsonInclude.Include.ALWAYS) Answers answers) {
+		@JsonInclude(JsonInclude.Include.ALWAYS) Answers answers,
+		@JsonInclude(JsonInclude.Include.ALWAYS) String introduction) {
+
+	public ProfileSurveyResponse(boolean completed, Answers answers) {
+		this(completed, answers, null);
+	}
 
 	/**
 	 * 설문이 없으면 미작성 응답을 반환한다.

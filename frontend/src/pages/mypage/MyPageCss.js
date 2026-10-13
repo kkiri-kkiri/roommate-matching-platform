@@ -830,6 +830,18 @@ export const Label = styled.label`
 export const Input = styled.input`
   ${control}
 `;
+export const IntroductionInput = styled.textarea`
+  ${control}
+  height: auto;
+  min-height: 120px;
+  resize: vertical;
+`;
+export const IntroductionText = styled.p`
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: ${colors.secondary};
+  line-height: 1.7;
+`;
 export const Select = styled.select`
   ${control} cursor: pointer;
 `;

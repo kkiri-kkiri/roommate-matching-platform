@@ -568,7 +568,21 @@ PUT 요청 본문은 answers로 감싸지 않고 아래 객체를 그대로 전�
 }
 ```
 
-현재 MyPage 저장 로직에서는 화면에 노출된 모든 설문 항목에 답변이 있어야 저장된다.
+현재 MyPage 저장 로직에서는 필수 설문 항목에 답변이 있어야 저장된다. 마지막의 `나의 한마디`는 선택 항목이다.
+
+PUT 본문에는 선택 필드 `introduction`을 함께 보낸다. 저장 위치는 기존 `USER_PROFILE.introduction`이며
+PROFILE_SURVEY에 복제하지 않는다. GET/PUT 응답은 `{ "completed": true, "answers": { ... }, "introduction": "안녕하세요\n반가워요" }`이다.
+설문이 없을 때도 `answers: null`과 별도로 기존 프로필의 `introduction`을 반환한다.
+JWT 사용자 자신의 프로필과 설문을 같은 트랜잭션에서 수정한다. 다른 사용자의 ID를 본문으로 지정할 수 없다.
+
+- 최대 200 UTF-16 코드 단위: Java String.length/Bean Validation Size와 JavaScript length/textarea maxLength 기준을 맞춘다.
+- 200자 초과는 400 Validation 오류이며 저장하지 않는다. 한글과 개행, 내용이 있는 문자열의 앞뒤 공백은 보존한다.
+- 빈 문자열 또는 공백만 있는 문자열은 빈 문자열로 저장하여 삭제한다.
+- null 또는 필드 생략은 기존 소개를 유지한다. 이전 클라이언트의 설문 저장으로 기존 소개가 지워지지 않는다.
+- 기존 201~255자 소개는 조회 시 자르지 않는다. 새로 저장할 소개는 200자 이하로 수정해야 한다.
+- introduction은 설문 완료 판정 및 매칭 점수 계산 대상이 아니다. 설문 답변 변경 시 기존 매칭 갱신 이벤트를 유지한다.
+- PUT은 기존과 같이 필수 설문 답변 전체를 요구한다. 소개만 있는 불완전한 요청은 거부하여 설문 유실을 방지한다.
+- 룸메찾기 목록/상세/관심 프로필은 기존 USER_PROFILE.introduction을 매번 조회한다.
 
 Response data는 GET과 동일한 `{ "completed": true, "answers": { ... } }` 형식이다.
 검증 후 JWT 사용자에 해당하는 현재 설문을 생성/수정하고, 저장한 단일·복수 응답을 반환한다.
@@ -576,7 +590,7 @@ Response data는 GET과 동일한 `{ "completed": true, "answers": { ... } }` �
 GET의 completed는 DB 완료 플래그와 필수 응답의 유효성을 함께 확인한다. 설문이 없으면 false/null,
 저장된 응답이 불완전하면 false/기존 응답을 반환하며 조회만으로 DB를 수정하지 않는다.
 localStorage 설문은 조회·저장·완료 판정에 사용하지 않고 자동으로 DB에 이전하지 않는다.
-현재 구현의 요청/응답 필드는 ProfileSurveyRequest 기준 23개이며, 기존 명세 예시의 과거 필드 hairDryer/bugHandling은
+현재 구현의 요청 필드는 ProfileSurveyRequest 기준 필수 설문 23개와 선택 introduction이며, 기존 명세 예시의 과거 필드 hairDryer/bugHandling은
 현재 DTO와 Entity에 존재하지 않는다. 이번 변경에서 해당 필드를 추가하거나 스키마를 변경하지 않는다.
 
 5. 선호 룸메이트 설문
@@ -2375,7 +2389,7 @@ tags
 
 구현 전에 다음을 결정한다.
 
-introduction, profileImageUrl의 수정 UI를 추가할지 결정
+introduction 수정 UI는 마이페이지 내 설문의 마지막 선택 항목으로 제공한다(4.2 참고). profileImageUrl 수정 UI는 별도 검토한다.
 
 tags는 별도 저장하지 않고 프로필/설문 값에서 서버가 생성
 

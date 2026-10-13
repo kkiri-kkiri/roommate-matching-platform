@@ -49,7 +49,7 @@ test("loads DB values and displays the save response, including meal and multipl
   expect(screen.getByLabelText("기상시간")).toHaveValue("07시 이전");
   fireEvent.click(screen.getByRole("button", { name: "저장" }));
   await waitFor(() => expect(screen.getByText("각자 먹고 싶음")).toBeInTheDocument());
-  expect(surveyApi.saveMyProfileSurvey).toHaveBeenCalledWith(answers);
+  expect(surveyApi.saveMyProfileSurvey).toHaveBeenCalledWith({ ...answers, introduction: "" });
   view.unmount();
   surveyApi.getMyProfileSurvey.mockResolvedValue({ completed: true, answers: saved });
   render(<MyPage currentUser={user} />);
@@ -85,4 +85,67 @@ test("completion summary remains unknown while fetching and follows backend comp
   expect(screen.queryByText("작성 완료")).not.toBeInTheDocument();
   resolve({ completed: false, answers });
   expect(await screen.findByText("0 / 2 완료")).toBeInTheDocument();
+});
+
+test("introduction is last and optional, saves with all answers, and reloads the server result", async () => {
+  surveyApi.getMyProfileSurvey.mockResolvedValue({ completed: true, answers, introduction: "기존\n소개" });
+  surveyApi.saveMyProfileSurvey.mockResolvedValue({ completed: true, answers, introduction: "서버\n응답" });
+  const view = render(<MyPage currentUser={user} />);
+  fireEvent.click(await screen.findByRole("button", { name: "설문 수정" }));
+  const input = screen.getByLabelText("나의 한마디 (선택)");
+  expect(input).toHaveValue("기존\n소개");
+  expect(input).toHaveAttribute("maxlength", "200");
+  expect(screen.getAllByRole("heading", { level: 3 }).at(-1)).toHaveTextContent("나의 한마디");
+  fireEvent.change(input, { target: { value: "새로운\n소개" } });
+  expect(screen.getByText("6 / 200")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "저장" }));
+  await waitFor(() => expect(surveyApi.saveMyProfileSurvey).toHaveBeenCalledWith({ ...answers, introduction: "새로운\n소개" }));
+  await waitFor(() => expect(screen.getByText(/서버\s+응답/)).toBeInTheDocument());
+  view.unmount();
+  surveyApi.getMyProfileSurvey.mockResolvedValue({ completed: true, answers, introduction: "서버\n응답" });
+  render(<MyPage currentUser={user} />);
+  fireEvent.click(await screen.findByRole("button", { name: "설문 수정" }));
+  expect(screen.getByLabelText("나의 한마디 (선택)")).toHaveValue("서버\n응답");
+});
+
+test("enforces UTF-16 limit and retains the draft after save failure", async () => {
+  surveyApi.getMyProfileSurvey.mockResolvedValue({ completed: true, answers, introduction: "" });
+  surveyApi.saveMyProfileSurvey.mockRejectedValue(new Error("저장 실패"));
+  render(<MyPage currentUser={user} />);
+  fireEvent.click(await screen.findByRole("button", { name: "설문 수정" }));
+  const input = screen.getByLabelText("나의 한마디 (선택)");
+  fireEvent.change(input, { target: { value: "😀".repeat(100) } });
+  expect(screen.getByText("200 / 200")).toBeInTheDocument();
+  fireEvent.change(input, { target: { value: "가".repeat(201) } });
+  expect(input).toHaveValue("😀".repeat(100));
+  fireEvent.click(screen.getByRole("button", { name: "저장" }));
+  await waitFor(() => expect(window.alert).toHaveBeenCalledWith("저장 실패"));
+  expect(input).toHaveValue("😀".repeat(100));
+});
+
+test("clears introduction and displays the empty fallback without losing survey completion", async () => {
+  surveyApi.getMyProfileSurvey.mockResolvedValue({ completed: true, answers, introduction: "기존 소개" });
+  surveyApi.saveMyProfileSurvey.mockResolvedValue({ completed: true, answers, introduction: "" });
+  render(<MyPage currentUser={user} />);
+  fireEvent.click(await screen.findByRole("button", { name: "설문 수정" }));
+  fireEvent.change(screen.getByLabelText("나의 한마디 (선택)"), { target: { value: "" } });
+  fireEvent.click(screen.getByRole("button", { name: "저장" }));
+  expect(await screen.findByText("아직 한마디를 작성하지 않았어요.")).toBeInTheDocument();
+  expect(surveyApi.saveMyProfileSurvey).toHaveBeenCalledWith({ ...answers, introduction: "" });
+  expect(screen.getByRole("button", { name: "설문 수정" })).toBeInTheDocument();
+});
+
+test("preserves legacy text on load and allows shortening it to the new limit", async () => {
+  surveyApi.getMyProfileSurvey.mockResolvedValue({ completed: true, answers, introduction: "가".repeat(255) });
+  render(<MyPage currentUser={user} />);
+  fireEvent.click(await screen.findByRole("button", { name: "설문 수정" }));
+  const input = screen.getByLabelText("나의 한마디 (선택)");
+  expect(input).toHaveValue("가".repeat(255));
+  fireEvent.change(input, { target: { value: "가".repeat(254) } });
+  expect(input).toHaveValue("가".repeat(254));
+  fireEvent.click(screen.getByRole("button", { name: "저장" }));
+  expect(surveyApi.saveMyProfileSurvey).not.toHaveBeenCalled();
+  expect(screen.getByRole("alert")).toHaveTextContent("200자 이하");
+  fireEvent.change(input, { target: { value: "가".repeat(200) } });
+  expect(input).toHaveValue("가".repeat(200));
 });

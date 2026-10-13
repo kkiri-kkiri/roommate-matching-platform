@@ -94,6 +94,11 @@ public class UserProfile {
 		this.nickname = Objects.requireNonNull(nickname, "nickname");
 	}
 
+	/** Length validation is performed by the survey request; retain meaningful whitespace. */
+	public void changeIntroduction(String introduction) {
+		this.introduction = introduction;
+	}
+
 	public void changeDormitory(Dormitory dormitory) {
 		this.dormitory = Objects.requireNonNull(dormitory, "dormitory");
 	}

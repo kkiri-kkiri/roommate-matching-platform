@@ -229,7 +229,7 @@ export const Introduction = styled.div`
   border-radius: 12px;
   background: ${colors.ivory};
   > svg { flex-shrink: 0; margin-top: 2px; color: ${colors.mintDark}; }
-  p { margin: 6px 0 0; color: ${colors.secondary}; font-size: 16px; line-height: 26px; overflow-wrap: anywhere; }
+  p { margin: 6px 0 0; color: ${colors.secondary}; font-size: 16px; line-height: 26px; overflow-wrap: anywhere; white-space: pre-wrap; }
   @media (max-width: 600px) { p { font-size: 14px; line-height: 22px; } }
 `;
 
