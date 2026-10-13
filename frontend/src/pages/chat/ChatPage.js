@@ -81,10 +81,10 @@ function ChatDialog({ title, description, onDismiss, children }) {
   );
 }
 
-function ChatPage() {
+function ChatPage({ currentUser }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isAuthenticated] = useState(() => Boolean(window.localStorage.getItem("accessToken")));
+  const isAuthenticated = Boolean(currentUser);
   const [searchParams, setSearchParams] = useSearchParams();
   const [rooms, setRooms] = useState([]);
   const [category, setCategory] = useState("all");

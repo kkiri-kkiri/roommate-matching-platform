@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useState } from "react";
+import { startTransition } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
@@ -15,42 +15,10 @@ import MainPage from "./pages/main/MainPage";
 import MyPage from "./pages/mypage/MyPage";
 import RoommateSearchPage from "./pages/roommate/RoommateSearchPage";
 import SignupPage from "./pages/auth/SignupPage";
-
-const AUTHENTICATED_USER_KEY = "roomieAuthenticatedUser";
-
-function getStoredAuthenticatedUser() {
-  try {
-    if (!window.localStorage.getItem("accessToken")) return null;
-
-    const user = JSON.parse(
-      window.localStorage.getItem(AUTHENTICATED_USER_KEY),
-    );
-    if (!user?.id || typeof user.name !== "string") return null;
-
-    return user;
-  } catch {
-    return null;
-  }
-}
-
-function clearStoredAuthentication() {
-  try {
-    [AUTHENTICATED_USER_KEY, "accessToken", "token", "user", "profile"]
-      .forEach((key) => window.localStorage.removeItem(key));
-  } catch {
-    // 저장소를 사용할 수 없어도 화면의 로그인 상태는 해제합니다.
-  }
-}
+import { useAuthentication } from "./auth/useAuthentication";
 
 function AdminRoute({ currentUser }) {
-  let accessToken;
-  try {
-    accessToken = window.localStorage.getItem("accessToken");
-  } catch {
-    // A token is required by the existing admin API client.
-  }
-
-  if (!accessToken) return <Navigate to="/login" replace />;
+  if (!currentUser) return <Navigate to="/login" replace />;
   return currentUser?.role === "ADMIN"
     ? <AdminPage />
     : <Navigate to="/" replace />;
@@ -60,53 +28,24 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const backgroundLocation = location.state?.backgroundLocation;
-  const [currentUser, setCurrentUser] = useState(null);
-  const [authInitialized, setAuthInitialized] = useState(false);
-
-  useEffect(() => {
-    // 하위 화면이 로그인 여부를 판단하기 전에 저장된 인증 상태를 복원합니다.
-    const storedUser = getStoredAuthenticatedUser();
-    if (!storedUser) clearStoredAuthentication();
-    setCurrentUser(storedUser);
-    setAuthInitialized(true);
-  }, []);
-
-  const handleLogin = ({ id, displayName, schoolEmail, role }) => {
-    const name = displayName || schoolEmail || "내 프로필";
-    const authenticatedUser = {
-      id,
-      role,
-      name,
-      initial: name.slice(0, 1),
-    };
-
-    setCurrentUser(authenticatedUser);
-
-    try {
-      window.localStorage.setItem(
-        AUTHENTICATED_USER_KEY,
-        JSON.stringify(authenticatedUser),
-      );
-    } catch {
-      // 저장소를 사용할 수 없어도 현재 화면의 로그인은 계속 진행합니다.
-    }
-  };
+  const { currentUser, authInitialized, handleLogin, clearStoredAuthentication } = useAuthentication();
 
   const handleLogout = () => {
-    clearStoredAuthentication();
     // 인증 상태와 경로를 함께 변경해 기존 화면의 로그인 리다이렉트를 방지합니다.
     startTransition(() => {
-      setCurrentUser(null);
+      clearStoredAuthentication();
       navigate("/", { replace: true });
     });
   };
 
   if (!authInitialized) return null;
 
-  const myPageElement = <MyPage currentUser={currentUser} onUserUpdated={(user) => handleLogin({ id: user.id, displayName: user.nickname, schoolEmail: user.schoolEmail, role: currentUser?.role })} />;
+  const myPageElement = currentUser
+    ? <MyPage currentUser={currentUser} onUserUpdated={(user) => handleLogin({ id: user.id, displayName: user.nickname, schoolEmail: user.schoolEmail, role: currentUser?.role })} />
+    : <Navigate to="/login" replace />;
 
   return (
-    <CalendarDataProvider userId={currentUser?.id}>
+    <CalendarDataProvider key={currentUser?.id || "guest"} userId={currentUser?.id}>
       <Routes location={backgroundLocation || location}>
         <Route
           element={
@@ -145,7 +84,7 @@ function App() {
             path="/community/my-comments"
             element={<CommunityPage currentUser={currentUser} />}
           />
-          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat" element={<ChatPage currentUser={currentUser} />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/profile" element={myPageElement} />
           <Route path="/mypage" element={myPageElement} />

@@ -48,6 +48,7 @@ public class SecurityConfig {
 								"/api/auth/password-reset/request", "/api/auth/password-reset/confirm")
 						.permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/auth/signup/availability").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
 						.requestMatchers("/api/users/me", "/api/users/me/password").authenticated()
 						.requestMatchers(HttpMethod.GET, "/api/users/me/profile-survey",
 								"/api/users/me/roommate-preferences")

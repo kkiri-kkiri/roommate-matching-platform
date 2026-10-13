@@ -75,6 +75,10 @@ Access Token에는 최소 userId, role을 포함한다.
 
 초기 버전에서는 Refresh Token을 사용하지 않는다.
 
+앱 진입 및 장시간 비활성 후 복귀 시 GET /api/auth/me로 저장된 Access Token을 검증한다.
+만료되거나 서버가 401을 반환한 토큰은 삭제하고 비로그인 상태로 전환한다.
+서버 재시작 자체는 유효한 JWT를 만료시키지 않는다. 동일한 JWT_SECRET과 활성 계정이 유지되면 만료시간까지 사용할 수 있다.
+
 Refresh Token 및 재발급 기능은 필요 시 추후 추가한다.
 
 1.3 공통 성공 응답
@@ -180,6 +184,24 @@ Validation:
 password 필수
 
 이메일/비밀번호 불일치 시 동일한 인증 실패 메시지 반환
+
+2.1.1 현재 인증 사용자 확인
+
+GET /api/auth/me
+
+Authorization: Bearer {accessToken} 필수. 서명·만료시간·활성 계정을 검증하고 아래 데이터를 반환한다.
+프로필이 없는 계정은 nickname에 학교 이메일을 반환한다.
+
+```json
+{
+  "id": 1,
+  "schoolEmail": "student@hknu.ac.kr",
+  "nickname": "학생",
+  "role": "USER"
+}
+```
+
+토큰 누락·만료·잘못된 서명 또는 비활성/삭제된 계정은 401 UNAUTHORIZED를 반환한다.
 
 2.2 로그아웃
 

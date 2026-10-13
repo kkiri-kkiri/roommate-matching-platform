@@ -4,44 +4,8 @@ import { ChevronDown, LogOut, UserRound } from "lucide-react";
 
 import * as S from "./HeaderCss";
 
-function getStoredUser() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const accessToken =
-    window.localStorage.getItem("accessToken") ||
-    window.localStorage.getItem("token");
-
-  if (!accessToken) {
-    return null;
-  }
-
-  try {
-    const storedProfile = JSON.parse(
-      window.localStorage.getItem("user") ||
-        window.localStorage.getItem("profile") ||
-        "{}",
-    );
-
-    return {
-      name: storedProfile.name || storedProfile.nickname || "내 프로필",
-      initial: (storedProfile.name || storedProfile.nickname || "나").slice(
-        0,
-        1,
-      ),
-    };
-  } catch {
-    return {
-      name: "내 프로필",
-      initial: "나",
-    };
-  }
-}
-
 function Header({ currentUser, onLogout }) {
-  const authenticatedUser =
-    currentUser === undefined ? getStoredUser() : currentUser;
+  const authenticatedUser = currentUser;
   const myPagePath = authenticatedUser?.role === "ADMIN" ? "/admin" : "/mypage";
   const profileMenuRef = useRef(null);
   const profileButtonRef = useRef(null);

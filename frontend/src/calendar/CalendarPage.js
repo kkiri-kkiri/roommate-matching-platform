@@ -228,7 +228,7 @@ function CalendarPage() {
 
   const openEdit = () => {
     if (savingRef.current || activeEvent.editable === false) return;
-    setDraft({ ...activeEvent, endDate: activeEvent.endDate || activeEvent.date });
+    setDraft(normalizeEventTimes({ ...activeEvent, endDate: activeEvent.endDate || activeEvent.date }));
     setErrors({});
     setDialog({ mode: "edit", eventId: activeEvent.id });
   };

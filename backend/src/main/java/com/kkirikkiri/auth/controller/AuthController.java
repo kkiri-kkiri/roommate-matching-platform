@@ -2,6 +2,8 @@ package com.kkirikkiri.auth.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +15,7 @@ import com.kkirikkiri.auth.dto.LoginEmailCheckResponse;
 import com.kkirikkiri.auth.dto.LoginResponse;
 import com.kkirikkiri.auth.service.AuthService;
 import com.kkirikkiri.global.response.ApiResponse;
+import com.kkirikkiri.global.security.AuthenticatedUser;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,6 +23,11 @@ import com.kkirikkiri.global.response.ApiResponse;
 public class AuthController {
 
 	private final AuthService authService;
+
+	@GetMapping("/me")
+	public ApiResponse<LoginResponse.LoginUser> getAuthenticatedUser(@AuthenticationPrincipal AuthenticatedUser user) {
+		return ApiResponse.success(authService.getAuthenticatedUser(user.userId()));
+	}
 
 	@PostMapping("/login/email-check")
 	public ApiResponse<LoginEmailCheckResponse> checkEmail(@Valid @RequestBody LoginEmailCheckRequest request) {

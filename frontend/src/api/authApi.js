@@ -1,4 +1,14 @@
 import axios from "axios";
+import { createApiClient } from "./apiClient";
+
+const sessionClient = createApiClient();
+
+export async function getAuthenticatedUser(token) {
+  const response = await sessionClient.get("/auth/me", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data.data;
+}
 
 const apiClient = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:8080/api",

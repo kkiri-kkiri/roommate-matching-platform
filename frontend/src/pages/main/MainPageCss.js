@@ -153,6 +153,59 @@ export const MoreLink = styled.a`
   }
 `;
 
+export const GuestRecommendation = styled.div`
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 16px;
+    text-align: center;
+  }
+`;
+
+export const GuestCharacterFrame = styled.span`
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: 144px;
+  aspect-ratio: 5 / 7;
+  overflow: hidden;
+
+  @media (max-width: 640px) {
+    width: 116px;
+  }
+`;
+
+// Show only the character: crop the 420×595 source to (90, 100, 250, 350).
+export const GuestCharacter = styled.img`
+  position: absolute;
+  top: -28.5714285714%;
+  left: -36%;
+  display: block;
+  width: 168%;
+  max-width: none;
+  height: auto;
+`;
+
+export const GuestRecommendationContent = styled.div`
+  min-width: 0;
+
+  p {
+    margin: 0 0 16px;
+    color: ${colors.textSoft};
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 24px;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+`;
+
 export const ProfileGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
