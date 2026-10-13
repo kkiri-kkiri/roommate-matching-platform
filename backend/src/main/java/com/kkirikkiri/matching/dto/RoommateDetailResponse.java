@@ -3,6 +3,8 @@ package com.kkirikkiri.matching.dto;
 import java.util.List;
 
 import com.kkirikkiri.survey.entity.ProfileSurvey;
+import com.kkirikkiri.survey.entity.ProfileSurveyOption;
+import com.kkirikkiri.survey.dto.ProfileSurveyResponse;
 import com.kkirikkiri.user.entity.UserProfile;
 
 public record RoommateDetailResponse(
@@ -29,6 +31,7 @@ public record RoommateDetailResponse(
     public static RoommateDetailResponse from(
             UserProfile profile,
             ProfileSurvey survey,
+            List<ProfileSurveyOption> options,
             List<String> tags,
             Integer matchScore,
             boolean liked
@@ -49,7 +52,7 @@ public record RoommateDetailResponse(
                 profile.getProfileImageUrl(),
                 matchScore,
                 liked,
-                Answers.from(survey)
+                Answers.from(survey, options)
         );
     }
 
@@ -78,11 +81,14 @@ public record RoommateDetailResponse(
             String scentProductUse,
             String desktopUse,
             String sharedItems,
+            List<String> dormStayDays,
+            List<String> mealPlan,
 
             boolean completed
     ) {
 
-        public static Answers from(ProfileSurvey survey) {
+        public static Answers from(ProfileSurvey survey, List<ProfileSurveyOption> options) {
+            var answers = ProfileSurveyResponse.Answers.from(survey, options);
 
             return new Answers(
                     survey.getSleepTime(),
@@ -109,6 +115,8 @@ public record RoommateDetailResponse(
                     survey.getScentProductUse(),
                     survey.getDesktopUse(),
                     survey.getSharedItems(),
+                    answers.dormStayDays(),
+                    answers.mealPlan(),
 
                     survey.isCompleted()
             );

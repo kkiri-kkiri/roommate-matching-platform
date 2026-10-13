@@ -9,7 +9,6 @@ import * as S from "./DetailedProfileCss";
 import ProfileImage from "../ProfileImage";
 import { getRoommateDetail } from "../../../api/roommateApi";
 import { getProfileKey, useProfileLikes } from "./ProfileCard";
-import { getSavedSurveyProfiles } from "../../../pages/mypage/MyPage";
 
 // 상세 화면에서 사용하는 설문 항목은 기존 내 설문의 응답 키와 일치시킵니다.
 const SECTIONS = [
@@ -38,81 +37,12 @@ const SECTIONS = [
     id: "dorm", title: "기숙사 생활", icon: House,
     description: "서로의 공간과 취향을 존중하는 공동생활 방식을 알아보세요.",
     fields: [
-      ["roommateInteraction", "룸메이트와 교류 정도"], ["mealPlan", "신청한 기숙사 식사"],
+      ["roommateInteraction", "룸메이트와 교류 정도"], ["meal", "룸메이트와의 식사 방식"], ["mealPlan", "신청한 기숙사 식사"],
       ["scentProductUse", "향수·디퓨저 등 향 제품 사용"],
       ["desktopUse", "데스크탑 사용"], ["sharedItems", "공용물품 사용"],
     ],
   },
 ];
-
-const DEMO_ANSWERS = {
-  sleepTime: "23시 ~ 24시", wakeTime: "07시 ~ 08시",
-  sleepTalking: "없음", snoring: "없음", teethGrinding: "없음", sleepSensitivity: "보통",
-  lightingPreference: "어두움 선호", phoneCall: "항상 밖에서",
-  dormStayDays: ["월", "화", "수", "목", "금"],
-  cleaningFrequency: "주 1회", cleaningStyle: "상황에 따라 협의",
-  indoorEating: "냄새 안나는 음식 가능", smoking: "비흡연",
-  mediaSound: "항상 이어폰 사용해주세요", showerTime: "저녁", showerDuration: "20분",
-  temperaturePreference: "보통", roommateInteraction: "적당히 대화",
-  mealPlan: ["조식", "석식"], scentProductUse: "사용 안 함",
-  desktopUse: "사용하지 않아요", sharedItems: "일부만 공유",
-};
-
-const DEMO_PHOTO = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160"><rect width="160" height="160" rx="24" fill="#dff6f2"/><circle cx="80" cy="66" r="31" fill="#f2c5a7"/><path d="M47 66c0-27 15-43 36-43 23 0 34 17 34 39-11-2-21-8-28-18-8 12-22 20-42 22Z" fill="#363a46"/><path d="M35 160c3-35 20-53 45-53s42 18 45 53H35Z" fill="#00a79f"/><circle cx="68" cy="67" r="2.4" fill="#3d3532"/><circle cx="92" cy="67" r="2.4" fill="#3d3532"/><path d="M71 83c6 5 12 5 18 0" fill="none" stroke="#9b6254" stroke-width="2.5" stroke-linecap="round"/></svg>',
-)}`;
-
-const DEMO_PROFILES = {
-  "1": {
-    id: 1, nickname: "포근한구름", admissionYear: "24", grade: "3학년",
-    faculty: "컴퓨터응용수학부", major: "소프트웨어융합전공", dormitory: "나래", mbti: "INFJ",
-    message: "서로의 공부 시간을 존중하면서 편하게 지내고 싶어요.",
-    tags: ["비흡연", "아침형", "주 1회 청소"], photo: DEMO_PHOTO,
-    matchScore: 94, answers: DEMO_ANSWERS, chatRoomId: "roommate-cloud",
-  },
-  "2": {
-    id: 2, nickname: "새벽별", admissionYear: "23", grade: "4학년",
-    faculty: "법경영학부", major: "경영학전공", dormitory: "호연", mbti: "INTP",
-    message: "늦게 자는 편이지만 방에서는 늘 이어폰을 사용해요.",
-    tags: ["이어폰 사용", "깔끔해요", "개인 시간"],
-    matchScore: 88, chatRoomId: "community-star",
-    answers: {
-      ...DEMO_ANSWERS, sleepTime: "02시 ~ 03시", wakeTime: "10시 이후",
-      sleepTalking: "적음", snoring: "적음", sleepSensitivity: "어두움 (잘 깨지 않아요)",
-      indoorEating: "가능", phoneCall: "방에서는 짧게만", showerDuration: "30분",
-      cleaningFrequency: "주 2회", cleaningStyle: "각자 영역만 청소",
-      roommateInteraction: "필요한 대화만", mealPlan: ["중식", "석식"],
-      temperaturePreference: "추위 타요", scentProductUse: "가끔 사용",
-      sharedItems: "각자 사용",
-    },
-  },
-};
-
-export function getDetailedProfile(profileId, routeProfile) {
-  if (routeProfile?.source === "backend") {
-    return String(routeProfile.userId) === String(profileId) ? routeProfile : null;
-  }
-  const key = getProfileKey({ id: profileId });
-  const savedSurvey = getSavedSurveyProfiles().find((item) => item.id === key);
-  const supplied = routeProfile && getProfileKey(routeProfile) === key ? routeProfile : null;
-  const demo = Object.prototype.hasOwnProperty.call(DEMO_PROFILES, key) ? DEMO_PROFILES[key] : null;
-  if (!savedSurvey && !supplied && !demo) return null;
-  const profile = {
-    ...demo,
-    ...(savedSurvey ? { ...savedSurvey.profile, id: savedSurvey.id, answers: savedSurvey.answers } : {}),
-    ...supplied,
-  };
-  // 빈 응답 객체는 실제 미작성 상태이므로 다른 사람의 예시 답변으로 채우지 않습니다.
-  profile.answers = supplied?.answers ?? savedSurvey?.answers ?? demo?.answers ?? {};
-  const mbti = ["mbtiEnergy", "mbtiInformation", "mbtiDecision", "mbtiLifestyle"]
-    .map((id) => profile[id] || "").join("");
-  return {
-    ...profile,
-    admissionYear: profile.admissionYear || profile.year,
-    mbti: profile.mbti || (mbti.length === 4 ? mbti : ""),
-    tags: profile.tags || [],
-  };
-}
 
 function displayAnswer(value) {
   if (Array.isArray(value)) return value.filter(Boolean).join(" · ");
@@ -326,11 +256,8 @@ function DetailedProfile() {
     });
     return () => controller.abort();
   }, [serverRoute, profileId]);
-  const selectedProfile = serverRoute ? (remote.id === profileId ? remote.profile : null) : getDetailedProfile(profileId,
-    location.state?.profile,
-  );
-  const emptyPreview = !serverRoute && new URLSearchParams(location.search).get("preview") === "empty";
-  const profile = selectedProfile && (emptyPreview ? { ...selectedProfile, answers: {}, matchScore: null } : selectedProfile);
+  const selectedProfile = serverRoute && remote.id === profileId ? remote.profile : null;
+  const profile = selectedProfile;
   const chatRoomId = location.state?.chatRoomId;
   const returnTo = /^\d+$/.test(String(chatRoomId)) && Number(chatRoomId) > 0
     ? `/chat?room=${encodeURIComponent(chatRoomId)}`
@@ -341,7 +268,7 @@ function DetailedProfile() {
     else navigate(returnTo, { replace: true });
   }, [location.state?.fromProfileCard, navigate, returnTo]);
 
-  return <ProfileDialog key={`${profileId}-${emptyPreview}`} profile={profile} sourceProfile={selectedProfile}
+  return <ProfileDialog key={profileId} profile={profile} sourceProfile={selectedProfile}
     onDismiss={dismiss} returnTo={returnTo}
     loading={serverRoute && !selectedProfile && !(remote.id === profileId && remote.error)}
     error={serverRoute && remote.id === profileId ? remote.error : ""} />;

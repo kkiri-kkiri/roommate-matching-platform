@@ -29,10 +29,9 @@ public class ProfileSurveyController {
 	}
 
 	@PutMapping
-	public ApiResponse<Void> saveOrUpdateMyProfileSurvey(
+	public ApiResponse<ProfileSurveyResponse> saveOrUpdateMyProfileSurvey(
 			@AuthenticationPrincipal AuthenticatedUser user,
 			@Valid @RequestBody ProfileSurveyRequest request) {
-		profileSurveyService.saveOrUpdateMyProfileSurvey(user.userId(), request);
-		return ApiResponse.successWithoutData();
+		return ApiResponse.success(profileSurveyService.saveOrUpdateMyProfileSurvey(user.userId(), request));
 	}
 }

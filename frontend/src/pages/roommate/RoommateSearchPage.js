@@ -14,7 +14,7 @@ import Pagination from "../../components/common/Pagination/Pagination";
 import { getRoommates, getRecommendedRoommates, toRoommateProfile } from "../../api/roommateApi";
 import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./RoommateSearchPageCss";
-import { PROFILE_SECTIONS } from "../mypage/MyPage";
+import { PROFILE_SECTIONS } from "../../data/profileSurvey";
 
 const FILTER_GROUPS = PROFILE_SECTIONS.flatMap((section) => section.fields);
 

@@ -1,3 +1,5 @@
+import { PROFILE_FIELDS } from "./profileSurvey";
+
 export const PREFERENCE_STEPS = [
   {
     id: "basic",
@@ -38,30 +40,14 @@ export const PREFERENCE_STEPS = [
         id: "bedtime",
         label: "선호하는 취침시간",
         type: "multi",
-        options: [
-          "22시 ~ 23시",
-          "23시 ~ 24시",
-          "24시 ~ 01시",
-          "01시 ~ 02시",
-          "02시 ~ 03시",
-          "03시 이후",
-          "상관없음",
-        ],
+        options: [...PROFILE_FIELDS.sleepTime.options, "상관없음"],
         exclusiveOptions: ["상관없음"],
       },
       {
         id: "wakeTime",
         label: "선호하는 기상시간",
         type: "multi",
-        options: [
-          "07시 이전",
-          "07시 ~ 08시",
-          "08시 ~ 09시",
-          "09시 ~ 10시",
-          "10시 이후",
-          "수업 시간에 따라 유동적",
-          "상관없음",
-        ],
+        options: [...PROFILE_FIELDS.wakeTime.options, "상관없음"],
         exclusiveOptions: ["상관없음"],
       },
       {
