@@ -1,8 +1,10 @@
 ERD
 
-기준: Notion ERD 페이지
+기준: 현재 Entity 선언·서비스 및 API.md 대조 (2026-10-14)
 프로젝트: 낄E낄I 기숙사 룸메이트 매칭 플랫폼
-수정 기준: API 명세와의 불일치 및 백엔드 구현 선행조건 보완
+수정 기준: 과거 설계 정리, 선언된 DB 제약과 애플리케이션 검증·미구현 기능 구분
+
+10장의 Entity별 표를 컬럼 자료형·NULL·PK/FK·UNIQUE·DEFAULT 선언의 상세 기준으로 사용한다. 본문은 도메인 설명이며 운영 DB의 실제 DDL을 확인한 결과가 아니다. PK는 Long/GenerationType.IDENTITY이고 물리 테이블 이름·FK 삭제 동작·인덱스·CHECK는 운영 DB 추가 확인이 필요하다. Java 초기값과 DTO/서비스 검증은 DB DEFAULT/CHECK가 아니다.
 
 1. 사용자·학적 정보
 
@@ -240,7 +242,7 @@ BOOLEAN
 
 현재 사용 여부
 
-프론트 코드에 비룡, 비봉 표기가 혼재하므로 생활관명을 사용자 테이블의 ENUM으로 고정하지 않고 기준정보 테이블로 분리한다.
+생활관은 DORMITORY 기준정보 FK로 저장한다. 현재 API 명칭은 나래·비봉·창조이며 내부 코드는 NARAE·BIBONG·CHANGJO다. 과거 비룡 표기를 현재 계약으로 사용하지 않는다. 활성 기준정보와 사용자 성별 등 서비스 검증을 함께 적용한다.
 
 최종 생활관 명칭을 확정한 뒤 기준정보만 수정할 수 있도록 한다.
 
@@ -586,12 +588,6 @@ VARCHAR(30)
 
 샤워 소요시간
 
-hair_dryer_use
-
-VARCHAR(30)
-
-방 안에서 드라이기 사용 여부
-
 cleaning_frequency
 
 VARCHAR(30)
@@ -621,12 +617,6 @@ temperature_preference
 VARCHAR(30)
 
 온도 선호
-
-bug_handling
-
-VARCHAR(30)
-
-벌레 처리 가능 정도
 
 scent_product_use
 
@@ -665,6 +655,8 @@ DATETIME
 마지막 수정 일시
 
 사용자당 하나의 현재 프로필 설문을 사용하므로 user_id에 UNIQUE 제약을 적용한다.
+
+현재 API의 설문 입력은 23개 필드다. 단일값 21개는 PROFILE_SURVEY의 대응 snake_case 컬럼에 저장하고, dormStayDays/mealPlan 두 배열은 PROFILE_SURVEY_OPTION의 DORM_STAY_DAY/MEAL_PLAN 행으로 저장한다. completed와 PK/FK·시각은 이 23개 사용자 입력 필드에 포함하지 않는다. 과거 hairDryer/bugHandling에 대응하는 입력·저장 컬럼은 현재 Entity에 없다.
 
 completed = false는 미작성/작성 중, completed = true는 작성 완료를 의미한다.
 
@@ -1008,7 +1000,7 @@ nullable
 
 매칭점수는 사용자의 ROOMMATE_PREFERENCE와 상대방의 USER_PROFILE, PROFILE_SURVEY를 비교하여 Spring Boot에서 계산한다.
 
-추천 이유에 AI API를 사용할 경우에도 점수 자체는 백엔드에서 계산하고, recommendation_reason만 AI로 생성하여 저장할 수 있다.
+현재 AI 분석은 별도 API로 반환하며 recommendation_reason에 결과를 저장하지 않는다. 이 nullable 컬럼은 Entity에 남아 있으나 현재 분석 계약에서 저장을 보장하지 않는다. 삭제나 자동 저장은 별도 변경이다.
 
 설문이 변경되면 기존 매칭 결과를 재계산하거나 무효화한다.
 
@@ -1128,6 +1120,12 @@ INT
 
 조회수
 
+anonymous
+
+BOOLEAN NOT NULL DEFAULT FALSE
+
+익명 게시글 여부. 생성은 생략 시 false, 수정은 Boolean null/생략 시 유지한다. 조회에도 anonymous를 제공한다. 익명 작성자 닉네임·전공은 가리지만 author.id는 실제 USER ID이므로 재식별 위험과 익명성 정책 결정이 남아 있다.
+
 status
 
 VARCHAR(20)
@@ -1183,6 +1181,8 @@ image_url
 VARCHAR(500)
 
 이미지 저장 경로
+
+게시글 수정의 keepImageIds 생략/null/빈 배열은 기존 POST_IMAGE 연결 행을 모두 제거한다. 현재 프론트는 보존할 이미지 ID를 명시하며 추가 파일은 별도 전달한다. 연결 행 삭제가 실제 저장 파일 삭제를 의미하지 않는다. 운영 이미지 영구 경로·파일 정리·백업은 별도 환경 확인 사항이다.
 
 original_name
 
@@ -1821,9 +1821,9 @@ BOOLEAN
 
 학교 일정과 기숙사 일정은 이름 변경은 불가능하지만 색상 변경은 가능하다.
 
-룸메찾기, 개인 일정 및 사용자 추가 카테고리는 이름과 색상을 변경할 수 있다.
+사용자 소유 CUSTOM-* 카테고리는 이름과 색상을 변경할 수 있다. ROOMMATE/PERSONAL 시스템 카테고리는 현재 선언되어 있지 않다.
 
-프론트에서 현재 localStorage로 관리하는 카테고리 설정을 백엔드 연동 시 이 테이블로 이전한다.
+현재 프론트는 캘린더 카테고리 설정 API를 호출하고 이 테이블을 사용한다. 화면 상태 저장을 설정 API 미연동으로 해석하지 않는다.
 
 캘린더 일정 (CALENDAR_EVENT)
 
@@ -1943,7 +1943,7 @@ nullable
 
 학교 일정과 기숙사 일정처럼 모든 사용자에게 제공되는 크롤링 일정은 owner_user_id = NULL로 저장한다.
 
-학교·기숙사 일정은 source_type = CRAWLED로 저장한다.
+현재 학교 수집기는 source_type = CRAWLED로 저장한다. DORMITORY 카테고리·저장 모델은 있으나 기숙사 자동 수집기는 미구현이다. 출처·수집 정책 확정 전 새로운 수집기를 가정하지 않는다.
 
 관리자 페이지의 일정 수집 현황은 source_type = CRAWLED인 데이터를 조회하여 구현한다.
 
@@ -2010,7 +2010,7 @@ nullable
 
 실행 완료 시각
 
-관리자 페이지의 크롤링 상태, 최근 실행 시각, 최근 실패 사유는 이 테이블을 기준으로 조회한다.
+관리자 상태 API는 이 테이블을 조회한다. 그러나 현재 CalendarCrawlingService/Scheduler에는 실행 이력 저장 호출이 없으므로 실제 실행의 RUNNING/COMPLETED/FAILED가 기록되지 않는다. 미해결 #14 (High): 시작 이력, 신규 저장 건수, 완료 시각, 일정 트랜잭션 실패와 독립된 실패 이력 저장은 코드·테스트 보완이 필요하다. 이력이 없으면 API의 status/lastRunAt/lastCompletedAt/lastFailure는 null, recentCollectedCount는 0이다. totalCollectedCount는 CALENDAR_EVENT의 실제 수집 일정 집계다.
 
 수집된 실제 일정 데이터는 CALENDAR_EVENT에 저장한다.
 
@@ -2030,7 +2030,7 @@ match_score >= 60
 
 현재 프론트에서는 지역, 직전 학기 성적, 우선선발 점수 등을 이용해 결과를 계산한다.
 
-해당 계산 규칙을 사용자가 수정하거나 관리자가 변경하는 기능은 현재 프론트에 없으므로 별도의 DB 테이블을 만들지 않고 Spring Boot 내부의 계산 정책으로 구현한다.
+현재 MainPage.calculateDormitoryScore에서 계산하며 서버 계산 API·DTO·서비스는 없다. API.md의 서버 이전 설계는 미구현 제안이며 제공 중인 API가 아니다. 계산 규칙 DB 테이블도 없다. 서버 이전·계산 정책은 별도 확정 사항이다.
 
 향후 연도별 배점이나 정책을 관리자 페이지에서 수정할 필요가 생길 경우 그때 DORM_SCORE_POLICY, REGION_SCORE_POLICY 등의 테이블로 분리한다.
 
@@ -2096,19 +2096,19 @@ CALENDAR_CATEGORY와 USER의 사용자별 표시 설정은 CALENDAR_CATEGORY_SET
 
 학교·기숙사 크롤링 일정은 CALENDAR_EVENT.owner_user_id = NULL로 저장하여 전체 사용자에게 제공한다.
 
-크롤링 실행 상태와 실패 이력은 SCHEDULE_CRAWL_RUN에서 관리한다.
+SCHEDULE_CRAWL_RUN은 상태 조회 모델이지만 현재 수집기의 이력 저장이 빠져 있다(#14). DORMITORY 자동 수집 역시 미구현이다.
 
 개인·룸메찾기 일정은 해당 사용자의 owner_user_id를 저장한다.
 
 모든 PK와 해당 FK의 ID 타입은 BIGINT로 통일한다.
 
-match_score는 0 이상 100 이하를 보장한다.
+match_score의 0~100 범위는 Java 계산·검증 기준이다. Entity에 해당 DB CHECK 선언은 없다.
 
-PREFERENCE_CRITERION.weight는 1~5 범위를 보장한다.
+PREFERENCE_CRITERION.weight의 1~5 범위는 요청·애플리케이션 검증이다. DB CHECK가 있다고 단정하지 않는다.
 
-view_count는 0 이상을 보장한다.
+view_count는 애플리케이션에서 0으로 시작하고 증가시킨다. 음수 금지 DB CHECK는 Entity에 선언되어 있지 않다.
 
-일정에 시작·종료 시간이 모두 존재하는 경우 end_time > start_time을 보장한다.
+일정은 start_date <= end_date를 검증한다. 같은 날짜이고 두 시간이 모두 있을 때만 end_time > start_time을 DTO/서비스에서 검증한다. 여러 날인 경우 종료 시간만 비교하지 않으며, 한쪽/양쪽 시간이 null인 경우 시간 순서 검증을 적용하지 않는다. 양쪽 시간 모두 null이면 is_all_day=true로 계산하며 한쪽만 지정하면 false다. 별도 allDay 요청 필드는 없다. PATCH의 null/생략은 서비스 병합에서 기존 값을 유지한다. Entity는 날짜 역전을 검사하지만 시간 순서 DB CHECK는 선언하지 않는다.
 
 9. 핵심 관계 요약
 
@@ -2152,10 +2152,512 @@ CALENDAR_CATEGORY
 └─ 1:N CALENDAR_EVENT
 
 SCHEDULE_CRAWL_RUN
-└─ 수집 결과 → CALENDAR_EVENT
+└─ CALENDAR_EVENT와 직접 FK 관계 없음 (실행 요약 모델, 현재 저장 누락 #14)
 
 FACULTY
 └─ 1:N MAJOR
 
 DORMITORY
 └─ 1:N USER_PROFILE
+
+## 10. 현재 Entity 선언 상세 (2026-10-14)
+
+대조 범위: 27개 Entity / 215개 컬럼.
+
+다음은 소스 선언 대조 결과로, 운영 DDL 검증 결과가 아니다. `NOT NULL`/`NULL`은 nullable 선언(생략 시 true), PK는 NOT NULL을 뜻한다. 모든 PK는 `Long`/`GenerationType.IDENTITY`; MySQL 실제 AUTO_INCREMENT 설정은 별도 확인한다. 자료형의 `columnDefinition`은 그대로 표기하고 미지정 타입은 Java 기본 매핑 기준이며 dialect/DDL에 따라 달라질 수 있다. `DEFAULT 없음`은 명시 선언이 없다는 뜻이다. 생성자·필드 초기화·@PrePersist 시각은 DB DEFAULT가 아니다.
+
+### EMAIL_VERIFICATION
+
+근거: [EmailVerification.java](src/main/java/com/kkirikkiri/auth/entity/EmailVerification.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| verification_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| user_id | BIGINT | NULL | FK → USER; DEFAULT 없음 |
+| email | VARCHAR(100) | NOT NULL | DEFAULT 없음 |
+| purpose | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+| verification_code | VARCHAR(255) | NOT NULL | DEFAULT 없음 |
+| expires_at | DATETIME | NOT NULL | DEFAULT 없음 |
+| verified_at | DATETIME | NULL | DEFAULT 없음 |
+| verification_token_hash | VARCHAR(255) | NULL | DEFAULT 없음 |
+| verification_token_expires_at | DATETIME | NULL | DEFAULT 없음 |
+| consumed_at | DATETIME | NULL | DEFAULT 없음 |
+| created_at | DATETIME | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### PASSWORD_RESET_TOKEN
+
+근거: [PasswordResetToken.java](src/main/java/com/kkirikkiri/auth/entity/PasswordResetToken.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| password_reset_token_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| user_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+| token_hash | VARCHAR(255) | NOT NULL | UNIQUE; DEFAULT 없음 |
+| expires_at | DATETIME | NOT NULL | DEFAULT 없음 |
+| used_at | DATETIME | NULL | DEFAULT 없음 |
+| created_at | DATETIME | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### CALENDAR_CATEGORY
+
+근거: [CalendarCategory.java](src/main/java/com/kkirikkiri/calendar/entity/CalendarCategory.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| category_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| category_code | VARCHAR(50) | NOT NULL | UNIQUE; DEFAULT 없음 |
+| default_name | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| owner_user_id | BIGINT | NULL | FK → USER; DEFAULT 없음 |
+| name_locked | BOOLEAN | NOT NULL | DEFAULT 없음 |
+| is_system | BOOLEAN | NOT NULL | DEFAULT 없음 |
+| created_at | DATETIME | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### CALENDAR_CATEGORY_SETTING
+
+근거: [CalendarCategorySetting.java](src/main/java/com/kkirikkiri/calendar/entity/CalendarCategorySetting.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| category_setting_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| user_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+| category_id | BIGINT | NOT NULL | FK → CALENDAR_CATEGORY; DEFAULT 없음 |
+| display_name | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+| color | CHAR(7) | NOT NULL | DEFAULT 없음 |
+| is_enabled | BOOLEAN | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: (user_id, category_id).
+
+### CALENDAR_EVENT
+
+근거: [CalendarEvent.java](src/main/java/com/kkirikkiri/calendar/entity/CalendarEvent.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| event_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| owner_user_id | BIGINT | NULL | FK → USER; DEFAULT 없음 |
+| category_id | BIGINT | NOT NULL | FK → CALENDAR_CATEGORY; DEFAULT 없음 |
+| title | VARCHAR(80) | NOT NULL | DEFAULT 없음 |
+| start_date | DATE | NOT NULL | DEFAULT 없음 |
+| end_date | DATE | NOT NULL | DEFAULT 없음 |
+| start_time | TIME | NULL | DEFAULT 없음 |
+| end_time | TIME | NULL | DEFAULT 없음 |
+| is_all_day | BOOLEAN | NOT NULL | DEFAULT 없음 |
+| description | TEXT | NULL | DEFAULT 없음 |
+| source_type | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| source_name | VARCHAR(255) | NULL | DEFAULT 없음 |
+| source_url | VARCHAR(500) | NULL | DEFAULT 없음 |
+| collected_at | DATETIME | NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### SCHEDULE_CRAWL_RUN
+
+근거: [ScheduleCrawlRun.java](src/main/java/com/kkirikkiri/calendar/entity/ScheduleCrawlRun.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| crawl_run_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| category | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| status | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| collected_count | INT | NOT NULL | DEFAULT 없음 |
+| error_message | TEXT | NULL | DEFAULT 없음 |
+| started_at | DATETIME | NOT NULL | DEFAULT 없음 |
+| completed_at | DATETIME | NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### CHAT_MESSAGE
+
+근거: [ChatMessage.java](src/main/java/com/kkirikkiri/chat/entity/ChatMessage.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| message_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| chat_room_id | BIGINT | NOT NULL | FK → CHAT_ROOM; DEFAULT 없음 |
+| sender_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+| content | VARCHAR(2000) | NOT NULL | DEFAULT 없음 |
+| sent_at | DATETIME | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### CHAT_ROOM
+
+근거: [ChatRoom.java](src/main/java/com/kkirikkiri/chat/entity/ChatRoom.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| chat_room_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| room_key | VARCHAR(100) | NOT NULL | UNIQUE; DEFAULT 없음 |
+| category | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| source_post_id | BIGINT | NULL | FK → COMMUNITY_POST; DEFAULT 없음 |
+| source_comment_id | BIGINT | NULL | FK → COMMUNITY_COMMENT; DEFAULT 없음 |
+| status | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| created_at | DATETIME | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### CHAT_ROOM_MEMBER
+
+근거: [ChatRoomMember.java](src/main/java/com/kkirikkiri/chat/entity/ChatRoomMember.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| chat_room_member_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| chat_room_id | BIGINT | NOT NULL | FK → CHAT_ROOM; DEFAULT 없음 |
+| user_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+| is_pinned | BOOLEAN | NOT NULL | DEFAULT 없음 |
+| is_muted | BOOLEAN | NOT NULL | DEFAULT 없음 |
+| is_left | BOOLEAN | NOT NULL | DEFAULT 없음 |
+| joined_at | DATETIME | NOT NULL | DEFAULT 없음 |
+| last_read_at | DATETIME | NULL | DEFAULT 없음 |
+| left_at | DATETIME | NULL | DEFAULT 없음 |
+
+복합 UNIQUE: (chat_room_id, user_id).
+
+### COMMENT_LIKE
+
+근거: [CommentLike.java](src/main/java/com/kkirikkiri/community/comment/entity/CommentLike.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| comment_like_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| comment_id | BIGINT | NOT NULL | FK → COMMUNITY_COMMENT; DEFAULT 없음 |
+| user_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+
+복합 UNIQUE: (comment_id, user_id).
+
+### COMMUNITY_COMMENT
+
+근거: [CommunityComment.java](src/main/java/com/kkirikkiri/community/comment/entity/CommunityComment.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| comment_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| post_id | BIGINT | NOT NULL | FK → COMMUNITY_POST; DEFAULT 없음 |
+| author_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+| parent_comment_id | BIGINT | NULL | FK → COMMUNITY_COMMENT; DEFAULT 없음 |
+| content | TEXT | NOT NULL | DEFAULT 없음 |
+| anonymous | BOOLEAN DEFAULT FALSE | NOT NULL | DEFAULT FALSE |
+| status | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| created_at | DATETIME | NOT NULL | DEFAULT 없음 |
+| updated_at | DATETIME | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### COMMUNITY_POST
+
+근거: [CommunityPost.java](src/main/java/com/kkirikkiri/community/post/entity/CommunityPost.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| post_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| author_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+| dormitory_id | BIGINT | NULL | FK → DORMITORY; DEFAULT 없음 |
+| category | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+| title | VARCHAR(100) | NOT NULL | DEFAULT 없음 |
+| content | TEXT | NOT NULL | DEFAULT 없음 |
+| view_count | INT | NOT NULL | DEFAULT 없음 |
+| anonymous | BOOLEAN DEFAULT FALSE | NOT NULL | DEFAULT FALSE |
+| status | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| created_at | DATETIME | NOT NULL | DEFAULT 없음 |
+| updated_at | DATETIME | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### POST_IMAGE
+
+근거: [PostImage.java](src/main/java/com/kkirikkiri/community/post/entity/PostImage.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| post_image_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| post_id | BIGINT | NOT NULL | FK → COMMUNITY_POST; DEFAULT 없음 |
+| image_url | VARCHAR(500) | NOT NULL | DEFAULT 없음 |
+| original_name | VARCHAR(255) | NULL | DEFAULT 없음 |
+| sort_order | INT | NOT NULL | DEFAULT 없음 |
+| created_at | DATETIME | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### POST_LIKE
+
+근거: [PostLike.java](src/main/java/com/kkirikkiri/community/post/entity/PostLike.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| post_like_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| post_id | BIGINT | NOT NULL | FK → COMMUNITY_POST; DEFAULT 없음 |
+| user_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+
+복합 UNIQUE: (post_id, user_id).
+
+### PROFILE_LIKE
+
+근거: [ProfileLike.java](src/main/java/com/kkirikkiri/matching/entity/ProfileLike.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| profile_like_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| user_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+| target_user_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+
+복합 UNIQUE: (user_id, target_user_id).
+
+### ROOMMATE_MATCH
+
+근거: [RoommateMatch.java](src/main/java/com/kkirikkiri/matching/entity/RoommateMatch.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| match_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| requester_user_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+| target_user_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+| match_score | INT | NOT NULL | DEFAULT 없음 |
+| recommendation_reason | TEXT | NULL | DEFAULT 없음 |
+
+복합 UNIQUE: (requester_user_id, target_user_id).
+
+### REPORT
+
+근거: [Report.java](src/main/java/com/kkirikkiri/report/entity/Report.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| report_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| reporter_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+| target_user_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
+| post_id | BIGINT | NULL | FK → COMMUNITY_POST; DEFAULT 없음 |
+| comment_id | BIGINT | NULL | FK → COMMUNITY_COMMENT; DEFAULT 없음 |
+| report_type | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| reason | VARCHAR(100) | NOT NULL | DEFAULT 없음 |
+| description | TEXT | NULL | DEFAULT 없음 |
+| status | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| resolution_action | VARCHAR(30) | NULL | DEFAULT 없음 |
+| processed_by | BIGINT | NULL | FK → USER; DEFAULT 없음 |
+| created_at | DATETIME | NOT NULL | DEFAULT 없음 |
+| processed_at | DATETIME | NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### PREFERENCE_CRITERION
+
+근거: [PreferenceCriterion.java](src/main/java/com/kkirikkiri/survey/entity/PreferenceCriterion.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| preference_criterion_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| preference_id | BIGINT | NOT NULL | FK → ROOMMATE_PREFERENCE; DEFAULT 없음 |
+| criterion_code | VARCHAR(40) | NOT NULL | DEFAULT 없음 |
+| weight | TINYINT | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: (preference_id, criterion_code).
+
+### PROFILE_SURVEY
+
+근거: [ProfileSurvey.java](src/main/java/com/kkirikkiri/survey/entity/ProfileSurvey.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| profile_survey_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| user_id | BIGINT | NOT NULL | FK → USER; UNIQUE; DEFAULT 없음 |
+| sleep_time | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| wake_time | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| sleep_talking | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| snoring | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| teeth_grinding | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| sleep_sensitivity | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| indoor_eating | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| smoking | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+| lighting_preference | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+| phone_call | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| media_sound | VARCHAR(100) | NOT NULL | DEFAULT 없음 |
+| shower_time | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+| shower_duration | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+| cleaning_frequency | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+| cleaning_style | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| meal | VARCHAR(60) | NOT NULL | DEFAULT 없음 |
+| roommate_interaction | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| temperature_preference | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+| scent_product_use | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| desktop_use | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| shared_items | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| completed | BOOLEAN (dialect 확인) | NOT NULL | DEFAULT 없음 |
+| created_at | DATETIME | NOT NULL | DEFAULT 없음 |
+| updated_at | DATETIME | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### PROFILE_SURVEY_OPTION
+
+근거: [ProfileSurveyOption.java](src/main/java/com/kkirikkiri/survey/entity/ProfileSurveyOption.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| profile_survey_option_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| profile_survey_id | BIGINT | NOT NULL | FK → PROFILE_SURVEY; DEFAULT 없음 |
+| field_code | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+| option_value | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: (profile_survey_id, field_code, option_value).
+
+### ROOMMATE_PREFERENCE
+
+근거: [RoommatePreference.java](src/main/java/com/kkirikkiri/survey/entity/RoommatePreference.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| preference_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| user_id | BIGINT | NOT NULL | FK → USER; UNIQUE; DEFAULT 없음 |
+| department_preference | VARCHAR(60) | NOT NULL | DEFAULT 없음 |
+| sleep_talking_allowance | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| snoring_allowance | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| teeth_grinding_allowance | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| smoking_preference | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| lighting_preference | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+| shower_time_preference | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+| shower_duration_preference | VARCHAR(30) | NOT NULL | DEFAULT 없음 |
+| cleaning_style_preference | VARCHAR(60) | NOT NULL | DEFAULT 없음 |
+| interaction_preference | VARCHAR(60) | NOT NULL | DEFAULT 없음 |
+| meal_preference | VARCHAR(60) | NOT NULL | DEFAULT 없음 |
+| shared_items_preference | VARCHAR(60) | NOT NULL | DEFAULT 없음 |
+| temperature_preference | VARCHAR(50) | NOT NULL | DEFAULT 없음 |
+| completed | BOOLEAN (dialect 확인) | NOT NULL | DEFAULT 없음 |
+| created_at | DATETIME | NOT NULL | DEFAULT 없음 |
+| updated_at | DATETIME | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### ROOMMATE_PREFERENCE_OPTION
+
+근거: [RoommatePreferenceOption.java](src/main/java/com/kkirikkiri/survey/entity/RoommatePreferenceOption.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| preference_option_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| preference_id | BIGINT | NOT NULL | FK → ROOMMATE_PREFERENCE; DEFAULT 없음 |
+| criterion_code | VARCHAR(40) | NOT NULL | DEFAULT 없음 |
+| option_value | VARCHAR(60) | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: (preference_id, criterion_code, option_value).
+
+### DORMITORY
+
+근거: [Dormitory.java](src/main/java/com/kkirikkiri/user/entity/Dormitory.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| dormitory_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| dormitory_code | VARCHAR(20) | NOT NULL | UNIQUE; DEFAULT 없음 |
+| dormitory_name | VARCHAR(30) | NOT NULL | UNIQUE; DEFAULT 없음 |
+| is_active | BOOLEAN (dialect 확인) | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### FACULTY
+
+근거: [Faculty.java](src/main/java/com/kkirikkiri/user/entity/Faculty.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| faculty_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| faculty_name | VARCHAR(100) | NOT NULL | UNIQUE; DEFAULT 없음 |
+| is_active | BOOLEAN (dialect 확인) | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### MAJOR
+
+근거: [Major.java](src/main/java/com/kkirikkiri/user/entity/Major.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| major_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| faculty_id | BIGINT | NOT NULL | FK → FACULTY; DEFAULT 없음 |
+| major_name | VARCHAR(150) | NOT NULL | DEFAULT 없음 |
+| is_active | BOOLEAN (dialect 확인) | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: (faculty_id, major_name).
+
+### USER
+
+근거: [User.java](src/main/java/com/kkirikkiri/user/entity/User.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| user_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| password | VARCHAR(255) | NOT NULL | DEFAULT 없음 |
+| school_email | VARCHAR(100) | NOT NULL | UNIQUE; DEFAULT 없음 |
+| email_verified | BOOLEAN (dialect 확인) | NOT NULL | DEFAULT 없음 |
+| role | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| status | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| created_at | DATETIME | NOT NULL | DEFAULT 없음 |
+| updated_at | DATETIME | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### USER_PROFILE
+
+근거: [UserProfile.java](src/main/java/com/kkirikkiri/user/entity/UserProfile.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| user_profile_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| user_id | BIGINT | NOT NULL | FK → USER; UNIQUE; DEFAULT 없음 |
+| nickname | VARCHAR(20) | NOT NULL | UNIQUE; DEFAULT 없음 |
+| gender | VARCHAR(10) | NOT NULL | DEFAULT 없음 |
+| dormitory_id | BIGINT | NOT NULL | FK → DORMITORY; DEFAULT 없음 |
+| faculty_id | BIGINT | NOT NULL | FK → FACULTY; DEFAULT 없음 |
+| major_id | BIGINT | NULL | FK → MAJOR; DEFAULT 없음 |
+| birth_year | SMALLINT | NOT NULL | DEFAULT 없음 |
+| admission_year | CHAR(2) | NOT NULL | DEFAULT 없음 |
+| grade | VARCHAR(20) | NOT NULL | DEFAULT 없음 |
+| mbti | CHAR(4) | NOT NULL | DEFAULT 없음 |
+| introduction | VARCHAR(255) | NULL | DEFAULT 없음 |
+| profile_image_url | VARCHAR(500) | NULL | DEFAULT 없음 |
+| created_at | DATETIME | NOT NULL | DEFAULT 없음 |
+| updated_at | DATETIME | NOT NULL | DEFAULT 없음 |
+
+복합 UNIQUE: 명시 선언 없음.
+
+### Enum 및 필드 코드
+
+Enum은 `EnumType.STRING` 선언을 사용한다. 아래 Java 값 목록 자체를 DB CHECK 또는 물리 ENUM 제약으로 간주하지 않는다. 설문 선택 문자열은 별도 서비스 허용 목록이며 API.md 15장을 따른다.
+
+| Enum | 선언 값 |
+| --- | --- |
+| [EmailVerificationPurpose](src/main/java/com/kkirikkiri/auth/entity/EmailVerificationPurpose.java) | SIGNUP, RESET_PASSWORD |
+| [CalendarEventSourceType](src/main/java/com/kkirikkiri/calendar/entity/CalendarEventSourceType.java) | USER, CRAWLED |
+| [ScheduleCrawlCategory](src/main/java/com/kkirikkiri/calendar/entity/ScheduleCrawlCategory.java) | SCHOOL, DORMITORY |
+| [ScheduleCrawlStatus](src/main/java/com/kkirikkiri/calendar/entity/ScheduleCrawlStatus.java) | RUNNING, COMPLETED, FAILED |
+| [ChatRoomCategory](src/main/java/com/kkirikkiri/chat/entity/ChatRoomCategory.java) | ROOMMATE, COMMUNITY |
+| [ChatRoomStatus](src/main/java/com/kkirikkiri/chat/entity/ChatRoomStatus.java) | ACTIVE, CLOSED |
+| [CommunityContentStatus](src/main/java/com/kkirikkiri/community/common/entity/CommunityContentStatus.java) | ACTIVE, DELETED |
+| [ReportStatus](src/main/java/com/kkirikkiri/report/entity/ReportStatus.java) | PENDING, COMPLETED, REJECTED |
+| [ReportType](src/main/java/com/kkirikkiri/report/entity/ReportType.java) | USER, POST, COMMENT |
+| [PreferenceCriterionCode](src/main/java/com/kkirikkiri/survey/entity/PreferenceCriterionCode.java) | DEPARTMENT, AGE, GRADE, BEDTIME, WAKE_TIME, SLEEP_TALKING, SNORING, TEETH_GRINDING, SMOKING, LIGHTING, SHOWER_TIME, SHOWER_DURATION, CLEANING_FREQUENCY, CLEANING_STYLE, INTERACTION, MEAL, SHARED_ITEMS, TEMPERATURE |
+| [ProfileSurveyFieldCode](src/main/java/com/kkirikkiri/survey/entity/ProfileSurveyFieldCode.java) | MEAL_PLAN, DORM_STAY_DAY |
+| [UserRole](src/main/java/com/kkirikkiri/user/entity/UserRole.java) | USER, ADMIN |
+| [UserStatus](src/main/java/com/kkirikkiri/user/entity/UserStatus.java) | ACTIVE, SUSPENDED, WITHDRAWN |
+
+### 제약·삭제 정책과 배포 검증 경계
+
+- Entity에는 명시적 @Index, @Check, @OnDelete, cascade, orphanRemoval이 없다. UNIQUE는 위 컬럼/복합 선언을 따르며 FK 보조 인덱스와 삭제·갱신 동작은 물리 DB에서 확인해야 한다. 기존 DB에 Java 선언을 추가한 사실만으로 제약이 이미 적용됐다고 판단하지 않는다.
+- 사용자 탈퇴는 WITHDRAWN, 게시글·댓글 삭제는 DELETED 상태 변경이다. 현재 서비스에서 설문 옵션 교체·좋아요 해제·게시글 이미지 제거·사용자 일정/카테고리 제거 등에는 물리 행 삭제도 사용한다. 소프트 삭제와 DB ON DELETE CASCADE를 혼동하지 않는다. 신고·채팅 참조가 있는 행의 직접 삭제는 별도 영향 검토가 필요하다.
+- 요청의 필수값·길이·가중치·날짜 범위·자기 자신 대상 금지·참여자 수 제한·고정 최대 2개는 DTO/서비스 규칙이다. DB NOT NULL/UNIQUE가 동시 고정 제한(#13)이나 모든 도메인 무결성을 보장하지 않는다.
+- 운영의 테이블 대소문자, 실제 컬럼 타입/NULL/DEFAULT, PK/FK/UNIQUE/CHECK/인덱스, 고아 참조·중복, 기존 nullable 컬럼의 데이터는 운영자가 읽기 전용 DDL/데이터 점검으로 확인해야 한다. 이번 작업은 운영 DB에 접근하지 않았다. 자동 ddl-auto=update/SQL 초기화 위험(#3), 테스트 DB 미격리(#4)는 별도 설정·코드 과제다.
+- 익명 게시글 anonymous 선언이 있더라도 기존 DB에 컬럼/DEFAULT/NOT NULL이 적용됐는지 검증해야 한다. 현재 공개 author.id와 익명 채팅 키 변경은 별도 익명성·마이그레이션 검토 대상이며 문서 수정으로 해결되지 않는다.
+
+### 기존 익명 채팅 키의 수동 변경 검증 기준
+
+[migrations/README.md](migrations/README.md)는 존재하지만 Git에서 추적되지 않으며 현재 없는 prod 구성/DEPLOYMENT.md를 전제하는 문구도 남아 있다. 이 문서가 해당 안내나 실제 마이그레이션 파일을 수정·실행한 것은 아니다. 적용 파일은 운영 DB 구조와 별도로 검토하며 아래 조건을 충족하기 전 실행하지 않는다.
+
+1. **사전 점검:** 운영 DB 버전·schema·물리 테이블명, room_key 길이 100/UNIQUE, 출처 FK와 anonymous 컬럼을 확인한다. old_key/new_key 후보·행 ID를 내보내고 변환 키 충돌/중복·길이 초과·출처 누락·두 출처 동시 지정 행을 점검한다. 현재 출처의 익명성이 과거 방의 의도와 같은지 확인하며 과거 익명성을 복원할 수 없는 행은 별도 검토한다.
+2. **백업·격리 검증:** 전체 DB 일관된 백업과 chat_room_id→old_key 목록을 안전하게 보관하고 격리된 동일 버전 DB에서 복구·적용·롤백을 검증한다. 방/참여자/메시지 삭제나 자동 병합으로 충돌을 해소하지 않는다.
+3. **수동 적용 순서:** 모든 쓰기 인스턴스·채팅 연결을 중지한다. 운영자가 검토한 키 UPDATE를 하나의 트랜잭션으로 실행하며 오류 발생 시 중지하고 ROLLBACK한다. 예상 키·참조·행 수를 확인한 후 호환 서버만 시작한다. 운영 validate/SQL never 설정은 현재 미구현 #3이므로 이를 선행 조건으로 확인한다. 자동 DDL/SQL 실행으로 대체하지 않는다.
+4. **롤백:** COMMIT 전은 ROLLBACK, COMMIT 후 신규 쓰기 전은 중지 상태에서 백업의 정확한 ID→old_key만 복원한다. 접미사를 일괄 제거하지 않는다. 신규 방/메시지가 발생한 뒤에는 쓰기를 중단하고 충돌·신규 데이터 보존을 고려한 별도 복구 계획을 세운다. 키 호환성 확인 없이 구버전을 재기동하지 않는다.
+5. **검증:** 방/참여자/메시지의 행 수·ID·FK·본문 보존, 키 길이·UNIQUE, 익명 POST/COMMENT 방 분리·재사용과 마스킹을 확인한다. REST·STOMP 접근 및 만료/정지/나가기 이후 수신 차단을 확인한다. 현재 #12는 코드 미해결이므로 이 조건의 통과를 문서로 보장할 수 없다.
