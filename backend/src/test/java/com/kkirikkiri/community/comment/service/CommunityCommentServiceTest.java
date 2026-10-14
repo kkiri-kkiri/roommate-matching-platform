@@ -64,6 +64,7 @@ class CommunityCommentServiceTest {
     void persistsAnonymousChoiceForCommentsAndReplies(boolean anonymous) {
         User user = mock(User.class);
         CommunityPost post = new CommunityPost(user, null, "자유게시판", "제목", "내용");
+        ReflectionTestUtils.setField(post, "postId", 1L);
         CommunityComment parent = new CommunityComment(post, user, null, "부모");
         when(validator.validate(any())).thenReturn(Set.of());
         when(userRepository.findById(7L)).thenReturn(Optional.of(user));
@@ -79,6 +80,28 @@ class CommunityCommentServiceTest {
         service.createComment(7L, 1L, new CommunityCommentCreateRequest("내용", anonymous));
         service.createReply(7L, 2L, new CommunityCommentCreateRequest("내용", anonymous));
         verify(communityCommentRepository, times(2)).save(any());
+        if (anonymous) verify(anonymousAuthorService, times(2)).resolveNumbers(1L, user);
+        else verifyNoInteractions(anonymousAuthorService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void doesNotSaveCommentOrReplyWhenAnonymousNumberAllocationFails(boolean reply) {
+        // given
+        ReflectionTestUtils.setField(activePost, "postId", 1L);
+        if (reply) stubActiveComment();
+        else when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(activePost));
+        when(userRepository.findById(7L)).thenReturn(Optional.of(author));
+        var failure = new CustomException(ErrorCode.INVALID_REQUEST);
+        when(anonymousAuthorService.resolveNumbers(1L, author)).thenThrow(failure);
+        var request = new CommunityCommentCreateRequest("익명 댓글", true);
+        // when / then
+        assertSame(failure, assertThrows(CustomException.class, () -> {
+            if (reply) service.createReply(7L, 2L, request);
+            else service.createComment(7L, 1L, request);
+        }));
+        verify(communityCommentRepository, never()).save(any());
     }
 
     @Test
