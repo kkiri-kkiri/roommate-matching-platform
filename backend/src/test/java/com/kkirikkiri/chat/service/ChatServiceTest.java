@@ -932,6 +932,141 @@ class ChatServiceTest {
         verify(userRepository, never()).findById(999L);
     }
 
+    @Test
+    void resolvesRegularCommentAuthorWhenTargetIsOmitted() {
+        // given
+        stubUsers();
+        CommunityPost post = post(20L, user);
+        CommunityComment comment = new CommunityComment(post, target, null, "comment");
+        when(communityPostRepository.findByPostIdAndStatus(20L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(post));
+        when(communityCommentRepository.findByCommentIdAndStatus(30L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(comment));
+        when(chatRoomRepository.save(any())).thenAnswer(invocation -> {
+            ChatRoom saved = invocation.getArgument(0);
+            ReflectionTestUtils.setField(saved, "chatRoomId", 10L);
+            return saved;
+        });
+        stubResponse(member, counterpart, "Target");
+
+        // when
+        var result = service.createOrGetRoom(7L,
+                new ChatRoomCreateRequest(null, ChatRoomCategory.COMMUNITY, 20L, 30L, "COMMENT"));
+
+        // then
+        assertEquals(8L, result.counterpart().id());
+        assertEquals(20L, result.sourcePost());
+        var saved = ArgumentCaptor.forClass(ChatRoom.class);
+        verify(chatRoomRepository).save(saved.capture());
+        assertEquals("COMMUNITY:7:8", saved.getValue().getRoomKey());
+        assertSame(comment, saved.getValue().getSourceComment());
+        assertNull(saved.getValue().getSourcePost());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void rejectsChatWithOwnCommentAfterResolvingAuthor(boolean anonymous) {
+        // given
+        when(userRepository.findById(7L)).thenReturn(Optional.of(user));
+        CommunityPost post = post(20L, target);
+        CommunityComment comment = new CommunityComment(post, user, null, "my comment");
+        comment.changeAnonymous(anonymous);
+        when(communityPostRepository.findByPostIdAndStatus(20L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(post));
+        when(communityCommentRepository.findByCommentIdAndStatus(30L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(comment));
+        var request = new ChatRoomCreateRequest(anonymous ? 999L : null,
+                ChatRoomCategory.COMMUNITY, 20L, 30L, "COMMENT");
+
+        // when / then
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.createOrGetRoom(7L, request));
+        verifyNoInteractions(chatRoomRepository, chatRoomMemberRepository);
+        verify(userRepository, never()).findById(999L);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"missing", "SUSPENDED", "WITHDRAWN"})
+    void rejectsUnavailableAnonymousCommentAuthorEvenWhenSuppliedTargetIsActive(String status) {
+        // given
+        when(userRepository.findById(7L)).thenReturn(Optional.of(user));
+        CommunityPost post = post(20L, user);
+        CommunityComment comment = new CommunityComment(post, target, null, "anonymous comment");
+        comment.changeAnonymous(true);
+        when(communityPostRepository.findByPostIdAndStatus(20L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(post));
+        when(communityCommentRepository.findByCommentIdAndStatus(30L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(comment));
+        if (!status.equals("missing")) {
+            target.changeStatus(UserStatus.valueOf(status));
+            when(userRepository.findById(8L)).thenReturn(Optional.of(target));
+        }
+        var request = new ChatRoomCreateRequest(7L, ChatRoomCategory.COMMUNITY, 20L, 30L, "COMMENT");
+
+        // when / then
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.createOrGetRoom(7L, request));
+        verifyNoInteractions(chatRoomRepository, chatRoomMemberRepository);
+    }
+
+    @Test
+    void replacesRegularCommentSourceWithPostWhenReusingRoom() {
+        // given
+        stubUsers();
+        CommunityComment comment = new CommunityComment(post(20L, user), target, null, "comment");
+        room = new ChatRoom(7L, 8L, ChatRoomCategory.COMMUNITY, null, comment);
+        ReflectionTestUtils.setField(room, "chatRoomId", 10L);
+        member = new ChatRoomMember(room, user);
+        counterpart = new ChatRoomMember(room, target);
+        CommunityPost latest = post(21L, target);
+        when(communityPostRepository.findByPostIdAndStatus(21L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(latest));
+        when(chatRoomRepository.findByRoomKey("COMMUNITY:7:8")).thenReturn(Optional.of(room));
+        stubActiveMember();
+        stubResponse(member, counterpart, "Target");
+
+        // when
+        var result = service.createOrGetRoom(7L, postRequest(21L));
+
+        // then
+        assertEquals(10L, result.id());
+        assertEquals(21L, result.sourcePost());
+        assertSame(latest, room.getSourcePost());
+        assertNull(room.getSourceComment());
+        verify(chatRoomRepository, never()).save(any());
+        verify(chatRoomMemberRepository, never()).saveAll(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1999, 2000, 2001})
+    void validatesEmojiLengthBeforeSavingMessageWithRealValidator(int count) {
+        // given
+        try (var factory = jakarta.validation.Validation.buildDefaultValidatorFactory()) {
+            var request = new ChatMessageSendRequest("😀".repeat(count));
+            when(validator.validate(request)).thenReturn(factory.getValidator().validate(request));
+            if (count > 2000) {
+                // when / then
+                assertError(ErrorCode.VALIDATION_ERROR, () -> service.sendMessage(7L, 10L, request));
+                verifyNoInteractions(chatRoomMemberRepository, chatMessageRepository);
+            } else {
+                stubActiveMember();
+                stubCounterpart();
+                when(chatMessageRepository.save(any())).thenAnswer(invocation -> {
+                    ChatMessage saved = invocation.getArgument(0);
+                    ReflectionTestUtils.setField(saved, "sentAt", SENT_AT);
+                    return saved;
+                });
+
+                // when
+                var response = service.sendMessage(7L, 10L, request);
+
+                // then
+                assertEquals(request.text(), response.text());
+                assertEquals(10L, response.roomId());
+                assertEquals(7L, response.senderId());
+                verify(chatMessageRepository).save(any(ChatMessage.class));
+            }
+        }
+    }
+
     private ChatRoomCreateRequest postRequest(Long id) {
         return new ChatRoomCreateRequest(8L, ChatRoomCategory.COMMUNITY, id, null, "POST");
     }

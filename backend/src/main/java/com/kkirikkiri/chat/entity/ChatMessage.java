@@ -25,6 +25,9 @@ import com.kkirikkiri.user.entity.User;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatMessage {
 
+	/** 메시지 최대 길이: UTF-16 코드 단위가 아닌 유니코드 코드 포인트 기준. */
+	public static final int MAX_CONTENT_LENGTH = 2000;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "message_id")
@@ -38,7 +41,7 @@ public class ChatMessage {
 	@JoinColumn(name = "sender_id", nullable = false)
 	private User sender;
 
-	@Column(name = "content", nullable = false, length = 2000)
+	@Column(name = "content", nullable = false, length = MAX_CONTENT_LENGTH)
 	private String content;
 
 	@Column(name = "sent_at", nullable = false, updatable = false, columnDefinition = "DATETIME")
@@ -51,7 +54,7 @@ public class ChatMessage {
 		this.chatRoom = Objects.requireNonNull(chatRoom, "chatRoom");
 		this.sender = Objects.requireNonNull(sender, "sender");
 		Objects.requireNonNull(content, "content");
-		if (content.codePointCount(0, content.length()) > 2000) {
+		if (content.codePointCount(0, content.length()) > MAX_CONTENT_LENGTH) {
 			throw new IllegalArgumentException("content must not exceed 2000 characters");
 		}
 		this.content = content;
