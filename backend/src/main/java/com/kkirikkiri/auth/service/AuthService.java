@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import com.kkirikkiri.auth.dto.LoginRequest;
 import com.kkirikkiri.auth.dto.LoginEmailCheckRequest;
@@ -29,6 +30,9 @@ public class AuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final Validator validator;
+	private final AuthProtectionService protection;
+	// Unknown/inactive users still incur one BCrypt check; never expose credential lookup results.
+	private final String dummyPasswordHash = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("auth-dummy-password");
 
 	public LoginResponse.LoginUser getAuthenticatedUser(Long userId) {
 		User user = userRepository.findById(userId)
@@ -39,29 +43,35 @@ public class AuthService {
 		return new LoginResponse.LoginUser(user.getUserId(), user.getSchoolEmail(), nickname, user.getRole().name());
 	}
 
-	public LoginEmailCheckResponse checkEmail(LoginEmailCheckRequest request) {
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public LoginEmailCheckResponse checkEmail(LoginEmailCheckRequest request, String ip) {
 		if (request == null || !validator.validate(request).isEmpty()) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
+		protection.emailCheck(request.email(), ip);
 		return new LoginEmailCheckResponse(userRepository.existsBySchoolEmail(request.email()));
 	}
 
-	public LoginResponse login(LoginRequest request) {
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public LoginResponse login(LoginRequest request, String ip) {
 		if (request == null || !validator.validate(request).isEmpty()) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
 
-		User user = userRepository.findBySchoolEmail(request.email())
-				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
-		if (user.getStatus() != UserStatus.ACTIVE
-				|| !passwordEncoder.matches(request.password(), user.getPassword())) {
-			throw new CustomException(ErrorCode.UNAUTHORIZED);
-		}
-
-		UserProfile profile = userProfileRepository.findByUser_UserId(user.getUserId())
-				.orElseThrow(() -> new CustomException(ErrorCode.INTERNAL_SERVER_ERROR));
-		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), user.getRole());
-		return new LoginResponse(accessToken, new LoginResponse.LoginUser(
-				user.getUserId(), user.getSchoolEmail(), profile.getNickname(), user.getRole().name()));
+		var permit = protection.login(request.email(), ip);
+		boolean success = false;
+		try {
+			User user = userRepository.findBySchoolEmail(request.email()).orElse(null);
+			boolean passwordMatches = passwordEncoder.matches(request.password(), user == null ? dummyPasswordHash : user.getPassword());
+			if (user == null || user.getStatus() != UserStatus.ACTIVE || !passwordMatches) {
+				throw new CustomException(ErrorCode.UNAUTHORIZED);
+			}
+			String nickname = userProfileRepository.findByUser_UserId(user.getUserId())
+					.map(UserProfile::getNickname).orElse(user.getSchoolEmail());
+			String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), user.getRole());
+			success = true;
+			return new LoginResponse(accessToken, new LoginResponse.LoginUser(
+					user.getUserId(), user.getSchoolEmail(), nickname, user.getRole().name()));
+		} finally { protection.complete(permit, success); }
 	}
 }

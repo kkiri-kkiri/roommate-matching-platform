@@ -1,6 +1,6 @@
-# user 도메인 운영 준비
+# user / auth 도메인 운영 준비
 
-이 문서는 user 안정화 변경의 배포 조건이다. 다른 도메인의 배포 적합성이나 실제 운영 성공을 보장하지 않는다.
+이 문서는 user 안정화 및 auth 보호 변경의 배포 조건이다. 다른 도메인의 배포 적합성이나 실제 운영 성공을 보장하지 않는다.
 
 ## 프로필과 초기화
 
@@ -21,7 +21,60 @@
 
 ## 스키마 변경 절차
 
-이번 변경에는 Entity 스키마 변경이 없어 자동/수동 DDL 마이그레이션을 추가하지 않았다.
+user 안정화에는 Entity 스키마 변경이 없었다. auth 보호에는 신규 AUTH_LIMIT_BUCKET 테이블만 추가했으며,
+[auth 수동 마이그레이션](migrations/20261014_auth_limits.md)을 먼저 따른다. 운영에서 자동 적용하지 않는다.
+
+## Auth 보호 배포 조건
+
+- Redis를 추가하지 않는다. 모든 인스턴스가 같은 MySQL primary/schema의 AUTH_LIMIT_BUCKET을 사용한다.
+  PK upsert 후 정렬된 행 잠금으로 quota 검사/예약/완료를 갱신한다. denied 요청의 신규 bucket은 롤백한다.
+  JDBC 갱신은 독립 REQUIRES_NEW/READ_COMMITTED 트랜잭션이며 BCrypt/SMTP 중에는 제한 행 잠금을 잡지 않는다.
+  제한 DB 장애는 검증을 우회하지 않고 오류로 종료한다. 업무 트랜잭션이 실패해도 실패/요청 기록은 남는다.
+- 모든 인스턴스의 제한 설정과 DB UTC 세션을 통일한다. DB 시각으로 window/block을 판정한다.
+  MySQL Connector/J 설정 `connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true`와 실제
+  `@@session.time_zone`을 확인한다. 기존 DATETIME/시간대에 미치는 영향도 격리 환경에서 대조한다.
+- server.forward-headers-strategy=NONE을 유지한다. 기본은 servlet remote address만 사용한다.
+  AUTH_TRUSTED_PROXIES에 실제 ingress/LB의 좁은 IP/CIDR만 지정하고, ingress가 X-Forwarded-For를
+  덮어쓰거나 실제 peer를 append하는지 확인한다. 오른쪽부터 신뢰 체인을 제거한 첫 비신뢰 주소가 client IP다.
+  0.0.0.0/0·전체 사용자 네트워크를 신뢰하지 않는다. 헤더가 잘못되면 직접 peer로 제한한다.
+- 구버전은 이 제한을 수행하지 않는다. 혼합 버전에서 공개 auth 트래픽을 구버전으로 보내지 않는다.
+  신규 테이블이 없으면 validate가 실패한다. update나 테스트 설정으로 우회하지 않는다.
+- 요청 예약과 SMTP/DB 커밋은 원자적인 외부 전송을 보장하지 않는다. SMTP가 수락한 뒤 응답/DB 커밋이 실패하면
+  메일은 도착해도 토큰이 롤백될 수 있다. 자동 재발송·quota 환불 없이 cooldown 후 새 요청으로 복구한다.
+  실패·제한 시 토큰 저장이 누적되지 않으며 성공 발급은 요청/전체 quota로 상한을 갖는다.
+- 진행 중인 로그인/인증 검증을 실패 상한에 예약한다. 성공은 이메일 실패만 초기화한다.
+  비정상 종료의 예약은 실패 window가 끝나면 복구되므로 최대 로그인 600초·인증 300초 동안 접근이 제한될 수 있다.
+  60초 로그인 차단은 고의 계정 잠금 영향을 짧게 제한한다. 분산 공격에 의한 반복 방해를 완전히 제거하는 CAPTCHA/
+  위험 기반 인증은 추가하지 않았으며 운영 모니터링/프록시 보호가 필요하다.
+- Auth 메일 지표 `auth.mail.delivery`의 kind/result/reason은 고정 값이며 recipient 등의 고카디널리티 태그가 없다.
+  기본 SimpleMeterRegistry는 인스턴스별 메모리 지표다(보안 제한 저장소와 무관).
+  운영 집계/알림은 기존 관측 시스템의 MeterRegistry/exporter 또는 안전한 구조화 로그 수집에 연결해야 한다.
+  지표 성공은 SMTP send 반환을 뜻하며 실제 수신함 도착을 보장하지 않는다. auth 응답 X-Request-ID를 로그와 연결한다.
+- 자동 이력 삭제는 추가하지 않았다. 제한/만료 토큰 이력의 보존·배치 정리는 마이그레이션 문서를 따른다.
+
+### Auth 기본 제한과 설정
+
+아래 설정은 application.properties의 환경변수 placeholder로 재정의할 수 있다. 양수만 허용하며
+인스턴스마다 값을 다르게 지정하지 않는다. fixed window quota이며 제한 중 요청은 차단 종료 시각을 연장하지 않는다.
+
+| 기능 | 이메일 / IP 요청 한도 | 실패 한도 및 차단 | 설정 환경변수 |
+| --- | --- | --- | --- |
+| 로그인 | 20 / 120회, 60초 | 10 / 30회, 600초 누적; 60초 차단 | AUTH_LOGIN_EMAIL_REQUESTS, AUTH_LOGIN_IP_REQUESTS, AUTH_LOGIN_REQUEST_WINDOW_SECONDS, AUTH_LOGIN_EMAIL_FAILURES, AUTH_LOGIN_IP_FAILURES, AUTH_LOGIN_FAILURE_WINDOW_SECONDS, AUTH_LOGIN_BLOCK_SECONDS |
+| 인증 검증 | 10 / 60회, 60초 | 5 / 20회, 300초 누적; 300초 차단 | AUTH_VERIFY_EMAIL_REQUESTS, AUTH_VERIFY_IP_REQUESTS, AUTH_VERIFY_REQUEST_WINDOW_SECONDS, AUTH_VERIFY_EMAIL_FAILURES, AUTH_VERIFY_IP_FAILURES, AUTH_VERIFY_FAILURE_WINDOW_SECONDS, AUTH_VERIFY_BLOCK_SECONDS |
+| 재설정 요청 | 5 / 20회, 3600초 | 이메일 cooldown 60초 | AUTH_RESET_EMAIL_REQUESTS, AUTH_RESET_IP_REQUESTS, AUTH_RESET_REQUEST_WINDOW_SECONDS, AUTH_RESET_COOLDOWN_SECONDS |
+| 인증번호 발송 | 5 / 20회, 3600초 | 이메일 cooldown 60초 | AUTH_SEND_EMAIL_REQUESTS, AUTH_SEND_IP_REQUESTS, AUTH_SEND_REQUEST_WINDOW_SECONDS, EMAIL_RESEND_INTERVAL_SECONDS |
+| 전체 auth 메일 | 100회, 3600초 | 실패해도 quota 유지 | AUTH_MAIL_MAX, AUTH_MAIL_WINDOW_SECONDS |
+
+인증 5회는 6자리 추측 가능성을 줄이고, 로그인 10회/짧은 60초 차단은 입력 실수와 계정 잠금 공격 영향을 함께 고려했다.
+IP 한도는 학교/NAT 공유 환경을 고려해 이메일보다 높다. 메일 100회/시간은 초기 보수적 값이며 실제 사용자 수·SMTP quota·
+신뢰 프록시와 지연 측정 후 운영자가 조정한다. 값을 높이는 것만으로 공격 대응을 대신하지 않는다.
+
+### 추가 검증
+
+H2 테스트는 두 독립 limiter 객체가 같은 DB를 쓰는 원자성·예약·복구·업무 롤백을 확인한다.
+두 실제 프로세스의 MySQL PK 최초 경합, InnoDB 잠금/교착/타임아웃, UTC 시각, table DDL/권한,
+DB/SMTP 장애 및 응답 유실, connection pool 포화, ingress IP 체인은 운영과 동일한 격리 환경에서 별도로 검증한다.
+실제 SMTP/운영 DB에 테스트를 보내지 않는다. 실제 운영 확인 없이 배포 성공을 확정하지 않는다.
 
 1. 대상 MySQL 버전·schema·물리 테이블 이름과 `SHOW CREATE TABLE`을 읽기 전용으로 확인한다.
 2. USER/USER_PROFILE 및 기준정보의 PK/FK/NOT NULL/UNIQUE, 중복·고아 참조와 기존 MBTI 형식을 확인한다.

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { FACULTY_OPTIONS } from "../../data/facultyOptions";
@@ -78,6 +78,10 @@ const SignupPage = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationSent, setVerificationSent] = useState(false);
   const [isSendingVerification, setIsSendingVerification] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const authInFlight = useRef(false);
+  const emailVersion = useRef(0);
   const [isVerified, setIsVerified] = useState(false);
   const [verificationToken, setVerificationToken] = useState("");
   const [availability, setAvailability] = useState(null);
@@ -158,6 +162,7 @@ const SignupPage = () => {
     let nextValue = value;
 
     if (name === "schoolEmailId") {
+      emailVersion.current += 1;
       nextValue = value.split("@")[0].replace(/\s/g, "").slice(0, 64);
     } else if (name === "birthYear") {
       nextValue = value.replace(/\D/g, "").slice(0, 4);
@@ -176,6 +181,7 @@ const SignupPage = () => {
   };
 
   const handleSendCode = async () => {
+    if (authInFlight.current) return;
     const schoolEmailId = form.schoolEmailId.trim();
 
     if (!schoolEmailId) {
@@ -188,17 +194,20 @@ const SignupPage = () => {
     }
 
     const schoolEmail = `${schoolEmailId}${SCHOOL_EMAIL_DOMAIN}`;
-    const sendRequest = sendEmailVerification(schoolEmail);
+    const version = emailVersion.current;
+    authInFlight.current = true;
     setIsSendingVerification(true);
 
     try {
-      await sendRequest;
+      await sendEmailVerification(schoolEmail);
+      if (version !== emailVersion.current) return;
       setVerificationCode("");
       setVerificationSent(true);
       setIsVerified(false);
       setVerificationToken("");
       window.alert("인증번호가 전송되었습니다.");
     } catch (error) {
+      if (version !== emailVersion.current) return;
       if (error.message.includes("인증번호는 잠시 후 다시 요청해 주세요")) {
         window.alert(error.message);
         return;
@@ -209,26 +218,36 @@ const SignupPage = () => {
       }
       window.alert(error.message || "학교 이메일 중복 확인에 실패했습니다.");
     } finally {
+      authInFlight.current = false;
       setIsSendingVerification(false);
     }
   };
 
   const handleVerifyCode = async () => {
+    if (authInFlight.current) return;
     if (!/^\d{6}$/.test(verificationCode)) {
       window.alert("인증번호는 숫자 6자리로 입력해 주세요.");
       return;
     }
 
+    const version = emailVersion.current;
+    authInFlight.current = true;
+    setIsVerifying(true);
     try {
       const token = await verifyEmailVerification(
         `${form.schoolEmailId.trim()}${SCHOOL_EMAIL_DOMAIN}`,
         verificationCode,
       );
+      if (version !== emailVersion.current) return;
       setVerificationToken(token);
       setIsVerified(true);
       window.alert("재학생 인증이 완료되었습니다.");
     } catch (error) {
+      if (version !== emailVersion.current) return;
       window.alert(error.message);
+    } finally {
+      authInFlight.current = false;
+      setIsVerifying(false);
     }
   };
 
@@ -257,6 +276,7 @@ const SignupPage = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (authInFlight.current) return;
 
     const requiredValues = [
       form.password,
@@ -326,6 +346,8 @@ const SignupPage = () => {
       return;
     }
 
+    authInFlight.current = true;
+    setIsSubmitting(true);
     try {
       await signup({
         password: form.password,
@@ -349,6 +371,9 @@ const SignupPage = () => {
       navigate("/login");
     } catch (error) {
       window.alert(error.message);
+    } finally {
+      authInFlight.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -451,7 +476,7 @@ const SignupPage = () => {
                 <S.OutlineButton
                   type="button"
                   onClick={handleSendCode}
-                  disabled={isVerified || isSendingVerification}
+                  disabled={isVerified || isSendingVerification || isVerifying || isSubmitting}
                 >
                   {isVerified
                     ? "인증 완료"
@@ -518,7 +543,7 @@ const SignupPage = () => {
                         : "neutral"
                     }
                   />
-                  <S.OutlineButton type="button" onClick={handleVerifyCode}>
+                  <S.OutlineButton type="button" onClick={handleVerifyCode} disabled={isVerifying || isSendingVerification || isSubmitting}>
                     인증 확인
                   </S.OutlineButton>
                 </S.ActionRow>
@@ -943,7 +968,9 @@ const SignupPage = () => {
             </S.MbtiFieldset>
           </S.FormSection>
 
-          <S.SubmitButton type="submit">회원가입</S.SubmitButton>
+          <S.SubmitButton type="submit" disabled={isSubmitting || isSendingVerification || isVerifying}>
+            {isSubmitting ? "가입 중..." : "회원가입"}
+          </S.SubmitButton>
         </S.Form>
 
         <S.LoginPrompt>

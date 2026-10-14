@@ -26,6 +26,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(AuthRateLimitException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthRateLimit(AuthRateLimitException exception) {
+        return ResponseEntity.status(exception.getErrorCode().getStatus())
+            .header(HttpHeaders.RETRY_AFTER, Long.toString(exception.getRetryAfterSeconds()))
+            .body(ApiResponse.failure(exception.getErrorCode()));
+    }
+
 	@ExceptionHandler(CustomException.class)
 	public ResponseEntity<ApiResponse<Void>> handleCustomException(CustomException exception) {
 		ErrorCode errorCode = exception.getErrorCode();

@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kkirikkiri.auth.dto.EmailVerificationVerifyRequest;
@@ -40,6 +39,8 @@ public class EmailVerificationService {
 	private final Validator validator;
 	private final EmailVerificationMailSender mailSender;
 	private final UserRepository userRepository;
+	private final AuthProtectionService protection;
+	private final AuthTransactions transactions;
 	private final long codeExpirationSeconds;
 	private final long resendIntervalSeconds;
 	private final long tokenExpirationSeconds;
@@ -49,16 +50,17 @@ public class EmailVerificationService {
 	@Autowired
 	public EmailVerificationService(EmailVerificationRepository repository, PasswordEncoder passwordEncoder,
 			Validator validator, EmailVerificationMailSender mailSender,
-			UserRepository userRepository,
+			UserRepository userRepository, AuthProtectionService protection, AuthTransactions transactions,
 			@Value("${auth.email-verification.token-expiration-seconds:300}") long tokenExpirationSeconds,
 			@Value("${auth.email-verification.code-expiration-seconds:300}") long codeExpirationSeconds,
 			@Value("${auth.email-verification.resend-interval-seconds:60}") long resendIntervalSeconds) {
-		this(repository, passwordEncoder, validator, mailSender, userRepository, tokenExpirationSeconds,
+		this(repository, passwordEncoder, validator, mailSender, userRepository, protection, transactions, tokenExpirationSeconds,
 				codeExpirationSeconds, resendIntervalSeconds, Clock.system(ZoneId.of("Asia/Seoul")));
 	}
 
 	EmailVerificationService(EmailVerificationRepository repository, PasswordEncoder passwordEncoder,
 			Validator validator, EmailVerificationMailSender mailSender, UserRepository userRepository,
+			AuthProtectionService protection, AuthTransactions transactions,
 			long tokenExpirationSeconds, long codeExpirationSeconds, long resendIntervalSeconds, Clock clock) {
 		if (codeExpirationSeconds <= 0 || resendIntervalSeconds <= 0) {
 			throw new IllegalArgumentException("Email verification durations must be positive");
@@ -71,18 +73,28 @@ public class EmailVerificationService {
 		this.validator = validator;
 		this.mailSender = mailSender;
 		this.userRepository = userRepository;
+		this.protection = protection;
+		this.transactions = transactions;
 		this.codeExpirationSeconds = codeExpirationSeconds;
 		this.resendIntervalSeconds = resendIntervalSeconds;
 		this.tokenExpirationSeconds = tokenExpirationSeconds;
 		this.clock = clock;
 	}
 
-	// MySQL의 범위 잠금으로 최초 요청을 포함한 동시 전송을 직렬화한다.
-	@Transactional(isolation = Isolation.SERIALIZABLE)
-	public EmailVerificationSendResponse send(EmailVerificationSendRequest request) {
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public EmailVerificationSendResponse send(EmailVerificationSendRequest request, String ip) {
 		if (request == null || !validator.validate(request).isEmpty()) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
+		protection.send(request.email(), ip, resendIntervalSeconds);
+		if (userRepository.existsBySchoolEmail(request.email())) {
+			throw new CustomException(ErrorCode.EMAIL_ALREADY_REGISTERED);
+		}
+		protection.mail();
+		return transactions.execute(() -> sendInTransaction(request));
+	}
+
+	private EmailVerificationSendResponse sendInTransaction(EmailVerificationSendRequest request) {
 		EmailVerificationPurpose purpose = EmailVerificationPurpose.valueOf(request.purpose());
 		if (purpose == EmailVerificationPurpose.SIGNUP
 				&& userRepository.existsBySchoolEmail(request.email())) {
@@ -103,11 +115,21 @@ public class EmailVerificationService {
 		return new EmailVerificationSendResponse(codeExpirationSeconds);
 	}
 
-	@Transactional
-	public EmailVerificationVerifyResponse verify(EmailVerificationVerifyRequest request) {
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public EmailVerificationVerifyResponse verify(EmailVerificationVerifyRequest request, String ip) {
 		if (request == null || !validator.validate(request).isEmpty()) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
+		var permit = protection.verify(request.email(), ip);
+		boolean success = false;
+		try {
+			var result = transactions.execute(() -> verifyInTransaction(request));
+			success = true;
+			return result;
+		} finally { protection.complete(permit, success); }
+	}
+
+	private EmailVerificationVerifyResponse verifyInTransaction(EmailVerificationVerifyRequest request) {
 		EmailVerificationPurpose purpose = EmailVerificationPurpose.valueOf(request.purpose());
 		EmailVerification verification = repository
 				.findFirstByEmailAndPurposeOrderByCreatedAtDescVerificationIdDesc(request.email(), purpose)
