@@ -18,6 +18,7 @@ import com.kkirikkiri.community.post.dto.CommunityPostCreateRequest;
 import com.kkirikkiri.community.post.dto.CommunityPostUpdateRequest;
 import com.kkirikkiri.community.post.dto.PostImagesRequest;
 import com.kkirikkiri.community.comment.entity.CommunityComment;
+import com.kkirikkiri.community.comment.service.CommunityAnonymousAuthorService;
 import com.kkirikkiri.community.common.entity.CommunityContentStatus;
 import com.kkirikkiri.community.post.entity.CommunityPost;
 import com.kkirikkiri.community.post.entity.PostImage;
@@ -62,6 +63,7 @@ public class CommunityPostService {
 	private final PostLikeRepository postLikeRepository;
 	private final UserRepository userRepository;
 	private final CommentLikeRepository commentLikeRepository;
+	private final CommunityAnonymousAuthorService anonymousAuthorService;
 
 	/** 인증 사용자의 좋아요를 등록한다. 이미 좋아요한 경우 변경 없이 완료한다. */
 	@Transactional
@@ -117,6 +119,7 @@ public class CommunityPostService {
 		CommunityPost post = communityPostRepository.findDetailForUpdate(postId, CommunityContentStatus.ACTIVE)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
 		post.increaseViewCount();
+		var anonymousNumbers = anonymousAuthorService.resolveNumbers(postId, null);
 		var images = postImageRepository.findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(postId)
 				.stream().map(PostImageResponse::from).toList();
 		var commentEntities = communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(
@@ -128,8 +131,10 @@ public class CommunityPostService {
 		Set<Long> likedIds = userId == null || commentIds.isEmpty() ? Set.of()
 				: new HashSet<>(commentLikeRepository.findLikedCommentIds(commentIds, userId));
 		var comments = commentEntities.stream()
-				.map(comment -> CommunityCommentResponse.from(comment, author(comment.getAuthor().getUserId()),
-						likeCounts.getOrDefault(comment.getCommentId(), 0L), likedIds.contains(comment.getCommentId())))
+				.map(comment -> CommunityCommentResponse.from(comment,
+						comment.isAnonymous() ? null : author(comment.getAuthor().getUserId()),
+						likeCounts.getOrDefault(comment.getCommentId(), 0L), likedIds.contains(comment.getCommentId()),
+						anonymousNumbers.get(comment.getAuthor().getUserId()), userId))
 				.toList();
 		return CommunityPostDetailResponse.from(post, author(post.getAuthor().getUserId()),
 				communityPostReadRepository.countLikes(postId), communityPostReadRepository.isLiked(postId, userId),

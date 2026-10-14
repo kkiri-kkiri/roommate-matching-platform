@@ -599,7 +599,21 @@ PUT 요청 본문은 answers로 감싸지 않고 아래 객체를 그대로 전�
 }
 ```
 
-현재 MyPage 저장 로직에서는 화면에 노출된 모든 설문 항목에 답변이 있어야 저장된다.
+현재 MyPage 저장 로직에서는 필수 설문 항목에 답변이 있어야 저장된다. 마지막의 `나의 한마디`는 선택 항목이다.
+
+PUT 본문에는 선택 필드 `introduction`을 함께 보낸다. 저장 위치는 기존 `USER_PROFILE.introduction`이며
+PROFILE_SURVEY에 복제하지 않는다. GET/PUT 응답은 `{ "completed": true, "answers": { ... }, "introduction": "안녕하세요\n반가워요" }`이다.
+설문이 없을 때도 `answers: null`과 별도로 기존 프로필의 `introduction`을 반환한다.
+JWT 사용자 자신의 프로필과 설문을 같은 트랜잭션에서 수정한다. 다른 사용자의 ID를 본문으로 지정할 수 없다.
+
+- 최대 200 UTF-16 코드 단위: Java String.length/Bean Validation Size와 JavaScript length/textarea maxLength 기준을 맞춘다.
+- 200자 초과는 400 Validation 오류이며 저장하지 않는다. 한글과 개행, 내용이 있는 문자열의 앞뒤 공백은 보존한다.
+- 빈 문자열 또는 공백만 있는 문자열은 빈 문자열로 저장하여 삭제한다.
+- null 또는 필드 생략은 기존 소개를 유지한다. 이전 클라이언트의 설문 저장으로 기존 소개가 지워지지 않는다.
+- 기존 201~255자 소개는 조회 시 자르지 않는다. 새로 저장할 소개는 200자 이하로 수정해야 한다.
+- introduction은 설문 완료 판정 및 매칭 점수 계산 대상이 아니다. 설문 답변 변경 시 기존 매칭 갱신 이벤트를 유지한다.
+- PUT은 기존과 같이 필수 설문 답변 전체를 요구한다. 소개만 있는 불완전한 요청은 거부하여 설문 유실을 방지한다.
+- 룸메찾기 목록/상세/관심 프로필은 기존 USER_PROFILE.introduction을 매번 조회한다.
 
 Response data는 GET과 동일한 `{ "completed": true, "answers": { ... } }` 형식이다.
 검증 후 JWT 사용자에 해당하는 현재 설문을 생성/수정하고, 저장한 단일·복수 응답을 반환한다.
@@ -1013,7 +1027,8 @@ Response:
 비로그인 요청의 liked는 false다.
 상세의 comments는 댓글·답글을 parentCommentId로 연결하는 기존 배열 구조를 유지한다.
 각 항목은 id, parentCommentId(일반 댓글은 null), content, author, createdAt,
-likes(전체 좋아요 수, 없으면 0), liked(본인 좋아요 여부, 비로그인은 false)를 포함한다.
+likes(전체 좋아요 수, 없으면 0), liked(본인 좋아요 여부, 비로그인은 false), anonymous,
+anonymousNumber(일반 댓글은 null), mine(인증된 본인 댓글 여부, 비로그인은 false)를 포함한다.
 댓글·답글의 좋아요 상태는 표시할 댓글 ID 기준으로 일괄 조회한다.
 
 7.3 게시글 작성
@@ -1138,7 +1153,9 @@ Request:
 
 Validation: 댓글과 동일.
 
-댓글과 답글의 anonymous는 생략/null이면 false(닉네임 공개)이다. 상세 조회 댓글 응답에도 anonymous를 포함한다. 익명인 경우 author.nickname은 "익명", author.major는 null로 반환하고 작성자 ID는 유지한다. 공개 댓글은 작성자의 닉네임과 학과를 반환한다. 내용 수정 시 익명 설정은 유지한다.
+댓글과 답글의 anonymous는 생략/null이면 false(닉네임 공개)이다. 익명인 경우 author.nickname은 "익명1"처럼 게시글별 번호를 포함하고 author.id와 author.major는 null이다. anonymousNumber는 해당 게시글에서 처음 익명으로 참여한 순서대로 배정하며 댓글과 답글이 공유한다. 일반 댓글의 anonymousNumber는 null이며 작성자 ID·닉네임·학과는 기존대로 반환한다. 내용 수정·소프트 삭제·재작성은 기존 번호를 유지한다.
+
+수정·삭제 UI는 실제 작성자 ID 비교 대신 mine을 사용한다. 서버의 권한 검증은 인증 사용자와 내부 작성자 관계로 계속 수행한다. 익명 댓글에는 게시글의 실제 작성자와 연결되는 작성자 배지를 표시하지 않는다. 기존 클라이언트는 author.id의 null 처리가 필요하므로 프론트엔드와 백엔드를 함께 배포한다. 게시글 자체의 익명 표시 계약은 이번 변경 대상이 아니다.
 
 8.3 댓글/답글 수정
 
@@ -1343,7 +1360,7 @@ sourceFrom:
 
 필드 기준:
 
-* `targetUserId`: 채팅을 시작할 상대 사용자 ID
+* `targetUserId`: 채팅을 시작할 상대 사용자 ID. COMMUNITY / COMMENT는 생략 또는 null 가능하며 서버가 댓글 작성자를 조회한다.
 * `category`: `ROOMMATE` 또는 `COMMUNITY`
 * `sourcePostId`: 커뮤니티에서 시작한 경우 원 게시글 ID
 * `sourceCommentId`: 댓글에서 시작한 경우 원 댓글 ID
@@ -1356,7 +1373,7 @@ Validation:
 * `sourceFrom = POST`인 경우 `sourcePostId`가 필수이며 `sourceCommentId`는 사용하지 않는다.
 * `sourceFrom = COMMENT`인 경우 `sourcePostId`, `sourceCommentId`가 모두 필수이다.
 * `sourceCommentId`는 해당 `sourcePostId`에 속한 댓글이어야 한다.
-* `targetUserId`는 채팅 시작 대상 게시글 또는 댓글의 작성자와 일치하는지 서버에서 검증한다.
+* 게시글 출처의 `targetUserId`는 작성자와 일치해야 한다. 일반 댓글에서 전달한 `targetUserId`도 일치를 검증한다. 익명 댓글에서는 작성자 ID 추측 검증에 악용되지 않도록 전달된 값을 무시하고 댓글의 실제 작성자를 사용한다.
 * 자기 자신을 대상으로 채팅방을 생성할 수 없다.
 
 방 재사용 및 출처 표시 규칙:
@@ -2390,7 +2407,7 @@ tags
 
 구현 전에 다음을 결정한다.
 
-introduction, profileImageUrl의 수정 UI를 추가할지 결정
+introduction 수정 UI는 마이페이지 내 설문의 마지막 선택 항목으로 제공한다(4.2 참고). profileImageUrl 수정 UI는 별도 검토한다.
 
 tags는 별도 저장하지 않고 프로필/설문 값에서 서버가 생성
 

@@ -135,7 +135,7 @@ function CommentComposer({ id, label, onSubmit, onCancel, compact = false, busy 
 function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onReport, onReply, onToggleLike, replying, onChat, replyAuthor, busy }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(entry.content);
-  const mine = Boolean(currentUser && currentUser.id === entry.author.id);
+  const mine = Boolean(currentUser && (entry.mine ?? (currentUser.id === entry.author.id)));
   const authorDisplay = getPostAuthorDisplay(entry);
   const editActions = mine && !editing && (
     <S.ActionGroup>
@@ -149,21 +149,15 @@ function CommentEntry({ entry, currentUser, postAuthorId, onSave, onDelete, onRe
 
   return (
     <S.CommentItem id={`comment-${entry.id}`}>
-      {replyAuthor != null && (
-        <S.ReplyHeading>
-          <S.ReplyTarget><Reply size={14} aria-hidden="true" />{replyAuthor}님에게 답글</S.ReplyTarget>
-          {editActions}
-        </S.ReplyHeading>
-      )}
       <S.CommentHeader>
         <S.CommentAuthorImage src={authorDisplay.image} alt="" />
         <div>
           <strong>{authorDisplay.nickname}</strong>
-          {entry.author.id === postAuthorId && <S.AuthorBadge>작성자</S.AuthorBadge>}
+          {!entry.anonymous && entry.author.id != null && entry.author.id === postAuthorId && <S.AuthorBadge>작성자</S.AuthorBadge>}
           {mine && <S.AuthorBadge>나</S.AuthorBadge>}
           <time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time>
         </div>
-        {replyAuthor == null && editActions}
+        {editActions}
         {!mine && <S.ChatButton type="button" onClick={onChat} aria-label={`${authorDisplay.nickname}님에게 채팅 보내기`}>
           <MessageCircle size={14} aria-hidden="true" />채팅
         </S.ChatButton>}

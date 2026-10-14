@@ -172,7 +172,9 @@ VARCHAR(255)
 
 nullable
 
-자기소개
+자기소개. 마이페이지 내 설문의 선택 항목 '나의 한마디'와 룸메찾기 목록/상세/관심 프로필이 함께 사용하는 단일 저장 위치.
+신규 입력은 API에서 최대 200 UTF-16 코드 단위로 검증한다. 기존 데이터 보존을 위해 컬럼 길이는 255로 유지한다.
+별도 컬럼이나 마이그레이션은 필요하지 않다.
 
 profile_image_url
 
@@ -1325,6 +1327,21 @@ DATETIME
 현재 프론트는 댓글 → 답글 1단계 구조이므로 답글에 다시 답글을 등록하는 것은 백엔드에서 제한한다.
 
 신고 이력 유지를 위해 댓글도 소프트 삭제한다.
+
+게시글별 익명 댓글 작성자 (COMMUNITY_ANONYMOUS_AUTHOR)
+
+| 컬럼 | 타입 | 제약 / 의미 |
+| --- | --- | --- |
+| anonymous_author_id | BIGINT | PK, AUTO_INCREMENT |
+| post_id | BIGINT | NOT NULL, FK → COMMUNITY_POST |
+| author_id | BIGINT | NOT NULL, FK → USER (서버 내부 전용) |
+| anonymous_number | BIGINT | NOT NULL, 게시글별 양의 익명 번호 |
+
+UNIQUE(post_id, author_id), UNIQUE(post_id, anonymous_number).
+댓글과 답글이 동일 매핑을 공유한다. 게시글 행에 PESSIMISTIC_WRITE 잠금을 획득한 뒤 번호를 배정하고 댓글 저장과 함께 커밋한다.
+댓글 수정·삭제 및 회원 탈퇴(소프트 삭제)로 매핑을 삭제하지 않는다. 모든 댓글이 없어도 번호를 보존하며 재사용하지 않는다.
+기존 게시글의 매핑이 비어 있으면 상태와 무관한 익명 댓글 전체를 created_at, comment_id 순으로 읽어 초기화한다.
+번호는 조회 정렬·페이징과 독립적이며 매핑의 author_id는 일반 사용자 응답에 포함하지 않는다.
 
 댓글 좋아요 (COMMENT_LIKE)
 

@@ -3,6 +3,7 @@ package com.kkirikkiri.survey.service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import jakarta.validation.Validator;
@@ -21,6 +22,8 @@ import com.kkirikkiri.survey.repository.ProfileSurveyOptionRepository;
 import com.kkirikkiri.survey.repository.ProfileSurveyRepository;
 import com.kkirikkiri.user.entity.User;
 import com.kkirikkiri.user.repository.UserRepository;
+import com.kkirikkiri.user.repository.UserProfileRepository;
+import com.kkirikkiri.user.entity.UserProfile;
 
 /**
  * userId에는 인증된 사용자의 ID를 전달한다.
@@ -63,6 +66,7 @@ public class ProfileSurveyService {
 	private static final Set<String> SHARED_ITEMS_OPTIONS = Set.of("적극적으로 공유", "일부만 공유", "각자 사용");
 
 	private final UserRepository userRepository;
+	private final UserProfileRepository userProfileRepository;
 	private final ProfileSurveyRepository profileSurveyRepository;
 	private final ProfileSurveyOptionRepository profileSurveyOptionRepository;
 	private final Validator validator;
@@ -70,12 +74,15 @@ public class ProfileSurveyService {
 
 	public ProfileSurveyResponse getMyProfileSurvey(Long userId) {
 		validateUserId(userId);
-		return profileSurveyRepository.findByUser_UserId(userId)
+		ProfileSurveyResponse response = profileSurveyRepository.findByUser_UserId(userId)
 				.map(survey -> checkedResponse(ProfileSurveyResponse.from(survey,
 						profileSurveyOptionRepository
 								.findAllByProfileSurvey_ProfileSurveyIdOrderByProfileSurveyOptionIdAsc(
 										survey.getProfileSurveyId()))))
 				.orElseGet(() -> ProfileSurveyResponse.from(null, List.of()));
+		String introduction = userProfileRepository.findByUser_UserId(userId)
+				.map(UserProfile::getIntroduction).orElse(null);
+		return new ProfileSurveyResponse(response.completed(), response.answers(), introduction);
 	}
 
 	private ProfileSurveyResponse checkedResponse(ProfileSurveyResponse response) {
@@ -87,7 +94,7 @@ public class ProfileSurveyService {
 					a.lightingPreference(), a.phoneCall(), a.mediaSound(), a.showerTime(), a.showerDuration(),
 					a.cleaningFrequency(), a.cleaningStyle(), a.dormStayDays(), a.mealPlan(), a.meal(),
 					a.roommateInteraction(), a.temperaturePreference(), a.scentProductUse(), a.desktopUse(),
-					a.sharedItems()));
+					a.sharedItems(), null));
 			return response;
 		} catch (CustomException invalidSavedAnswers) {
 			// Do not rewrite legacy records during a read; allow the owner to repair them.
@@ -104,6 +111,18 @@ public class ProfileSurveyService {
 		User user = userRepository.findByIdForSurveyUpdate(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
 		ProfileSurvey survey = profileSurveyRepository.findByUser_UserId(userId).orElse(null);
+		ProfileSurveyResponse previous = survey == null ? ProfileSurveyResponse.from(null, List.of())
+				: ProfileSurveyResponse.from(survey, profileSurveyOptionRepository
+						.findAllByProfileSurvey_ProfileSurveyIdOrderByProfileSurveyOptionIdAsc(survey.getProfileSurveyId()));
+		// Older clients omit introduction. Null preserves existing text; an empty string clears it.
+		if (request.introduction() != null) {
+			UserProfile profile = userProfileRepository.findByUser_UserId(userId)
+					.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+			String introduction = request.introduction();
+			boolean blank = introduction.codePoints().allMatch(c -> Character.isWhitespace(c)
+					|| Character.isSpaceChar(c) || c == 0xFEFF);
+			profile.changeIntroduction(blank ? "" : introduction);
+		}
 		if (survey == null) {
 			survey = createSurvey(user, request);
 		} else {
@@ -111,8 +130,11 @@ public class ProfileSurveyService {
 		}
 		profileSurveyRepository.save(survey);
 		replaceOptions(survey, request);
-        events.publishEvent(new com.kkirikkiri.matching.service.MatchingInputsChanged(userId, true, false));
-		return getMyProfileSurvey(userId);
+		ProfileSurveyResponse saved = getMyProfileSurvey(userId);
+		if (!previous.completed() || !Objects.equals(previous.answers(), saved.answers())) {
+			events.publishEvent(new com.kkirikkiri.matching.service.MatchingInputsChanged(userId, true, false));
+		}
+		return saved;
 	}
 
 	private ProfileSurvey createSurvey(User user, ProfileSurveyRequest request) {

@@ -63,6 +63,7 @@ class CommunityPostServiceTest {
 	@Mock ConstraintViolation<PostImagesRequest> imageViolation;
 	@Mock CommunityCommentRepository communityCommentRepository;
 	@Mock CommentLikeRepository commentLikeRepository;
+	@Mock com.kkirikkiri.community.comment.service.CommunityAnonymousAuthorService anonymousAuthorService;
 	@Mock PostLikeRepository postLikeRepository;
 	@Mock UserRepository userRepository;
 	@InjectMocks CommunityPostService service;
@@ -531,6 +532,88 @@ class CommunityPostServiceTest {
 		assertEquals(viewerId != null, result.liked());
 		assertEquals(viewerId != null, result.reported());
 		if (viewerId == null) verify(commentLikeRepository, never()).findLikedCommentIds(any(), any());
+	}
+
+	@ParameterizedTest
+	@NullSource
+	@ValueSource(longs = {7, 8})
+	void returnsStoredAnonymousNumberAndViewerOwnershipWithoutRealProfile(Long viewerId) {
+		when(user.getUserId()).thenReturn(7L);
+		CommunityComment comment = new CommunityComment(post, user, null, "익명 댓글");
+		comment.changeAnonymous(true);
+		ReflectionTestUtils.setField(comment, "commentId", 10L);
+		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+		when(anonymousAuthorService.resolveNumbers(1L, null)).thenReturn(java.util.Map.of(7L, 4L));
+		when(communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(1L, CommunityContentStatus.ACTIVE))
+				.thenReturn(List.of(comment));
+		var response = service.getPost(viewerId, 1L).comments().getFirst();
+		assertEquals(4L, response.anonymousNumber());
+		assertEquals("익명4", response.author().nickname());
+		assertNull(response.author().id());
+		assertNull(response.author().major());
+		assertEquals(Long.valueOf(7).equals(viewerId), response.mine());
+		// 게시글 프로필 조회 1회 외에 익명 댓글의 프로필은 조회하지 않는다.
+		verify(userProfileRepository, times(1)).findByUser_UserId(7L);
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void stopsSavingImageMetadataAndRemainingFilesWhenStorageFails(boolean update) {
+		// given
+		if (update) {
+			stubOwnedPost();
+		} else {
+			UserProfile profile = mock(UserProfile.class);
+			when(profile.getUser()).thenReturn(user);
+			when(userProfileRepository.findByUser_UserId(7L)).thenReturn(Optional.of(profile));
+			when(communityPostRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+		}
+		var first = new MockMultipartFile("images", "first.png", "image/png", new byte[]{1});
+		var second = new MockMultipartFile("images", "second.png", "image/png", new byte[]{2});
+		var failure = new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+		when(postImageStorage.store(first)).thenThrow(failure);
+		var images = new PostImagesRequest(List.of(first, second));
+		// when / then
+		assertSame(failure, assertThrows(CustomException.class, () -> {
+			if (update) service.updatePost(7L, 1L, updateRequest(List.of()), images);
+			else service.createPost(7L, createRequest(), images);
+		}));
+		verify(postImageRepository, never()).save(any());
+		verify(postImageStorage, never()).store(second);
+	}
+
+	@Test
+	void combinesCountsAndViewerFlagsForEachPostWithoutMixingResults() {
+		// given
+		when(user.getUserId()).thenReturn(7L);
+		ReflectionTestUtils.setField(post, "postId", 1L);
+		CommunityPost other = new CommunityPost(user, null, "자유게시판", "다른 글", "내용");
+		ReflectionTestUtils.setField(other, "postId", 2L);
+		var pageable = PageRequest.of(1, 2, Sort.by(Sort.Direction.DESC, "createdAt", "postId"));
+		when(communityPostRepository.searchPosts(CommunityContentStatus.ACTIVE, null, null, null, pageable))
+				.thenReturn(new PageImpl<>(List.of(post, other), pageable, 5));
+		when(communityPostReadRepository.countLikes(1L)).thenReturn(3L);
+		when(communityPostReadRepository.countLikes(2L)).thenReturn(0L);
+		when(communityCommentRepository.countByPost_PostIdAndStatus(1L, CommunityContentStatus.ACTIVE)).thenReturn(0L);
+		when(communityCommentRepository.countByPost_PostIdAndStatus(2L, CommunityContentStatus.ACTIVE)).thenReturn(4L);
+		when(postImageRepository.existsByPost_PostId(1L)).thenReturn(true);
+		when(postImageRepository.existsByPost_PostId(2L)).thenReturn(false);
+		when(communityPostReadRepository.isLiked(1L, 8L)).thenReturn(true);
+		when(communityPostReadRepository.isLiked(2L, 8L)).thenReturn(false);
+		when(communityPostReadRepository.isReported(1L, 8L)).thenReturn(false);
+		when(communityPostReadRepository.isReported(2L, 8L)).thenReturn(true);
+		// when
+		var result = service.getPosts(8L, new CommunityPostListRequest(1, 2, null, null, null));
+		// then
+		assertEquals(List.of(1L, 2L), result.content().stream().map(CommunityPostResponse::id).toList());
+		assertEquals(List.of(3L, 0L), result.content().stream().map(CommunityPostResponse::likes).toList());
+		assertEquals(List.of(0L, 4L), result.content().stream().map(CommunityPostResponse::commentCount).toList());
+		assertEquals(List.of(true, false), result.content().stream().map(CommunityPostResponse::hasImages).toList());
+		assertEquals(List.of(true, false), result.content().stream().map(CommunityPostResponse::liked).toList());
+		assertEquals(List.of(false, true), result.content().stream().map(CommunityPostResponse::reported).toList());
+		assertEquals(1, result.page());
+		assertEquals(2, result.size());
+		assertEquals(5, result.totalElements());
 	}
 
 	private void stubPostForLike() {
