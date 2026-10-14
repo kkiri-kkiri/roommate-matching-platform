@@ -1,17 +1,19 @@
 API 명세서
 
-상태: Frontend 기반 수정본
-기준: 첨부된 React src 전체 구조와 현재 화면 동작
-목적: Spring Boot 백엔드 구현 시 Controller / Service / Repository / DTO 작업의 공통 계약으로 사용
-수정 기준: ERD와의 불일치, 인증 선행조건, 설문/채팅/캘린더 구현 누락 보완
+상태: 현재 구현 대조본 (2026-10-14, 문서만 수정)
+기준: 실제 Controller / DTO / Service / SecurityConfig와 현재 프론트 호출
+목적: 도메인별 배포 검증의 기준 계약. 구현 확인과 실행 검증을 구분한다.
+수정 기준: 과거 설계·누락된 명세 정리, 미구현 기능·미해결 결함 분리
 
 0. 문서 사용 기준
 
-현재 프론트엔드는 실제 API 대신 Mock Data, localStorage, sessionStorage, React state를 사용하고 있다. 이 문서는 해당 화면에서 실제로 필요한 서버 기능을 추출해 REST API 계약으로 정리한 것이다.
+인증·회원정보·설문·룸메이트·커뮤니티·게시글/댓글 출처 채팅·캘린더·관리자는 실제 API를 호출한다. 기숙사 점수는 MainPage의 프론트 내부 계산이며 서버 계산 API와 기숙사 일정 수집기는 미구현이다. 인증 토큰·화면 상태 저장을 API 미연동의 근거로 삼지 않는다.
 
-저장 구조는 ERD.md를 기준으로 한다.
+19장은 현재 제공 중인 REST 반환 타입·DTO 선언의 상세 기준이다. 문서의 예시는 전체 필드 표가 아니므로 19장 및 아래 nullable·검증 규칙을 함께 따른다. 미해결 #3/#4/#12/#13/#14는 설명을 보완해도 코드·설정이 해결된 것이 아니다. 이전 테스트 성공 보고를 현재 코드의 실행 검증으로 사용하지 않는다.
 
-화면 동작과 API 요청/응답 계약은 이 문서를 기준으로 한다.
+저장 구조는 실제 Entity와 대조한 ERD.md를 기준으로 한다. 운영 DB의 실제 DDL 일치는 별도 검증 대상이다.
+
+화면 동작과 요청/응답 계약은 확정 요구사항과 현재 코드·호출부를 비교하여 이 문서를 사용한다. 예정 설계와 미해결 결함을 구현 보장으로 취급하지 않는다.
 
 ERD.md와 API.md가 충돌하면 임의로 구현하지 말고 팀에서 먼저 결정한다.
 
@@ -112,6 +114,8 @@ global.response.ApiResponse<T> 사용을 전제로 한다.
 
 Validation 오류는 필드별 오류를 추가할 수 있다.
 
+현재 REST 성공은 생성·변경·삭제를 포함해 HTTP 200이다. Void 반환은 data=null이며 201/204로 임의 변경하지 않는다. success/message/data는 공통이며 성공의 errorCode/fieldErrors는 생략한다. DTO 필드 검증은 400 VALIDATION_ERROR와 fieldErrors를 제공할 수 있지만 서비스·객체·메서드 검증에서는 fieldErrors가 없을 수 있다. 인증 401 UNAUTHORIZED, 권한·소유권 403 FORBIDDEN, 일반 대상/잘못된 요청 400 INVALID_REQUEST, 가입 충돌 409, 이메일 재전송 제한 429, 내부 오류 500이다. 상세 ErrorCode는 19장을 따른다. 잘못된 JSON·타입 등 MVC 오류는 공통 envelope를 사용하되 405/413/415 등 실제 HTTP 상태를 유지한다. 공개되지 않은 경로는 SecurityConfig에서 먼저 차단될 수 있다. STOMP 제어/ERROR 프레임은 REST envelope가 아니다.
+
 {
 "success": false,
 "message": "입력값을 확인해 주세요.",
@@ -148,7 +152,7 @@ Spring Data Pageable 기준으로 서버 API는 0-based page를 사용한다.
 시간: HH:mm
 일시: ISO-8601 또는 YYYY-MM-DDTHH:mm:ss
 
-서버 기준 시간대는 Asia/Seoul을 사용한다.
+목표 표시 기준은 Asia/Seoul이다. 현재 Jackson 설정과 이메일 인증/재설정 Clock, 학사 수집·스케줄은 서울 시간대를 지정하지만 여러 Entity의 LocalDateTime.now는 JVM 기본 시간대를 따른다. JVM·DB 전체의 시간대 통일은 현재 보장되지 않으며 배포 환경에서 확인해야 한다. DATETIME과 LocalDateTime 응답에는 UTC offset이 없다.
 
 2. 인증 / 회원가입
 
@@ -333,9 +337,14 @@ MBTI 4개 축 모두 선택
 
 nickname, schoolEmail 중복 검증
 
+nickname은 한글·영문·숫자만 허용하며 2~8자이다. 비밀번호는 영문·숫자·특수문자를 포함하고 공백을 금지한다. gender는 남자/여자, MBTI는 네 축의 정의된 값만 허용한다.
+major 요청 문자열 `세부전공 없음`은 major_id=NULL로 저장한다. 그 외 전공은 선택한 활성 학부에 속한 활성 전공이어야 한다. dormitory/faculty/major의 최대 길이는 30/100/150자이며 학교 이메일 아이디는 최대 64자다.
+
 GET /api/auth/signup/availability (Public)
 
 Query: schoolEmail, nickname
+
+두 query는 선택이며 생략하면 빈 문자열이다. 현재 availability 조회 자체에는 가입 DTO의 형식 검증을 적용하지 않고 존재 여부만 확인한다. 이 응답이 실제 가입 검증 성공을 보장하지 않는다.
 
 Response data: { "schoolEmailAvailable": true, "nicknameAvailable": true }
 
@@ -389,7 +398,7 @@ Token 만료시간 저장
 
 사용자의 학교 이메일로 재설정 링크 또는 Token 전송
 
-계정 존재 여부 노출을 줄이기 위해 존재하지 않는 계정이어도 동일한 응답 형태 사용 권장
+존재하지 않거나 비활성인 계정도 현재 sent=true를 반환한다. 실제 토큰/메일은 ACTIVE 계정에만 발급한다. SMTP 발송 실패는 500 INTERNAL_SERVER_ERROR이며 토큰 저장을 롤백한다.
 
 2.8 비밀번호 재설정
 
@@ -480,6 +489,8 @@ Request 예:
 
 부분 수정 허용.
 
+생략/null은 기존 값을 유지한다. nickname은 가입과 같은 2~8자·한글/영문/숫자 제한이다. 변경 학부·전공은 활성 기준정보와 소속 일치를 검증한다. 학부만 변경해 기존 전공과 불일치하면 거절한다. major=null로 전공을 해제하는 계약은 없다. MBTI 일부 축은 기존 값과 합친다. 중복 nickname/잘못된 기준정보 등 서비스 검증 실패는 현재 400 INVALID_REQUEST이다. Response data는 갱신된 3.1의 UserResponse다.
+
 3.3 비밀번호 변경
 
 PATCH /api/users/me/password
@@ -499,6 +510,8 @@ Validation:
 현재 비밀번호 일치
 
 새 비밀번호 8자 이상
+
+영문·숫자·특수문자를 포함하고 공백을 금지한다. 비밀번호 재설정의 새 비밀번호도 같은 규칙이다. 변경/재설정 성공의 data는 null이다.
 
 새 비밀번호 확인 일치
 
@@ -542,8 +555,6 @@ Auth
 "meal": "시간 될 때만 같이 먹고 싶음",
 "roommateInteraction": "적당히 대화",
 "temperaturePreference": "보통",
-"hairDryer": "사용",
-"bugHandling": "작은 벌레는 가능",
 "scentProductUse": "사용 안 함",
 "desktopUse": "사용하지 않아요",
 "sharedItems": "일부만 공유"
@@ -582,8 +593,6 @@ PUT 요청 본문은 answers로 감싸지 않고 아래 객체를 그대로 전�
 "meal": "시간 될 때만 같이 먹고 싶음",
 "roommateInteraction": "적당히 대화",
 "temperaturePreference": "보통",
-"hairDryer": "사용",
-"bugHandling": "작은 벌레는 가능",
 "scentProductUse": "사용 안 함",
 "desktopUse": "사용하지 않아요",
 "sharedItems": "일부만 공유"
@@ -612,8 +621,7 @@ Response data는 GET과 동일한 `{ "completed": true, "answers": { ... } }` �
 GET의 completed는 DB 완료 플래그와 필수 응답의 유효성을 함께 확인한다. 설문이 없으면 false/null,
 저장된 응답이 불완전하면 false/기존 응답을 반환하며 조회만으로 DB를 수정하지 않는다.
 localStorage 설문은 조회·저장·완료 판정에 사용하지 않고 자동으로 DB에 이전하지 않는다.
-현재 구현의 요청 필드는 ProfileSurveyRequest 기준 필수 설문 23개와 선택 introduction이며, 기존 명세 예시의 과거 필드 hairDryer/bugHandling은
-현재 DTO와 Entity에 존재하지 않는다. 이번 변경에서 해당 필드를 추가하거나 스키마를 변경하지 않는다.
+현재 요청/응답은 ProfileSurveyRequest 기준 23개 필드다. 과거의 hairDryer/bugHandling은 현재 계약에 포함하지 않으며 저장 컬럼을 추가하지 않는다.
 
 5. 선호 룸메이트 설문
 
@@ -742,7 +750,7 @@ multi 항목에서 상관없음은 다른 값과 동시 선택 불가
 - A → B는 A의 완료된 선호 설문과 A/B의 프로필, B의 완료된 프로필 설문으로 계산한다.
 - 점수 = round(100 × 충족 항목 가중치 합 / 적용 항목 가중치 합). 가중치는 1~5이며 항목 충족은 0 또는 1이다. 소수점 첫째 자리에서 반올림한다.
 - 선호의 “상관없음”은 분자·분모에서 제외한다.
-- 복수 선택은 하나라도 일치하면 충족한다. 잠꼬대·코골이·이갈이는 없음 < 적음 < 보통 < 심함 순서로 허용 상한을 비교한다.
+- 복수 선택은 하나라도 일치하면 충족한다. 잠꼬대·코골이·이갈이는 없음 <적음 <보통 <심함 순서로 허용 상한을 비교한다.
 - 샤워 소요시간은 선호 상한 이하일 때 충족한다. “그 이상”은 40분 이하 조건도 충족하지 않는다.
 - “비흡연자만”은 비흡연만, “전자담배까지 허용”은 비흡연과 전자담배를 허용한다.
 - 학부·전공은 ID로 비교한다. “같은 전공”과 “같은 학부의 다른 전공”은 양쪽 전공이 있어야 충족한다. 나이는 출생연도로 연하·동갑·연상을 비교하며 학년은 상대 학년과 일치 여부를 비교한다.
@@ -757,7 +765,7 @@ multi 항목에서 상관없음은 다른 값과 동시 선택 불가
 
 GET /api/roommates
 
-Auth
+Public / 인증 선택. 게스트 matchScore=null, liked=false. 유효하지 않은 Bearer를 보낸 요청은 401이며 프론트는 공개 GET만 토큰 제거 후 비로그인으로 한 번 재시도한다.
 
 Query 예:
 
@@ -814,7 +822,7 @@ Query:
 
 matchScore DESC, 상대 userId ASC (동점 보조 정렬)
 
-추천 기준 matchScore >= 60
+추천 기준 matchScore>= 60
 
 요청당 최대 9개 표시. size가 9보다 크면 9로 제한한다.
 명시적 sort는 matchScore,desc만 허용한다.
@@ -851,7 +859,7 @@ Response (공통 ApiResponse.data):
 - AI에는 matchScore, matchedItems, mismatchedItems만 전달한다. 항목은 PreferenceCriterionCode이며 사용자 ID, 이름, 이메일, 설문 원본은 전달하지 않는다.
 - AI는 한국어 자연어 설명만 생성한다. API의 matchScore는 AI 응답에서 추출하지 않는다.
 - 분석은 요청 시 생성하여 반환하며 DB에 저장하지 않는다. Gateway 대기 중에는 매칭 트랜잭션을 유지하지 않는다.
-- ai.api-key, ai.base-url, ai.model 설정 사용. 현재 AI_MODEL=gpt-5.6-luna.
+- ai.api-key, ai.base-url, ai.model은 AI_API_KEY/AI_BASE_URL/AI_MODEL 환경 설정에 의존한다. 운영 모델·Gateway 접근·타임아웃·응답 형식은 배포 환경 확인 대상이다.
 - POST {AI_BASE_URL}/chat/completions/ (Bearer 인증), choices[0].message.content 사용.
 - 연결 제한 5초, 응답 제한 45초. 자동 재시도 없음. 인증키와 Gateway 오류 본문은 로그/응답에 노출하지 않는다.
 - 400 INVALID_REQUEST: 자기 자신, 유효하지 않거나 공개 불가능한 대상.
@@ -864,7 +872,7 @@ Response (공통 ApiResponse.data):
 
 GET /api/roommates/{userId}
 
-Auth
+Public / 인증 선택. 게스트 matchScore=null, liked=false. 추천 조회·관심 등록·AI 분석은 인증 필수다.
 
 Response:
 
@@ -901,7 +909,7 @@ POST /api/roommates/{userId}/likes
 
 Auth
 
-중복 요청은 멱등 처리 권장.
+중복 등록 요청은 현재 멱등 처리한다.
 
 대상의 공개 가능 여부로 등록을 판단하며 매칭 결과 행을 요구하지 않는다.
 동시 중복 등록도 저장 트랜잭션 롤백 후 존재 여부를 확인하여 멱등 처리한다.
@@ -937,7 +945,7 @@ Response item은 룸메이트 카드 응답과 동일.
 
 GET /api/posts
 
-Public 조회 가능 권장
+Public 조회 / 인증 선택
 
 Query:
 
@@ -967,7 +975,7 @@ Response item:
 {
 "id": 1,
 "category": "자유게시판",
-"dormitory": "나래관",
+"dormitory": "나래",
 "title": "룸메이트와 함께 정한 작은 생활 규칙",
 "contentPreview": "이번 학기에...",
 "author": {
@@ -992,7 +1000,7 @@ Response:
 {
 "id": 1,
 "category": "자유게시판",
-"dormitory": "나래관",
+"dormitory": "나래",
 "title": "...",
 "content": "...",
 "author": {
@@ -1043,7 +1051,8 @@ request:
 {
 "category": "자유게시판",
 "title": "게시글 제목",
-"content": "게시글 내용"
+"content": "게시글 내용",
+"anonymous": false
 }
 
 Validation:
@@ -1072,13 +1081,9 @@ Auth / 작성자만 가능
 
 Content-Type 및 Validation은 작성과 동일.
 
-이미지 유지/삭제/추가 방식은 구현 전에 다음 중 하나로 확정한다.
+유지할 기존 이미지 ID와 신규 파일을 함께 전달한다. keepImageIds의 생략/null/빈 배열은 기존 이미지 연결을 모두 제거한다. 본문만 수정해도 유지할 ID를 명시해야 한다. 유지 ID는 해당 게시글 소유이며 중복을 금지하고 유지+신규 합계는 최대 5개다. 유지 이미지의 기존 순서 다음에 신규 이미지를 추가한다. 프론트 CommunityPage.savePost는 남긴 기존 이미지 ID와 신규 File을 분리하여 전송한다. 이번 문서 수정에서 삭제 정책을 변경하지 않는다.
 
-유지할 기존 이미지 ID + 새 파일 전달
-
-이미지 전체 재설정
-
-권장 Request JSON Part:
+현재 Request JSON Part 예:
 
 {
 "category": "자유게시판",
@@ -1086,6 +1091,10 @@ Content-Type 및 Validation은 작성과 동일.
 "content": "수정 내용",
 "keepImageIds": [1, 2]
 }
+
+작성 anonymous는 boolean이며 기본 false다. 수정 anonymous는 Boolean으로 생략/null이면 유지한다. 목록·상세 응답에도 anonymous를 포함하며 author는 id/nickname/major다. 익명은 nickname="익명", major=null이고 기존 id를 유지한다. 공개 프로필과 연결 가능한 대상은 재식별될 수 있으므로 익명성 수준은 정책 결정 대상이다. 현재 공개 계약을 임의 변경하지 않는다.
+
+작성 성공 data는 postId(number), 수정 성공 data는 null이다. 이미지 URL은 현재 /api/post-images/{파일명} 경로이며 프론트는 API origin 기준으로 해석한다. 파일은 app.community.image-directory(기본 uploads/community)에 저장한다. 연결 제거와 실제 파일 삭제를 동일한 것으로 설명하지 않는다.
 
 7.5 게시글 삭제
 
@@ -1154,7 +1163,7 @@ PATCH /api/comments/{commentId}
 
 Auth / 작성자만 가능
 
-답글도 Comment Entity로 통합할 경우 동일 Endpoint 사용 가능.
+댓글과 답글은 현재 CommunityComment Entity로 통합되어 동일 수정 Endpoint를 사용한다.
 
 Request:
 
@@ -1168,7 +1177,7 @@ DELETE /api/comments/{commentId}
 
 Auth / 작성자만 가능
 
-댓글과 답글을 동일 테이블의 parentCommentId 구조로 구현하는 것을 권장한다. 프론트에서는 현재 comments[].replies[] 중첩 구조로 표시한다.
+서버는 parentCommentId를 가진 평면 배열을 반환하고 프론트에서 comments[].replies[]로 구성한다. 댓글/답글 작성 성공 data는 commentId(number), 수정·삭제·좋아요 성공 data는 null이다.
 
 8.5 댓글 좋아요
 
@@ -1255,7 +1264,7 @@ COMMENT
 
 10. 채팅
 
-현재 프론트는 sessionStorage로 채팅방/메시지를 유지하고 있으므로 실제 백엔드에서는 REST + WebSocket(STOMP) 구조를 권장한다.
+현재 프론트는 REST 조회/설정과 WebSocket(STOMP) 송수신을 사용한다. 연결 이후 권한 철회는 아래 미해결 #12를 별도로 확인해야 한다.
 
 10.1 채팅방 목록
 
@@ -1409,7 +1418,11 @@ Validation:
 
 10.4 메시지 전송 - WebSocket
 
-권장 STOMP Contract:
+현재 STOMP Contract:
+
+연결은 /ws/chat이며 SockJS를 사용하지 않는다. STOMP CONNECT의 Authorization: Bearer {accessToken}에서 JWT 서명·만료·ACTIVE 계정을 확인한다. SUBSCRIBE는 당시 활성 방 참여를 검사하고 SEND의 저장 경로도 방 참여를 검사한다.
+
+**미해결 #12 (High):** JWT와 계정 상태는 CONNECT 이후 재검증하지 않으며, findActiveMember는 계정 상태를 검사하지 않는다. 방을 나간 사용자의 새로운 방 접근은 거절하지만 이미 등록된 구독을 철회하거나 outbound 전달 권한을 재검증하는 구현은 없다. 따라서 기존 연결의 만료·정지·탈퇴 후 송신과 기존 구독 수신 차단을 보장하지 않는다. 이는 보안 결함이며 배포 전 서버 코드·테스트 보완이 필요하다. 문서 수정으로 해결 처리하지 않는다.
 
 SEND /pub/chat/rooms/{roomId}/messages
 SUBSCRIBE /sub/chat/rooms/{roomId}
@@ -1431,7 +1444,7 @@ Payload:
 "read": false
 }
 
-초기 구현을 단순화해야 하면 REST POST /api/chat/rooms/{roomId}/messages로 먼저 구현한 뒤 WebSocket으로 교체할 수 있다.
+REST 메시지 전송 API는 제공하지 않는다. STOMP text는 공백 금지, 최대 2,000자다.
 
 10.5 읽음 처리
 
@@ -1454,7 +1467,7 @@ Request 예:
 "muted": false
 }
 
-프론트 기준 고정 채팅방 최대 2개.
+기능 기준은 사용자별 고정 최대 2개다. 현재 updateSettings는 개수 조회 후 변경하며 초과 요청에 400 INVALID_REQUEST를 반환한다. **미해결 #13 (Medium):** 사용자 단위 잠금이 없어 동시 고정 요청에서는 제한을 보장하지 않는다. 서버 동시성 제어와 테스트 보완이 필요하다.
 
 10.7 채팅방 나가기
 
@@ -1466,7 +1479,7 @@ Auth
 
 11. 캘린더
 
-학교 일정과 기숙사 일정은 백엔드 크롤링으로 수집한다.
+학교 학사일정만 현재 자동 수집한다. 기숙사 수집기는 미구현이며 출처·규칙 확정 전 임의 구현하지 않는다.
 
 한경국립대학교 학사일정(https://www.hknu.ac.kr/kor/646/subview.do)은 매일 04:00(Asia/Seoul)에 현재 표시된 연간 일정을 수집한다.
 기존 SCHOOL 시스템 카테고리가 없으면 수집 저장을 중단하며 카테고리를 자동 생성하지 않는다.
@@ -1478,9 +1491,9 @@ SCHOOL = 학교 일정
 DORMITORY = 기숙사 일정
 CUSTOM-* = 사용자가 직접 생성한 카테고리
 
-시스템 고정 카테고리는 SCHOOL(학교), DORMITORY(기숙사)뿐이며 ownerUser=null, isSystem=true이다. 사용자는 두 카테고리를 수정·삭제하거나 직접 일정을 등록할 수 없다. 학교 크롤링은 SCHOOL, 기숙사 크롤링은 DORMITORY를 사용한다.
+시스템 고정 카테고리는 SCHOOL(학교), DORMITORY(기숙사)이며 ownerUser=null, isSystem=true다. 사용자는 시스템 카테고리를 수정·삭제하거나 직접 일정을 등록할 수 없다. 학교 수집은 SCHOOL을 사용한다. DORMITORY 저장·조회 모델이 있다는 사실은 자동 수집기 구현을 의미하지 않는다.
 
-현재 프론트 데모는 모든 일정을 수정/삭제할 수 있으므로 API 연동 시 버튼 제어가 필요하다.
+현재 프론트는 서버 editable 값으로 수정/삭제를 제어하고 서버도 소유권·sourceType·시스템 카테고리를 검사한다.
 
 11.1 일정 조회
 
@@ -1524,7 +1537,7 @@ Response item:
 "source": "한경국립대학교 학사일정"
 }
 
-조회 기간과 일정 기간이 겹치면 반환한다(startDate <= to AND endDate >= from, 경계일 포함).
+조회 기간과 일정 기간이 겹치면 반환한다(startDate <= to AND endDate>= from, 경계일 포함).
 
 11.2 사용자 일정 등록
 
@@ -1554,7 +1567,7 @@ startDate <= endDate. 단일 일정은 startDate = endDate로 저장한다.
 
 시작/종료 시간 HH:mm
 
-종료시간 > 시작시간
+같은 날짜이며 시작/종료 시간이 모두 존재하면 종료시간> 시작시간. 서로 다른 날짜에는 시각 값만 비교하지 않는다. 두 시간 모두 null이면 종일이며 한쪽 시간만 지정하는 현재 계약도 허용한다.
 
 categoryId는 본인 소유 CUSTOM-* 카테고리의 실제 ID를 사용한다. 예시의 categoryId=3은 사용자가 생성한 카테고리 ID이다.
 
@@ -1693,7 +1706,7 @@ SCHOOL, DORMITORY 시스템 카테고리는 삭제할 수 없다. 그 외 카테
 
 12. 기숙사 예상 점수 계산기
 
-점수 조건과 계산식은 백엔드에서 관리한다. 관리자 페이지에서는 계산 기준을 수정하지 않는다.
+이 장은 미구현 서버 이전 설계다. 현재 MainPage.calculateDormitoryScore가 프론트에서 계산하며 아래 경로는 제공 중인 API가 아니다. 계산 정책·priorityType·검증·인증 정책이 미확정이므로 이번 작업에서 서버 기능을 추가하지 않는다.
 
 12.1 예상 점수 계산
 
@@ -1721,7 +1734,7 @@ Response:
 "message": "충분히 경쟁력 있는 예상 점수예요"
 }
 
-현재 프론트에서는 성적/지역/가산점을 직접 계산하고 있으나 실제 연동 시 계산식을 프론트에서 제거하고 이 API 응답을 사용한다.
+현재 프론트 계산을 유지한다. 서버 이전은 별도 정책 확정 후 작업한다.
 
 13. 관리자
 
@@ -1991,6 +2004,8 @@ FAILED
 현재 관리자 프론트에는 수동 크롤링 실행 버튼이 없으므로 실행 API는 문서에서 제외한다.
 크롤링 실행 상태/실패 이력은 SCHEDULE_CRAWL_RUN, 실제 수집 일정은 CALENDAR_EVENT를 기준으로 조회한다.
 
+**미해결 #14 (High):** 실제 CalendarCrawlingService/Scheduler는 일정 저장과 로그만 수행하며 ScheduleCrawlRun을 생성·저장하지 않는다. 위 상태 API는 테이블을 조회할 뿐 실제 실행의 성공·실패·시각을 반영하지 못한다. 이력이 없으면 status/lastRunAt/lastCompletedAt/lastFailure=null, recentCollectedCount=0이며 totalCollectedCount는 실제 수집 일정 집계다. 실행 전 RUNNING 기록, 성공·실패·신규 저장 건수·완료 시각 갱신 및 일정 롤백과 독립적인 실패 이력 보존은 필요한 코드 보완이며 현재 보장되지 않는다.
+
 13.15 수집 일정 목록
 
 GET /api/admin/crawled-schedules
@@ -2052,6 +2067,8 @@ GET /api/calendar/events?from={월 시작일}&to={월 종료일}&categories=SCHO
 기숙사 예상 점수
 
 POST /api/dormitory-scores/calculate
+
+위 서버 점수 경로는 예정 설계이며 현재 메인페이지는 호출하지 않는다.
 
 15. 설문 필드 기준
 
@@ -2153,18 +2170,6 @@ showerDuration
 single
 
 10분 / 20분 / 30분 / 40분 / 그 이상
-
-hairDryer
-
-single
-
-사용 / 미사용
-
-bugHandling
-
-single
-
-잘 잡음 / 못 잡음 / 작은 벌레는 가능
 
 청소 및 공동생활
 
@@ -2370,7 +2375,7 @@ MBTI 선택지
 
 향후 관리자 수정 기능이나 서버 중앙 관리가 필요할 때 Reference API로 분리한다.
 
-17. 구현 전에 반드시 확인할 프론트 불일치
+17. 현재 프론트 연동 상태와 정책 결정 항목
 
 17.1 생활관 명칭 불일치
 
@@ -2384,23 +2389,11 @@ MBTI 선택지
 
 채팅 샘플: 비봉
 
-API/DB 구현 전에 하나로 통일해야 한다.
-
-권장 방식:
-
-DB/API 내부 코드: NARAE / HOYEON / BIBONG / CHANGJO
-
-프론트 표시명은 별도 매핑
+DB의 dormitory_code는 NARAE / HOYEON / BIBONG / CHANGJO다. 가입·내 정보·응답은 나래 / 호연 / 비봉 / 창조 이름을 사용한다. 커뮤니티 목록 필터는 관 접미사도 정규화한다. 표시명 차이를 이유로 공개 필드 값을 코드로 임의 전환하지 않는다.
 
 17.2 내 프로필 설문 필드 통일 기준
 
-hairDryer, bugHandling을 실제 프로필 설문 항목으로 유지한다.
-
-API 4.1/4.2에 두 필드를 포함한다.
-
-API 15.1에 선택지를 정의한다.
-
-ERD PROFILE_SURVEY에 hair_dryer_use, bug_handling을 저장한다.
+현재 설문은 23개 필드이며 과거 hairDryer/bugHandling은 API·화면·Entity에 없다. 현재 저장 계약과 필터에 추가하지 않는다.
 
 17.3 프로필 한마디 / 태그 / 프로필 이미지
 
@@ -2420,15 +2413,13 @@ tags는 별도 저장하지 않고 프로필/설문 값에서 서버가 생성
 
 17.4 커뮤니티 → 채팅 연결
 
-CommunityPostPage는 Router state에 communityChat을 전달하지만 현재 ChatPage는 roommateProfile만 처리하고 communityChat을 읽지 않는다.
-
-백엔드의 POST /api/chat/rooms는 COMMUNITY 채팅을 지원하도록 명세했지만, 실제 연동 시 프론트에서도 Community 채팅방 생성/선택 로직을 연결해야 한다.
+현재 CommunityPostPage.startChat은 게시글·댓글·답글의 실제 사용자/게시글/댓글 ID로 방 생성 API를 직접 호출하고 반환 roomId로 이동한다. useChat의 기존 communityChat Router state 경로는 POST만 지원하지만 현재 댓글 버튼은 이 경로를 사용하지 않는다.
 
 17.5 학교/기숙사 일정 수정 기준
 
-현재 Calendar UI는 예시 데이터상 학교/기숙사 일정도 수정/삭제할 수 있다.
+현재 Calendar UI는 API의 editable 값으로 수정/삭제를 제한한다.
 
-실제 계획은 학교/기숙사 일정을 크롤링으로 가져오는 것이므로 서버 연동 후에는:
+현재 권한 기준은 다음과 같다. 기숙사 자동 수집은 미구현이다:
 
 SCHOOL, DORMITORY: 조회 전용
 
@@ -2436,7 +2427,7 @@ SCHOOL, DORMITORY: 조회 전용
 
 구조로 맞추는 것을 권장한다.
 
-18. 백엔드 구현 권장 순서
+18. 참고: 초기 구현 순서 (현재 완료 상태 목록이 아님)
 
 API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 
@@ -2467,3 +2458,223 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 10. 프론트 전체 API 연동 및 통합 테스트
 
 각 도메인 구현 전 이 API.md, ERD.md, 해당 프론트 코드를 함께 확인한다.
+
+## 19. 현재 REST·DTO 상세 계약 (2026-10-14)
+
+### 19.1 제공 중인 REST 엔드포인트
+
+성공은 HTTP 200이며 아래 반환 타입은 공통 `ApiResponse<T>`의 **data** 타입이다. `Void`는 null, `Long`은 JSON 숫자이며 `{id: ...}` 객체가 아니다. 경로 ID는 Long이다. JSON은 기본 요청 형식이며 게시글 생성/수정만 JSON request 파트와 images 파일의 multipart를 사용한다. 조회 Request DTO는 query 바인딩이다. 자료형의 List/Map/Enum/LocalDate/LocalDateTime은 각각 JSON 배열/객체/문자열/날짜/날짜시간으로 표현한다. 상세 검증·인증·소유권은 각 본문과 아래 규칙을 함께 적용한다. 이미지 파일 제공 경로는 JSON REST Controller가 아닌 정적 리소스 핸들러다.
+
+| Method | 경로 | data 타입 | Controller·메서드 |
+| --- | --- | --- | --- |
+| GET | /api/admin/dashboard | `AdminDashboardResponse` | [AdminController.getDashboard](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| GET | /api/admin/members | `RoommatePageResponse<AdminMemberResponse>` | [AdminController.getMembers](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| GET | /api/admin/members/{memberId} | `AdminMemberDetailResponse` | [AdminController.getMember](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| PATCH | /api/admin/members/{memberId}/status | `Void` | [AdminController.updateMemberStatus](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| GET | /api/admin/posts | `RoommatePageResponse<AdminPostResponse>` | [AdminController.getPosts](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| GET | /api/admin/posts/{postId} | `AdminPostDetailResponse` | [AdminController.getPost](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| DELETE | /api/admin/posts/{postId} | `Void` | [AdminController.deletePost](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| GET | /api/admin/comments | `RoommatePageResponse<AdminCommentResponse>` | [AdminController.getComments](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| GET | /api/admin/comments/{commentId} | `AdminCommentResponse` | [AdminController.getComment](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| DELETE | /api/admin/comments/{commentId} | `Void` | [AdminController.deleteComment](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| GET | /api/admin/reports | `RoommatePageResponse<AdminReportResponse>` | [AdminController.getReports](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| GET | /api/admin/reports/{reportId} | `AdminReportDetailResponse` | [AdminController.getReport](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| PATCH | /api/admin/reports/{reportId} | `Void` | [AdminController.processReport](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| GET | /api/admin/schedule-crawls/status | `List<AdminScheduleCrawlStatusResponse>` | [AdminController.getScheduleCrawlStatuses](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| GET | /api/admin/crawled-schedules | `RoommatePageResponse<AdminCrawledScheduleResponse>` | [AdminController.getCrawledSchedules](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| GET | /api/admin/crawled-schedules/{scheduleId} | `AdminCrawledScheduleResponse` | [AdminController.getCrawledSchedule](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
+| POST | /api/auth/signup | `SignupResponse` | [AccountController.signup](src/main/java/com/kkirikkiri/auth/controller/AccountController.java) |
+| GET | /api/auth/signup/availability | `SignupAvailabilityResponse` | [AccountController.checkSignupAvailability](src/main/java/com/kkirikkiri/auth/controller/AccountController.java) |
+| POST | /api/auth/password-reset/request | `PasswordResetResponse` | [AccountController.requestPasswordReset](src/main/java/com/kkirikkiri/auth/controller/AccountController.java) |
+| POST | /api/auth/password-reset/confirm | `Void` | [AccountController.resetPassword](src/main/java/com/kkirikkiri/auth/controller/AccountController.java) |
+| GET | /api/auth/me | `LoginResponse.LoginUser` | [AuthController.getAuthenticatedUser](src/main/java/com/kkirikkiri/auth/controller/AuthController.java) |
+| POST | /api/auth/login/email-check | `LoginEmailCheckResponse` | [AuthController.checkEmail](src/main/java/com/kkirikkiri/auth/controller/AuthController.java) |
+| POST | /api/auth/login | `LoginResponse` | [AuthController.login](src/main/java/com/kkirikkiri/auth/controller/AuthController.java) |
+| POST | /api/auth/email-verifications/send | `EmailVerificationSendResponse` | [EmailVerificationController.send](src/main/java/com/kkirikkiri/auth/controller/EmailVerificationController.java) |
+| POST | /api/auth/email-verifications/verify | `EmailVerificationVerifyResponse` | [EmailVerificationController.verify](src/main/java/com/kkirikkiri/auth/controller/EmailVerificationController.java) |
+| GET | /api/calendar/events | `List<CalendarEventResponse>` | [CalendarController.getEvents](src/main/java/com/kkirikkiri/calendar/controller/CalendarController.java) |
+| POST | /api/calendar/events | `CalendarEventResponse` | [CalendarController.createEvent](src/main/java/com/kkirikkiri/calendar/controller/CalendarController.java) |
+| PATCH | /api/calendar/events/{eventId} | `CalendarEventResponse` | [CalendarController.updateEvent](src/main/java/com/kkirikkiri/calendar/controller/CalendarController.java) |
+| DELETE | /api/calendar/events/{eventId} | `Void` | [CalendarController.deleteEvent](src/main/java/com/kkirikkiri/calendar/controller/CalendarController.java) |
+| GET | /api/calendar/categories | `List<CalendarCategoryResponse>` | [CalendarController.getCategories](src/main/java/com/kkirikkiri/calendar/controller/CalendarController.java) |
+| PUT | /api/calendar/categories | `List<CalendarCategoryResponse>` | [CalendarController.saveCategorySettings](src/main/java/com/kkirikkiri/calendar/controller/CalendarController.java) |
+| POST | /api/calendar/categories/custom | `CalendarCategoryResponse` | [CalendarController.createCategory](src/main/java/com/kkirikkiri/calendar/controller/CalendarController.java) |
+| PATCH | /api/calendar/categories/{categoryId} | `CalendarCategoryResponse` | [CalendarController.updateCategory](src/main/java/com/kkirikkiri/calendar/controller/CalendarController.java) |
+| DELETE | /api/calendar/categories/{categoryId} | `Void` | [CalendarController.deleteCategory](src/main/java/com/kkirikkiri/calendar/controller/CalendarController.java) |
+| GET | /api/chat/rooms | `List<ChatRoomResponse>` | [ChatController.getRooms](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
+| POST | /api/chat/rooms | `ChatRoomResponse` | [ChatController.createOrGetRoom](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
+| GET | /api/chat/rooms/{roomId}/messages | `RoommatePageResponse<ChatMessageResponse>` | [ChatController.getMessages](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
+| POST | /api/chat/rooms/{roomId}/read | `Void` | [ChatController.markRead](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
+| PATCH | /api/chat/rooms/{roomId}/settings | `Void` | [ChatController.updateSettings](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
+| DELETE | /api/chat/rooms/{roomId}/members/me | `Void` | [ChatController.leaveRoom](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
+| POST | /api/posts/{postId}/comments | `Long` | [CommunityCommentController.createComment](src/main/java/com/kkirikkiri/community/comment/controller/CommunityCommentController.java) |
+| POST | /api/comments/{commentId}/replies | `Long` | [CommunityCommentController.createReply](src/main/java/com/kkirikkiri/community/comment/controller/CommunityCommentController.java) |
+| PATCH | /api/comments/{commentId} | `Void` | [CommunityCommentController.updateComment](src/main/java/com/kkirikkiri/community/comment/controller/CommunityCommentController.java) |
+| DELETE | /api/comments/{commentId} | `Void` | [CommunityCommentController.deleteComment](src/main/java/com/kkirikkiri/community/comment/controller/CommunityCommentController.java) |
+| POST | /api/comments/{commentId}/likes | `Void` | [CommunityCommentController.likeComment](src/main/java/com/kkirikkiri/community/comment/controller/CommunityCommentController.java) |
+| DELETE | /api/comments/{commentId}/likes | `Void` | [CommunityCommentController.unlikeComment](src/main/java/com/kkirikkiri/community/comment/controller/CommunityCommentController.java) |
+| GET | /api/users/me/comments | `RoommatePageResponse<MyCommunityCommentResponse>` | [MyCommunityCommentController.getMyComments](src/main/java/com/kkirikkiri/community/comment/controller/MyCommunityCommentController.java) |
+| GET | /api/posts | `RoommatePageResponse<CommunityPostResponse>` | [CommunityPostController.getPosts](src/main/java/com/kkirikkiri/community/post/controller/CommunityPostController.java) |
+| GET | /api/posts/{postId} | `CommunityPostDetailResponse<CommunityCommentResponse>` | [CommunityPostController.getPost](src/main/java/com/kkirikkiri/community/post/controller/CommunityPostController.java) |
+| POST | /api/posts | `Long` | [CommunityPostController.createPost](src/main/java/com/kkirikkiri/community/post/controller/CommunityPostController.java) |
+| PATCH | /api/posts/{postId} | `Void` | [CommunityPostController.updatePost](src/main/java/com/kkirikkiri/community/post/controller/CommunityPostController.java) |
+| DELETE | /api/posts/{postId} | `Void` | [CommunityPostController.deletePost](src/main/java/com/kkirikkiri/community/post/controller/CommunityPostController.java) |
+| POST | /api/posts/{postId}/likes | `Void` | [CommunityPostController.likePost](src/main/java/com/kkirikkiri/community/post/controller/CommunityPostController.java) |
+| DELETE | /api/posts/{postId}/likes | `Void` | [CommunityPostController.unlikePost](src/main/java/com/kkirikkiri/community/post/controller/CommunityPostController.java) |
+| GET | /api/users/me/posts | `RoommatePageResponse<CommunityPostResponse>` | [MyCommunityPostController.getMyPosts](src/main/java/com/kkirikkiri/community/post/controller/MyCommunityPostController.java) |
+| POST | /api/roommates/{userId}/ai-analysis | `AiProfileAnalysisResponse` | [AiProfileAnalysisController.analyze](src/main/java/com/kkirikkiri/matching/controller/AiProfileAnalysisController.java) |
+| GET | /api/users/me/liked-roommates | `RoommatePageResponse<RoommateProfileResponse>` | [MyLikedRoommateController.getLikedRoommates](src/main/java/com/kkirikkiri/matching/controller/MyLikedRoommateController.java) |
+| GET | /api/roommates | `RoommatePageResponse<RoommateProfileResponse>` | [RoommateMatchingController.getRoommates](src/main/java/com/kkirikkiri/matching/controller/RoommateMatchingController.java) |
+| GET | /api/roommates/recommended | `RoommatePageResponse<RoommateProfileResponse>` | [RoommateMatchingController.getRecommendedRoommates](src/main/java/com/kkirikkiri/matching/controller/RoommateMatchingController.java) |
+| GET | /api/roommates/{userId} | `RoommateDetailResponse` | [RoommateMatchingController.getRoommateDetail](src/main/java/com/kkirikkiri/matching/controller/RoommateMatchingController.java) |
+| POST | /api/roommates/{userId}/likes | `Void` | [RoommateMatchingController.addProfileLike](src/main/java/com/kkirikkiri/matching/controller/RoommateMatchingController.java) |
+| DELETE | /api/roommates/{userId}/likes | `Void` | [RoommateMatchingController.cancelProfileLike](src/main/java/com/kkirikkiri/matching/controller/RoommateMatchingController.java) |
+| POST | /api/reports | `Long` | [ReportController.createReport](src/main/java/com/kkirikkiri/report/controller/ReportController.java) |
+| GET | /api/users/me/profile-survey | `ProfileSurveyResponse` | [ProfileSurveyController.getMyProfileSurvey](src/main/java/com/kkirikkiri/survey/controller/ProfileSurveyController.java) |
+| PUT | /api/users/me/profile-survey | `ProfileSurveyResponse` | [ProfileSurveyController.saveOrUpdateMyProfileSurvey](src/main/java/com/kkirikkiri/survey/controller/ProfileSurveyController.java) |
+| GET | /api/users/me/roommate-preferences | `RoommatePreferenceResponse` | [RoommatePreferenceController.getMyRoommatePreference](src/main/java/com/kkirikkiri/survey/controller/RoommatePreferenceController.java) |
+| PUT | /api/users/me/roommate-preferences | `Void` | [RoommatePreferenceController.saveOrUpdateMyRoommatePreference](src/main/java/com/kkirikkiri/survey/controller/RoommatePreferenceController.java) |
+| GET | /api/users/me | `UserResponse` | [UserController.getMyInfo](src/main/java/com/kkirikkiri/user/controller/UserController.java) |
+| PATCH | /api/users/me | `UserResponse` | [UserController.updateMyInfo](src/main/java/com/kkirikkiri/user/controller/UserController.java) |
+| PATCH | /api/users/me/password | `Void` | [UserController.changePassword](src/main/java/com/kkirikkiri/user/controller/UserController.java) |
+
+### 19.2 DTO 필드와 Java 자료형
+
+다음은 DTO record 선언의 전체 필드이며 본문 JSON 예시에 생략된 필드도 계약에 포함된다. 이름 뒤 괄호는 선언된 요청 제약이고 `없음`은 DTO annotation 없음이며 서비스 무검증을 뜻하지 않는다. 일반 Size/Pattern은 null을 거부하지 않으므로 필수 여부는 NotNull/NotBlank/NotEmpty와 서비스 검증으로 판단한다. 컬렉션 원소 annotation은 해당 원소의 제약이다. primitive boolean/int/long과 boxed Boolean/Integer/Long의 null 가능성을 구분한다. Bean Validation의 객체 검증 및 PATCH null 병합 규칙은 19.3과 각 도메인 본문을 따른다. `AiProfileAnalysisInput`은 Gateway 내부 입력으로 공개 요청 DTO가 아니다. 중첩 record는 상위 DTO 이름으로 구분한다.
+
+| DTO (선언 근거) | 필드: Java 자료형 / 요청 annotation |
+| --- | --- |
+| [AdminCommentListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminCommentListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1))<br>`q: String` (없음)<br>`reported: Boolean` (없음) |
+| [AdminCommentResponse](src/main/java/com/kkirikkiri/admin/dto/AdminCommentResponse.java) | `id: Long`<br>`content: String`<br>`author: CommunityAuthorResponse`<br>`createdAt: LocalDateTime`<br>`postId: Long`<br>`postTitle: String`<br>`reported: boolean` |
+| [AdminCrawledScheduleListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminCrawledScheduleListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1))<br>`q: String` (없음)<br>`category: String` (Pattern(regexp = "SCHOOL&#124;DORMITORY")) |
+| [AdminCrawledScheduleResponse](src/main/java/com/kkirikkiri/admin/dto/AdminCrawledScheduleResponse.java) | `id: Long`<br>`title: String`<br>`date: LocalDate`<br>`content: String`<br>`category: String`<br>`source: String`<br>`collectedAt: LocalDateTime` |
+| [AdminDashboardResponse](src/main/java/com/kkirikkiri/admin/dto/AdminDashboardResponse.java) | `stats: Stats`<br>`recentMembers: List<MemberSummary>`<br>`recentPosts: List<PostSummary>`<br>`recentReports: List<ReportSummary>`<br>`recentSchoolSchedules: List<ScheduleSummary>`<br>`recentDormitorySchedules: List<ScheduleSummary>` |
+| [AdminDashboardResponse.Stats](src/main/java/com/kkirikkiri/admin/dto/AdminDashboardResponse.java) | `totalMembers: long`<br>`totalPosts: long`<br>`totalComments: long`<br>`totalReports: long`<br>`pendingReports: long`<br>`schoolSchedules: long`<br>`dormitorySchedules: long` |
+| [AdminDashboardResponse.MemberSummary](src/main/java/com/kkirikkiri/admin/dto/AdminDashboardResponse.java) | `id: Long`<br>`nickname: String`<br>`major: String`<br>`dormitory: String`<br>`createdAt: LocalDate`<br>`status: UserStatus` |
+| [AdminDashboardResponse.PostSummary](src/main/java/com/kkirikkiri/admin/dto/AdminDashboardResponse.java) | `id: Long`<br>`title: String`<br>`category: String`<br>`author: CommunityAuthorResponse`<br>`createdAt: LocalDateTime` |
+| [AdminDashboardResponse.ReportSummary](src/main/java/com/kkirikkiri/admin/dto/AdminDashboardResponse.java) | `id: Long`<br>`status: ReportStatus`<br>`type: ReportType`<br>`reason: String`<br>`createdAt: LocalDateTime` |
+| [AdminDashboardResponse.ScheduleSummary](src/main/java/com/kkirikkiri/admin/dto/AdminDashboardResponse.java) | `id: Long`<br>`title: String`<br>`date: LocalDate`<br>`collectedAt: LocalDateTime` |
+| [AdminMemberDetailResponse](src/main/java/com/kkirikkiri/admin/dto/AdminMemberDetailResponse.java) | `id: Long`<br>`nickname: String`<br>`schoolEmail: String`<br>`gender: String`<br>`dormitory: String`<br>`faculty: String`<br>`major: String`<br>`admissionYear: String`<br>`grade: String`<br>`mbti: String`<br>`createdAt: LocalDate`<br>`status: UserStatus`<br>`activity: Activity` |
+| [AdminMemberDetailResponse.Activity](src/main/java/com/kkirikkiri/admin/dto/AdminMemberDetailResponse.java) | `postCount: long`<br>`commentCount: long`<br>`reportsReceived: long` |
+| [AdminMemberListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminMemberListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1))<br>`q: String` (없음)<br>`status: String` (Pattern(regexp = "ACTIVE&#124;SUSPENDED&#124;WITHDRAWN"))<br>`dormitory: String` (없음) |
+| [AdminMemberResponse](src/main/java/com/kkirikkiri/admin/dto/AdminMemberResponse.java) | `id: Long`<br>`nickname: String`<br>`schoolEmail: String`<br>`dormitory: String`<br>`major: String`<br>`createdAt: LocalDate`<br>`status: UserStatus` |
+| [AdminMemberStatusUpdateRequest](src/main/java/com/kkirikkiri/admin/dto/AdminMemberStatusUpdateRequest.java) | `status: String` (NotBlank, Pattern(regexp = "ACTIVE&#124;SUSPENDED&#124;WITHDRAWN")) |
+| [AdminPostDetailResponse](src/main/java/com/kkirikkiri/admin/dto/AdminPostDetailResponse.java) | `id: Long`<br>`category: String`<br>`title: String`<br>`author: CommunityAuthorResponse`<br>`createdAt: LocalDateTime`<br>`views: long`<br>`likes: long`<br>`commentCount: long`<br>`reported: boolean`<br>`content: String` |
+| [AdminPostListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminPostListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1))<br>`q: String` (없음)<br>`category: String` (Pattern(regexp = "자유게시판&#124;나눔게시판&#124;택배게시판&#124;민원게시판"))<br>`reported: Boolean` (없음)<br>`sort: String` (Pattern(regexp = "LATEST&#124;VIEWS&#124;LIKES")) |
+| [AdminPostResponse](src/main/java/com/kkirikkiri/admin/dto/AdminPostResponse.java) | `id: Long`<br>`category: String`<br>`title: String`<br>`author: CommunityAuthorResponse`<br>`createdAt: LocalDateTime`<br>`views: long`<br>`likes: long`<br>`commentCount: long`<br>`reported: boolean` |
+| [AdminReportDetailResponse](src/main/java/com/kkirikkiri/admin/dto/AdminReportDetailResponse.java) | `id: Long`<br>`type: ReportType`<br>`targetId: Long`<br>`targetUser: TargetUser`<br>`targetContent: String`<br>`reporter: Reporter`<br>`reason: String`<br>`description: String`<br>`createdAt: LocalDateTime`<br>`status: ReportStatus` |
+| [AdminReportDetailResponse.Reporter](src/main/java/com/kkirikkiri/admin/dto/AdminReportDetailResponse.java) | `id: Long`<br>`nickname: String`<br>`schoolEmail: String` |
+| [AdminReportDetailResponse.TargetUser](src/main/java/com/kkirikkiri/admin/dto/AdminReportDetailResponse.java) | `id: Long`<br>`nickname: String`<br>`schoolEmail: String`<br>`status: UserStatus` |
+| [AdminReportListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminReportListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1))<br>`q: String` (없음)<br>`type: String` (Pattern(regexp = "USER&#124;POST&#124;COMMENT"))<br>`status: String` (Pattern(regexp = "PENDING&#124;COMPLETED&#124;REJECTED")) |
+| [AdminReportProcessRequest](src/main/java/com/kkirikkiri/admin/dto/AdminReportProcessRequest.java) | `action: String` (NotBlank, Pattern(regexp = "COMPLETE&#124;REJECT&#124;SUSPEND_USER&#124;DELETE_TARGET")) |
+| [AdminReportResponse](src/main/java/com/kkirikkiri/admin/dto/AdminReportResponse.java) | `id: Long`<br>`type: ReportType`<br>`targetContent: String`<br>`reporter: CommunityAuthorResponse`<br>`targetUser: CommunityAuthorResponse`<br>`reason: String`<br>`createdAt: LocalDateTime`<br>`status: ReportStatus` |
+| [AdminScheduleCrawlStatusResponse](src/main/java/com/kkirikkiri/admin/dto/AdminScheduleCrawlStatusResponse.java) | `category: ScheduleCrawlCategory`<br>`status: ScheduleCrawlStatus`<br>`lastRunAt: LocalDateTime`<br>`recentCollectedCount: long`<br>`totalCollectedCount: long`<br>`lastCompletedAt: LocalDateTime`<br>`lastFailure: LastFailure` |
+| [AdminScheduleCrawlStatusResponse.LastFailure](src/main/java/com/kkirikkiri/admin/dto/AdminScheduleCrawlStatusResponse.java) | `occurredAt: LocalDateTime`<br>`message: String` |
+| [EmailVerificationSendRequest](src/main/java/com/kkirikkiri/auth/dto/EmailVerificationSendRequest.java) | `email: String` (NotBlank, Email, Pattern(regexp = "[^@\\s]{1,64}@hknu\\.ac\\.kr"))<br>`purpose: String` (NotBlank, Pattern(regexp = "SIGNUP")) |
+| [EmailVerificationSendResponse](src/main/java/com/kkirikkiri/auth/dto/EmailVerificationSendResponse.java) | `expiresInSeconds: long` |
+| [EmailVerificationVerifyRequest](src/main/java/com/kkirikkiri/auth/dto/EmailVerificationVerifyRequest.java) | `email: String` (NotBlank, Email, Pattern(regexp = "[^@\\s]{1,64}@hknu\\.ac\\.kr"))<br>`code: String` (NotBlank, Pattern(regexp = "[0-9]{6}"))<br>`purpose: String` (NotBlank, Pattern(regexp = "SIGNUP")) |
+| [EmailVerificationVerifyResponse](src/main/java/com/kkirikkiri/auth/dto/EmailVerificationVerifyResponse.java) | `verified: boolean`<br>`verificationToken: String` |
+| [LoginEmailCheckRequest](src/main/java/com/kkirikkiri/auth/dto/LoginEmailCheckRequest.java) | `email: String` (NotBlank, Email, Pattern(regexp = "[^@\\s]{1,64}@hknu\\.ac\\.kr")) |
+| [LoginEmailCheckResponse](src/main/java/com/kkirikkiri/auth/dto/LoginEmailCheckResponse.java) | `registered: boolean` |
+| [LoginRequest](src/main/java/com/kkirikkiri/auth/dto/LoginRequest.java) | `email: String` (NotBlank, Email, Pattern(regexp = "[^@\\s]{1,64}@hknu\\.ac\\.kr"))<br>`password: String` (NotBlank) |
+| [LoginResponse](src/main/java/com/kkirikkiri/auth/dto/LoginResponse.java) | `accessToken: String`<br>`user: LoginUser` |
+| [LoginResponse.LoginUser](src/main/java/com/kkirikkiri/auth/dto/LoginResponse.java) | `id: Long`<br>`schoolEmail: String`<br>`nickname: String`<br>`role: String` |
+| [PasswordResetConfirmRequest](src/main/java/com/kkirikkiri/auth/dto/PasswordResetConfirmRequest.java) | `resetToken: String` (NotBlank)<br>`newPassword: String` (NotBlank, Size(min = 8), Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9\\s])\\S{8,}$"))<br>`newPasswordConfirm: String` (NotBlank) |
+| [PasswordResetRequest](src/main/java/com/kkirikkiri/auth/dto/PasswordResetRequest.java) | `email: String` (NotBlank, Email, Pattern(regexp = "[^@\\s]{1,64}@hknu\\.ac\\.kr")) |
+| [PasswordResetResponse](src/main/java/com/kkirikkiri/auth/dto/PasswordResetResponse.java) | `sent: boolean` |
+| [SignupAvailabilityResponse](src/main/java/com/kkirikkiri/auth/dto/SignupAvailabilityResponse.java) | `schoolEmailAvailable: boolean`<br>`nicknameAvailable: boolean` |
+| [SignupRequest](src/main/java/com/kkirikkiri/auth/dto/SignupRequest.java) | `password: String` (NotBlank, Size(min = 8), Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9\\s])\\S{8,}$"))<br>`passwordConfirm: String` (NotBlank)<br>`nickname: String` (NotBlank, Size(min = 2, max = 8), Pattern(regexp = "[가-힣A-Za-z0-9]+"))<br>`schoolEmail: String` (NotBlank, Email, Pattern(regexp = "[^@\\s]{1,64}@hknu\\.ac\\.kr"))<br>`emailVerificationToken: String` (NotBlank)<br>`gender: String` (NotBlank, Pattern(regexp = "남자&#124;여자"))<br>`dormitory: String` (NotBlank, Size(max = 30))<br>`faculty: String` (NotBlank, Size(max = 100))<br>`major: String` (NotBlank, Size(max = 150))<br>`birthYear: Short` (NotNull, Min(value = 1900))<br>`admissionYear: String` (NotBlank, Pattern(regexp = "[0-9]{2}"))<br>`grade: String` (NotBlank, Pattern(regexp = "[1-5]학년"))<br>`mbtiEnergy: String` (NotBlank, Pattern(regexp = "[EI]"))<br>`mbtiInformation: String` (NotBlank, Pattern(regexp = "[NS]"))<br>`mbtiDecision: String` (NotBlank, Pattern(regexp = "[FT]"))<br>`mbtiLifestyle: String` (NotBlank, Pattern(regexp = "[PJ]")) |
+| [SignupResponse](src/main/java/com/kkirikkiri/auth/dto/SignupResponse.java) | `userId: Long`<br>`nickname: String` |
+| [CalendarCategoryCreateRequest](src/main/java/com/kkirikkiri/calendar/dto/CalendarCategoryCreateRequest.java) | `label: String` (NotBlank, Size(min = 1, max = 30))<br>`color: String` (NotBlank, Pattern(regexp = "#[0-9a-fA-F]{6}")) |
+| [CalendarCategoryResponse](src/main/java/com/kkirikkiri/calendar/dto/CalendarCategoryResponse.java) | `id: Long`<br>`code: String`<br>`label: String`<br>`color: String`<br>`fixed: boolean`<br>`enabled: boolean` |
+| [CalendarCategorySettingRequest](src/main/java/com/kkirikkiri/calendar/dto/CalendarCategorySettingRequest.java) | `id: Long` (NotNull, Positive)<br>`label: String` (NotBlank, Size(min = 1, max = 30))<br>`color: String` (NotBlank, Pattern(regexp = "#[0-9a-fA-F]{6}"))<br>`enabled: Boolean` (NotNull) |
+| [CalendarCategoryUpdateRequest](src/main/java/com/kkirikkiri/calendar/dto/CalendarCategoryUpdateRequest.java) | `label: String` (Pattern(regexp = "(?s).*\\S.*"), Size(min = 1, max = 30))<br>`color: String` (Pattern(regexp = "#[0-9a-fA-F]{6}"))<br>`enabled: Boolean` (없음) |
+| [CalendarEventCreateRequest](src/main/java/com/kkirikkiri/calendar/dto/CalendarEventCreateRequest.java) | `title: String` (NotBlank, Size(max = 80))<br>`startDate: LocalDate` (NotNull)<br>`endDate: LocalDate` (NotNull)<br>`startTime: String` (Pattern(regexp = "([01][0-9]&#124;2[0-3]):[0-5][0-9]"))<br>`endTime: String` (Pattern(regexp = "([01][0-9]&#124;2[0-3]):[0-5][0-9]"))<br>`categoryId: Long` (NotNull, Positive)<br>`description: String` (Size(max = 2000)) |
+| [CalendarEventListRequest](src/main/java/com/kkirikkiri/calendar/dto/CalendarEventListRequest.java) | `from: LocalDate` (NotNull, DateTimeFormat(iso = DateTimeFormat.ISO.DATE))<br>`to: LocalDate` (NotNull, DateTimeFormat(iso = DateTimeFormat.ISO.DATE))<br>`categories: List< String>` (NotBlank) |
+| [CalendarEventResponse](src/main/java/com/kkirikkiri/calendar/dto/CalendarEventResponse.java) | `id: Long`<br>`title: String`<br>`startDate: LocalDate`<br>`endDate: LocalDate`<br>`startTime: LocalTime`<br>`endTime: LocalTime`<br>`category: String`<br>`categoryId: Long`<br>`description: String`<br>`editable: boolean`<br>`source: String` |
+| [CalendarEventUpdateRequest](src/main/java/com/kkirikkiri/calendar/dto/CalendarEventUpdateRequest.java) | `title: String` (Pattern(regexp = "(?s).*\\S.*"), Size(max = 80))<br>`startDate: LocalDate` (없음)<br>`endDate: LocalDate` (없음)<br>`startTime: String` (Pattern(regexp = "([01][0-9]&#124;2[0-3]):[0-5][0-9]"))<br>`endTime: String` (Pattern(regexp = "([01][0-9]&#124;2[0-3]):[0-5][0-9]"))<br>`categoryId: Long` (Positive)<br>`description: String` (Size(max = 2000)) |
+| [ChatMessageBroadcastResponse](src/main/java/com/kkirikkiri/chat/dto/ChatMessageBroadcastResponse.java) | `id: Long`<br>`roomId: Long`<br>`senderId: Long`<br>`text: String`<br>`sentAt: LocalDateTime`<br>`read: boolean` |
+| [ChatMessageListRequest](src/main/java/com/kkirikkiri/chat/dto/ChatMessageListRequest.java) | `page: Integer` (없음)<br>`size: Integer` (없음)<br>`q: String` (없음) |
+| [ChatMessageResponse](src/main/java/com/kkirikkiri/chat/dto/ChatMessageResponse.java) | `id: Long`<br>`senderId: Long`<br>`senderType: String`<br>`text: String`<br>`sentAt: LocalDateTime`<br>`read: boolean` |
+| [ChatMessageSendRequest](src/main/java/com/kkirikkiri/chat/dto/ChatMessageSendRequest.java) | `text: String` (NotBlank, Size(max = 2000)) |
+| [ChatRoomCreateRequest](src/main/java/com/kkirikkiri/chat/dto/ChatRoomCreateRequest.java) | `targetUserId: Long` (NotNull)<br>`category: ChatRoomCategory` (NotNull)<br>`sourcePostId: Long` (없음)<br>`sourceCommentId: Long` (없음)<br>`sourceFrom: String` (Pattern(regexp = "POST&#124;COMMENT")) |
+| [ChatRoomListRequest](src/main/java/com/kkirikkiri/chat/dto/ChatRoomListRequest.java) | `category: String` (Pattern(regexp = "ALL&#124;ROOMMATE&#124;COMMUNITY"))<br>`q: String` (없음) |
+| [ChatRoomResponse](src/main/java/com/kkirikkiri/chat/dto/ChatRoomResponse.java) | `id: Long`<br>`category: ChatRoomCategory`<br>`counterpart: CounterpartResponse`<br>`sourcePost: Long`<br>`unreadCount: long`<br>`pinned: boolean`<br>`muted: boolean`<br>`lastMessage: LastMessageResponse` |
+| [ChatRoomResponse.CounterpartResponse](src/main/java/com/kkirikkiri/chat/dto/ChatRoomResponse.java) | `id: Long`<br>`nickname: String`<br>`profileImageUrl: String`<br>`dormitory: String`<br>`admissionYear: String`<br>`major: String`<br>`matchScore: Integer`<br>`introduction: String`<br>`tags: List<String>` |
+| [ChatRoomResponse.LastMessageResponse](src/main/java/com/kkirikkiri/chat/dto/ChatRoomResponse.java) | `text: String`<br>`sentAt: LocalDateTime` |
+| [ChatRoomSettingsRequest](src/main/java/com/kkirikkiri/chat/dto/ChatRoomSettingsRequest.java) | `pinned: Boolean` (없음)<br>`muted: Boolean` (없음) |
+| [CommunityCommentCreateRequest](src/main/java/com/kkirikkiri/community/comment/dto/CommunityCommentCreateRequest.java) | `content: String` (NotBlank, Size(max = 1000))<br>`anonymous: Boolean` (없음) |
+| [CommunityCommentResponse](src/main/java/com/kkirikkiri/community/comment/dto/CommunityCommentResponse.java) | `id: Long`<br>`parentCommentId: Long`<br>`content: String`<br>`author: CommunityAuthorResponse`<br>`createdAt: LocalDateTime`<br>`likes: long`<br>`liked: boolean`<br>`anonymous: boolean` |
+| [CommunityCommentUpdateRequest](src/main/java/com/kkirikkiri/community/comment/dto/CommunityCommentUpdateRequest.java) | `content: String` (NotBlank, Size(max = 1000)) |
+| [MyCommunityCommentResponse](src/main/java/com/kkirikkiri/community/comment/dto/MyCommunityCommentResponse.java) | `id: Long`<br>`content: String`<br>`createdAt: LocalDateTime`<br>`isReply: boolean`<br>`postId: Long`<br>`postTitle: String`<br>`category: String` |
+| [CommunityAuthorResponse](src/main/java/com/kkirikkiri/community/post/dto/CommunityAuthorResponse.java) | `id: Long`<br>`nickname: String`<br>`major: String` |
+| [CommunityPostCreateRequest](src/main/java/com/kkirikkiri/community/post/dto/CommunityPostCreateRequest.java) | `category: String` (NotBlank, Pattern(regexp = "자유게시판&#124;나눔게시판&#124;택배게시판&#124;민원게시판"))<br>`title: String` (NotBlank, Size(max = 100))<br>`content: String` (NotBlank, Size(max = 5000))<br>`anonymous: boolean` (없음) |
+| [CommunityPostDetailResponse](src/main/java/com/kkirikkiri/community/post/dto/CommunityPostDetailResponse.java) | `id: Long`<br>`category: String`<br>`dormitory: String`<br>`title: String`<br>`content: String`<br>`author: CommunityAuthorResponse`<br>`anonymous: boolean`<br>`createdAt: LocalDateTime`<br>`views: int`<br>`likes: long`<br>`liked: boolean`<br>`reported: boolean`<br>`images: List<PostImageResponse>`<br>`comments: List<T>` |
+| [CommunityPostListRequest](src/main/java/com/kkirikkiri/community/post/dto/CommunityPostListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1))<br>`category: String` (Pattern(regexp = "자유게시판&#124;나눔게시판&#124;택배게시판&#124;민원게시판"))<br>`q: String` (없음)<br>`dormitory: String` (Pattern(regexp = "나래&#124;호연&#124;비봉&#124;창조"))<br>`sort: String` (Pattern(regexp = "LATEST&#124;VIEWS&#124;LIKES")) |
+| [CommunityPostResponse](src/main/java/com/kkirikkiri/community/post/dto/CommunityPostResponse.java) | `id: Long`<br>`category: String`<br>`dormitory: String`<br>`title: String`<br>`contentPreview: String`<br>`author: CommunityAuthorResponse`<br>`anonymous: boolean`<br>`createdAt: LocalDateTime`<br>`views: int`<br>`likes: long`<br>`commentCount: long`<br>`hasImages: boolean`<br>`liked: boolean`<br>`reported: boolean` |
+| [CommunityPostUpdateRequest](src/main/java/com/kkirikkiri/community/post/dto/CommunityPostUpdateRequest.java) | `category: String` (NotBlank, Pattern(regexp = "자유게시판&#124;나눔게시판&#124;택배게시판&#124;민원게시판"))<br>`title: String` (NotBlank, Size(max = 100))<br>`content: String` (NotBlank, Size(max = 5000))<br>`keepImageIds: List< Long>` (Size(max = 5), NotNull, Positive)<br>`anonymous: Boolean` (없음) |
+| [PostImageResponse](src/main/java/com/kkirikkiri/community/post/dto/PostImageResponse.java) | `id: Long`<br>`url: String` |
+| [PostImagesRequest](src/main/java/com/kkirikkiri/community/post/dto/PostImagesRequest.java) | `images: List< MultipartFile>` (Size(max = 5), NotNull) |
+| [AiProfileAnalysisInput](src/main/java/com/kkirikkiri/matching/dto/AiProfileAnalysisInput.java) | `matchScore: int`<br>`matchedItems: List<PreferenceCriterionCode>`<br>`mismatchedItems: List<PreferenceCriterionCode>` |
+| [AiProfileAnalysisResponse](src/main/java/com/kkirikkiri/matching/dto/AiProfileAnalysisResponse.java) | `targetUserId: Long`<br>`matchScore: int`<br>`analysis: String` |
+| [RoommateDetailResponse](src/main/java/com/kkirikkiri/matching/dto/RoommateDetailResponse.java) | `id: Long`<br>`nickname: String`<br>`admissionYear: String`<br>`grade: String`<br>`faculty: String`<br>`major: String`<br>`dormitory: String`<br>`mbti: String`<br>`introduction: String`<br>`tags: List<String>`<br>`profileImageUrl: String`<br>`matchScore: Integer`<br>`liked: boolean`<br>`answers: Answers` |
+| [RoommateDetailResponse.Answers](src/main/java/com/kkirikkiri/matching/dto/RoommateDetailResponse.java) | `sleepTime: String`<br>`wakeTime: String`<br>`sleepTalking: String`<br>`snoring: String`<br>`teethGrinding: String`<br>`sleepSensitivity: String`<br>`indoorEating: String`<br>`smoking: String`<br>`lightingPreference: String`<br>`phoneCall: String`<br>`mediaSound: String`<br>`showerTime: String`<br>`showerDuration: String`<br>`cleaningFrequency: String`<br>`cleaningStyle: String`<br>`meal: String`<br>`roommateInteraction: String`<br>`temperaturePreference: String`<br>`scentProductUse: String`<br>`desktopUse: String`<br>`sharedItems: String`<br>`dormStayDays: List<String>`<br>`mealPlan: List<String>`<br>`completed: boolean` |
+| [RoommateFilterRequest](src/main/java/com/kkirikkiri/matching/dto/RoommateFilterRequest.java) | `sleepTime: List< String>` (NotBlank, Size(max = 50))<br>`wakeTime: List< String>` (NotBlank, Size(max = 50))<br>`sleepTalking: List< String>` (NotBlank, Size(max = 20))<br>`snoring: List< String>` (NotBlank, Size(max = 20))<br>`teethGrinding: List< String>` (NotBlank, Size(max = 20))<br>`sleepSensitivity: List< String>` (NotBlank, Size(max = 50))<br>`indoorEating: List< String>` (NotBlank, Size(max = 50))<br>`smoking: List< String>` (NotBlank, Size(max = 30))<br>`lightingPreference: List< String>` (NotBlank, Size(max = 30))<br>`phoneCall: List< String>` (NotBlank, Size(max = 50))<br>`mediaSound: List< String>` (NotBlank, Size(max = 100))<br>`showerTime: List< String>` (NotBlank, Size(max = 30))<br>`showerDuration: List< String>` (NotBlank, Size(max = 30))<br>`cleaningFrequency: List< String>` (NotBlank, Size(max = 30))<br>`cleaningStyle: List< String>` (NotBlank, Size(max = 50))<br>`dormStayDays: List< String>` (NotBlank, Size(max = 30))<br>`mealPlan: List< String>` (NotBlank, Size(max = 30))<br>`meal: List< String>` (NotBlank, Size(max = 60))<br>`roommateInteraction: List< String>` (NotBlank, Size(max = 50))<br>`temperaturePreference: List< String>` (NotBlank, Size(max = 30))<br>`scentProductUse: List< String>` (NotBlank, Size(max = 50))<br>`desktopUse: List< String>` (NotBlank, Size(max = 50))<br>`sharedItems: List< String>` (NotBlank, Size(max = 50)) |
+| [RoommatePageResponse](src/main/java/com/kkirikkiri/matching/dto/RoommatePageResponse.java) | `content: List<T>`<br>`page: int`<br>`size: int`<br>`totalElements: long`<br>`totalPages: int`<br>`first: boolean`<br>`last: boolean` |
+| [RoommateProfileResponse](src/main/java/com/kkirikkiri/matching/dto/RoommateProfileResponse.java) | `id: Long`<br>`nickname: String`<br>`admissionYear: String`<br>`grade: String`<br>`faculty: String`<br>`major: String`<br>`dormitory: String`<br>`mbti: String`<br>`introduction: String`<br>`tags: List<String>`<br>`profileImageUrl: String`<br>`matchScore: Integer`<br>`liked: boolean` |
+| [ReportCreateRequest](src/main/java/com/kkirikkiri/report/dto/ReportCreateRequest.java) | `targetType: String` (NotBlank, Pattern(regexp = "USER&#124;POST&#124;COMMENT"))<br>`targetId: Long` (NotNull, Positive)<br>`reason: String` (NotBlank, Pattern(regexp = "욕설·비방&#124;광고·홍보&#124;음란성 콘텐츠&#124;개인정보 노출&#124;도배·스팸&#124;기타"))<br>`description: String` (없음) |
+| [ProfileSurveyRequest](src/main/java/com/kkirikkiri/survey/dto/ProfileSurveyRequest.java) | `sleepTime: String` (NotBlank, Size(max = 50))<br>`wakeTime: String` (NotBlank, Size(max = 50))<br>`sleepTalking: String` (NotBlank, Size(max = 20))<br>`snoring: String` (NotBlank, Size(max = 20))<br>`teethGrinding: String` (NotBlank, Size(max = 20))<br>`sleepSensitivity: String` (NotBlank, Size(max = 50))<br>`indoorEating: String` (NotBlank, Size(max = 50))<br>`smoking: String` (NotBlank, Size(max = 30))<br>`lightingPreference: String` (NotBlank, Size(max = 30))<br>`phoneCall: String` (NotBlank, Size(max = 50))<br>`mediaSound: String` (NotBlank, Size(max = 100))<br>`showerTime: String` (NotBlank, Size(max = 30))<br>`showerDuration: String` (NotBlank, Size(max = 30))<br>`cleaningFrequency: String` (NotBlank, Size(max = 30))<br>`cleaningStyle: String` (NotBlank, Size(max = 50))<br>`dormStayDays: List< String>` (NotEmpty, NotBlank, Size(max = 30))<br>`mealPlan: List< String>` (NotEmpty, NotBlank, Size(max = 30))<br>`meal: String` (NotBlank, Size(max = 60))<br>`roommateInteraction: String` (NotBlank, Size(max = 50))<br>`temperaturePreference: String` (NotBlank, Size(max = 30))<br>`scentProductUse: String` (NotBlank, Size(max = 50))<br>`desktopUse: String` (NotBlank, Size(max = 50))<br>`sharedItems: String` (NotBlank, Size(max = 50)) |
+| [ProfileSurveyResponse](src/main/java/com/kkirikkiri/survey/dto/ProfileSurveyResponse.java) | `completed: boolean`<br>`answers: Answers` |
+| [ProfileSurveyResponse.Answers](src/main/java/com/kkirikkiri/survey/dto/ProfileSurveyResponse.java) | `sleepTime: String`<br>`wakeTime: String`<br>`sleepTalking: String`<br>`snoring: String`<br>`teethGrinding: String`<br>`sleepSensitivity: String`<br>`indoorEating: String`<br>`smoking: String`<br>`lightingPreference: String`<br>`phoneCall: String`<br>`mediaSound: String`<br>`showerTime: String`<br>`showerDuration: String`<br>`cleaningFrequency: String`<br>`cleaningStyle: String`<br>`dormStayDays: List<String>`<br>`mealPlan: List<String>`<br>`meal: String`<br>`roommateInteraction: String`<br>`temperaturePreference: String`<br>`scentProductUse: String`<br>`desktopUse: String`<br>`sharedItems: String` |
+| [RoommatePreferenceRequest](src/main/java/com/kkirikkiri/survey/dto/RoommatePreferenceRequest.java) | `department: String` (NotBlank, Size(max = 60))<br>`age: List< String>` (NotEmpty, NotBlank, Size(max = 60))<br>`grade: List< String>` (NotEmpty, NotBlank, Size(max = 60))<br>`bedtime: List< String>` (NotEmpty, NotBlank, Size(max = 60))<br>`wakeTime: List< String>` (NotEmpty, NotBlank, Size(max = 60))<br>`sleepTalking: String` (NotBlank, Size(max = 50))<br>`snoring: String` (NotBlank, Size(max = 50))<br>`teethGrinding: String` (NotBlank, Size(max = 50))<br>`smoking: String` (NotBlank, Size(max = 50))<br>`lightingPreference: String` (NotBlank, Size(max = 30))<br>`showerTime: String` (NotBlank, Size(max = 30))<br>`showerDuration: String` (NotBlank, Size(max = 30))<br>`cleaningFrequency: List< String>` (NotEmpty, NotBlank, Size(max = 60))<br>`cleaningStyle: String` (NotBlank, Size(max = 60))<br>`interaction: String` (NotBlank, Size(max = 60))<br>`meal: String` (NotBlank, Size(max = 60))<br>`sharedItems: String` (NotBlank, Size(max = 60))<br>`temperature: String` (NotBlank, Size(max = 50))<br>`weights: Map< String, Integer>` (NotEmpty, Size(min = 18, max = 18), NotBlank, Size(max = 40), NotNull, Min(value = 1), Max(value = 5)) |
+| [RoommatePreferenceResponse](src/main/java/com/kkirikkiri/survey/dto/RoommatePreferenceResponse.java) | `completed: boolean`<br>`answers: Answers` |
+| [RoommatePreferenceResponse.Answers](src/main/java/com/kkirikkiri/survey/dto/RoommatePreferenceResponse.java) | `department: String`<br>`age: List<String>`<br>`grade: List<String>`<br>`bedtime: List<String>`<br>`wakeTime: List<String>`<br>`sleepTalking: String`<br>`snoring: String`<br>`teethGrinding: String`<br>`smoking: String`<br>`lightingPreference: String`<br>`showerTime: String`<br>`showerDuration: String`<br>`cleaningFrequency: List<String>`<br>`cleaningStyle: String`<br>`interaction: String`<br>`meal: String`<br>`sharedItems: String`<br>`temperature: String`<br>`weights: Map<String, Integer>` |
+| [PasswordChangeRequest](src/main/java/com/kkirikkiri/user/dto/PasswordChangeRequest.java) | `currentPassword: String` (NotBlank)<br>`newPassword: String` (NotBlank, Size(min = 8), Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9\\s])\\S{8,}$"))<br>`newPasswordConfirm: String` (NotBlank) |
+| [UserResponse](src/main/java/com/kkirikkiri/user/dto/UserResponse.java) | `id: Long`<br>`nickname: String`<br>`schoolEmail: String`<br>`gender: String`<br>`dormitory: String`<br>`faculty: String`<br>`major: String`<br>`birthYear: Short`<br>`admissionYear: String`<br>`grade: String`<br>`mbtiEnergy: String`<br>`mbtiInformation: String`<br>`mbtiDecision: String`<br>`mbtiLifestyle: String` |
+| [UserUpdateRequest](src/main/java/com/kkirikkiri/user/dto/UserUpdateRequest.java) | `nickname: String` (Size(min = 2, max = 8), Pattern(regexp = "[가-힣A-Za-z0-9]+"))<br>`dormitory: String` (Size(max = 30), Pattern(regexp = "(?s).*\\S.*"))<br>`grade: String` (Pattern(regexp = "[1-5]학년"))<br>`faculty: String` (Size(max = 100), Pattern(regexp = "(?s).*\\S.*"))<br>`major: String` (Size(max = 150), Pattern(regexp = "(?s).*\\S.*"))<br>`mbtiEnergy: String` (Pattern(regexp = "[EI]"))<br>`mbtiInformation: String` (Pattern(regexp = "[NS]"))<br>`mbtiDecision: String` (Pattern(regexp = "[FT]"))<br>`mbtiLifestyle: String` (Pattern(regexp = "[PJ]")) |
+
+### 19.3 nullable·서비스 검증과 오류 처리
+
+- 설문 미저장 GET은 answers=null, 선호 조건 미저장도 해당 DTO 계약을 따른다. 저장된 프로필 설문은 현재 23개 필드다. 선택지·배열 중복·가중치 key 18개·상관없음 조합은 annotation 외 서비스 검증도 적용한다. hairDryer/bugHandling은 현재 요청·응답·Entity 필드가 아니다.
+- UserResponse.major, 룸메이트 목록·상세의 major/introduction/profileImageUrl/matchScore는 null일 수 있다. 비로그인 전체/상세 조회는 매칭 점수 null·liked=false다. recommended 필드는 반환하지 않는다. 로그인해도 계산 불가한 점수는 null일 수 있다. JWT가 제시된 요청의 유효성 검사와 공개 접근 허용은 별개다.
+- ChatRoomResponse.sourcePost/lastMessage는 null일 수 있다. 익명 상대 CounterpartResponse는 nickname="익명", tags=[], 그 외 필드 null이다. 익명 메시지 senderId는 null이다. 탈퇴/정지/토큰 만료·기존 구독 문제(#12)는 nullable 계약 보완으로 해결되지 않는다.
+- CalendarEventResponse.startTime/endTime/description/source는 null일 수 있다. source는 Entity의 source_name이며 sourceUrl/collectedAt는 이 DTO에 없다. AdminScheduleCrawlStatusResponse의 실행 시각·상태·실패 값은 이력 없음 시 null이며 실제 실행 기록 자체가 누락된 #14가 남아 있다. 관리자 응답에서 프로필이 없는 회원의 nickname/major/dormitory 등 프로필 필드도 null일 수 있다. 신고 상세 description은 선택값이다. 처리 시각·담당자는 현재 신고 응답 필드가 아니다.
+- SignupRequest와 비밀번호 변경/재설정의 확인 비밀번호 일치, 출생연도 현재 연도 이하, 캘린더 날짜 범위·동일 날짜 시간 순서 등 @AssertTrue 객체 검증을 적용한다. 회원정보 PATCH의 null은 유지이며 세부전공 없음 선택은 null 저장, 학부·전공 활성 여부/소속과 중복 닉네임은 서비스에서 검증한다. 프로필 설문·선호 저장은 전체 입력이며 부분 PATCH처럼 처리하지 않는다.
+- PostImage 유지 정책은 keepImageIds 생략/null/[] 모두 기존 이미지 제거다. 현재 프론트가 유지할 ID 목록을 전달한다. 익명 게시글 author.id는 실제 작성자 ID이고 별도 정책 확정이 필요하다. API 호환성 변경을 이 문서가 승인하지 않는다.
+- REST 오류는 success=false/message/data=null/errorCode, DTO 필드 오류에만 fieldErrors가 추가될 수 있다. CustomException은 아래 ErrorCode와 기본 메시지로 반환하며 내부 예외 메시지를 공개하지 않는다. 대상 없음이 모두 404인 계약은 아니며 일반 서비스 오류는 INVALID_REQUEST 400이다. MVC의 405/413/415 등은 handler의 실제 상태를 유지한다. STOMP 오류는 REST HTTP/envelope가 아니다.
+
+| ErrorCode | 기본 HTTP 상태 | 기본 메시지 |
+| --- | --- | --- |
+| MATCH_ANALYSIS_UNAVAILABLE | 409 | 매칭 결과를 계산할 수 없습니다. 프로필과 선호 설문을 확인해 주세요. |
+| AI_GATEWAY_UNAVAILABLE | 503 | AI 분석 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요. |
+| AI_GATEWAY_INVALID_RESPONSE | 502 | AI 분석 응답을 확인할 수 없습니다. 다시 시도해 주세요. |
+| UNAUTHORIZED | 401 | 인증 정보가 유효하지 않습니다. |
+| FORBIDDEN | 403 | 접근 권한이 없습니다. |
+| INVALID_REQUEST | 400 | 요청을 처리할 수 없습니다. |
+| PASSWORD_RESET_TOKEN_INVALID | 400 | 재설정 토큰이 올바르지 않습니다. |
+| PASSWORD_RESET_TOKEN_EXPIRED | 400 | 재설정 토큰이 만료되었습니다. 이메일을 다시 요청해 주세요. |
+| PASSWORD_RESET_TOKEN_ALREADY_USED | 400 | 이미 사용된 재설정 토큰입니다. 이메일을 다시 요청해 주세요. |
+| PASSWORD_RESET_ACCOUNT_INACTIVE | 400 | 계정이 활성 상태가 아니어서 비밀번호를 변경할 수 없습니다. |
+| VALIDATION_ERROR | 400 | 입력값을 확인해 주세요. |
+| EMAIL_VERIFICATION_COOLDOWN | 429 | 인증번호는 잠시 후 다시 요청해 주세요. |
+| EMAIL_VERIFICATION_NOT_FOUND | 400 | 먼저 인증번호를 요청해 주세요. |
+| EMAIL_VERIFICATION_INVALID | 400 | 인증번호가 올바르지 않습니다. |
+| EMAIL_VERIFICATION_EXPIRED | 400 | 인증번호가 만료되었습니다. 새 인증번호를 요청해 주세요. |
+| EMAIL_VERIFICATION_ALREADY_USED | 400 | 이미 사용한 인증번호입니다. 새 인증번호를 요청해 주세요. |
+| EMAIL_VERIFICATION_TOKEN_INVALID | 400 | 이메일 인증이 만료되었거나 유효하지 않습니다. 다시 인증해 주세요. |
+| EMAIL_ALREADY_REGISTERED | 409 | 이미 가입된 학교 이메일입니다. 다른 이메일을 사용해 주세요. |
+| DUPLICATE_ACCOUNT_VALUE | 409 | 학교 이메일 또는 닉네임이 이미 사용 중입니다. |
+| DORMITORY_NOT_FOUND | 400 | 선택한 생활관을 사용할 수 없습니다. 다시 선택해 주세요. |
+| FACULTY_NOT_FOUND | 400 | 선택한 학부를 사용할 수 없습니다. 다시 선택해 주세요. |
+| MAJOR_NOT_FOUND | 400 | 선택한 전공을 사용할 수 없습니다. 다시 선택해 주세요. |
+| ACCOUNT_SAVE_CONFLICT | 409 | 입력한 회원정보가 이미 사용 중입니다. 다른 값으로 시도해 주세요. |
+| INTERNAL_SERVER_ERROR | 500 | 서버 오류가 발생했습니다. |
+
+근거: [ApiResponse](src/main/java/com/kkirikkiri/global/response/ApiResponse.java), [GlobalExceptionHandler](src/main/java/com/kkirikkiri/global/exception/GlobalExceptionHandler.java), [ErrorCode](src/main/java/com/kkirikkiri/global/exception/ErrorCode.java), [SecurityConfig](src/main/java/com/kkirikkiri/global/config/SecurityConfig.java). 이 표는 코드 대조이며 SMTP/AI/프록시/운영 DB 응답을 실행 검증한 결과가 아니다.
+
+### 19.4 문서 수정으로 해결되지 않는 보안·배포 위험
+
+- #3 운영 프로필·DDL 검증·SQL/시드 비활성, #4 테스트 DB 격리는 현재 보장되지 않는다. #12 연결 후 JWT/계정/참여 권한 철회 및 기존 구독 수신 차단, #13 동시 고정 제한, #14 실제 크롤링 이력 저장은 코드·설정 보완이 필요하다. 각각의 현재 근거와 후속 작업은 agent.md에 기록한다.
+- [EmailVerificationService.verify](src/main/java/com/kkirikkiri/auth/service/EmailVerificationService.java)는 인증번호의 해시·만료를 검사하지만 실패 시도 횟수나 검증 요청 횟수를 제한하지 않는다. 6자리 코드 추측 및 반복 BCrypt 처리 부하 위험이 남아 있다. 발송 cooldown과 검증 제한을 구분하며 이메일·IP별 제한/차단 정책, 서버 구현 및 외부 프록시 제한 여부는 별도 확정·검증이 필요하다.
+- 익명 게시글·댓글의 author.id가 실제 ID이므로 공개 프로필·다른 게시물과 연결할 수 있다. 표시 익명과 재식별 방지 수준은 정책 결정 사항이다. 공개 계약을 문서만으로 변경하지 않는다.
+- 이미지 쓰기/영구 저장·시간대·CORS·SMTP·AI·필수 환경변수·WebSocket Upgrade와 프록시 타임아웃·다중 인스턴스 전달은 실제 환경 검증 대상이다. 기존 익명 방 키 적용 절차는 ERD.md의 마이그레이션 검증 기준을 따른다. 운영 DB·외부 연결을 이번에 검증하지 않았다.
