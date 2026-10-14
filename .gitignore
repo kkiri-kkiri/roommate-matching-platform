@@ -177,3 +177,9 @@ DESIGN.md
 README.md
 AGENTS.md
 layer-prompts.md
+
+# Shared execution instructions and safe local defaults are versioned.
+!AGENTS.md
+!backend/src/main/resources/application-local.properties
+!backend/migrations/README.md
+backend/local-data/

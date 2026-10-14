@@ -20,6 +20,7 @@ import com.kkirikkiri.user.repository.*;
 @Service
 @RequiredArgsConstructor
 public class MatchingRefreshService {
+    private static final int BATCH_SIZE = 100;
     private final PlatformTransactionManager transactionManager;
     private final MatchingInputRepository inputs;
     private final UserRepository users;
@@ -32,15 +33,30 @@ public class MatchingRefreshService {
     private final RoommateMatchCalculator calculator;
 
     public void refreshOutgoing(Long requesterId) {
-        refresh(List.of(requesterId), inputs.outgoingTargets(requesterId));
+        long afterId = 0;
+        while (true) {
+            List<Long> targets = inputs.outgoingTargets(requesterId, afterId, BATCH_SIZE);
+            if (targets.isEmpty()) return;
+            refresh(List.of(requesterId), targets);
+            afterId = targets.getLast();
+        }
     }
 
     public void refreshIncoming(Long targetId) {
-        refresh(inputs.incomingRequesters(targetId), List.of(targetId));
+        long afterId = 0;
+        while (true) {
+            List<Long> requesters = inputs.incomingRequesters(targetId, afterId, BATCH_SIZE);
+            if (requesters.isEmpty()) return;
+            refresh(requesters, List.of(targetId));
+            afterId = requesters.getLast();
+        }
     }
 
     public void refreshTargets(Long requesterId, List<Long> targetIds) {
-        refresh(List.of(requesterId), targetIds);
+        List<Long> sorted = targetIds.stream().distinct().sorted().toList();
+        for (int offset = 0; offset < sorted.size(); offset += BATCH_SIZE) {
+            refresh(List.of(requesterId), sorted.subList(offset, Math.min(offset + BATCH_SIZE, sorted.size())));
+        }
     }
 
     public Optional<RoommateMatchCalculator.Result> refreshAnalysis(Long requesterId, Long targetId) {

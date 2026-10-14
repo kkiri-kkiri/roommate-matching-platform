@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
+@Profile("local & !prod & !test")
 @RequiredArgsConstructor
 @Slf4j
 public class SeedDataService {
@@ -38,6 +40,7 @@ public class SeedDataService {
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
     private final CommunitySeedDataService communitySeedDataService;
+    private final SeedUserManifest seedUserManifest;
 
     private static final String[] MBTI_LIST = {
             "ISTJ", "ISFJ", "INFJ", "INTJ",
@@ -215,6 +218,9 @@ public class SeedDataService {
                     .findBySchoolEmail(schoolEmail)
                     .orElse(null);
 
+            // Existing real or legacy accounts are never adopted as seed users.
+            if (user != null && !seedUserManifest.contains(user)) continue;
+
             /*
              * 회원이 없으면 생성
              */
@@ -231,6 +237,7 @@ public class SeedDataService {
 
                 user.verifyEmail();
                 userRepository.save(user);
+                seedUserManifest.registerAfterCommit(user);
 
                 userCreatedCount++;
             }
@@ -718,7 +725,11 @@ public class SeedDataService {
                 userRepository
                         .findAllBySchoolEmailIn(java.util.stream.IntStream.rangeClosed(1, SEED_USER_COUNT)
                                 .mapToObj(i -> SEED_PREFIX + String.format("%02d", i) + "@hknu.ac.kr")
-                                .toList());
+                                .toList()).stream()
+                        .sorted(java.util.Comparator.comparing(User::getUserId))
+                        .map(user -> userRepository.findByIdForAccountUpdate(user.getUserId()).orElseThrow())
+                        .filter(seedUserManifest::contains)
+                        .toList();
 
         if (seedUsers.isEmpty()) {
             log.info("삭제할 Seed 데이터가 없습니다.");
@@ -764,6 +775,7 @@ public class SeedDataService {
          */
         userRepository.deleteAll(seedUsers);
         userRepository.flush();
+        seedUserManifest.removeAfterCommit(userIds);
 
         log.info(
                 "Seed 사용자 {}명 및 프로필 설문 삭제 완료",

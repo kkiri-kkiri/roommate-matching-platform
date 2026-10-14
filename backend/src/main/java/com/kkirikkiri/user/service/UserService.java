@@ -5,6 +5,7 @@ import java.util.Objects;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import com.kkirikkiri.user.entity.Faculty;
 import com.kkirikkiri.user.entity.Major;
 import com.kkirikkiri.user.entity.User;
 import com.kkirikkiri.user.entity.UserProfile;
+import com.kkirikkiri.user.entity.UserStatus;
 import com.kkirikkiri.user.repository.DormitoryRepository;
 import com.kkirikkiri.user.repository.FacultyRepository;
 import com.kkirikkiri.user.repository.MajorRepository;
@@ -50,8 +52,8 @@ public class UserService {
 		validateRequest(request);
         validateUserId(userId);
         // Match the survey lock protocol before reading comparison inputs.
-        userRepository.findByIdForSurveyUpdate(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+        requireActive(userRepository.findByIdForAccountUpdate(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST)));
 		UserProfile profile = findProfile(userId);
 
 		if (request.nickname() != null
@@ -74,7 +76,9 @@ public class UserService {
 		}
 
 		Major major = profile.getMajor();
-		if (request.major() != null) {
+		if ("세부전공 없음".equals(request.major())) {
+            major = null;
+        } else if (request.major() != null) {
 			major = majorRepository.findByFaculty_FacultyIdAndMajorName(faculty.getFacultyId(), request.major())
 					.filter(Major::isActive)
 					.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
@@ -112,6 +116,15 @@ public class UserService {
 					+ (request.mbtiLifestyle() == null ? mbti.substring(3, 4) : request.mbtiLifestyle()));
 		}
 
+        try {
+            userProfileRepository.flush();
+        } catch (DataIntegrityViolationException failure) {
+            // Only nickname is changed among this entity's UNIQUE columns.
+            if (request.nickname() != null && isUniqueViolation(failure)) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
+            throw failure;
+        }
         if (departmentChanged || gradeChanged) {
             events.publishEvent(new com.kkirikkiri.matching.service.MatchingInputsChanged(
                     userId, true, departmentChanged));
@@ -124,8 +137,9 @@ public class UserService {
 	public void changePassword(Long userId, PasswordChangeRequest request) {
 		validateRequest(request);
 		validateUserId(userId);
-		User user = userRepository.findById(userId)
+		User user = userRepository.findByIdForAccountUpdate(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+        requireActive(user);
 		if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
 			throw new CustomException(ErrorCode.INVALID_REQUEST);
 		}
@@ -137,6 +151,20 @@ public class UserService {
 		return userProfileRepository.findByUser_UserId(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
 	}
+
+    private void requireActive(User user) {
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+    }
+
+    private boolean isUniqueViolation(Throwable failure) {
+        for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
+            if (cause instanceof java.sql.SQLException sql
+                    && ("23505".equals(sql.getSQLState()) || sql.getErrorCode() == 1062)) return true;
+        }
+        return false;
+    }
 
 	private void validateUserId(Long userId) {
 		if (userId == null || userId <= 0) {

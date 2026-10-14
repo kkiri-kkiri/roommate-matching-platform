@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 
 /**
  * null인 필드는 변경하지 않는다. MBTI 부분 수정값은 서비스에서 기존 값과 조합한다.
+ * major="세부전공 없음"은 가입과 동일한 명시적 전공 해제 요청이다.
  */
 public record UserUpdateRequest(
 		@Size(min = 2, max = 8, message = "닉네임은 2자 이상 8자 이하여야 합니다.")

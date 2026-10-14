@@ -553,8 +553,7 @@ function AccountContent({ account, onSave }) {
     try {
       const payload = Object.fromEntries(
         ids
-          .filter((id) => !(id === "major" && noMajor))
-          .map((id) => [id, draft[id]]),
+          .map((id) => [id, id === "major" && noMajor ? "세부전공 없음" : draft[id]]),
       );
       const saved = await onSave(payload);
       setDraft((current) => ({ ...current, ...saved }));

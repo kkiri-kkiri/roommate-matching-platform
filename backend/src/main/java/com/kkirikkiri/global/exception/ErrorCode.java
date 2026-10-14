@@ -26,6 +26,7 @@ public enum ErrorCode {
 	FACULTY_NOT_FOUND(HttpStatus.BAD_REQUEST, "선택한 학부를 사용할 수 없습니다. 다시 선택해 주세요."),
 	MAJOR_NOT_FOUND(HttpStatus.BAD_REQUEST, "선택한 전공을 사용할 수 없습니다. 다시 선택해 주세요."),
 	ACCOUNT_SAVE_CONFLICT(HttpStatus.CONFLICT, "입력한 회원정보가 이미 사용 중입니다. 다른 값으로 시도해 주세요."),
+    ACCOUNT_UPDATE_CONFLICT(HttpStatus.CONFLICT, "다른 변경 요청을 처리 중입니다. 잠시 후 다시 시도해 주세요."),
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.");
 
 	private final HttpStatus status;

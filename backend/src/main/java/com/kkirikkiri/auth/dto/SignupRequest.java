@@ -3,6 +3,7 @@ package com.kkirikkiri.auth.dto;
 import java.time.Year;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.kkirikkiri.global.validation.PasswordByteLength;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
@@ -21,9 +22,9 @@ public record SignupRequest(
 		@Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
 		@Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9\\s])\\S{8,}$",
 				message = "비밀번호는 영문, 숫자, 특수문자를 포함해 8자 이상이어야 합니다.")
-		String password,
+        @PasswordByteLength String password,
 		@NotBlank(message = "비밀번호 확인을 입력해 주세요.")
-		String passwordConfirm,
+        @PasswordByteLength String passwordConfirm,
 		@NotBlank(message = "닉네임을 입력해 주세요.")
 		@Size(min = 2, max = 8, message = "닉네임은 2자 이상 8자 이하여야 합니다.")
 		@Pattern(regexp = "[가-힣A-Za-z0-9]+", message = "닉네임은 한글, 영문, 숫자만 사용할 수 있습니다.")

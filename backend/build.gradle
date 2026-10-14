@@ -43,4 +43,30 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+    // JVM properties override inherited environment values. No .env is imported by test.
+    systemProperty 'spring.profiles.active', 'test'
+    systemProperty 'spring.config.import', ''
+    systemProperty 'spring.datasource.url', 'jdbc:h2:mem:backend-test-${random.uuid};MODE=MySQL;NON_KEYWORDS=USER;DB_CLOSE_DELAY=-1'
+    systemProperty 'spring.datasource.driver-class-name', 'org.h2.Driver'
+    systemProperty 'spring.datasource.username', 'sa'
+    systemProperty 'spring.datasource.password', ''
+    systemProperty 'spring.jpa.hibernate.ddl-auto', 'create-drop'
+    systemProperty 'spring.sql.init.mode', 'never'
+    systemProperty 'app.seed.mode', 'NONE'
+    systemProperty 'app.calendar.crawl-on-startup', 'false'
+    // Legacy test URL placeholders cannot select an external database.
+    environment 'ANONYMOUS_TEST_DB_URL', 'jdbc:h2:mem:anonymous;MODE=MySQL;NON_KEYWORDS=USER;DB_CLOSE_DELAY=-1'
+    environment 'ANONYMOUS_TEST_DB_DRIVER', 'org.h2.Driver'
+    environment 'ANONYMOUS_TEST_DB_USER', 'sa'
+    environment 'ANONYMOUS_TEST_DB_PASSWORD', ''
+    doFirst {
+        def requestedProfiles = [System.getenv('SPRING_PROFILES_ACTIVE'), System.getProperty('spring.profiles.active')]
+        if (requestedProfiles.findAll { it != null }.any { it.split(',').any { p -> p.trim() == 'prod' } }) {
+            throw new GradleException('Tests cannot run with the prod profile')
+        }
+        // An explicit test-task override is rejected, rather than ever connected to.
+        if (!systemProperties['spring.datasource.url'].toString().startsWith('jdbc:h2:mem:')) {
+            throw new GradleException('Tests require an H2 in-memory datasource')
+        }
+    }
 }

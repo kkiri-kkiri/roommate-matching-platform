@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import MyPage from "./MyPage";
 import { PROFILE_FIELDS } from "../../data/profileSurvey";
@@ -15,6 +15,21 @@ jest.mock("../../api/userApi");
 jest.mock("../../components/common/ProfileCard/ProfileCard", () => () => null);
 
 const user = { id: 1, nickname: "서버 사용자", major: "소프트웨어융합전공", dormitory: "나래", admissionYear: "24" };
+
+test("explicitly clears an existing major when changing to a faculty without majors", async () => {
+  mockTab = "account";
+  const account = { ...user, nickname: "학생하나", faculty: "컴퓨터응용수학부", grade: "3학년", mbtiEnergy: "I", mbtiInformation: "N", mbtiDecision: "T", mbtiLifestyle: "J" };
+  userApi.getMyInfo.mockResolvedValue(account);
+  userApi.updateMyInfo.mockResolvedValue({ ...account, faculty: "HK자율전공학부", major: null });
+  render(<MyPage currentUser={account} />);
+  const heading = await screen.findByText("생활관 및 학적 정보");
+  const card = heading.parentElement.parentElement;
+  fireEvent.click(within(card).getByRole("button", { name: "수정" }));
+  fireEvent.change(screen.getByLabelText(/나의 학부/), { target: { value: "HK자율전공학부" } });
+  fireEvent.click(within(card).getByRole("button", { name: "완료" }));
+  await waitFor(() => expect(userApi.updateMyInfo).toHaveBeenCalledWith({ dormitory: "나래", grade: "3학년", faculty: "HK자율전공학부", major: "세부전공 없음" }));
+  expect(window.alert).toHaveBeenCalledWith("회원정보를 저장했어요.");
+});
 const answers = Object.fromEntries(Object.values(PROFILE_FIELDS).map(field =>
   [field.id, field.type === "multi" ? [field.options[0]] : field.options[0]],
 ));

@@ -86,7 +86,12 @@ public class PasswordResetService {
 	@Transactional
 	public void resetPassword(PasswordResetConfirmRequest request) {
 		validateRequest(request);
-		PasswordResetToken token = tokenRepository.findByTokenHash(hash(request.resetToken()))
+        String tokenHash = hash(request.resetToken());
+        Long userId = tokenRepository.findUserIdByTokenHash(tokenHash)
+                .orElseThrow(() -> new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_INVALID));
+        User user = userRepository.findByIdForAccountUpdate(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_INVALID));
+		PasswordResetToken token = tokenRepository.findByTokenHash(tokenHash)
 				.orElseThrow(() -> new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_INVALID));
 		LocalDateTime now = LocalDateTime.now(clock);
 		if (token.isUsed()) {
@@ -95,7 +100,6 @@ public class PasswordResetService {
 		if (token.isExpired(now)) {
 			throw new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_EXPIRED);
 		}
-		User user = token.getUser();
 		if (user.getStatus() != UserStatus.ACTIVE) {
 			throw new CustomException(ErrorCode.PASSWORD_RESET_ACCOUNT_INACTIVE);
 		}
