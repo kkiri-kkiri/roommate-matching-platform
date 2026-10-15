@@ -1,7 +1,9 @@
 import axios from "axios";
 import { getCommunityPost } from "./communityApi";
 
-jest.mock("axios", () => ({ create: jest.fn(() => ({ request: jest.fn() })) }));
+jest.mock("axios", () => ({ create: jest.fn(() => ({
+  request: jest.fn(), interceptors: { response: { use: jest.fn() } },
+})) }));
 const request = axios.create.mock.results[0].value.request;
 
 beforeEach(() => request.mockReset());

@@ -15,13 +15,13 @@ jest.mock("react-router-dom", () => ({
 }));
 jest.mock("../../api/adminApi");
 
-const member = { id: 1, loginId: "server-user", nickname: "서버 회원", schoolEmail: "server@school.ac.kr", dormitory: "나래", major: null, createdAt: "2026-09-01", status: "ACTIVE" };
+const member = { id: 1, nickname: "서버 회원", schoolEmail: "server@school.ac.kr", dormitory: "나래", major: null, createdAt: "2026-09-01", status: "ACTIVE" };
 const memberDetail = { ...member, gender: null, faculty: null, admissionYear: "24", grade: "3학년", mbti: null, activity: { postCount: 25, commentCount: 37, reportsReceived: 9 } };
 const author = { id: 99, nickname: "목록 밖 작성자" };
 const post = { id: 2, category: "자유게시판", title: "서버 게시글", author, createdAt: "2026-09-21T10:00:00", views: 123, likes: 45, commentCount: 67, reported: true };
 const comment = { id: 3, content: "서버 댓글", author, createdAt: post.createdAt, postId: 2, postTitle: post.title, reported: true };
 const report = { id: 4, type: "POST", targetContent: "신고 대상", reporter: author, targetUser: { id: 1, nickname: member.nickname }, reason: "광고", createdAt: post.createdAt, status: "PENDING" };
-const reportDetail = { ...report, targetId: 2, targetUser: member, reporter: { ...author, loginId: "reporter", schoolEmail: "reporter@school.ac.kr" }, description: "상세 신고 사유" };
+const reportDetail = { ...report, targetId: 2, targetUser: member, reporter: { ...author, schoolEmail: "reporter@school.ac.kr" }, description: "상세 신고 사유" };
 const schedule = { id: 5, title: "서버 일정", date: "2026-09-25", content: "수집한 내용", category: "SCHOOL", source: "학교", collectedAt: post.createdAt };
 const page = (content, overrides = {}) => ({ content, page: 0, size: 6, totalElements: content.length, totalPages: content.length ? 1 : 0, first: true, last: true, ...overrides });
 const dashboard = { stats: { totalMembers: 101, totalPosts: 202, totalComments: 303, totalReports: 404, pendingReports: 5, schoolSchedules: 606, dormitorySchedules: 707 }, recentMembers: [{ id: 1, nickname: member.nickname, major: null, dormitory: member.dormitory, createdAt: member.createdAt, status: member.status }], recentPosts: [{ id: 2, title: post.title, category: post.category, author, createdAt: post.createdAt }], recentReports: [{ id: 4, status: report.status, type: report.type, reason: report.reason, createdAt: report.createdAt }], recentSchoolSchedules: [{ id: 5, title: schedule.title, date: schedule.date, collectedAt: schedule.collectedAt }], recentDormitorySchedules: [] };
@@ -80,12 +80,12 @@ test("filters and searches on the server, resets page, and uses server totals", 
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "검색어" } });
   fireEvent.click(screen.getByRole("button", { name: "검색", exact: true }));
   await waitFor(() => expect(api.getAdminMembers).toHaveBeenLastCalledWith({ page: 0, size: 6, q: "검색어", status: "SUSPENDED", dormitory: "나래" }));
-  expect(await screen.findByText("server-user")).toBeInTheDocument();
+  expect(await screen.findByRole("button", { name: member.schoolEmail })).toBeInTheDocument();
 });
 
 test.each([["이용 정지", "SUSPENDED"], ["회원 탈퇴 처리", "WITHDRAWN"]])("changes member status via %s and refetches detail/list", async (button, status) => {
   render(<AdminPage />);
-  fireEvent.click(await screen.findByRole("button", { name: "server-user" }));
+  fireEvent.click(await screen.findByRole("button", { name: member.schoolEmail }));
   await dialog().findByText("입학 연도");
   api.getAdminMember.mockResolvedValue({ ...memberDetail, status });
   await confirm(button);
@@ -98,7 +98,7 @@ test("shows server status-transition errors, including withdrawn reactivation", 
   api.getAdminMember.mockResolvedValue({ ...memberDetail, status: "WITHDRAWN" });
   api.updateAdminMemberStatus.mockRejectedValue(new Error("탈퇴한 회원은 변경할 수 없습니다."));
   render(<AdminPage />);
-  fireEvent.click(await screen.findByRole("button", { name: "server-user" }));
+  fireEvent.click(await screen.findByRole("button", { name: member.schoolEmail }));
   await dialog().findByText("입학 연도");
   await confirm("이용 정지 해제");
   expect(api.updateAdminMemberStatus).toHaveBeenCalledWith(1, "ACTIVE");
@@ -150,7 +150,7 @@ test("renders request failure without mock fallback and allows retry", async () 
   expect(await screen.findByRole("alert")).toHaveTextContent("관리자 권한이 없습니다.");
   expect(screen.queryByRole("table")).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
-  await screen.findByText("server-user");
+  await screen.findByRole("button", { name: member.schoolEmail });
 });
 
 test("ignores late list results after navigation, including returning to dashboard", async () => {
@@ -162,7 +162,7 @@ test("ignores late list results after navigation, including returning to dashboa
   await screen.findByText("101");
   await act(async () => resolve(page([member])));
   expect(screen.getByText("101")).toBeInTheDocument();
-  expect(screen.queryByText("server-user")).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: member.schoolEmail })).not.toBeInTheDocument();
 });
 
 test("sends post sorting, category and reported filters without filtering returned rows locally", async () => {
