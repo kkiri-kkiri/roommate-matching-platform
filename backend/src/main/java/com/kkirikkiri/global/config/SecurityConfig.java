@@ -1,5 +1,6 @@
 package com.kkirikkiri.global.config;
 
+import jakarta.servlet.DispatcherType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +41,10 @@ public class SecurityConfig {
 				.addFilterBefore(new JwtAuthenticationFilter(jwtAuthenticationProvider, objectMapper),
 						UsernamePasswordAuthenticationFilter.class)
 				.authorizeHttpRequests(auth -> auth
+						// Only the container's error dispatch may reach the error renderer. Ordinary /error
+						// requests and ERROR dispatches to protected business endpoints retain their rules.
+						.requestMatchers(request -> request.getDispatcherType() == DispatcherType.ERROR
+								&& (request.getContextPath() + "/error").equals(request.getRequestURI())).permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/login/email-check").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/email-verifications/send",
 								"/api/auth/email-verifications/verify")

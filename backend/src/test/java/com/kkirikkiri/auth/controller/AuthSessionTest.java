@@ -50,10 +50,12 @@ class AuthSessionTest {
     @MockitoBean UserProfileRepository profiles;
     @MockitoBean Validator validator;
     @MockitoBean com.kkirikkiri.auth.service.AuthProtectionService protection;
+    @MockitoBean com.kkirikkiri.auth.service.AuthTransactions transactions;
     private User user;
 
     @BeforeEach
     void setUp() {
+        when(transactions.readOnly(any())).thenAnswer(call -> ((java.util.function.Supplier<?>) call.getArgument(0)).get());
         user = mock(User.class);
         when(user.getUserId()).thenReturn(1L);
         when(user.getSchoolEmail()).thenReturn("student@hknu.ac.kr");

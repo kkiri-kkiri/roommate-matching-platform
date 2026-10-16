@@ -43,6 +43,7 @@ class UserAccountConcurrencyTest {
     @Autowired PasswordResetTokenRepository tokens;
     @Autowired PlatformTransactionManager manager;
     @Autowired PasswordEncoder encoder;
+    @jakarta.persistence.PersistenceContext jakarta.persistence.EntityManager entityManager;
     Long adminId, userId, tokenId;
     String token;
     Long otherId, dormitoryId, facultyId;
@@ -137,6 +138,37 @@ class UserAccountConcurrencyTest {
         ExecutionException failure=assertThrows(ExecutionException.class,()->second.get(10,TimeUnit.SECONDS));
         assertEquals(ErrorCode.INVALID_REQUEST,((CustomException)failure.getCause()).getErrorCode());
         assertTrue(encoder.matches("New1!pass",users.findById(userId).orElseThrow().getPassword()));
+    }
+
+    @Test void repeatedAccountLockRetainsManagedIdentityAndPendingChanges() {
+        tx.executeWithoutResult(status->{
+            User locked=users.findByIdForAccountUpdate(userId).orElseThrow();
+            locked.changePassword(encoder.encode("New1!pass"));
+            locked.changeStatus(UserStatus.SUSPENDED);
+            User repeated=users.findByIdForAccountUpdate(userId).orElseThrow();
+            assertSame(locked,repeated);
+            assertTrue(entityManager.contains(repeated));
+            assertTrue(encoder.matches("New1!pass",repeated.getPassword()));
+            assertEquals(UserStatus.SUSPENDED,repeated.getStatus());
+        });
+        User stored=users.findById(userId).orElseThrow();
+        assertTrue(encoder.matches("New1!pass",stored.getPassword()));
+        assertEquals(UserStatus.SUSPENDED,stored.getStatus());
+    }
+
+    @Test void accountReloadPreservesOtherManagedChangesAndRollbackBoundary() {
+        tx.executeWithoutResult(status->{
+            User admin=users.findById(adminId).orElseThrow();
+            admin.changePassword(encoder.encode("New1!pass"));
+            User locked=users.findByIdForAccountUpdate(userId).orElseThrow();
+            locked.changePassword(encoder.encode("New1!pass"));
+            assertSame(locked,users.findByIdForAccountUpdate(userId).orElseThrow());
+            assertSame(admin,users.findById(adminId).orElseThrow());
+            assertTrue(encoder.matches("New1!pass",admin.getPassword()));
+            status.setRollbackOnly();
+        });
+        assertTrue(encoder.matches("Old1!pass",users.findById(userId).orElseThrow().getPassword()));
+        assertTrue(encoder.matches("Admin1!pass",users.findById(adminId).orElseThrow().getPassword()));
     }
 
     @Test void competingNicknameWriteReturnsBusinessErrorAndRollsBackAllLosingChanges() throws Exception {

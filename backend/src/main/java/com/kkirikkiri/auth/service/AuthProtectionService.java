@@ -6,13 +6,13 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.kkirikkiri.auth.repository.AuthLimitStore;
+import com.kkirikkiri.auth.repository.AuthLimitStore.EmailTarget;
 import com.kkirikkiri.global.exception.AuthRateLimitException;
 import com.kkirikkiri.global.exception.ErrorCode;
 
@@ -23,32 +23,43 @@ public class AuthProtectionService {
     private final AuthProtectionProperties properties;
 
     public Permit login(String email, String ip) {
-        return reserve(rules("login", email, ip, properties.getLoginRequests(), properties.getLoginFailures()));
+        return reserveEmail(email, EmailTarget.ACCOUNT,
+            subject -> rules("login", subject, ip, properties.getLoginRequests(), properties.getLoginFailures()));
     }
-    public void emailCheck(String email, String ip) {
-        reserve(rules("login-check", email, ip, properties.getLoginRequests(), null));
+    public boolean emailCheck(String email, String ip) {
+        EmailCheckDecision result = store.lockedEmail(email, EmailTarget.ACCOUNT,
+            subject -> rules("login-check", subject, ip, properties.getLoginRequests(), null).stream().map(Rule::key).toList(),
+            (subject, rows) -> new EmailCheckDecision(
+                decide(rules("login-check", subject, ip, properties.getLoginRequests(), null), rows), subject.startsWith("user:")),
+            value -> value.decision.error == null);
+        permit(result.decision);
+        return result.exists;
     }
     public Permit verify(String email, String ip) {
-        return reserve(rules("verify", email, ip, properties.getVerifyRequests(), properties.getVerifyFailures()));
+        return reserveEmail(email, EmailTarget.VERIFICATION,
+            subject -> rules("verify", subject, ip, properties.getVerifyRequests(), properties.getVerifyFailures()));
     }
     public void reset(String email, String ip) {
-        var rules = rules("reset", email, ip, properties.getResetRequests(), null);
-        rules.add(request("reset-cooldown", email.toLowerCase(Locale.ROOT), properties.getResetCooldownSeconds(), 1, ErrorCode.AUTH_REQUEST_LIMITED));
-        reserve(rules);
+        reserveEmail(email, EmailTarget.ACCOUNT, subject -> {
+            var rules = rules("reset", subject, ip, properties.getResetRequests(), null);
+            rules.add(request("reset-cooldown", subject, properties.getResetCooldownSeconds(), 1, ErrorCode.AUTH_REQUEST_LIMITED));
+            return rules;
+        });
     }
     public void send(String email, String ip, long cooldownSeconds) {
-        var rules = rules("send", email, ip, properties.getSendRequests(), null);
-        rules.add(request("send-cooldown", email.toLowerCase(Locale.ROOT), cooldownSeconds, 1, ErrorCode.EMAIL_VERIFICATION_COOLDOWN));
-        reserve(rules);
+        reserveEmail(email, EmailTarget.VERIFICATION, subject -> {
+            var rules = rules("send", subject, ip, properties.getSendRequests(), null);
+            rules.add(request("send-cooldown", subject, cooldownSeconds, 1, ErrorCode.EMAIL_VERIFICATION_COOLDOWN));
+            return rules;
+        });
     }
     public void mail() {
         reserve(List.of(request("mail-global", "all", properties.getMailWindowSeconds(), properties.getMailMax(), ErrorCode.AUTH_REQUEST_LIMITED)));
     }
 
-    private List<Rule> rules(String scope, String email, String ip, AuthProtectionProperties.Requests requests,
+    private List<Rule> rules(String scope, String account, String ip, AuthProtectionProperties.Requests requests,
             AuthProtectionProperties.Failures failures) {
         var result = new ArrayList<Rule>();
-        String account = email.toLowerCase(Locale.ROOT);
         result.add(request(scope+"-email", account, requests.getWindowSeconds(), requests.getEmailMax(), ErrorCode.AUTH_REQUEST_LIMITED));
         result.add(request(scope+"-ip", ip, requests.getWindowSeconds(), requests.getIpMax(), ErrorCode.AUTH_REQUEST_LIMITED));
         if (failures != null) {
@@ -61,8 +72,20 @@ public class AuthProtectionService {
     }
 
     private Permit reserve(List<Rule> rules) {
-        Map<String, Rule> byKey = rules.stream().collect(Collectors.toMap(Rule::key, Function.identity()));
-        Decision decision = store.locked(new ArrayList<>(byKey.keySet()), rows -> {
+        Decision decision = store.locked(rules.stream().map(Rule::key).toList(),
+            rows -> decide(rules, rows), result -> result.error == null);
+        return permit(decision);
+    }
+
+    private Permit reserveEmail(String email, EmailTarget target, Function<String, List<Rule>> rules) {
+        Decision decision = store.lockedEmail(email, target,
+            subject -> rules.apply(subject).stream().map(Rule::key).toList(),
+            (subject, rows) -> decide(rules.apply(subject), rows), result -> result.error == null);
+        return permit(decision);
+    }
+
+    private Decision decide(List<Rule> rules, List<AuthLimitStore.Bucket> rows) {
+            Map<String, Rule> byKey = rules.stream().collect(Collectors.toMap(Rule::key, Function.identity()));
             long now = store.now();
             long retry = 0;
             ErrorCode error = ErrorCode.AUTH_REQUEST_LIMITED;
@@ -93,7 +116,9 @@ public class AuthProtectionService {
                 }
             }
             return new Decision(new Permit(List.copyOf(reservations)), null, 0);
-        }, result -> result.error == null);
+    }
+
+    private Permit permit(Decision decision) {
         if (decision.error != null) throw new AuthRateLimitException(decision.error, decision.retrySeconds);
         return decision.permit;
     }
@@ -129,4 +154,5 @@ public class AuthProtectionService {
     private record Reservation(Rule rule, long generation, long started) { }
     public record Permit(List<Reservation> reservations) { }
     private record Decision(Permit permit, ErrorCode error, long retrySeconds) { }
+    private record EmailCheckDecision(Decision decision, boolean exists) { }
 }

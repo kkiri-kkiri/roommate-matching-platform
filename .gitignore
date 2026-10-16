@@ -183,3 +183,9 @@ layer-prompts.md
 !backend/src/main/resources/application-local.properties
 !backend/migrations/README.md
 backend/local-data/
+
+# Validation results are local, disposable outputs. Keep code and reports versioned.
+/backend/tools/auth-mysql-concurrency/results/
+/backend/tools/auth-mysql-multi-instance/results/
+/backend/tools/user-mysql-concurrency/results/
+/backend/tools/user-mysql-multi-instance/results/

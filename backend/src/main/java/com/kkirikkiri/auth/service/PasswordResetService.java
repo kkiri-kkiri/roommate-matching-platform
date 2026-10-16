@@ -74,8 +74,8 @@ public class PasswordResetService {
 	public PasswordResetResponse requestPasswordReset(PasswordResetRequest request, String ip) {
 		validateRequest(request);
 		protection.reset(request.email(), ip);
-		if (userRepository.findBySchoolEmail(request.email())
-				.filter(user -> user.getStatus() == UserStatus.ACTIVE).isEmpty()) {
+		if (transactions.readOnly(() -> userRepository.findBySchoolEmail(request.email())
+				.filter(user -> user.getStatus() == UserStatus.ACTIVE).isEmpty())) {
 			return new PasswordResetResponse(true);
 		}
 		protection.mail();

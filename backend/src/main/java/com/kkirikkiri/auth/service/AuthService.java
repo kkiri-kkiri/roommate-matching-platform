@@ -31,6 +31,7 @@ public class AuthService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final Validator validator;
 	private final AuthProtectionService protection;
+	private final AuthTransactions transactions;
 	// Unknown/inactive users still incur one BCrypt check; never expose credential lookup results.
 	private final String dummyPasswordHash = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("auth-dummy-password");
 
@@ -48,8 +49,7 @@ public class AuthService {
 		if (request == null || !validator.validate(request).isEmpty()) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
-		protection.emailCheck(request.email(), ip);
-		return new LoginEmailCheckResponse(userRepository.existsBySchoolEmail(request.email()));
+		return new LoginEmailCheckResponse(protection.emailCheck(request.email(), ip));
 	}
 
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -61,13 +61,13 @@ public class AuthService {
 		var permit = protection.login(request.email(), ip);
 		boolean success = false;
 		try {
-			User user = userRepository.findBySchoolEmail(request.email()).orElse(null);
+			User user = transactions.readOnly(() -> userRepository.findBySchoolEmail(request.email()).orElse(null));
 			boolean passwordMatches = passwordEncoder.matches(request.password(), user == null ? dummyPasswordHash : user.getPassword());
 			if (user == null || user.getStatus() != UserStatus.ACTIVE || !passwordMatches) {
 				throw new CustomException(ErrorCode.UNAUTHORIZED);
 			}
-			String nickname = userProfileRepository.findByUser_UserId(user.getUserId())
-					.map(UserProfile::getNickname).orElse(user.getSchoolEmail());
+			String nickname = transactions.readOnly(() -> userProfileRepository.findByUser_UserId(user.getUserId())
+					.map(UserProfile::getNickname).orElse(user.getSchoolEmail()));
 			String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), user.getRole());
 			success = true;
 			return new LoginResponse(accessToken, new LoginResponse.LoginUser(

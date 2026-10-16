@@ -12,6 +12,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
@@ -23,7 +24,10 @@ import lombok.NoArgsConstructor;
 import com.kkirikkiri.user.entity.User;
 
 @Entity
-@Table(name = "EMAIL_VERIFICATION")
+@Table(name = "EMAIL_VERIFICATION", indexes = {
+    @Index(name = "idx_email_verification_latest", columnList = "email, purpose, created_at DESC, verification_id DESC"),
+    @Index(name = "idx_email_verification_token", columnList = "email, purpose, verification_token_hash")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EmailVerification {

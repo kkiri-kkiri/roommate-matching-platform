@@ -1,6 +1,8 @@
 # 익명 채팅 키 마이그레이션
 
 Auth 공유 제한 테이블의 별도 절차는 [20261014_auth_limits.md](20261014_auth_limits.md)를 따른다.
+이메일 변형 제한 우회·인증 잠금 간섭 수정은 그 후
+[20261015_auth_email_identity_indexes.md](20261015_auth_email_identity_indexes.md)를 따른다.
 
 대상: `20261011_chat_anonymous_keys.sql`. 운영에서 자동 실행하지 않는다.
 컬럼 추가나 방/참여자/메시지 삭제 없이 기존 일반 COMMUNITY 키 중 현재 익명 출처를 가리키는 키에

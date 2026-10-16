@@ -443,12 +443,17 @@ Reset Token 만료 여부 확인
   두 기능의 이메일 cooldown은 기본 60초다. 인증번호 재전송 cooldown 오류는 기존
   EMAIL_VERIFICATION_COOLDOWN(429)을 유지한다. 모든 auth 메일 합계는 기본 100회/3600초다.
 - 제한 응답은 기존 ApiResponse envelope와 Retry-After(초)를 사용한다. 정상 성공 경로/DTO/HTTP 200은 유지한다.
-  이메일 bucket은 대소문자를 통합하며 IP는 직접 연결 주소 또는 명시된 신뢰 프록시 체인에서 얻는다.
+  로그인·재설정의 기존 회원 제한은 DB에서 조회한 user_id로 통합한다. 비등록 계정 및 가입 전 인증은
+  각각 USER.school_email 및 EMAIL_VERIFICATION.email과 같은 Collation의 DB UNIQUE 식별자로 통합한다.
+  대소문자·악센트·Unicode 변형은 해당 DB가 동일 이메일로 비교하는 경우에만 같은 제한을 공유한다.
+  Java에서 임의 정규화하거나 이메일 입력 정책/기존 Collation을 바꾸지 않는다. IP는 직접 연결 주소 또는 명시된 신뢰 프록시 체인에서 얻는다.
 - 재설정은 존재하지 않거나 비활성인 계정에도 기존 sent=true를 반환하며 동일 요청/cooldown 제한을 적용한다.
   실제 메일이 필요한 계정만 전체 메일 quota를 소비한다. 기존 SMTP 500 응답은 유지한다.
   비등록 계정의 응답 시간과 SMTP 장애 응답까지 완전히 동일하게 만드는 정책은 도입하지 않았다.
 - 제한 예약·실패 갱신은 독립 트랜잭션으로 남는다. SMTP 실패 시 인증/재설정 token 저장은 롤백하지만,
   요청/cooldown/발송 quota는 환불하지 않는다. 일부 전송 후 타임아웃의 중복 발송과 실패 반복 악용을 방지한다.
+  JDBC 제한 저장의 MySQL 1213/1205만 설정된 횟수 내에서 새 트랜잭션으로 재시도한다.
+  인증 업무와 SMTP는 자동 재실행하지 않으며, DB 오류를 정상 제한 429로 변환하지 않는다.
 - SMTP 로그는 authentication/connection/timeout/configuration/other 분류와 서버 생성 requestId만 포함한다.
   auth 응답의 X-Request-ID로 추적하며 원문 예외/수신자/본문/비밀번호/코드/토큰을 기록하지 않는다.
 - 프론트 auth 요청은 기본 15초, 메일 요청은 30초다. 네트워크/시간 초과는 처리 결과가 불확실함을 안내하고

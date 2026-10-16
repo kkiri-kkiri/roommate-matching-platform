@@ -87,7 +87,7 @@ public class EmailVerificationService {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
 		protection.send(request.email(), ip, resendIntervalSeconds);
-		if (userRepository.existsBySchoolEmail(request.email())) {
+		if (transactions.readOnly(() -> userRepository.existsBySchoolEmail(request.email()))) {
 			throw new CustomException(ErrorCode.EMAIL_ALREADY_REGISTERED);
 		}
 		protection.mail();
@@ -96,11 +96,15 @@ public class EmailVerificationService {
 
 	private EmailVerificationSendResponse sendInTransaction(EmailVerificationSendRequest request) {
 		EmailVerificationPurpose purpose = EmailVerificationPurpose.valueOf(request.purpose());
+		// First DB read in this transaction: serialize only this DB-equivalent email, including first send.
+		// The limiter committed the identity already; a missing identity fails closed.
+		repository.lockVerificationEmailIdentity(request.email())
+				.orElseThrow(() -> new IllegalStateException("Verification email identity is missing"));
 		if (purpose == EmailVerificationPurpose.SIGNUP
 				&& userRepository.existsBySchoolEmail(request.email())) {
 			throw new CustomException(ErrorCode.EMAIL_ALREADY_REGISTERED);
 		}
-		var latest = repository.findFirstByEmailAndPurposeOrderByCreatedAtDescVerificationIdDesc(
+		var latest = repository.findTopByEmailAndPurposeOrderByCreatedAtDescVerificationIdDesc(
 				request.email(), purpose);
 		LocalDateTime now = LocalDateTime.now(clock);
 		if (latest.isPresent() && latest.get().getCreatedAt().plusSeconds(resendIntervalSeconds).isAfter(now)) {

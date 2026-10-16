@@ -24,13 +24,39 @@
 user 안정화에는 Entity 스키마 변경이 없었다. auth 보호에는 신규 AUTH_LIMIT_BUCKET 테이블만 추가했으며,
 [auth 수동 마이그레이션](migrations/20261014_auth_limits.md)을 먼저 따른다. 운영에서 자동 적용하지 않는다.
 
+20261015 이메일 동치 식별·인증 조회 인덱스 수정은
+[별도 수동 마이그레이션](migrations/20261015_auth_email_identity_indexes.md)을 추가로 따른다.
+AUTH_EMAIL_IDENTITY와 EMAIL_VERIFICATION 인덱스 2개가 필요하며 기존 이메일 Collation/입력 정책은 유지한다.
+운영 적용은 이번 테스트 DB 검증에 포함하지 않는다.
+
 ## Auth 보호 배포 조건
 
 - Redis를 추가하지 않는다. 모든 인스턴스가 같은 MySQL primary/schema의 AUTH_LIMIT_BUCKET을 사용한다.
   PK upsert 후 정렬된 행 잠금으로 quota 검사/예약/완료를 갱신한다. denied 요청의 신규 bucket은 롤백한다.
-  JDBC 갱신은 독립 REQUIRES_NEW/READ_COMMITTED 트랜잭션이며 BCrypt/SMTP 중에는 제한 행 잠금을 잡지 않는다.
+  JDBC 갱신은 독립 REQUIRES_NEW/READ_COMMITTED 트랜잭션이며 BCrypt/SMTP 중에는 AUTH_LIMIT_BUCKET 잠금을 잡지 않는다.
   제한 DB 장애는 검증을 우회하지 않고 오류로 종료한다. 업무 트랜잭션이 실패해도 실패/요청 기록은 남는다.
+- 기존 회원의 로그인·재설정은 DB에서 조회한 user_id를 해시해 제한을 공유한다. 가입 전 인증과 비등록 계정은
+  각 원본 이메일 컬럼의 비교 규칙을 그대로 복사한 AUTH_EMAIL_IDENTITY UNIQUE 식별자로 제한한다.
+  두 원본 컬럼의 Collation은 서로 달라도 된다. MySQL 시작 시 해당 식별 컬럼과의 타입/문자셋/Collation 불일치는 거절한다.
+  이 테이블은 이메일 원문을 저장하므로 DB 접근/백업에서도 개인정보로 취급한다. API/로그/bucket key에는 원문을 내보내지 않는다.
+  자동 정리는 없고, 활성 제한이 남아 있는 식별 행을 삭제하거나 배포 시 초기화하지 않는다.
+- 제한 키 체계가 바뀌므로 이전 이메일 문자열 기반 bucket을 새 식별자 bucket으로 자동 이전하지 않는다.
+  혼합 버전 요청을 차단하고 배포 전환 동안 외부 제한을 유지해야 한다. 기록 삭제나 자동 reset으로 전환하지 않는다.
 - 모든 인스턴스의 제한 설정과 DB UTC 세션을 통일한다. DB 시각으로 window/block을 판정한다.
+  제한 저장은 정렬된 PK bulk upsert/잠금 조회로 SQL 왕복을 줄인다. 기존 이메일 식별자는 변경 없이 읽고,
+  최초 생성만 UNIQUE upsert하며 식별 생성과 quota 예약의 원자적 롤백을 유지한다.
+  JDBC 전용 제한 트랜잭션은 JDBC transaction manager를 사용한다. 먼저 기존 JPA 업무 자원을 suspend하여
+  독립 JDBC commit이 외부 업무를 커밋하지 않게 하며 종료 후 원래 업무를 resume한다.
+  이메일 확인의 registered 값은 같은 제한 예약에서 조회한 회원 식별 결과를 사용하여 중복 JPA 조회/대여를 피한다.
+  NOT_SUPPORTED Auth 진입점에서 필요한 JPA 조회는 짧은 명시적 읽기 트랜잭션으로 종료한다.
+  비트랜잭션 JPA 조회가 연결을 보유한 채 다음 REQUIRES_NEW 연결을 기다리는 풀 잠금을 피하고,
+  BCrypt/다음 quota 예약/메일 발송 전에 조회 연결을 반환한다. 풀 크기나 대여/행 잠금 timeout을 늘리는 해결책이 아니다.
+  `auth.database-retry`는 이 JDBC 제한 트랜잭션의 MySQL 1213/1205에만 적용한다.
+  기본값은 `max-attempts=3`(최초 포함), `initial-delay-millis=10`, `max-delay-millis=100`, `jitter-millis=10`이다.
+  각 실패 트랜잭션을 완전히 종료한 뒤 연결을 보유하지 않고 지수 backoff+jitter 후 새 REQUIRES_NEW 트랜잭션을 시작한다.
+  최대 시도 횟수는 1~5다. 연결 실패·알 수 없는 commit 결과·업무/SMTP 예외는 자동 재시도하지 않는다.
+  재시도 소진 시 기존 DB 오류 처리를 유지하며 오류를 한도 초과 429로 바꾸지 않는다.
+  위 값을 Spring property 또는 JVM system property로 재정의할 수 있으며 모든 인스턴스에서 동일하게 설정한다.
   MySQL Connector/J 설정 `connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true`와 실제
   `@@session.time_zone`을 확인한다. 기존 DATETIME/시간대에 미치는 영향도 격리 환경에서 대조한다.
 - server.forward-headers-strategy=NONE을 유지한다. 기본은 servlet remote address만 사용한다.
@@ -46,6 +72,10 @@ user 안정화에는 Entity 스키마 변경이 없었다. auth 보호에는 신
   비정상 종료의 예약은 실패 window가 끝나면 복구되므로 최대 로그인 600초·인증 300초 동안 접근이 제한될 수 있다.
   60초 로그인 차단은 고의 계정 잠금 영향을 짧게 제한한다. 분산 공격에 의한 반복 방해를 완전히 제거하는 CAPTCHA/
   위험 기반 인증은 추가하지 않았으며 운영 모니터링/프록시 보호가 필요하다.
+  인증번호 발송 업무는 이미 예약에서 커밋한 AUTH_EMAIL_IDENTITY의 기존 UNIQUE 행을 먼저 잠근다.
+  첫 consistent read 전에 이 대상별 mutex를 획득하고, 발송의 최신 이력 조회는 이 mutex 안에서 수행해
+  없는 이력의 FOR UPDATE 범위/GAP 잠금 후 INSERT 경합을 피한다. 검증/토큰 소비의 행 잠금은 유지한다.
+  SMTP를 포함한 이 업무 전체는 재시도하지 않는다. 새 테이블/인덱스/격리 수준 변경은 필요하지 않다.
 - Auth 메일 지표 `auth.mail.delivery`의 kind/result/reason은 고정 값이며 recipient 등의 고카디널리티 태그가 없다.
   기본 SimpleMeterRegistry는 인스턴스별 메모리 지표다(보안 제한 저장소와 무관).
   운영 집계/알림은 기존 관측 시스템의 MeterRegistry/exporter 또는 안전한 구조화 로그 수집에 연결해야 한다.
@@ -89,5 +119,6 @@ DB/SMTP 장애 및 응답 유실, connection pool 포화, ingress IP 체인은 �
 - `node tools/sync-contract-docs.cjs --check`는 문서에 연결된 REST 선언·record DTO 필드/타입·Entity 컬럼 선언 및 ErrorCode 표를 읽기 전용으로 대조한다. 클래스 DTO의 동작, DB의 물리 제약과 서비스 검증 전체를 대체하지 않는다.
 - H2는 MySQL 잠금·교착 상태·실행계획·물리 DDL 검증을 대체하지 않는다. MySQL 테스트는 URL·대상 schema·일회용 데이터가 확인된 별도 환경에서만 수행하고 기본 테스트의 안전 검사를 완화하지 않는다.
 - 격리 MySQL에서 비밀번호 변경/재설정/관리자 정지의 두 커밋 순서, 동시 닉네임 UNIQUE 충돌·전체 롤백, USER → TOKEN 잠금 순서와 잠금 시간 제한을 확인한다. 잠금 실패는 409 ACCOUNT_UPDATE_CONFLICT로 응답한다. JPA 잠금 타임아웃 힌트 지원 여부와 DB의 실제 lock wait timeout을 함께 확인한다.
+- 계정 쓰기는 공통 `findByIdForAccountUpdate`를 변경 전에 호출한다. 초기 참조는 DB snapshot을 만들지 않고, 첫 `refresh(PESSIMISTIC_WRITE)`가 잠금과 최신 값 재적재를 함께 수행한다. 같은 트랜잭션의 잠금 재호출은 미반영 변경을 유지한다. Hibernate/DB 변경 시 실제 SQL과 REPEATABLE-READ 회귀를 [User MySQL 도구](tools/user-mysql-concurrency/RUNBOOK.md)로 확인한다. 격리 MySQL 회귀 통과는 운영 데이터·DDL·실제 배포 검증을 대신하지 않는다.
 - 매칭 갱신은 최대 2개 작업 스레드·100개 대기 작업으로 제한된다. 큐 포화·계산 실패·프로세스 종료 후에는 기존 matching 조회가 필요한 결과를 다시 계산한다. 대표 회원 수에서 저장 응답 시간, 큐 포화 로그, 배치당 잠금 시간, 추천 조회 시간을 측정한다.
 - 운영 API 주소·CORS origin·HTTPS/JWT 키·SMTP 연결·시간대도 실제 배포 환경에서 확인한다. 비밀번호 변경 후 JWT/기존 재설정 토큰 폐기 정책은 이번 변경에서 새로 도입하지 않았다.

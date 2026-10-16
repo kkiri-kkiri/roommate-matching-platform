@@ -2184,11 +2184,30 @@ FACULTY
 DORMITORY
 └─ 1:N USER_PROFILE
 
-## 10. 현재 Entity 선언 상세 (2026-10-14)
+## 10. 현재 Entity 선언 상세 (2026-10-15)
 
-대조 범위: 27개 Entity / 215개 컬럼.
+대조 범위: 29개 Entity / 226개 컬럼.
 
-다음은 소스 선언 대조 결과로, 운영 DDL 검증 결과가 아니다. `NOT NULL`/`NULL`은 nullable 선언(생략 시 true), PK는 NOT NULL을 뜻한다. 모든 PK는 `Long`/`GenerationType.IDENTITY`; MySQL 실제 AUTO_INCREMENT 설정은 별도 확인한다. 자료형의 `columnDefinition`은 그대로 표기하고 미지정 타입은 Java 기본 매핑 기준이며 dialect/DDL에 따라 달라질 수 있다. `DEFAULT 없음`은 명시 선언이 없다는 뜻이다. 생성자·필드 초기화·@PrePersist 시각은 DB DEFAULT가 아니다.
+다음은 소스 선언 대조 결과로, 운영 DDL 검증 결과가 아니다. `NOT NULL`/`NULL`은 nullable 선언(생략 시 true), PK는 NOT NULL을 뜻한다. AUTH_LIMIT_BUCKET의 String PK를 제외한 PK는 `Long`/`GenerationType.IDENTITY`; MySQL 실제 AUTO_INCREMENT 설정은 별도 확인한다. 자료형의 `columnDefinition`은 그대로 표기하고 미지정 타입은 Java 기본 매핑 기준이며 dialect/DDL에 따라 달라질 수 있다. `DEFAULT 없음`은 명시 선언이 없다는 뜻이다. 생성자·필드 초기화·@PrePersist 시각은 DB DEFAULT가 아니다.
+
+### AUTH_EMAIL_IDENTITY
+
+근거: [AuthEmailIdentity.java](src/main/java/com/kkirikkiri/auth/entity/AuthEmailIdentity.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| identity_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| account_email | VARCHAR(100) | NULL | UNIQUE; DEFAULT 없음 |
+| verification_email | VARCHAR(100) | NULL | UNIQUE; DEFAULT 없음 |
+
+기존 회원의 로그인·재설정 제한은 실제 user_id를 사용한다. 비등록 계정과 가입 전 인증의 이메일
+동치 식별자는 이 테이블의 서로 독립된 UNIQUE 컬럼으로 결정한다. 수동 DDL은 account_email에
+USER.school_email의 문자셋/Collation, verification_email에 EMAIL_VERIFICATION.email의 문자셋/Collation을 복사한다.
+기존 이메일 정책과 Collation은 변경하지 않는다. MySQL에서는 시작 시 두 쌍의 타입·문자셋·Collation 불일치를 거절한다.
+한 행에는 대상에 해당하는 이메일 컬럼 하나만 입력한다. 이메일 원문은 이 테이블에 보존되므로 개인정보로 취급하며
+API/로그/제한 키에 노출하지 않는다. 이메일 식별 생성과 제한 예약은 같은 독립 트랜잭션이며 거절 시 함께 롤백한다.
+보존 기간은 미확정으로 자동 정리하지 않는다. 활성 bucket이 참조하는 식별자를 삭제·재생성하면 제한이 초기화되므로
+배포 시 비우지 않는다. 운영 절차는 [20261015 마이그레이션](migrations/20261015_auth_email_identity_indexes.md)을 따른다.
 
 ### AUTH_LIMIT_BUCKET
 
@@ -2205,12 +2224,13 @@ DORMITORY
 | blocked_until | BIGINT | NOT NULL | DEFAULT 없음 |
 | updated_at | BIGINT | NOT NULL | DEFAULT 없음 |
 
-bucket_key는 목적/차원/이메일 또는 정규화 IP를 SHA-256한 값이다. 원문 이메일/IP/인증정보와 USER FK는 없다.
+bucket_key는 목적/차원/회원 또는 이메일 동치 식별자, 혹은 정규화 IP를 SHA-256한 값이다. 원문 이메일/IP/인증정보와 USER FK는 없다.
 시간은 DB 시각의 epoch milliseconds다. 세대와 window 시작 시각은 늦은 요청 완료가 새 window를 덮어쓰지 않게 한다.
 PRIMARY KEY 최초 upsert와 FOR UPDATE를 정렬된 키 순서로 수행하고, 허용된 요청만 원자적으로 예약한다.
 in_flight는 검증 실패 가능성을 미리 예약하며 프로세스 종료로 남은 예약은 실패 window 종료 후 복구된다.
 수동 MySQL DDL에는 updated_at 정리용 인덱스가 있다. 자동 정리/초기화는 없다.
-기존 USER/EMAIL_VERIFICATION/PASSWORD_RESET_TOKEN 스키마는 변경하지 않았다.
+20261014 변경에서는 기존 USER/EMAIL_VERIFICATION/PASSWORD_RESET_TOKEN 스키마를 변경하지 않았다.
+20261015 변경은 AUTH_EMAIL_IDENTITY와 EMAIL_VERIFICATION 조회 인덱스 2개를 추가한다.
 
 ### EMAIL_VERIFICATION
 
@@ -2231,6 +2251,11 @@ in_flight는 검증 실패 가능성을 미리 예약하며 프로세스 종료�
 | created_at | DATETIME | NOT NULL | DEFAULT 없음 |
 
 복합 UNIQUE: 명시 선언 없음.
+
+조회 인덱스: `idx_email_verification_latest(email, purpose, created_at DESC, verification_id DESC)`,
+`idx_email_verification_token(email, purpose, verification_token_hash)`.
+최신 인증·토큰 소비의 PESSIMISTIC_WRITE는 유지한다. 최신 조회의 정렬과 WHERE 선두 컬럼을 인덱스로 지원해
+무관한 이메일의 행까지 스캔하며 잠그는 간섭을 줄인다. 실제 MySQL 실행계획·잠금 범위는 별도 검증한다.
 
 ### PASSWORD_RESET_TOKEN
 
