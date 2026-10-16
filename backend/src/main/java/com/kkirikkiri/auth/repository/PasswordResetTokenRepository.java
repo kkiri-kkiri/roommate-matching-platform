@@ -6,10 +6,16 @@ import jakarta.persistence.LockModeType;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.kkirikkiri.auth.entity.PasswordResetToken;
 
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
+
+    /** Read only the owner ID; account writes always lock USER before TOKEN. */
+    @Query("select t.user.userId from PasswordResetToken t where t.tokenHash = :hash")
+    Optional<Long> findUserIdByTokenHash(@Param("hash") String tokenHash);
 
 	/**
 	 * 토큰 해시로 조회하고 동일 토큰의 동시 사용을 막기 위해 비관적 쓰기 잠금을 획득한다.

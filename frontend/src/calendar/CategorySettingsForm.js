@@ -8,6 +8,7 @@ export default function CategorySettingsForm({ initialCategories, events, onSave
   // Keep draft changes here so dragging a color does not render the calendar.
   const [draft, setDraft] = useState(() => initialCategories.map((item) => ({ ...item })));
   const [error, setError] = useState("");
+  const [deletedIds, setDeletedIds] = useState([]);
   const [saving, setSaving] = useState(false);
   const sequence = useRef(0);
 
@@ -29,7 +30,7 @@ export default function CategorySettingsForm({ initialCategories, events, onSave
     setSaving(true);
     setError("");
     try {
-      await onSave(next);
+      await onSave(next, deletedIds);
       savingRef.current = false;
       onDismiss();
     } catch (error) {
@@ -46,7 +47,7 @@ export default function CategorySettingsForm({ initialCategories, events, onSave
     <S.Form onSubmit={saveSettings}>
       <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
         <S.SettingsList>
-          {draft.map(({ id, label, color }) => {
+          {draft.map(({ id, serverId, label, color, enabled }) => {
             const fixed = FIXED_CATEGORY_IDS.includes(id);
             const inUse = events.some((event) => event.category === id);
             return (
@@ -56,6 +57,11 @@ export default function CategorySettingsForm({ initialCategories, events, onSave
                   <S.Input id={`category-name-${id}`} value={label} readOnly={fixed} required maxLength={30}
                     onChange={(event) => updateCategory(id, "label", event.target.value)} />
                   {!fixed && inUse && <S.FormHint>사용 중인 카테고리는 삭제할 수 없어요.</S.FormHint>}
+                  <label htmlFor={`category-enabled-${id}`}>
+                    <input id={`category-enabled-${id}`} type="checkbox" checked={enabled !== false}
+                      aria-label={`${label || "새 카테고리"} 표시`}
+                      onChange={(event) => updateCategory(id, "enabled", event.target.checked)} /> 표시
+                  </label>
                 </S.Field>
                 <S.Field>
                   <label htmlFor={`category-color-${id}`}>색상</label>
@@ -66,6 +72,7 @@ export default function CategorySettingsForm({ initialCategories, events, onSave
                 {!fixed && <S.IconButton type="button" aria-label={`${label || "새 카테고리"} 삭제`} disabled={inUse}
                   onClick={() => {
                     if (FIXED_CATEGORY_IDS.includes(id) || events.some((event) => event.category === id)) return;
+                    if (serverId) setDeletedIds((current) => [...current, serverId]);
                     setDraft((current) => current.filter((item) => item.id !== id));
                     setError("");
                   }}><Trash2 size={18} aria-hidden="true" /></S.IconButton>}

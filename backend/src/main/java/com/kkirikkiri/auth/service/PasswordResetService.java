@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import com.kkirikkiri.auth.dto.PasswordResetConfirmRequest;
 import com.kkirikkiri.auth.dto.PasswordResetRequest;
@@ -37,6 +38,8 @@ public class PasswordResetService {
 	private final PasswordResetMailSender mailSender;
 	private final PasswordEncoder passwordEncoder;
 	private final Validator validator;
+	private final AuthProtectionService protection;
+	private final AuthTransactions transactions;
 	private final long tokenExpirationSeconds;
 	private final Clock clock;
 	private final SecureRandom random = new SecureRandom();
@@ -44,14 +47,15 @@ public class PasswordResetService {
 	@Autowired
 	public PasswordResetService(UserRepository userRepository, PasswordResetTokenRepository tokenRepository,
 			PasswordResetMailSender mailSender, PasswordEncoder passwordEncoder, Validator validator,
+			AuthProtectionService protection, AuthTransactions transactions,
 			@Value("${auth.password-reset.token-expiration-seconds:300}") long tokenExpirationSeconds) {
-		this(userRepository, tokenRepository, mailSender, passwordEncoder, validator, tokenExpirationSeconds,
+		this(userRepository, tokenRepository, mailSender, passwordEncoder, validator, protection, transactions, tokenExpirationSeconds,
 				Clock.system(ZoneId.of("Asia/Seoul")));
 	}
 
 	PasswordResetService(UserRepository userRepository, PasswordResetTokenRepository tokenRepository,
 			PasswordResetMailSender mailSender, PasswordEncoder passwordEncoder, Validator validator,
-			long tokenExpirationSeconds, Clock clock) {
+			AuthProtectionService protection, AuthTransactions transactions, long tokenExpirationSeconds, Clock clock) {
 		if (tokenExpirationSeconds <= 0) {
 			throw new IllegalArgumentException("비밀번호 재설정 토큰 만료시간은 양수여야 합니다.");
 		}
@@ -60,13 +64,25 @@ public class PasswordResetService {
 		this.mailSender = mailSender;
 		this.passwordEncoder = passwordEncoder;
 		this.validator = validator;
+		this.protection = protection;
+		this.transactions = transactions;
 		this.tokenExpirationSeconds = tokenExpirationSeconds;
 		this.clock = clock;
 	}
 
-	@Transactional
-	public PasswordResetResponse requestPasswordReset(PasswordResetRequest request) {
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public PasswordResetResponse requestPasswordReset(PasswordResetRequest request, String ip) {
 		validateRequest(request);
+		protection.reset(request.email(), ip);
+		if (transactions.readOnly(() -> userRepository.findBySchoolEmail(request.email())
+				.filter(user -> user.getStatus() == UserStatus.ACTIVE).isEmpty())) {
+			return new PasswordResetResponse(true);
+		}
+		protection.mail();
+		return transactions.execute(() -> requestInTransaction(request));
+	}
+
+	private PasswordResetResponse requestInTransaction(PasswordResetRequest request) {
 		var user = userRepository.findBySchoolEmail(request.email())
 				.filter(value -> value.getStatus() == UserStatus.ACTIVE);
 		// 계정 존재 여부를 응답으로 구분하지 않는다.
@@ -86,7 +102,12 @@ public class PasswordResetService {
 	@Transactional
 	public void resetPassword(PasswordResetConfirmRequest request) {
 		validateRequest(request);
-		PasswordResetToken token = tokenRepository.findByTokenHash(hash(request.resetToken()))
+        String tokenHash = hash(request.resetToken());
+        Long userId = tokenRepository.findUserIdByTokenHash(tokenHash)
+                .orElseThrow(() -> new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_INVALID));
+        User user = userRepository.findByIdForAccountUpdate(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_INVALID));
+		PasswordResetToken token = tokenRepository.findByTokenHash(tokenHash)
 				.orElseThrow(() -> new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_INVALID));
 		LocalDateTime now = LocalDateTime.now(clock);
 		if (token.isUsed()) {
@@ -95,7 +116,6 @@ public class PasswordResetService {
 		if (token.isExpired(now)) {
 			throw new CustomException(ErrorCode.PASSWORD_RESET_TOKEN_EXPIRED);
 		}
-		User user = token.getUser();
 		if (user.getStatus() != UserStatus.ACTIVE) {
 			throw new CustomException(ErrorCode.PASSWORD_RESET_ACCOUNT_INACTIVE);
 		}

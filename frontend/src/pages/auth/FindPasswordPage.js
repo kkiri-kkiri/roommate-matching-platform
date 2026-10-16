@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ArrowLeft,
   CircleCheck,
@@ -26,6 +26,7 @@ function FindPasswordPage() {
   const [lookupError, setLookupError] = useState("");
   const [resetToken, setResetToken] = useState("");
   const [pending, setPending] = useState(false);
+  const inFlight = useRef(false);
   const [stage, setStage] = useState("lookup");
   const [newPassword, setNewPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -47,7 +48,7 @@ function FindPasswordPage() {
 
   const handleEmailSubmit = async (event) => {
     event.preventDefault();
-    if (pending) return;
+    if (inFlight.current) return;
     const emailLocalPart = email.trim();
     if (!emailLocalPart) {
       window.alert("이메일을 입력해주세요.");
@@ -58,6 +59,7 @@ function FindPasswordPage() {
       return;
     }
 
+    inFlight.current = true;
     setPending(true);
     setLookupError("");
     try {
@@ -66,13 +68,14 @@ function FindPasswordPage() {
     } catch (error) {
       setLookupError(error.message);
     } finally {
+      inFlight.current = false;
       setPending(false);
     }
   };
 
   const handleResetSubmit = async (event) => {
     event.preventDefault();
-    if (pending) return;
+    if (inFlight.current) return;
 
     if (!resetToken.trim()) {
       window.alert("비밀번호 재설정 토큰을 입력해 주세요.");
@@ -89,6 +92,7 @@ function FindPasswordPage() {
       return;
     }
 
+    inFlight.current = true;
     setPending(true);
     try {
       await confirmPasswordReset(
@@ -103,6 +107,7 @@ function FindPasswordPage() {
     } catch (error) {
       window.alert(error.message);
     } finally {
+      inFlight.current = false;
       setPending(false);
     }
   };

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-@Profile("local")
+@Profile("local & !prod & !test")
 @RequiredArgsConstructor
 public class DevDataInitializer implements ApplicationRunner {
 

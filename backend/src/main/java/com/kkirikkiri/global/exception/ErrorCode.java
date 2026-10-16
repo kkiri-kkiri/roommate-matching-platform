@@ -14,6 +14,7 @@ public enum ErrorCode {
 	PASSWORD_RESET_TOKEN_ALREADY_USED(HttpStatus.BAD_REQUEST, "이미 사용된 재설정 토큰입니다. 이메일을 다시 요청해 주세요."),
 	PASSWORD_RESET_ACCOUNT_INACTIVE(HttpStatus.BAD_REQUEST, "계정이 활성 상태가 아니어서 비밀번호를 변경할 수 없습니다."),
 	VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "입력값을 확인해 주세요."),
+	AUTH_REQUEST_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요."),
 	EMAIL_VERIFICATION_COOLDOWN(HttpStatus.TOO_MANY_REQUESTS, "인증번호는 잠시 후 다시 요청해 주세요."),
 	EMAIL_VERIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, "먼저 인증번호를 요청해 주세요."),
 	EMAIL_VERIFICATION_INVALID(HttpStatus.BAD_REQUEST, "인증번호가 올바르지 않습니다."),
@@ -26,6 +27,7 @@ public enum ErrorCode {
 	FACULTY_NOT_FOUND(HttpStatus.BAD_REQUEST, "선택한 학부를 사용할 수 없습니다. 다시 선택해 주세요."),
 	MAJOR_NOT_FOUND(HttpStatus.BAD_REQUEST, "선택한 전공을 사용할 수 없습니다. 다시 선택해 주세요."),
 	ACCOUNT_SAVE_CONFLICT(HttpStatus.CONFLICT, "입력한 회원정보가 이미 사용 중입니다. 다른 값으로 시도해 주세요."),
+    ACCOUNT_UPDATE_CONFLICT(HttpStatus.CONFLICT, "다른 변경 요청을 처리 중입니다. 잠시 후 다시 시도해 주세요."),
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.");
 
 	private final HttpStatus status;

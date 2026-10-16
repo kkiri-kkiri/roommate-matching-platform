@@ -26,6 +26,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(AuthRateLimitException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthRateLimit(AuthRateLimitException exception) {
+        return ResponseEntity.status(exception.getErrorCode().getStatus())
+            .header(HttpHeaders.RETRY_AFTER, Long.toString(exception.getRetryAfterSeconds()))
+            .body(ApiResponse.failure(exception.getErrorCode()));
+    }
+
 	@ExceptionHandler(CustomException.class)
 	public ResponseEntity<ApiResponse<Void>> handleCustomException(CustomException exception) {
 		ErrorCode errorCode = exception.getErrorCode();
@@ -69,6 +76,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return super.handleExceptionInternal(exception, response, headers, status, request);
 	}
 
+    @ExceptionHandler({org.springframework.dao.ConcurrencyFailureException.class,
+            jakarta.persistence.PessimisticLockException.class, jakarta.persistence.LockTimeoutException.class})
+    public ResponseEntity<ApiResponse<Void>> handleConcurrentUpdate(Exception exception) {
+        return ResponseEntity.status(ErrorCode.ACCOUNT_UPDATE_CONFLICT.getStatus())
+                .body(ApiResponse.failure(ErrorCode.ACCOUNT_UPDATE_CONFLICT));
+    }
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiResponse<Void>> handleUnexpectedException(Exception exception) {
 		log.error("Unexpected request processing failure", exception);

@@ -76,6 +76,11 @@ school_email에는 UNIQUE 제약을 적용한다.
 
 비밀번호는 평문이 아닌 BCrypt 등의 단방향 해시 결과만 저장한다.
 
+USER의 비밀번호 변경·재설정·관리자 상태 변경은 같은 USER 행의 PESSIMISTIC_WRITE 잠금을 사용한다.
+잠금 획득 후 관리 엔티티를 refresh하여 이전 조회의 상태·비밀번호를 덮어쓰지 않는다.
+재설정은 USER → PASSWORD_RESET_TOKEN 순으로 잠그며 스키마/버전 컬럼 추가는 없다.
+비밀번호 입력은 UTF-8 72바이트 이하로 검증한다. 저장된 해시 컬럼 길이는 변경하지 않는다.
+
 관리자는 별도 관리자 테이블을 생성하지 않고 role = ADMIN으로 구분한다.
 
 사용자 프로필 (USER_PROFILE)
@@ -1015,6 +1020,8 @@ API는 계산 불가 상태를 matchScore: null로 표현한다.
 관련 USER 행을 user_id ASC로 잠근 뒤 최신 입력을 일괄 조회한다. survey 저장과 계산 입력 프로필 변경도
 같은 USER 잠금을 사용한다. 동일 쌍의 생성·갱신을 직렬화하고 일시적 잠금 실패는 최대 3회 시도한다.
 입력 저장 중에는 상대 USER 잠금을 추가로 획득하지 않는다.
+커밋 후 이벤트는 제한된 전용 큐에서 비동기로 처리한다. 입력 저장 응답은 계산을 기다리지 않는다.
+ID 기반 페이지로 상대 100명씩 조회하고 각 배치의 별도 트랜잭션에서 USER 최대 101행을 잠근다.
 커밋 후 처리 실패는 로그에 남기고 다음 matching 조회에서 필요한 범위의 결과를 다시 준비한다.
 전체·관심 목록은 페이지 대상, 상세는 한 쌍, 추천은 요청자의 후보 범위만 계산하며 전체 사용자 쌍을 재계산하지 않는다.
 
@@ -2027,7 +2034,7 @@ nullable
 
 실행 완료 시각
 
-관리자 상태 API는 이 테이블을 조회한다. 그러나 현재 CalendarCrawlingService/Scheduler에는 실행 이력 저장 호출이 없으므로 실제 실행의 RUNNING/COMPLETED/FAILED가 기록되지 않는다. 미해결 #14 (High): 시작 이력, 신규 저장 건수, 완료 시각, 일정 트랜잭션 실패와 독립된 실패 이력 저장은 코드·테스트 보완이 필요하다. 이력이 없으면 API의 status/lastRunAt/lastCompletedAt/lastFailure는 null, recentCollectedCount는 0이다. totalCollectedCount는 CALENDAR_EVENT의 실제 수집 일정 집계다.
+관리자 상태 API는 이 테이블을 조회한다. CalendarCrawlingService는 실행 시작을 독립 커밋하여 RUNNING으로 기록한다. 일정과 COMPLETED·신규 저장 건수·완료 시각은 같은 트랜잭션에서 커밋한다. 실패 시 일정은 전체 롤백하고 별도 트랜잭션으로 FAILED/0건을 기록한다. error_message에는 안전한 FETCH/STORE 분류 코드만 저장한다. 각 실행은 별도 ID를 사용하며 기존 SCHOOL 행 잠금으로 일정 중복 저장을 방지한다. 프로세스 종료나 이력 DB 장애로 남은 RUNNING은 자동 실패 처리하지 않는다([운영 절차](DEPLOYMENT.md)). 이력이 없으면 API의 status/lastRunAt/lastCompletedAt/lastFailure는 null, recentCollectedCount는 0이다. totalCollectedCount는 CALENDAR_EVENT의 실제 수집 일정 집계다.
 
 수집된 실제 일정 데이터는 CALENDAR_EVENT에 저장한다.
 
@@ -2113,7 +2120,7 @@ CALENDAR_CATEGORY와 USER의 사용자별 표시 설정은 CALENDAR_CATEGORY_SET
 
 학교·기숙사 크롤링 일정은 CALENDAR_EVENT.owner_user_id = NULL로 저장하여 전체 사용자에게 제공한다.
 
-SCHEDULE_CRAWL_RUN은 상태 조회 모델이지만 현재 수집기의 이력 저장이 빠져 있다(#14). DORMITORY 자동 수집 역시 미구현이다.
+SCHEDULE_CRAWL_RUN은 학교 수집의 실행 이력을 저장하는 상태 조회 모델이다. DORMITORY 자동 수집은 미구현이다.
 
 개인·룸메찾기 일정은 해당 사용자의 owner_user_id를 저장한다.
 
@@ -2169,7 +2176,7 @@ CALENDAR_CATEGORY
 └─ 1:N CALENDAR_EVENT
 
 SCHEDULE_CRAWL_RUN
-└─ CALENDAR_EVENT와 직접 FK 관계 없음 (실행 요약 모델, 현재 저장 누락 #14)
+└─ CALENDAR_EVENT와 직접 FK 관계 없음 (실행별 상태·신규 저장 건수 요약 모델)
 
 FACULTY
 └─ 1:N MAJOR
@@ -2177,11 +2184,53 @@ FACULTY
 DORMITORY
 └─ 1:N USER_PROFILE
 
-## 10. 현재 Entity 선언 상세 (2026-10-14)
+## 10. 현재 Entity 선언 상세 (2026-10-15)
 
-대조 범위: 27개 Entity / 215개 컬럼.
+대조 범위: 29개 Entity / 226개 컬럼.
 
-다음은 소스 선언 대조 결과로, 운영 DDL 검증 결과가 아니다. `NOT NULL`/`NULL`은 nullable 선언(생략 시 true), PK는 NOT NULL을 뜻한다. 모든 PK는 `Long`/`GenerationType.IDENTITY`; MySQL 실제 AUTO_INCREMENT 설정은 별도 확인한다. 자료형의 `columnDefinition`은 그대로 표기하고 미지정 타입은 Java 기본 매핑 기준이며 dialect/DDL에 따라 달라질 수 있다. `DEFAULT 없음`은 명시 선언이 없다는 뜻이다. 생성자·필드 초기화·@PrePersist 시각은 DB DEFAULT가 아니다.
+다음은 소스 선언 대조 결과로, 운영 DDL 검증 결과가 아니다. `NOT NULL`/`NULL`은 nullable 선언(생략 시 true), PK는 NOT NULL을 뜻한다. AUTH_LIMIT_BUCKET의 String PK를 제외한 PK는 `Long`/`GenerationType.IDENTITY`; MySQL 실제 AUTO_INCREMENT 설정은 별도 확인한다. 자료형의 `columnDefinition`은 그대로 표기하고 미지정 타입은 Java 기본 매핑 기준이며 dialect/DDL에 따라 달라질 수 있다. `DEFAULT 없음`은 명시 선언이 없다는 뜻이다. 생성자·필드 초기화·@PrePersist 시각은 DB DEFAULT가 아니다.
+
+### AUTH_EMAIL_IDENTITY
+
+근거: [AuthEmailIdentity.java](src/main/java/com/kkirikkiri/auth/entity/AuthEmailIdentity.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| identity_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
+| account_email | VARCHAR(100) | NULL | UNIQUE; DEFAULT 없음 |
+| verification_email | VARCHAR(100) | NULL | UNIQUE; DEFAULT 없음 |
+
+기존 회원의 로그인·재설정 제한은 실제 user_id를 사용한다. 비등록 계정과 가입 전 인증의 이메일
+동치 식별자는 이 테이블의 서로 독립된 UNIQUE 컬럼으로 결정한다. 수동 DDL은 account_email에
+USER.school_email의 문자셋/Collation, verification_email에 EMAIL_VERIFICATION.email의 문자셋/Collation을 복사한다.
+기존 이메일 정책과 Collation은 변경하지 않는다. MySQL에서는 시작 시 두 쌍의 타입·문자셋·Collation 불일치를 거절한다.
+한 행에는 대상에 해당하는 이메일 컬럼 하나만 입력한다. 이메일 원문은 이 테이블에 보존되므로 개인정보로 취급하며
+API/로그/제한 키에 노출하지 않는다. 이메일 식별 생성과 제한 예약은 같은 독립 트랜잭션이며 거절 시 함께 롤백한다.
+보존 기간은 미확정으로 자동 정리하지 않는다. 활성 bucket이 참조하는 식별자를 삭제·재생성하면 제한이 초기화되므로
+배포 시 비우지 않는다. 운영 절차는 [20261015 마이그레이션](migrations/20261015_auth_email_identity_indexes.md)을 따른다.
+
+### AUTH_LIMIT_BUCKET
+
+근거: [AuthLimitBucket.java](src/main/java/com/kkirikkiri/auth/entity/AuthLimitBucket.java)
+
+| 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
+| --- | --- | --- | --- |
+| bucket_key | VARCHAR(64) | NOT NULL | PK; DEFAULT 없음 |
+| window_started_at | BIGINT | NOT NULL | DEFAULT 없음 |
+| generation | BIGINT | NOT NULL | DEFAULT 없음 |
+| request_count | INT | NOT NULL | DEFAULT 없음 |
+| failure_count | INT | NOT NULL | DEFAULT 없음 |
+| in_flight | INT | NOT NULL | DEFAULT 없음 |
+| blocked_until | BIGINT | NOT NULL | DEFAULT 없음 |
+| updated_at | BIGINT | NOT NULL | DEFAULT 없음 |
+
+bucket_key는 목적/차원/회원 또는 이메일 동치 식별자, 혹은 정규화 IP를 SHA-256한 값이다. 원문 이메일/IP/인증정보와 USER FK는 없다.
+시간은 DB 시각의 epoch milliseconds다. 세대와 window 시작 시각은 늦은 요청 완료가 새 window를 덮어쓰지 않게 한다.
+PRIMARY KEY 최초 upsert와 FOR UPDATE를 정렬된 키 순서로 수행하고, 허용된 요청만 원자적으로 예약한다.
+in_flight는 검증 실패 가능성을 미리 예약하며 프로세스 종료로 남은 예약은 실패 window 종료 후 복구된다.
+수동 MySQL DDL에는 updated_at 정리용 인덱스가 있다. 자동 정리/초기화는 없다.
+20261014 변경에서는 기존 USER/EMAIL_VERIFICATION/PASSWORD_RESET_TOKEN 스키마를 변경하지 않았다.
+20261015 변경은 AUTH_EMAIL_IDENTITY와 EMAIL_VERIFICATION 조회 인덱스 2개를 추가한다.
 
 ### EMAIL_VERIFICATION
 
@@ -2202,6 +2251,11 @@ DORMITORY
 | created_at | DATETIME | NOT NULL | DEFAULT 없음 |
 
 복합 UNIQUE: 명시 선언 없음.
+
+조회 인덱스: `idx_email_verification_latest(email, purpose, created_at DESC, verification_id DESC)`,
+`idx_email_verification_token(email, purpose, verification_token_hash)`.
+최신 인증·토큰 소비의 PESSIMISTIC_WRITE는 유지한다. 최신 조회의 정렬과 WHERE 선두 컬럼을 인덱스로 지원해
+무관한 이메일의 행까지 스캔하며 잠그는 간섭을 줄인다. 실제 MySQL 실행계획·잠금 범위는 별도 검증한다.
 
 ### PASSWORD_RESET_TOKEN
 
@@ -2253,6 +2307,12 @@ DORMITORY
 
 근거: [CalendarEvent.java](src/main/java/com/kkirikkiri/calendar/entity/CalendarEvent.java)
 
+비고유 인덱스: `idx_calendar_crawl_identity(source_type, source_name, title, start_date, end_date)`,
+`idx_calendar_period(end_date, start_date, owner_user_id, source_type)`.
+중복 확인의 동등 조건과 기간 조회를 지원한다. 공개/개인 소유권 조건과 기존 Collation/중복 방지 잠금은 유지한다.
+수동 적용: [20261016_calendar_time_indexes.sql](migrations/20261016_calendar_time_indexes.sql).
+DATE/TIME은 현지 일정 값, collected_at DATETIME은 서울 벽시계 값이며 직접 Java-time JDBC 매핑을 사용한다.
+
 | 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
 | --- | --- | --- | --- |
 | event_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
@@ -2275,6 +2335,9 @@ DORMITORY
 ### SCHEDULE_CRAWL_RUN
 
 근거: [ScheduleCrawlRun.java](src/main/java/com/kkirikkiri/calendar/entity/ScheduleCrawlRun.java)
+
+started_at/completed_at DATETIME은 서울 벽시계 값을 직접 JDBC로 저장·조회한다. 타입 변경·자동 과거 데이터 변환은 없다.
+CALENDAR_CATEGORY.created_at도 같은 정책을 사용한다. 기존 데이터의 작성 환경 확인 절차는 [DEPLOYMENT.md](DEPLOYMENT.md)를 따른다.
 
 | 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
 | --- | --- | --- | --- |
@@ -2663,15 +2726,17 @@ Enum은 `EnumType.STRING` 선언을 사용한다. 아래 Java 값 목록 자체�
 
 ### 제약·삭제 정책과 배포 검증 경계
 
-- Entity에는 명시적 @Index, @Check, @OnDelete, cascade, orphanRemoval이 없다. UNIQUE는 위 컬럼/복합 선언을 따르며 FK 보조 인덱스와 삭제·갱신 동작은 물리 DB에서 확인해야 한다. 기존 DB에 Java 선언을 추가한 사실만으로 제약이 이미 적용됐다고 판단하지 않는다.
+- CalendarEvent에는 위 비고유 @Index 2개가 있다. @Check, @OnDelete, cascade, orphanRemoval은 명시하지 않는다. UNIQUE는 위 컬럼/복합 선언을 따르며 FK 보조 인덱스와 삭제·갱신 동작은 물리 DB에서 확인해야 한다. 기존 DB에 Java 선언을 추가한 사실만으로 제약이 이미 적용됐다고 판단하지 않는다.
 - 사용자 탈퇴는 WITHDRAWN, 게시글·댓글 삭제는 DELETED 상태 변경이다. 현재 서비스에서 설문 옵션 교체·좋아요 해제·게시글 이미지 제거·사용자 일정/카테고리 제거 등에는 물리 행 삭제도 사용한다. 소프트 삭제와 DB ON DELETE CASCADE를 혼동하지 않는다. 신고·채팅 참조가 있는 행의 직접 삭제는 별도 영향 검토가 필요하다.
 - 요청의 필수값·길이·가중치·날짜 범위·자기 자신 대상 금지·참여자 수 제한·고정 최대 2개는 DTO/서비스 규칙이다. DB NOT NULL/UNIQUE가 동시 고정 제한(#13)이나 모든 도메인 무결성을 보장하지 않는다.
-- 운영의 테이블 대소문자, 실제 컬럼 타입/NULL/DEFAULT, PK/FK/UNIQUE/CHECK/인덱스, 고아 참조·중복, 기존 nullable 컬럼의 데이터는 운영자가 읽기 전용 DDL/데이터 점검으로 확인해야 한다. 이번 작업은 운영 DB에 접근하지 않았다. 자동 ddl-auto=update/SQL 초기화 위험(#3), 테스트 DB 미격리(#4)는 별도 설정·코드 과제다.
+- 운영의 테이블 대소문자, 실제 컬럼 타입/NULL/DEFAULT, PK/FK/UNIQUE/CHECK/인덱스, 고아 참조·중복, 기존 nullable 컬럼의 데이터는 운영자가 읽기 전용 DDL/데이터 점검으로 확인해야 한다. 이번 작업은 운영 DB에 접근하지 않았다. 기본/prod의 자동 DDL·SQL 초기화를 차단하고 Gradle 테스트는 H2 메모리 DB로 격리했다. 실제 운영 DDL/잠금 동작은 [DEPLOYMENT.md](DEPLOYMENT.md)에 따라 별도 검증한다.
+
+- user 안정화 변경은 Entity의 테이블/컬럼/제약을 변경하지 않는다. 개발 시드 출처는 local 전용 파일에 ID·이메일·저장 자격증명의 SHA-256 지문으로 기록하며 DB 컬럼을 추가하지 않는다. 기록이 없거나 지문이 달라진 기존 사용자는 시드 생성·삭제에서 제외한다. 전공 해제는 요청의 명시적 "세부전공 없음"을 기존 nullable major_id에 저장한다.
 - 익명 게시글 anonymous 선언이 있더라도 기존 DB에 컬럼/DEFAULT/NOT NULL이 적용됐는지 검증해야 한다. 현재 공개 author.id와 익명 채팅 키 변경은 별도 익명성·마이그레이션 검토 대상이며 문서 수정으로 해결되지 않는다.
 
 ### 기존 익명 채팅 키의 수동 변경 검증 기준
 
-[migrations/README.md](migrations/README.md)는 존재하지만 Git에서 추적되지 않으며 현재 없는 prod 구성/DEPLOYMENT.md를 전제하는 문구도 남아 있다. 이 문서가 해당 안내나 실제 마이그레이션 파일을 수정·실행한 것은 아니다. 적용 파일은 운영 DB 구조와 별도로 검토하며 아래 조건을 충족하기 전 실행하지 않는다.
+[migrations/README.md](migrations/README.md)는 Git 제외를 해제했고 prod 구성과 DEPLOYMENT.md도 추가했다. 기존 마이그레이션 파일은 이번 user 안정화에서 실행하지 않았다. 적용 파일은 운영 DB 구조와 별도로 검토하며 아래 조건을 충족하기 전 실행하지 않는다.
 
 1. **사전 점검:** 운영 DB 버전·schema·물리 테이블명, room_key 길이 100/UNIQUE, 출처 FK와 anonymous 컬럼을 확인한다. old_key/new_key 후보·행 ID를 내보내고 변환 키 충돌/중복·길이 초과·출처 누락·두 출처 동시 지정 행을 점검한다. 현재 출처의 익명성이 과거 방의 의도와 같은지 확인하며 과거 익명성을 복원할 수 없는 행은 별도 검토한다.
 2. **백업·격리 검증:** 전체 DB 일관된 백업과 chat_room_id→old_key 목록을 안전하게 보관하고 격리된 동일 버전 DB에서 복구·적용·롤백을 검증한다. 방/참여자/메시지 삭제나 자동 병합으로 충돌을 해소하지 않는다.

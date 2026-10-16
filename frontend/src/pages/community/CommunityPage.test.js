@@ -23,10 +23,11 @@ jest.mock("../../api/chatApi");
 const author = { id: 2, nickname: "같은이름" };
 const currentUser = { id: 1, name: "같은이름" };
 const post = { id: 12, author, category: "자유게시판", title: "서버 게시글", content: "서버 본문", createdAt: "2026-09-20T12:00:00", views: 2, likes: 4, liked: false, reported: false, images: [], comments: [
-  { id: 8, author, parentCommentId: null, content: "서버 댓글", createdAt: "2026-09-20T12:00:00" },
+  { id: 8, author, parentCommentId: null, content: "서버 댓글", createdAt: "2026-09-20T12:00:00", anonymous: false, anonymousNumber: null, mine: false },
 ] };
 beforeEach(() => {
-  jest.clearAllMocks();
+  jest.resetAllMocks();
+  jest.spyOn(window, "alert").mockImplementation(() => {});
   mockPath = "/community";
   mockParams = new URLSearchParams();
   window.scrollTo = jest.fn();
@@ -35,6 +36,7 @@ beforeEach(() => {
   api.getCommunityPosts.mockResolvedValue({ content: [{ ...post, contentPreview: "미리보기", commentCount: 1, hasImages: true }], totalElements: 13, totalPages: 3 });
   api.getCommunityPost.mockResolvedValue(post);
 });
+afterEach(() => jest.restoreAllMocks());
 
 test("uses server filtering, sorting and paging, and renders list DTO fields", async () => {
   mockParams = new URLSearchParams({ page: "2", category: "자유게시판", sort: "좋아요순", q: "검색" });
@@ -151,14 +153,15 @@ test("refetches likes, preserves failed comment drafts, and uses numeric chat ID
   const input = screen.getByLabelText("같은이름님의 댓글");
   fireEvent.change(input, { target: { value: "잃어버리면 안 되는 내용" } });
   fireEvent.click(screen.getByRole("button", { name: "댓글 등록" }));
-  await screen.findByText("댓글 등록 실패");
+  await waitFor(() => expect(window.alert).toHaveBeenCalledWith("댓글 등록 실패"));
   expect(input).toHaveValue("잃어버리면 안 되는 내용");
+  expect(screen.getByRole("button", { name: "댓글 등록" })).toBeEnabled();
   fireEvent.click(screen.getAllByLabelText("같은이름님에게 채팅 보내기")[1]);
   await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith("/chat?room=42"));
   expect(createChatRoom).toHaveBeenCalledWith({ targetUserId: 2, category: "COMMUNITY", sourceFrom: "COMMENT", sourcePostId: 12, sourceCommentId: 8 });
 });
 
-test("shows report errors inside the dialog and only closes after success", async () => {
+test("alerts report errors, keeps the dialog open for retry and only closes after success", async () => {
   mockPath = "/community/posts/12";
   api.createCommunityReport.mockRejectedValueOnce(new Error("신고 실패")).mockResolvedValueOnce(undefined);
   render(<CommunityPage currentUser={currentUser} />);
@@ -166,10 +169,15 @@ test("shows report errors inside the dialog and only closes after success", asyn
   fireEvent.click(screen.getByRole("button", { name: "게시글 신고" }));
   fireEvent.click(screen.getByLabelText("광고·홍보"));
   fireEvent.click(screen.getByRole("button", { name: "신고하기", hidden: true }));
-  await screen.findByText("신고 실패");
-  expect(screen.getByText("신고 실패").closest("dialog")).not.toBeNull();
+  await waitFor(() => expect(window.alert).toHaveBeenCalledWith("신고 실패"));
+  expect(screen.getByRole("dialog")).toBeInTheDocument();
+  expect(screen.getByLabelText("광고·홍보")).toBeChecked();
+  expect(screen.getByRole("button", { name: "신고하기" })).toBeEnabled();
+  expect(api.createCommunityReport).toHaveBeenCalledTimes(1);
   fireEvent.click(screen.getByRole("button", { name: "신고하기", hidden: true }));
-  await screen.findByText(/신고를 접수했어요/);
+  await waitFor(() => expect(window.alert).toHaveBeenLastCalledWith("신고를 접수했어요. 더 편안한 커뮤니티를 위해 확인할게요."));
+  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  expect(api.createCommunityReport).toHaveBeenCalledTimes(2);
   expect(api.createCommunityReport).toHaveBeenLastCalledWith({ targetType: "POST", targetId: 12, reason: "광고·홍보", description: null });
 });
 
@@ -294,17 +302,25 @@ test("keeps an anonymous comment draft when submission fails", async () => {
   fireEvent.click(screen.getByRole("checkbox", { name: "댓글 익명" }));
   fireEvent.change(screen.getByLabelText("같은이름님의 댓글"), { target: { value: "익명 초안" } });
   fireEvent.click(screen.getByRole("button", { name: "댓글 등록" }));
-  await screen.findByText("댓글 실패");
+  await waitFor(() => expect(window.alert).toHaveBeenCalledWith("댓글 실패"));
   expect(screen.getByRole("checkbox", { name: "댓글 익명" })).toBeChecked();
   expect(screen.getByLabelText("같은이름님의 댓글")).toHaveValue("익명 초안");
+  api.createCommunityComment.mockResolvedValueOnce(9);
+  fireEvent.click(screen.getByRole("button", { name: "댓글 등록" }));
+  await waitFor(() => expect(screen.getByLabelText("같은이름님의 댓글")).toHaveValue(""));
+  expect(api.createCommunityComment).toHaveBeenLastCalledWith(12, "익명 초안", true);
+  expect(api.createCommunityComment).toHaveBeenCalledTimes(2);
+  expect(screen.getByRole("checkbox", { name: "댓글 익명" })).not.toBeChecked();
 });
 
 test.each([true, false])("renders comment and reply profile images, anonymous=%s", async (anonymous) => {
   mockPath = "/community/posts/12";
   const commentAuthor = { id: 1, nickname: "공개댓글닉네임", major: "소프트웨어융합전공" };
+  const serverAuthor = anonymous ? { id: null, nickname: "익명4", major: null } : commentAuthor;
+  const commentFields = { author: serverAuthor, anonymous, anonymousNumber: anonymous ? 4 : null, mine: true };
   api.getCommunityPost.mockResolvedValue({ ...post, comments: [
-    { ...post.comments[0], author: commentAuthor, anonymous },
-    { ...post.comments[0], id: 9, parentCommentId: 8, content: "답글 본문", author: commentAuthor, anonymous },
+    { ...post.comments[0], ...commentFields },
+    { ...post.comments[0], ...commentFields, id: 9, parentCommentId: 8, content: "답글 본문" },
   ] });
   const { container } = render(<CommunityPage currentUser={currentUser} />);
   await screen.findByText("답글 본문");
@@ -312,7 +328,7 @@ test.each([true, false])("renders comment and reply profile images, anonymous=%s
     const entry = container.querySelector(`#comment-${id}`);
     expect(entry.querySelector("img")).toHaveAttribute("src", anonymous
       ? "/img/한경이 이미지/감정/힙합 한경이.png" : getProfileImage(commentAuthor.major));
-    expect(within(entry).getByText(anonymous ? "익명" : "공개댓글닉네임")).toBeInTheDocument();
+    expect(within(entry).getByText(serverAuthor.nickname)).toBeInTheDocument();
     expect(within(entry).getByRole("button", { name: "수정" })).toBeInTheDocument();
   }
   if (anonymous) expect(container.innerHTML).not.toContain("공개댓글닉네임");

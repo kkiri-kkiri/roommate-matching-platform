@@ -1,4 +1,3 @@
-import axios from "axios";
 import { createApiClient } from "./apiClient";
 
 const sessionClient = createApiClient();
@@ -10,8 +9,8 @@ export async function getAuthenticatedUser(token) {
   return response.data.data;
 }
 
-const apiClient = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:8080/api",
+const apiClient = createApiClient({
+  timeout: 15000,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -23,6 +22,12 @@ export async function checkSignupAvailability(params) {
 }
 
 function getApiErrorMessage(error, fallbackMessage) {
+  if (["ECONNABORTED", "ETIMEDOUT"].includes(error.code)) {
+    return "응답 시간이 초과되었습니다. 요청이 이미 처리됐을 수 있으니 메일이나 로그인 결과를 확인한 후 다시 시도해 주세요.";
+  }
+  if (!error.response) {
+    return "서버에 연결할 수 없습니다. 요청이 이미 처리됐을 수 있으니 결과를 확인하고 연결 상태를 점검해 주세요.";
+  }
   return error.response?.data?.message || fallbackMessage;
 }
 
@@ -52,7 +57,7 @@ export async function sendEmailVerification(email, purpose = "SIGNUP") {
     await apiClient.post("/auth/email-verifications/send", {
       email,
       purpose,
-    });
+    }, { timeout: 30000 });
   } catch (error) {
     throw new Error(getApiErrorMessage(error, "인증번호 전송에 실패했습니다."));
   }
@@ -82,7 +87,7 @@ export async function signup(payload) {
 
 export async function requestPasswordReset(email) {
   try {
-    const response = await apiClient.post("/auth/password-reset/request", { email });
+    const response = await apiClient.post("/auth/password-reset/request", { email }, { timeout: 30000 });
     return response.data.data;
   } catch (error) {
     throw new Error(getApiErrorMessage(error, "재설정 이메일 요청에 실패했습니다."));

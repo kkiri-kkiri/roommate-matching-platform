@@ -1,6 +1,7 @@
 package com.kkirikkiri.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.kkirikkiri.global.validation.PasswordByteLength;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
@@ -12,14 +13,14 @@ import jakarta.validation.constraints.Size;
  */
 public record PasswordChangeRequest(
 		@NotBlank(message = "현재 비밀번호를 입력해 주세요.")
-		String currentPassword,
+        @PasswordByteLength String currentPassword,
 		@NotBlank(message = "새 비밀번호를 입력해 주세요.")
 		@Size(min = 8, message = "새 비밀번호는 8자 이상이어야 합니다.")
 		@Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9\\s])\\S{8,}$",
 				message = "비밀번호는 영문, 숫자, 특수문자를 포함해 8자 이상이어야 합니다.")
-		String newPassword,
+        @PasswordByteLength String newPassword,
 		@NotBlank(message = "새 비밀번호 확인을 입력해 주세요.")
-		String newPasswordConfirm) {
+        @PasswordByteLength String newPasswordConfirm) {
 
 	@JsonIgnore
 	@AssertTrue(message = "새 비밀번호와 새 비밀번호 확인이 일치해야 합니다.")

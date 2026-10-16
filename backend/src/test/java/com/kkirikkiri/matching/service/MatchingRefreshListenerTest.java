@@ -13,7 +13,7 @@ class MatchingRefreshListenerTest {
     @EnableTransactionManagement
     static class Config {
         @Bean MatchingRefreshService refreshService() { return mock(MatchingRefreshService.class); }
-        @Bean MatchingRefreshListener listener(MatchingRefreshService service) { return new MatchingRefreshListener(service); }
+        @Bean MatchingRefreshListener listener(MatchingRefreshService service) { return new MatchingRefreshListener(service, Runnable::run); }
         @Bean AbstractPlatformTransactionManager transactionManager() {
             // Exercises Spring's real transaction event synchronization without a database.
             return new AbstractPlatformTransactionManager() {

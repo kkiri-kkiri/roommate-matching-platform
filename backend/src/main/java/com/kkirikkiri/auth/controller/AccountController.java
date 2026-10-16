@@ -1,6 +1,7 @@
 package com.kkirikkiri.auth.controller;
 
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import com.kkirikkiri.auth.dto.SignupResponse;
 import com.kkirikkiri.auth.dto.SignupAvailabilityResponse;
 import com.kkirikkiri.auth.service.PasswordResetService;
 import com.kkirikkiri.auth.service.SignupService;
+import com.kkirikkiri.auth.service.ClientIpResolver;
 import com.kkirikkiri.global.response.ApiResponse;
 
 @RestController
@@ -26,6 +28,7 @@ public class AccountController {
 
 	private final SignupService signupService;
 	private final PasswordResetService passwordResetService;
+	private final ClientIpResolver clientIpResolver;
 
 	@PostMapping("/signup")
 	public ApiResponse<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
@@ -40,8 +43,8 @@ public class AccountController {
 	}
 
 	@PostMapping("/password-reset/request")
-	public ApiResponse<PasswordResetResponse> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
-		return ApiResponse.success(passwordResetService.requestPasswordReset(request));
+	public ApiResponse<PasswordResetResponse> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request, HttpServletRequest http) {
+		return ApiResponse.success(passwordResetService.requestPasswordReset(request, clientIpResolver.resolve(http)));
 	}
 
 	@PostMapping("/password-reset/confirm")

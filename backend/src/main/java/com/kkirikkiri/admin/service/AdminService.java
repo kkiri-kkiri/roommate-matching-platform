@@ -180,7 +180,7 @@ public class AdminService {
 		requireAdmin(adminId);
 		validateRequest(request);
 		validateId(memberId);
-		changeStatus(userRepository.findById(memberId).orElseThrow(this::invalidRequest),
+		changeStatus(userRepository.findByIdForAccountUpdate(memberId).orElseThrow(this::invalidRequest),
 				UserStatus.valueOf(request.status()));
 	}
 
@@ -243,7 +243,8 @@ public class AdminService {
 		}
 		switch (request.action()) {
 			case "COMPLETE", "REJECT" -> { }
-			case "SUSPEND_USER" -> changeStatus(report.getTargetUser(), UserStatus.SUSPENDED);
+			case "SUSPEND_USER" -> changeStatus(userRepository.findByIdForAccountUpdate(
+                    report.getTargetUser().getUserId()).orElseThrow(this::invalidRequest), UserStatus.SUSPENDED);
 			case "DELETE_TARGET" -> {
 				switch (report.getReportType()) {
 					case POST -> deletePost(report.getPost());

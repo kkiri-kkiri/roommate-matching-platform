@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -17,6 +18,7 @@ import com.kkirikkiri.calendar.service.CalendarCrawlingService;
 
 @Slf4j
 @Configuration
+@Profile("!test")
 @EnableScheduling
 @RequiredArgsConstructor
 public class CalendarCrawlingScheduler {
@@ -40,7 +42,7 @@ public class CalendarCrawlingScheduler {
             log.info("HKNU academic calendar: {} events inserted",
                     service.crawlAcademicCalendar());
         } catch (RuntimeException e) {
-            log.error("HKNU academic calendar crawling failed", e);
+            log.error("HKNU academic calendar crawling failed: exceptionType={}", e.getClass().getSimpleName());
         }
     }
 }

@@ -6,7 +6,7 @@
 
 현재 확정 요구사항, 실제 코드·호출부·테스트, `ERD.md`, `API.md`를 함께 비교하여 판단한다. 오래된 문서를 이유로 정상 API나 스키마를 임의 변경하지 않는다. 이 파일은 백엔드 상세 지침이며 파일명을 유지한다. 루트 `../AGENTS.md`도 존재하지만 그 운영·테스트 조건이 실제 설정에 구현되어 있는지는 별도로 확인한다.
 
-검토 기준일: 2026-10-14. 문서의 **현재 구현**, **배포 전 필요한 보완**, **미확정 정책**을 구분한다. 이번 문서 수정은 코드·설정·DB 결함의 해결을 의미하지 않는다.
+검토 기준일: 2026-10-14. 문서의 **현재 구현**, **배포 전 필요한 보완**, **미확정 정책**을 구분한다. user 안정화의 코드·설정·테스트 보완을 반영했으며 실제 운영 DB/배포 검증은 별도다.
 
 ---
 
@@ -266,20 +266,21 @@ Controller가 그대로 호출할 수 있도록 공개 메서드 시그니처를
 
 - 인증 사용자 ID는 Principal에서 얻는다. 서버에서 소유권·활성 상태·입력 조건을 검증하고 기존 ApiResponse/ErrorCode를 사용한다. 토큰·비밀키·외부 오류 원문을 응답이나 로그에 노출하지 않는다. Entity 직접 반환 금지 규칙을 유지한다.
 - `.env`와 실제 비밀 값은 출력·커밋하지 않는다. 배포 설정에는 DB/SMTP/JWT/AI, CORS origin, 이미지 영구 경로, 프론트 API 주소와 시간대 확인이 필요하다.
-- **현재 설정:** application.properties는 ddl-auto=update, SQL 초기화 always 및 .env import를 사용한다. application-prod.properties는 없고 local 설정도 update/always다. 운영 validate/SQL never 구성은 **미해결 #3**이며 문서의 요구 기준일 뿐 현재 보장되지 않는다.
-- SeedDataInitializer는 프로필 제한 없이 APP_SEED_MODE(NONE/CREATE/DELETE)를 처리한다. DevDataInitializer는 local에서 고정 계정을 생성한다. 운영에서 local 활성화·시드 변경·고정 계정 사용을 피해야 하며 서버 측 방어 보완은 별도 작업이다. 이 문서가 초기화 설정을 변경하지 않는다.
-- **현재 테스트:** build.gradle은 JUnit Platform만 지정하며 테스트 DB URL·프로필 격리를 강제하지 않는다. BackendApplicationTests.contextLoads는 별도 프로필 없는 SpringBootTest다. DB 격리는 **미해결 #4**다. 격리 DB·SQL/시드 비활성을 확인하기 전 DB 접속 테스트나 전체 애플리케이션을 실행하지 않는다.
+- **현재 설정:** 기본/prod는 ddl-auto=validate, SQL never다. .env import와 update/always는 local 전용이다. EnvironmentSafetyInitializer가 빈 생성 전에 위험한 초기화 재정의와 prod/local/test 충돌을 거절한다. #3의 설정·시드 차단을 코드로 보완했으며 실제 운영 조건은 [DEPLOYMENT.md](DEPLOYMENT.md)를 따른다.
+- SeedDataInitializer/SeedDataService/DevDataInitializer는 local & !prod & !test에서만 등록된다. 시드 생성은 기존 불확실한 계정을 채택하지 않고 삭제도 local 출처 파일의 ID·이메일·자격증명 지문이 일치하는 회원에만 수행한다. 파일 기록은 DB 커밋 후 반영하며 유실/변경된 기록의 계정은 보존한다. 운영에는 고정 개발 관리자 빈이 없다.
+- **현재 테스트:** Gradle test는 test 프로필·H2 메모리 URL과 SQL/시드/수집 비활성을 강제한다. prod 요청은 JVM 실행 전에 거절한다. IDE 실행도 test 프로필을 사용하며 연결 전 검사에서 외부 DB URL과 위험한 테스트 초기화를 거절한다. #4를 코드로 보완했지만 MySQL 잠금/DDL 검증은 별도 격리 환경이 필요하다.
 - 운영 스키마 변경·시드·파괴적 마이그레이션을 자동 실행하지 않는다. JVM/DB의 서울 시간대와 백업·프록시·저장소를 실제 환경에서 검증한다. Jackson 시간대 설정만으로 LocalDateTime.now의 시간대가 고정되는 것은 아니다.
-- 변경에 맞는 인증·소유권·동시성·실패/롤백 검증이 필요하다. 컴파일만으로 완료를 선언하지 않으며 테스트 환경이 없으면 미검증으로 보고한다. 이번 문서 수정에서는 테스트/빌드를 실행하지 않는다.
-- 파일명 변경은 이번에 하지 않는다. 루트 AGENTS.md 및 README.md를 제외하는 .gitignore 규칙은 **미해결 #1**이다. 표준 지침·배포 안내의 추적 정책 정리는 별도 제안이며 이 파일이나 Git 규칙을 이미 변경했다고 보고하지 않는다.
+- 변경에 맞는 인증·소유권·동시성·실패/롤백 검증이 필요하다. 컴파일만으로 완료를 선언하지 않으며 테스트 환경이 없으면 미검증으로 보고한다. user 안정화에서는 H2 동시성·롤백, 전체 백엔드 테스트/빌드와 관련 프론트 테스트/빌드를 실행했다. 실제 운영 DB와 MySQL 고유 동작은 별도 검증한다.
+- 파일명은 유지한다. 공유 AGENTS.md·local 기본 설정·마이그레이션 안내가 Git에서 제외되지 않도록 .gitignore 예외를 추가했다. 실제 비밀 파일과 local 시드 출처 파일은 계속 제외한다.
 - API.md의 19장과 ERD.md의 10장은 현재 선언의 상세 대조 기준이다. 실제 DB와 동작 검증을 대체하지 않는다.
+- 환경 안전 검사는 활성 프로필이 없을 때 기본 프로필에도 적용한다. 기본 test의 외부 DB와 prod/local/test 충돌도 연결 전에 차단하며, 활성 프로필이 있으면 Spring과 동일하게 기본 프로필을 무시한다.
 
 배포 위험 확인 근거와 남은 작업:
 
 | 대상 | 현재 근거 | 필요한 후속 작업 |
 | --- | --- | --- |
-| #3 운영 설정 | [application.properties](src/main/resources/application.properties), [SeedDataInitializer](src/main/java/com/kkirikkiri/global/init/SeedDataInitializer.java), [DevDataInitializer](src/main/java/com/kkirikkiri/global/init/DevDataInitializer.java) | 운영 전용 validate/SQL never, 시드·고정 계정 차단과 필수 설정 검증. 현재 구현 완료로 취급하지 않음 |
-| #4 테스트 격리 | [build.gradle](build.gradle), [BackendApplicationTests](src/test/java/com/kkirikkiri/BackendApplicationTests.java) | 격리 DB·프로필을 강제하고 운영/개발 DB 접속 차단을 검증 |
+| #3 운영 설정 | [application.properties](src/main/resources/application.properties), [EnvironmentSafetyInitializer](src/main/java/com/kkirikkiri/global/config/EnvironmentSafetyInitializer.java) | validate/SQL never·프로필 충돌·시드 차단 구현. 실제 운영 DDL/환경 확인은 DEPLOYMENT.md |
+| #4 테스트 격리 | [build.gradle](build.gradle), [BackendApplicationTests](src/test/java/com/kkirikkiri/BackendApplicationTests.java) | H2/프로필 강제·연결 전 검사 구현. 별도 격리 MySQL 검증은 미완료 |
 | #12 WebSocket | [ChatStompInterceptor](src/main/java/com/kkirikkiri/global/config/ChatStompInterceptor.java), [WebSocketConfig](src/main/java/com/kkirikkiri/global/config/WebSocketConfig.java), [ChatService](src/main/java/com/kkirikkiri/chat/service/ChatService.java) | 만료·계정 상태·참여 철회 후 송신 및 기존 구독 수신 차단과 테스트 |
 | #13 고정 개수 | [ChatService.updateSettings](src/main/java/com/kkirikkiri/chat/service/ChatService.java) | 동시 고정 요청에 사용자별 최대 2개 제한 보장 |
 | #14 실행 이력 | [CalendarCrawlingService](src/main/java/com/kkirikkiri/calendar/service/CalendarCrawlingService.java), [ScheduleCrawlRun](src/main/java/com/kkirikkiri/calendar/entity/ScheduleCrawlRun.java) | 실행 시작·완료·건수·실패를 저장하고 일정 롤백과 독립된 실패 이력 보존 |
@@ -288,7 +289,7 @@ Controller가 그대로 호출할 수 있도록 공개 메서드 시그니처를
 - 현재 이미지 경로는 상대 경로 `uploads/community` 기본값이다. 쓰기 권한·영구 볼륨·백업·공개 URL을 검증해야 한다. WebSocket은 `/ws/chat`의 Upgrade/Connection 전달·TLS·타임아웃과 STOMP 도착 여부를 프록시에서 확인한다. Simple broker의 다중 인스턴스 전달은 별도 환경 검증 대상이다.
 - 익명 게시글/댓글은 [CommunityAuthorResponse](src/main/java/com/kkirikkiri/community/post/dto/CommunityAuthorResponse.java)에서 실제 author.id를 유지한다. 표시 익명과 사용자 식별자 비공개의 정책 차이를 결정해야 하며 계약을 임의 변경하지 않는다.
 - [EmailVerificationService.verify](src/main/java/com/kkirikkiri/auth/service/EmailVerificationService.java)는 6자리 코드·만료·해시를 확인하지만 실패 시도 횟수/검증 요청 제한은 없다. 재발송 cooldown은 검증 시도 제한이 아니다. 추측 공격·BCrypt 반복 처리 부하를 줄이는 제한 정책과 구현, 외부 프록시 제한 여부 확인이 필요하다.
-- [migrations/README.md](migrations/README.md)는 존재하지만 현재 Git에서 추적되지 않는다. 또한 운영 prod 구성이 있다고 가정하거나 없는 DEPLOYMENT.md를 참조하는 문구가 남아 있어 그대로 배포 승인 기준으로 사용할 수 없다. 이번 범위에서 수정하지 않는다. 익명 키 적용은 ERD.md의 사전 점검·백업·수동 적용·롤백·검증 기준과 함께 별도 검토한다.
+- [migrations/README.md](migrations/README.md)의 Git 제외를 해제했고 prod 구성·DEPLOYMENT.md를 추가했다. 익명 키 적용은 ERD.md의 사전 점검·백업·수동 적용·롤백·검증 기준과 함께 별도 검토하며 자동 실행하지 않는다.
 
 ### 기존 18건의 재확인 결과
 
@@ -296,8 +297,8 @@ Controller가 그대로 호출할 수 있도록 공개 메서드 시그니처를
 |---|---|---|
 | 1 | Medium | 명칭 유지·상세 지침 정리. 파일명/추적 정책 정비는 범위 밖으로 보류 |
 | 2 | High | 문서 우선 강제와 레이어 제한 모순 수정 |
-| 3 | High | 현재 위험한 설정과 운영 필요 조건을 명시. 설정/코드 보완 미해결 |
-| 4 | High | 격리 확인 전 DB 테스트 금지 명시. 테스트 설정 보완 미해결 |
+| 3 | High | user 안정화에서 기본/prod 초기화·시드 차단 구현. 실제 운영 검증은 별도 |
+| 4 | High | user 안정화에서 Gradle H2 강제와 연결 전 검사 구현. MySQL 검증은 별도 |
 | 5 | Low | 현재 프론트 연동 상태와 미구현 기능 구분 |
 | 6 | High | 23개 설문 기준으로 두 과거 필드 지시 제거 |
 | 7 | Medium | 룸메이트 Public/선택 인증과 게스트 응답 명시 |
@@ -307,13 +308,13 @@ Controller가 그대로 호출할 수 있도록 공개 메서드 시그니처를
 | 11 | High | keepImageIds의 제거 의미 명시, 프론트 유지 ID 전달 코드 대조 |
 | 12 | High | CONNECT 이후 권한 재검증/기존 구독 수신 제한은 코드 미해결 |
 | 13 | Medium | 동시 고정 2개 제한은 코드 미해결 |
-| 14 | High | 실제 크롤링의 실행 이력 저장은 코드 미해결 |
+| 14 | High | Calendar 보완에서 시작/실패 독립 커밋·일정/성공 원자적 커밋 구현. 실제 MySQL/프로세스 종료 운영 검증은 별도 |
 | 15 | High | DORMITORY 수집 미구현 표시, 임의 구현 없음 |
 | 16 | High | 현재 프론트 점수 계산 유지, 서버 API를 예정 설계로 분리 |
 | 17 | Medium | Entity의 NULL/DEFAULT/PK/FK/UNIQUE와 애플리케이션 검증 구분. 물리 DB는 미검증 |
 | 18 | Medium | 같은 날짜의 두 시간만 비교하는 기간 일정 규칙 정정 |
 
-문서 수정으로 해결한 번호는 2, 5~11, 15~18(12건)이다. 1, 3, 4, 12~14(6건)는 지침/위험 설명을 보완했지만 실제 문제를 해결한 것으로 집계하지 않는다. 익명 작성자 ID 재식별과 이메일 인증번호 시도 제한 정책은 추가 확인 대상이다. 이전 작업의 테스트 통과 보고를 현재 소스의 실행 결과로 사용하지 않는다.
+위 표는 기존 문서 검토의 이력이며 user 안정화에서 #3/#4의 코드를 추가로 보완했다. 다른 도메인의 상태는 이번 작업에서 재검증하지 않았다. 익명 작성자 ID 재식별과 이메일 인증번호 시도 제한 정책도 별도 확인 대상이다. 이전 작업의 테스트 통과 보고를 현재 소스의 실행 결과로 사용하지 않는다.
 
 모든 구현은 다음 조건을 만족해야 한다.
 

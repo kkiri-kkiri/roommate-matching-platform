@@ -166,7 +166,7 @@ class AdminServiceTest {
         // given
         stubAdmin();
         target.changeStatus(initial);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(target));
+        when(userRepository.findByIdForAccountUpdate(2L)).thenReturn(Optional.of(target));
         // when
         service.updateMemberStatus(1L, 2L, new AdminMemberStatusUpdateRequest(requested.name()));
         // then
@@ -179,7 +179,7 @@ class AdminServiceTest {
         // given
         stubAdmin();
         target.changeStatus(UserStatus.WITHDRAWN);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(target));
+        when(userRepository.findByIdForAccountUpdate(2L)).thenReturn(Optional.of(target));
         // when / then
         assertError(ErrorCode.INVALID_REQUEST,
                 () -> service.updateMemberStatus(1L, 2L, new AdminMemberStatusUpdateRequest(requested.name())));
@@ -236,6 +236,7 @@ class AdminServiceTest {
     void suspendsActualTargetUserForEveryReportType(ReportType type) {
         // given
         Report report = stubReport(type);
+        when(userRepository.findByIdForAccountUpdate(2L)).thenReturn(Optional.of(target));
         // when
         service.processReport(1L, 30L, new AdminReportProcessRequest("SUSPEND_USER"));
         // then
@@ -280,6 +281,7 @@ class AdminServiceTest {
     void rejectsSuspendingWithdrawnTargetWithoutProcessingReport() {
         // given
         Report report = stubReport(ReportType.USER);
+        when(userRepository.findByIdForAccountUpdate(2L)).thenReturn(Optional.of(target));
         target.changeStatus(UserStatus.WITHDRAWN);
         // when / then
         assertError(ErrorCode.INVALID_REQUEST,

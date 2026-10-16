@@ -1,18 +1,23 @@
 package com.kkirikkiri.global.security;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.transaction.TransactionException;
 import tools.jackson.databind.ObjectMapper;
 
 import com.kkirikkiri.global.exception.CustomException;
@@ -25,6 +30,8 @@ import com.kkirikkiri.global.response.ApiResponse;
  */
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+	private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
 	private final JwtAuthenticationProvider jwtAuthenticationProvider;
 	private final ObjectMapper objectMapper;
@@ -50,6 +57,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			response.setContentType("application/json;charset=UTF-8");
 			objectMapper.writeValue(response.getWriter(), ApiResponse.failure(ErrorCode.UNAUTHORIZED));
+			return;
+		} catch (DataAccessException | TransactionException exception) {
+			// Authentication's database check must fail closed, without treating an outage as a bad JWT.
+			SecurityContextHolder.clearContext();
+			String traceId = UUID.randomUUID().toString();
+			Throwable cause = exception;
+			for (int depth = 0; depth < 16 && cause.getCause() != null && cause.getCause() != cause; depth++) {
+				cause = cause.getCause();
+			}
+			// Exception messages/stack traces may contain JDBC URLs, credentials or token values.
+			log.error("JWT account lookup failed: traceId={} exceptionType={} rootCauseType={}",
+					traceId, exception.getClass().getName(), cause.getClass().getName());
+			response.setHeader("X-Request-ID", traceId);
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setContentType("application/json;charset=UTF-8");
+			objectMapper.writeValue(response.getWriter(), ApiResponse.failure(ErrorCode.INTERNAL_SERVER_ERROR));
 			return;
 		}
 
