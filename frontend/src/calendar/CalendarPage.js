@@ -169,7 +169,8 @@ function CalendarPage() {
       backgroundColor: categoryStyle.background,
       borderColor: categoryStyle.color,
       textColor: categoryStyle.text,
-      extendedProps: { category: event.category, description: event.description },
+      extendedProps: { category: event.category, description: event.description,
+        partialTimeLabel: Boolean(event.startTime) !== Boolean(event.endTime) ? eventTimeLabel(event) : null },
     };
   }), [filteredEvents, categoryStyles]);
 
@@ -366,8 +367,8 @@ function CalendarPage() {
                 datesSet={handleDatesSet}
                 dateClick={({ dateStr }) => selectDate(dateStr)}
                 eventContent={({ event, timeText }) => (
-                  <S.CalendarEvent title={`${categoryLabels[event.extendedProps.category]} · ${event.title} · ${timeText}`}>
-                    <span>{timeText}</span> {event.title}
+                  <S.CalendarEvent title={`${categoryLabels[event.extendedProps.category]} · ${event.title} · ${event.extendedProps.partialTimeLabel || timeText}`}>
+                    <span>{event.extendedProps.partialTimeLabel || timeText}</span> {event.title}
                   </S.CalendarEvent>
                 )}
                 dayCellClassNames={({ date }) => [
@@ -440,7 +441,7 @@ function CalendarPage() {
         {dialog?.mode === "categories" && (
           <CalendarDialog key="categories" title="카테고리 설정" onDismiss={closeDialog}
             description="학교 일정과 기숙사 일정은 고정 카테고리예요. 색상은 자유롭게 변경할 수 있어요.">
-            <CategorySettingsForm initialCategories={categorySettings} events={events}
+            <CategorySettingsForm initialCategories={allCategories} events={events}
               onSave={saveCategories} onDismiss={closeDialog} savingRef={savingRef} />
           </CalendarDialog>
         )}

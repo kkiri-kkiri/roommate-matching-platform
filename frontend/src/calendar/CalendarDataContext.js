@@ -54,23 +54,31 @@ export function CalendarDataProvider({ children, userId }) {
     await deleteCalendarEvent(id);
     setEvents((current) => current.filter((event) => event.id !== id));
   };
-  const saveCategories = async (draft) => {
+  const saveCategories = async (draft, deletedIds = []) => {
     // Persist each created ID in the caller's draft so a retry cannot create duplicates.
     const next = draft.map((item) => ({ ...item }));
     try {
       for (let index = 0; index < next.length; index++) {
         if (!next[index].serverId) {
           const created = await createCalendarCategory({ label: next[index].label, color: next[index].color });
-          next[index] = created;
-          Object.assign(draft[index], created);
+          next[index] = { ...created, enabled: next[index].enabled !== false };
+          Object.assign(draft[index], next[index]);
         }
       }
+      // Omission means unchanged. Only an explicit, owned custom-category removal sends DELETE.
+      const removed = new Set(deletedIds);
       const kept = new Set(next.map((item) => item.serverId));
-      for (const category of categorySettings) {
-        if (category.serverId && !kept.has(category.serverId)) {
-          if (category.id.startsWith("custom-")) await deleteCalendarCategory(category.serverId);
-          else next.push({ ...category, enabled: false });
+      for (const id of removed) {
+        const category = categorySettings.find((item) => item.serverId === id);
+        // A previous attempt may have deleted it before a later PUT failed and refreshed state.
+        if (!category) continue;
+        if (category.fixed || !category.id.startsWith("custom-") || kept.has(id)) {
+          throw new Error("삭제할 사용자 카테고리를 확인해 주세요.");
         }
+        await deleteCalendarCategory(id);
+      }
+      for (const category of categorySettings) {
+        if (!kept.has(category.serverId) && !removed.has(category.serverId)) next.push({ ...category });
       }
       const saved = await saveCalendarCategories(next);
       setCategories(saved);

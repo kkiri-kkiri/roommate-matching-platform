@@ -51,11 +51,14 @@ export function formatTimeLabel(time) {
 }
 
 export function eventTimeLabel(event) {
-  return event.allDay ? "종일" : `${formatTimeLabel(event.startTime)} – ${formatTimeLabel(event.endTime)}`;
+  if (!event.startTime && !event.endTime) return "종일";
+  return `${event.startTime ? formatTimeLabel(event.startTime) : "시작 시간 미정"} – ${event.endTime ? formatTimeLabel(event.endTime) : "종료 시간 미정"}`;
 }
 
 export function calendarEventDates(event) {
-  return event.allDay
+  // Date-range placement for incomplete times; the known bound is shown by eventTimeLabel.
+  // allDay here is a FullCalendar layout flag and does not change the stored API event.
+  return event.allDay || !event.startTime || !event.endTime
     ? { start: event.date, end: nextDate(event.endDate || event.date), allDay: true }
     : { start: `${event.date}T${event.startTime}:00`,
       end: `${event.endDate || event.date}T${event.endTime}:00`, allDay: false };

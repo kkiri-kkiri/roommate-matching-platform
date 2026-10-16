@@ -2034,7 +2034,7 @@ nullable
 
 실행 완료 시각
 
-관리자 상태 API는 이 테이블을 조회한다. 그러나 현재 CalendarCrawlingService/Scheduler에는 실행 이력 저장 호출이 없으므로 실제 실행의 RUNNING/COMPLETED/FAILED가 기록되지 않는다. 미해결 #14 (High): 시작 이력, 신규 저장 건수, 완료 시각, 일정 트랜잭션 실패와 독립된 실패 이력 저장은 코드·테스트 보완이 필요하다. 이력이 없으면 API의 status/lastRunAt/lastCompletedAt/lastFailure는 null, recentCollectedCount는 0이다. totalCollectedCount는 CALENDAR_EVENT의 실제 수집 일정 집계다.
+관리자 상태 API는 이 테이블을 조회한다. CalendarCrawlingService는 실행 시작을 독립 커밋하여 RUNNING으로 기록한다. 일정과 COMPLETED·신규 저장 건수·완료 시각은 같은 트랜잭션에서 커밋한다. 실패 시 일정은 전체 롤백하고 별도 트랜잭션으로 FAILED/0건을 기록한다. error_message에는 안전한 FETCH/STORE 분류 코드만 저장한다. 각 실행은 별도 ID를 사용하며 기존 SCHOOL 행 잠금으로 일정 중복 저장을 방지한다. 프로세스 종료나 이력 DB 장애로 남은 RUNNING은 자동 실패 처리하지 않는다([운영 절차](DEPLOYMENT.md)). 이력이 없으면 API의 status/lastRunAt/lastCompletedAt/lastFailure는 null, recentCollectedCount는 0이다. totalCollectedCount는 CALENDAR_EVENT의 실제 수집 일정 집계다.
 
 수집된 실제 일정 데이터는 CALENDAR_EVENT에 저장한다.
 
@@ -2120,7 +2120,7 @@ CALENDAR_CATEGORY와 USER의 사용자별 표시 설정은 CALENDAR_CATEGORY_SET
 
 학교·기숙사 크롤링 일정은 CALENDAR_EVENT.owner_user_id = NULL로 저장하여 전체 사용자에게 제공한다.
 
-SCHEDULE_CRAWL_RUN은 상태 조회 모델이지만 현재 수집기의 이력 저장이 빠져 있다(#14). DORMITORY 자동 수집 역시 미구현이다.
+SCHEDULE_CRAWL_RUN은 학교 수집의 실행 이력을 저장하는 상태 조회 모델이다. DORMITORY 자동 수집은 미구현이다.
 
 개인·룸메찾기 일정은 해당 사용자의 owner_user_id를 저장한다.
 
@@ -2176,7 +2176,7 @@ CALENDAR_CATEGORY
 └─ 1:N CALENDAR_EVENT
 
 SCHEDULE_CRAWL_RUN
-└─ CALENDAR_EVENT와 직접 FK 관계 없음 (실행 요약 모델, 현재 저장 누락 #14)
+└─ CALENDAR_EVENT와 직접 FK 관계 없음 (실행별 상태·신규 저장 건수 요약 모델)
 
 FACULTY
 └─ 1:N MAJOR
@@ -2307,6 +2307,12 @@ in_flight는 검증 실패 가능성을 미리 예약하며 프로세스 종료�
 
 근거: [CalendarEvent.java](src/main/java/com/kkirikkiri/calendar/entity/CalendarEvent.java)
 
+비고유 인덱스: `idx_calendar_crawl_identity(source_type, source_name, title, start_date, end_date)`,
+`idx_calendar_period(end_date, start_date, owner_user_id, source_type)`.
+중복 확인의 동등 조건과 기간 조회를 지원한다. 공개/개인 소유권 조건과 기존 Collation/중복 방지 잠금은 유지한다.
+수동 적용: [20261016_calendar_time_indexes.sql](migrations/20261016_calendar_time_indexes.sql).
+DATE/TIME은 현지 일정 값, collected_at DATETIME은 서울 벽시계 값이며 직접 Java-time JDBC 매핑을 사용한다.
+
 | 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
 | --- | --- | --- | --- |
 | event_id | BIGINT | NOT NULL | PK IDENTITY; DEFAULT 없음 |
@@ -2329,6 +2335,9 @@ in_flight는 검증 실패 가능성을 미리 예약하며 프로세스 종료�
 ### SCHEDULE_CRAWL_RUN
 
 근거: [ScheduleCrawlRun.java](src/main/java/com/kkirikkiri/calendar/entity/ScheduleCrawlRun.java)
+
+started_at/completed_at DATETIME은 서울 벽시계 값을 직접 JDBC로 저장·조회한다. 타입 변경·자동 과거 데이터 변환은 없다.
+CALENDAR_CATEGORY.created_at도 같은 정책을 사용한다. 기존 데이터의 작성 환경 확인 절차는 [DEPLOYMENT.md](DEPLOYMENT.md)를 따른다.
 
 | 컬럼 | SQL 선언/기본 매핑 | NULL | 키·기본값 |
 | --- | --- | --- | --- |
@@ -2717,7 +2726,7 @@ Enum은 `EnumType.STRING` 선언을 사용한다. 아래 Java 값 목록 자체�
 
 ### 제약·삭제 정책과 배포 검증 경계
 
-- Entity에는 명시적 @Index, @Check, @OnDelete, cascade, orphanRemoval이 없다. UNIQUE는 위 컬럼/복합 선언을 따르며 FK 보조 인덱스와 삭제·갱신 동작은 물리 DB에서 확인해야 한다. 기존 DB에 Java 선언을 추가한 사실만으로 제약이 이미 적용됐다고 판단하지 않는다.
+- CalendarEvent에는 위 비고유 @Index 2개가 있다. @Check, @OnDelete, cascade, orphanRemoval은 명시하지 않는다. UNIQUE는 위 컬럼/복합 선언을 따르며 FK 보조 인덱스와 삭제·갱신 동작은 물리 DB에서 확인해야 한다. 기존 DB에 Java 선언을 추가한 사실만으로 제약이 이미 적용됐다고 판단하지 않는다.
 - 사용자 탈퇴는 WITHDRAWN, 게시글·댓글 삭제는 DELETED 상태 변경이다. 현재 서비스에서 설문 옵션 교체·좋아요 해제·게시글 이미지 제거·사용자 일정/카테고리 제거 등에는 물리 행 삭제도 사용한다. 소프트 삭제와 DB ON DELETE CASCADE를 혼동하지 않는다. 신고·채팅 참조가 있는 행의 직접 삭제는 별도 영향 검토가 필요하다.
 - 요청의 필수값·길이·가중치·날짜 범위·자기 자신 대상 금지·참여자 수 제한·고정 최대 2개는 DTO/서비스 규칙이다. DB NOT NULL/UNIQUE가 동시 고정 제한(#13)이나 모든 도메인 무결성을 보장하지 않는다.
 - 운영의 테이블 대소문자, 실제 컬럼 타입/NULL/DEFAULT, PK/FK/UNIQUE/CHECK/인덱스, 고아 참조·중복, 기존 nullable 컬럼의 데이터는 운영자가 읽기 전용 DDL/데이터 점검으로 확인해야 한다. 이번 작업은 운영 DB에 접근하지 않았다. 기본/prod의 자동 DDL·SQL 초기화를 차단하고 Gradle 테스트는 H2 메모리 DB로 격리했다. 실제 운영 DDL/잠금 동작은 [DEPLOYMENT.md](DEPLOYMENT.md)에 따라 별도 검증한다.

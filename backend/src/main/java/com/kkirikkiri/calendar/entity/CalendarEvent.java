@@ -13,17 +13,23 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import com.kkirikkiri.user.entity.User;
 
 @Entity
-@Table(name = "CALENDAR_EVENT")
+@Table(name = "CALENDAR_EVENT", indexes = {
+		@Index(name = "idx_calendar_crawl_identity", columnList = "source_type,source_name,title,start_date,end_date"),
+		@Index(name = "idx_calendar_period", columnList = "end_date,start_date,owner_user_id,source_type")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CalendarEvent {
@@ -45,15 +51,19 @@ public class CalendarEvent {
 	private String title;
 
 	@Column(name = "start_date", nullable = false, columnDefinition = "DATE")
+	@JdbcTypeCode(SqlTypes.LOCAL_DATE)
 	private LocalDate startDate;
 
 	@Column(name = "end_date", nullable = false, columnDefinition = "DATE")
+	@JdbcTypeCode(SqlTypes.LOCAL_DATE)
 	private LocalDate endDate;
 
 	@Column(name = "start_time", nullable = true, columnDefinition = "TIME")
+	@JdbcTypeCode(SqlTypes.LOCAL_TIME)
 	private LocalTime startTime;
 
 	@Column(name = "end_time", nullable = true, columnDefinition = "TIME")
+	@JdbcTypeCode(SqlTypes.LOCAL_TIME)
 	private LocalTime endTime;
 
 	@Column(name = "is_all_day", nullable = false, columnDefinition = "BOOLEAN")
@@ -73,6 +83,7 @@ public class CalendarEvent {
 	private String sourceUrl;
 
 	@Column(name = "collected_at", nullable = true, columnDefinition = "DATETIME")
+	@JdbcTypeCode(SqlTypes.LOCAL_DATE_TIME)
 	private LocalDateTime collectedAt;
 
 	/** 카테고리 접근 권한과 입력값은 서비스에서 검증한다. 크롤링 일정의 소유자는 null이다. */

@@ -1,6 +1,17 @@
 # user / auth 도메인 운영 준비
 
-이 문서는 user 안정화 및 auth 보호 변경의 배포 조건이다. 다른 도메인의 배포 적합성이나 실제 운영 성공을 보장하지 않는다.
+이 문서는 user 안정화·auth 보호 및 Calendar 보완의 배포 조건이다. 다른 도메인의 배포 적합성이나 실제 운영 성공을 보장하지 않는다.
+
+## Calendar 변경의 운영 확인
+
+- Calendar의 DATE/TIME은 한국 현지 일정 값이며, DATETIME(`SCHEDULE_CRAWL_RUN.started_at/completed_at`, `CALENDAR_EVENT.collected_at`, `CALENDAR_CATEGORY.created_at`)은 서울 현지 벽시계 값이다. API 타입과 nullable 시간 계약을 유지한다. 이 필드만 Hibernate 직접 Java-time JDBC 매핑을 사용하므로 JVM 기본 시간대나 JDBC `connectionTimeZone`/MySQL session `time_zone`에 의해 값이 이동하지 않는다. 크롤링·카테고리 생성 시각은 명시적으로 Asia/Seoul에서 생성한다. TIMESTAMP/Instant로의 전환이나 다른 도메인의 시간 정책 변경은 포함하지 않는다.
+- 업그레이드 전에 기존 Calendar DATETIME의 작성 환경·배포 시점·원시값과 당시 로그를 대조한다. 이전 Timestamp 매핑에서 서울 JVM/UTC JDBC로 쓴 값은 서울 값보다 9시간 작게 저장됐을 수 있으며, 새 매핑은 그 원시값을 그대로 읽는다. 서울 JDBC로 쓴 값과 섞였을 수 있어 일괄 +9시간 UPDATE는 금지한다. 백업 후 작성 환경이 입증된 실행 ID/행 범위만 변환 계획을 검토하고 started/completed/collected 시각의 연관성과 날짜 경계를 검증한다. 입증되지 않은 과거 행의 해석은 배포 전 보류 사항이다. 자동 데이터 변환은 없다.
+- `migrations/20261016_calendar_time_indexes.sql`의 비고유 복합 인덱스 2개는 운영자가 기존 인덱스/Collation/중복·행 수·DDL 잠금 영향을 확인한 뒤 수동 적용한다. 기본/prod validate는 인덱스를 생성하지 않으며 Hibernate validate만으로 인덱스 존재를 보장할 수 없다. 동일 데이터의 EXPLAIN ANALYZE와 실제 인덱스 정의를 별도로 대조한다. 추가 인덱스의 INSERT/UPDATE 유지 비용도 대표 수집량에서 확인한다.
+- 학교 수집은 RUNNING 시작 이력을 먼저 독립 커밋한다. 일정과 COMPLETED 이력은 같은 트랜잭션에서 커밋하며, 실패하면 일정 전체 롤백 후 FAILED/0건을 독립 커밋한다. 이미 COMPLETED인 실행은 커밋 응답 유실을 이유로 FAILED로 덮어쓰지 않는다. 시작 이력 저장이 실패하면 외부 요청을 시작하지 않는다.
+- 프로세스 강제 종료·DB 전체 장애로 RUNNING이 남을 수 있다. 실행 ID별 소유 인스턴스/작업 종료와 DB 트랜잭션 종료를 운영 로그·프로세스·DB에서 확인하기 전에는 시간 경과나 다른 인스턴스 재시작만으로 실패 처리하지 않는다. 운영자가 해당 작업 종료를 확인한 뒤 백업·변경 검토를 거쳐 RUNNING인 그 ID만 FAILED/0건 및 안전한 중단 분류로 수동 정리한다. 애플리케이션은 운영 데이터 복구 SQL을 자동 실행하지 않는다. 새 실행은 별도 ID로 기록한다. 자동 만료·heartbeat 정책은 이번 범위에서 도입하지 않았다.
+- 실패 이력 저장 자체가 DB 장애로 실패하면 원래 오류를 유지하고 runId·오류 유형만 로그에 남긴다. DB 복구 후 미종료 이력을 확인해야 한다. 외부 예외 원문을 이력·스케줄러 로그에 저장하지 않는다.
+- 카테고리/설정과 사용자 일정 쓰기는 기존 User 공통 계정 잠금을 첫 DB 조회로 사용한다. USER → Calendar 행 순서이며 잠금 후 기존 설정과 이름을 검증한다. 카테고리 삭제와 일정 등록도 같은 사용자 잠금을 사용한다. 이름의 기존 Java 문자열 비교와 현재 UNIQUE(user_id, category_id)를 유지하며 새 스키마/Collation 변경은 없다.
+- 기본 자동 검증은 test 프로필·H2 메모리 DB와 고정 HTML fixture를 사용한다. 별도 `tools/calendar-mysql-concurrency/run.ps1 -Stage All`은 새 Calendar 격리 DB에서 실제 MySQL DDL·REPEATABLE READ·InnoDB 잠금/timeout·UNIQUE·카테고리 삭제 경합·크롤링 원자적 커밋/롤백과 실행계획을 검사한다. 서울 JVM/UTC JDBC, 서울 JVM/서울 JDBC, UTC JVM/UTC JDBC는 각각 별도 JVM에서 검사한다. 짧은 2초 잠금 대기 한도를 사용하는 검증이므로 빌드 등 동시 부하 중 timeout 발생도 실패로 기록하고 독립 실행 결과와 구분한다. 실제 서비스 다중 JVM/HTTP 부하와 커밋 응답 유실은 추가 격리 검증 대상이다. 실제 학교 사이트 호출이나 운영/개발 DB 변경으로 대체하지 않는다.
 
 ## 프로필과 초기화
 

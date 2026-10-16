@@ -3,12 +3,20 @@ package com.kkirikkiri.calendar.repository;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
 
 import com.kkirikkiri.calendar.entity.ScheduleCrawlCategory;
 import com.kkirikkiri.calendar.entity.ScheduleCrawlRun;
 import com.kkirikkiri.calendar.entity.ScheduleCrawlStatus;
 
 public interface ScheduleCrawlRunRepository extends JpaRepository<ScheduleCrawlRun, Long> {
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select r from ScheduleCrawlRun r where r.crawlRunId = :id")
+	Optional<ScheduleCrawlRun> findByIdForUpdate(@Param("id") Long id);
 
 	/** 최근 실행의 상태, 시작 시각, 수집 건수를 조회한다. 동일 시각이면 ID 내림차순으로 결정한다. */
 	Optional<ScheduleCrawlRun> findFirstByCategoryOrderByStartedAtDescCrawlRunIdDesc(

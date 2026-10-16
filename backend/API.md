@@ -1515,6 +1515,8 @@ Auth
 
 11. 캘린더
 
+사용자 일정 DATE/TIME은 한국 현지 일정 값이며 시간대 오프셋을 추가하지 않는다. 수집 이력과 수집·카테고리 생성 DATETIME은 서울 현지 벽시계 값이다. Calendar의 직접 Java-time JDBC 매핑은 JVM/JDBC 시간대에 따른 값 이동을 방지한다. DTO 타입·nullable 시간·응답 형식은 유지하며 기존 데이터 확인과 수동 인덱스 적용은 [DEPLOYMENT.md](DEPLOYMENT.md)를 따른다.
+
 학교 학사일정만 현재 자동 수집한다. 기숙사 수집기는 미구현이며 출처·규칙 확정 전 임의 구현하지 않는다.
 
 한경국립대학교 학사일정(https://www.hknu.ac.kr/kor/646/subview.do)은 매일 04:00(Asia/Seoul)에 현재 표시된 연간 일정을 수집한다.
@@ -1522,6 +1524,8 @@ Auth
 수집 일정은 ownerUser=null, sourceType=CRAWLED, sourceName="한경국립대학교 학사일정"인 종일 일정이다.
 sourceType/sourceName/title/startDate/endDate가 모두 같으면 추가 저장하지 않는다. 원문의 제목이나 날짜가 변경되면 새 일정으로 저장되며 기존 일정은 자동 수정·삭제하지 않는다.
 수집 전용 API는 제공하지 않으며 기존 일정 조회 API에서 조회한다.
+
+수집 시작 이력(RUNNING)은 HTTP 요청 전에 독립 트랜잭션으로 저장한다. 일정과 성공 이력(COMPLETED·완료 시각·신규 저장 건수)은 하나의 저장 트랜잭션에서 함께 커밋한다. 중복 일정만 있는 실행도 COMPLETED/0건으로 기록한다. 요청·파싱·저장·커밋 실패는 일정 롤백 후 별도 트랜잭션에서 FAILED/0건으로 기록한다. 실패 사유는 안전한 FETCH/STORE 분류 코드이며 외부 응답·예외 원문을 저장하지 않는다. 프로세스 종료나 이력 DB 장애로 남은 RUNNING의 운영 확인 절차는 [DEPLOYMENT.md](DEPLOYMENT.md)의 Calendar 항목을 따른다.
 
 SCHOOL = 학교 일정
 DORMITORY = 기숙사 일정
@@ -1604,6 +1608,8 @@ startDate <= endDate. 단일 일정은 startDate = endDate로 저장한다.
 시작/종료 시간 HH:mm
 
 같은 날짜이며 시작/종료 시간이 모두 존재하면 종료시간> 시작시간. 서로 다른 날짜에는 시각 값만 비교하지 않는다. 두 시간 모두 null이면 종일이며 한쪽 시간만 지정하는 현재 계약도 허용한다.
+
+프론트는 한쪽 시간 일정도 시작일~종료일의 날짜 범위에 표시하고, 지정된 시간과 `시작 시간 미정` 또는 `종료 시간 미정`을 명시한다. 누락 시간을 생성하거나 저장 값을 종일로 변경하지 않는다. FullCalendar의 날짜 배치에만 allDay 플래그를 사용한다.
 
 categoryId는 본인 소유 CUSTOM-* 카테고리의 실제 ID를 사용한다. 예시의 categoryId=3은 사용자가 생성한 카테고리 ID이다.
 
@@ -1698,6 +1704,8 @@ label 중복 금지
 색상 #RRGGBB
 
 SCHOOL, DORMITORY 이름 변경 금지
+
+생성·이름 변경·설정 저장·삭제는 공통 사용자 행 잠금을 첫 DB 접근으로 획득한 뒤 기존 이름·설정을 재조회한다. USER → Calendar 행 순서를 사용하며 서로 다른 사용자는 별도 행을 잠근다. 이름 비교는 기존 Java 문자열 일치 기준을 유지하고 새 UNIQUE/Collation 정책을 도입하지 않는다. PUT에서 생략된 설정은 유지한다. 프론트의 표시 여부 변경은 enabled에만 반영하며, 명시적으로 삭제한 사용자 카테고리만 기존 DELETE API로 요청한다.
 
 11.7 사용자 카테고리 생성
 
@@ -2040,7 +2048,7 @@ FAILED
 현재 관리자 프론트에는 수동 크롤링 실행 버튼이 없으므로 실행 API는 문서에서 제외한다.
 크롤링 실행 상태/실패 이력은 SCHEDULE_CRAWL_RUN, 실제 수집 일정은 CALENDAR_EVENT를 기준으로 조회한다.
 
-**미해결 #14 (High):** 실제 CalendarCrawlingService/Scheduler는 일정 저장과 로그만 수행하며 ScheduleCrawlRun을 생성·저장하지 않는다. 위 상태 API는 테이블을 조회할 뿐 실제 실행의 성공·실패·시각을 반영하지 못한다. 이력이 없으면 status/lastRunAt/lastCompletedAt/lastFailure=null, recentCollectedCount=0이며 totalCollectedCount는 실제 수집 일정 집계다. 실행 전 RUNNING 기록, 성공·실패·신규 저장 건수·완료 시각 갱신 및 일정 롤백과 독립적인 실패 이력 보존은 필요한 코드 보완이며 현재 보장되지 않는다.
+CalendarCrawlingService는 실행마다 ScheduleCrawlRun을 기록하며 상태 API는 시작 시각·ID 기준 최신 실행, 별도의 최근 성공·실패를 조회한다. 성공 이력과 일정은 같은 커밋으로 확정하고 실패 이력은 일정 롤백과 독립적으로 저장한다. 이력이 없는 카테고리는 status/lastRunAt/lastCompletedAt/lastFailure=null, recentCollectedCount=0이며 totalCollectedCount는 실제 수집 일정 집계다. DORMITORY 자동 수집기는 계속 미구현이다.
 
 13.15 수집 일정 목록
 
@@ -2674,7 +2682,7 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 - 설문 미저장 GET은 answers=null, 선호 조건 미저장도 해당 DTO 계약을 따른다. 저장된 프로필 설문은 현재 23개 필드다. 선택지·배열 중복·가중치 key 18개·상관없음 조합은 annotation 외 서비스 검증도 적용한다. hairDryer/bugHandling은 현재 요청·응답·Entity 필드가 아니다.
 - UserResponse.major, 룸메이트 목록·상세의 major/introduction/profileImageUrl/matchScore는 null일 수 있다. 비로그인 전체/상세 조회는 매칭 점수 null·liked=false다. recommended 필드는 반환하지 않는다. 로그인해도 계산 불가한 점수는 null일 수 있다. JWT가 제시된 요청의 유효성 검사와 공개 접근 허용은 별개다.
 - ChatRoomResponse.sourcePost/lastMessage는 null일 수 있다. 익명 상대 CounterpartResponse는 nickname="익명", tags=[], 그 외 필드 null이다. 익명 메시지 senderId는 null이다. 탈퇴/정지/토큰 만료·기존 구독 문제(#12)는 nullable 계약 보완으로 해결되지 않는다.
-- CalendarEventResponse.startTime/endTime/description/source는 null일 수 있다. source는 Entity의 source_name이며 sourceUrl/collectedAt는 이 DTO에 없다. AdminScheduleCrawlStatusResponse의 실행 시각·상태·실패 값은 이력 없음 시 null이며 실제 실행 기록 자체가 누락된 #14가 남아 있다. 관리자 응답에서 프로필이 없는 회원의 nickname/major/dormitory 등 프로필 필드도 null일 수 있다. 신고 상세 description은 선택값이다. 처리 시각·담당자는 현재 신고 응답 필드가 아니다.
+- CalendarEventResponse.startTime/endTime/description/source는 null일 수 있다. source는 Entity의 source_name이며 sourceUrl/collectedAt는 이 DTO에 없다. AdminScheduleCrawlStatusResponse의 실행 시각·상태·실패 값은 이력 없음 시 null이다. 학교 수집은 실행별 이력을 저장하며 기숙사 수집기는 미구현이다. 관리자 응답에서 프로필이 없는 회원의 nickname/major/dormitory 등 프로필 필드도 null일 수 있다. 신고 상세 description은 선택값이다. 처리 시각·담당자는 현재 신고 응답 필드가 아니다.
 - SignupRequest와 비밀번호 변경/재설정의 확인 비밀번호 일치, 출생연도 현재 연도 이하, 캘린더 날짜 범위·동일 날짜 시간 순서 등 @AssertTrue 객체 검증을 적용한다. 회원정보 PATCH의 null은 유지이며 세부전공 없음 선택은 null 저장, 학부·전공 활성 여부/소속과 중복 닉네임은 서비스에서 검증한다. 프로필 설문·선호 저장은 전체 입력이며 부분 PATCH처럼 처리하지 않는다.
 - PostImage 유지 정책은 keepImageIds 생략/null/[] 모두 기존 이미지 제거다. 현재 프론트가 유지할 ID 목록을 전달한다. 익명 게시글 author.id는 실제 작성자 ID이고 별도 정책 확정이 필요하다. API 호환성 변경을 이 문서가 승인하지 않는다.
 - REST 오류는 success=false/message/data=null/errorCode, DTO 필드 오류에만 fieldErrors가 추가될 수 있다. CustomException은 아래 ErrorCode와 기본 메시지로 반환하며 내부 예외 메시지를 공개하지 않는다. 대상 없음이 모두 404인 계약은 아니며 일반 서비스 오류는 INVALID_REQUEST 400이다. MVC의 405/413/415 등은 handler의 실제 상태를 유지한다. STOMP 오류는 REST HTTP/envelope가 아니다.

@@ -1,6 +1,7 @@
 package com.kkirikkiri.calendar.entity;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 
 import jakarta.persistence.Column;
@@ -16,6 +17,8 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import com.kkirikkiri.user.entity.User;
 
@@ -47,6 +50,7 @@ public class CalendarCategory {
 	private boolean system;
 
 	@Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "DATETIME")
+	@JdbcTypeCode(SqlTypes.LOCAL_DATE_TIME)
 	private LocalDateTime createdAt;
 
 	/**
@@ -72,6 +76,6 @@ public class CalendarCategory {
 
 	@PrePersist
 	protected void onCreate() {
-		this.createdAt = LocalDateTime.now();
+		this.createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 	}
 }

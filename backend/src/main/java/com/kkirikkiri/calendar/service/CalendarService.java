@@ -32,6 +32,7 @@ import com.kkirikkiri.calendar.repository.CalendarEventRepository;
 import com.kkirikkiri.global.exception.CustomException;
 import com.kkirikkiri.global.exception.ErrorCode;
 import com.kkirikkiri.user.entity.User;
+import com.kkirikkiri.user.entity.UserStatus;
 import com.kkirikkiri.user.repository.UserRepository;
 
 /** userId에는 인증된 사용자의 ID를 전달한다. 공개 일정 조회는 비로그인 시 null을 허용한다. */
@@ -65,7 +66,7 @@ public class CalendarService {
 
 	@Transactional
 	public CalendarEventResponse createEvent(Long userId, CalendarEventCreateRequest request) {
-		User user = findUser(userId);
+		User user = lockUser(userId);
 		validateRequest(request);
 		CalendarCategory category = findAvailableCategory(userId, request.categoryId());
 		validateEventCategory(category);
@@ -81,7 +82,7 @@ public class CalendarService {
 
 	@Transactional
 	public CalendarEventResponse updateEvent(Long userId, Long eventId, CalendarEventUpdateRequest request) {
-		validateUserId(userId);
+		lockUser(userId);
 		validateRequest(request);
 		CalendarEvent event = findEditableEvent(userId, eventId);
 		CalendarCategory category = findAvailableCategory(userId,
@@ -102,7 +103,7 @@ public class CalendarService {
 
 	@Transactional
 	public void deleteEvent(Long userId, Long eventId) {
-		validateUserId(userId);
+		lockUser(userId);
 		calendarEventRepository.delete(findEditableEvent(userId, eventId));
 	}
 
@@ -116,7 +117,7 @@ public class CalendarService {
 	@Transactional
 	public List<CalendarCategoryResponse> saveCategorySettings(Long userId,
 			List<CalendarCategorySettingRequest> requests) {
-		User user = findUser(userId);
+		User user = lockUser(userId);
 		if (requests == null) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
@@ -151,7 +152,7 @@ public class CalendarService {
 
 	@Transactional
 	public CalendarCategoryResponse createCategory(Long userId, CalendarCategoryCreateRequest request) {
-		User user = findUser(userId);
+		User user = lockUser(userId);
 		validateRequest(request);
 		validateAvailableLabel(userId, null, request.label());
 		CalendarCategory category = calendarCategoryRepository.save(new CalendarCategory(
@@ -164,7 +165,7 @@ public class CalendarService {
 	@Transactional
 	public CalendarCategoryResponse updateCategory(Long userId, Long categoryId,
 			CalendarCategoryUpdateRequest request) {
-		validateUserId(userId);
+		lockUser(userId);
 		validateRequest(request);
 		CalendarCategory category = findOwnedCustomCategory(userId, categoryId);
 		CalendarCategorySetting setting = calendarCategorySettingRepository
@@ -183,7 +184,7 @@ public class CalendarService {
 
 	@Transactional
 	public void deleteCategory(Long userId, Long categoryId) {
-		validateUserId(userId);
+		lockUser(userId);
 		CalendarCategory category = findOwnedCustomCategory(userId, categoryId);
 		if (calendarEventRepository.existsByCategory_CategoryId(categoryId)) {
 			throw new CustomException(ErrorCode.INVALID_REQUEST);
@@ -294,9 +295,15 @@ public class CalendarService {
 		}
 	}
 
-	private User findUser(Long userId) {
+	/** USER first, then calendar rows: shares the account lock order and avoids an old MySQL RR snapshot. */
+	private User lockUser(Long userId) {
 		validateUserId(userId);
-		return userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
+		User user = userRepository.findByIdForAccountUpdate(userId)
+				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
+		if (user.getStatus() != UserStatus.ACTIVE) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED);
+		}
+		return user;
 	}
 
 	private void validateUserId(Long userId) {

@@ -308,7 +308,7 @@ Controller가 그대로 호출할 수 있도록 공개 메서드 시그니처를
 | 11 | High | keepImageIds의 제거 의미 명시, 프론트 유지 ID 전달 코드 대조 |
 | 12 | High | CONNECT 이후 권한 재검증/기존 구독 수신 제한은 코드 미해결 |
 | 13 | Medium | 동시 고정 2개 제한은 코드 미해결 |
-| 14 | High | 실제 크롤링의 실행 이력 저장은 코드 미해결 |
+| 14 | High | Calendar 보완에서 시작/실패 독립 커밋·일정/성공 원자적 커밋 구현. 실제 MySQL/프로세스 종료 운영 검증은 별도 |
 | 15 | High | DORMITORY 수집 미구현 표시, 임의 구현 없음 |
 | 16 | High | 현재 프론트 점수 계산 유지, 서버 API를 예정 설계로 분리 |
 | 17 | Medium | Entity의 NULL/DEFAULT/PK/FK/UNIQUE와 애플리케이션 검증 구분. 물리 DB는 미검증 |

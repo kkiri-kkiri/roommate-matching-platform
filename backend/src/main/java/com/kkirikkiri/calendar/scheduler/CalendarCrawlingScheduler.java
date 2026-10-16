@@ -42,7 +42,7 @@ public class CalendarCrawlingScheduler {
             log.info("HKNU academic calendar: {} events inserted",
                     service.crawlAcademicCalendar());
         } catch (RuntimeException e) {
-            log.error("HKNU academic calendar crawling failed", e);
+            log.error("HKNU academic calendar crawling failed: exceptionType={}", e.getClass().getSimpleName());
         }
     }
 }
