@@ -23,6 +23,7 @@ import com.kkirikkiri.user.entity.UserProfile;
 class ProfileSurveyServiceTest {
     ValidatorFactory validation;
     UserRepository users;
+    User user;
     UserProfileRepository profiles;
     UserProfile profile;
     ProfileSurveyRepository surveys;
@@ -54,7 +55,9 @@ class ProfileSurveyServiceTest {
         events = mock(ApplicationEventPublisher.class);
         storedOptions = new ArrayList<>();
         service = new ProfileSurveyService(users, profiles, surveys, options, validation.getValidator(), events);
-        when(users.findByIdForSurveyUpdate(1L)).thenReturn(Optional.of(mock(User.class)));
+        user = mock(User.class);
+        when(user.getStatus()).thenReturn(com.kkirikkiri.user.entity.UserStatus.ACTIVE);
+        when(users.findByIdForSurveyUpdate(1L)).thenReturn(Optional.of(user));
         when(surveys.findByUser_UserId(1L)).thenAnswer(invocation -> Optional.ofNullable(stored));
         when(surveys.save(any())).thenAnswer(invocation -> {
             stored = invocation.getArgument(0);
@@ -71,6 +74,31 @@ class ProfileSurveyServiceTest {
     }
 
     @AfterEach void close() { validation.close(); }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(value = com.kkirikkiri.user.entity.UserStatus.class,
+            names = {"SUSPENDED", "WITHDRAWN"})
+    void inactiveUserIsRejectedBeforeAnySurveyOrIntroductionAccess(com.kkirikkiri.user.entity.UserStatus status) {
+        when(user.getStatus()).thenReturn(status);
+        var failure = assertThrows(CustomException.class, () -> service.saveOrUpdateMyProfileSurvey(
+                1L, answers("22시 이전", "같이 먹고 싶음", "변경 금지")));
+        assertEquals(com.kkirikkiri.global.exception.ErrorCode.UNAUTHORIZED, failure.getErrorCode());
+        var order = inOrder(users, user);
+        order.verify(users).findByIdForSurveyUpdate(1L);
+        order.verify(user).getStatus();
+        verifyNoInteractions(surveys, options, profiles, profile, events);
+    }
+
+    @Test void checksActiveStatusBeforeSurveyAndIntroductionChanges() {
+        service.saveOrUpdateMyProfileSurvey(1L, answers("22시 이전", "같이 먹고 싶음", "소개"));
+        var order = inOrder(users, user, surveys, profiles, profile);
+        order.verify(users).findByIdForSurveyUpdate(1L);
+        order.verify(user).getStatus();
+        order.verify(surveys).findByUser_UserId(1L);
+        order.verify(profiles).findByUser_UserId(1L);
+        order.verify(profile).changeIntroduction("소개");
+        order.verify(surveys).save(any());
+    }
 
     @Test void newUserIsIncompleteAndDoesNotWrite() {
         var result = service.getMyProfileSurvey(1L);

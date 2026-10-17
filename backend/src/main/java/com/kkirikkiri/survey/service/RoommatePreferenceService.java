@@ -23,6 +23,7 @@ import com.kkirikkiri.survey.repository.PreferenceCriterionRepository;
 import com.kkirikkiri.survey.repository.RoommatePreferenceOptionRepository;
 import com.kkirikkiri.survey.repository.RoommatePreferenceRepository;
 import com.kkirikkiri.user.entity.User;
+import com.kkirikkiri.user.entity.UserStatus;
 import com.kkirikkiri.user.repository.UserRepository;
 
 /**
@@ -114,6 +115,9 @@ public class RoommatePreferenceService {
 		// 프로필 설문과 같은 사용자 잠금을 사용하고 선택지·조건 교체까지 유지한다.
 		User user = userRepository.findByIdForSurveyUpdate(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+		if (user.getStatus() != UserStatus.ACTIVE) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED);
+		}
 		RoommatePreference preference = roommatePreferenceRepository.findByUser_UserId(userId).orElse(null);
 		if (preference == null) {
 			preference = createPreference(user, request);
