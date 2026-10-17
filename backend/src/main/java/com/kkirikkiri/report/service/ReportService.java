@@ -39,7 +39,9 @@ public class ReportService {
 		if (request == null || !validator.validate(request).isEmpty()) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
-		User reporter = userRepository.findById(userId)
+		// Serialize duplicate checks for the reporter before the first consistent read.
+		User reporter = userRepository.findByIdForAccountUpdate(userId)
+				.filter(user -> user.getStatus() == com.kkirikkiri.user.entity.UserStatus.ACTIVE)
 				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
 		Report report = switch (ReportType.valueOf(request.targetType())) {
 			case USER -> createUserReport(userId, reporter, request);

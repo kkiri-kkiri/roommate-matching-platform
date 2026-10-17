@@ -38,9 +38,10 @@ public class RoommateMatchingController {
 	@GetMapping("/api/roommates/recommended")
 	public ApiResponse<RoommatePageResponse<RoommateProfileResponse>> getRecommendedRoommates(
 			@AuthenticationPrincipal AuthenticatedUser user,
+			@Valid @ModelAttribute RoommateFilterRequest filter,
 			@PageableDefault(size = 9) Pageable pageable) {
 		return ApiResponse.success(
-				roommateMatchingService.getRecommendedRoommates(user.userId(), pageable));
+				roommateMatchingService.getRecommendedRoommates(user.userId(), filter, pageable));
 	}
 
 	@GetMapping("/api/roommates/{userId}")

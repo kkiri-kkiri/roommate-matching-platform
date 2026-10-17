@@ -59,7 +59,7 @@ class RoommateGuestReadTest {
 
     @Test
     void guestListHasNoPersonalScoresOrLikesAndDoesNotRecalculateMatches() {
-        when(profiles.findAllByUser_UserIdIn(List.of(42L))).thenReturn(List.of(profile));
+        when(profiles.findAll(any(Specification.class))).thenReturn(List.of(profile));
         var targetUser = profile.getUser();
         when(survey.getUser()).thenReturn(targetUser);
         when(surveys.findAllByUser_UserIdIn(List.of(42L))).thenReturn(List.of(survey));
@@ -99,7 +99,7 @@ class RoommateGuestReadTest {
 
     @Test
     void listDetailAndFavoritesReadTheSameLatestIntroduction() {
-        when(profiles.findAllByUser_UserIdIn(List.of(42L))).thenReturn(List.of(profile));
+        when(profiles.findAll(any(Specification.class))).thenReturn(List.of(profile));
         var targetUser = profile.getUser();
         when(survey.getUser()).thenReturn(targetUser);
         when(surveys.findAllByUser_UserIdIn(List.of(42L))).thenReturn(List.of(survey));

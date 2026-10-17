@@ -158,10 +158,14 @@ public class ChatService {
 				roomId, userId).ifPresent(message -> member.markRead(message.getSentAt()));
 	}
 
-	/** 사용자 단위 잠금 조회가 없어 동시 고정 요청의 최대 2개 보장은 선행 Repository 보완이 필요하다. */
+	/** Acquire the shared account lock before any membership/count snapshot. */
 	@Transactional
 	public void updateSettings(Long userId, Long roomId, ChatRoomSettingsRequest request) {
 		validateRequest(request);
+        validateUserId(userId);
+        userRepository.findByIdForAccountUpdate(userId)
+                .filter(user -> user.getStatus() == UserStatus.ACTIVE)
+                .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
 		ChatRoomMember member = findActiveMember(userId, roomId);
 		if (Boolean.TRUE.equals(request.pinned()) && !member.isPinned()
 				&& chatRoomMemberRepository.countByUser_UserIdAndPinnedTrueAndLeftFalse(userId) >= 2) {

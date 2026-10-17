@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 import Pagination from "../../components/common/Pagination/Pagination";
-import { getRoommates, getRecommendedRoommates, toRoommateProfile } from "../../api/roommateApi";
+import { getRoommates, getFilteredRecommendedRoommates, toRoommateProfile } from "../../api/roommateApi";
 import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./RoommateSearchPageCss";
 import { PROFILE_SECTIONS } from "../../data/profileSurvey";
@@ -57,27 +57,12 @@ function RoommateSearchPage({ currentUser }) {
       try {
         const recommended = activeTab === "recommended";
         const page = recommended
-          ? await getRecommendedRoommates(controller.signal)
+          ? await getFilteredRecommendedRoommates(filters, controller.signal)
           : await getRoommates({ page: currentPage - 1, size: PAGE_SIZE, filters }, controller.signal);
         if (!Array.isArray(page?.content) || !Number.isInteger(page.totalPages)) {
           throw new Error("프로필 목록 응답을 확인할 수 없습니다.");
         }
-        let items = page.content;
-        // 추천 API는 필터를 받지 않으므로 필터 API 결과와 추천 목록의 ID를 비교합니다.
-        if (recommended && Object.values(filters).some((values) => values.length > 0)) {
-          const matchingIds = new Set();
-          let index = 0;
-          let filteredPage;
-          do {
-            filteredPage = await getRoommates({ page: index++, size: 100, filters }, controller.signal);
-            if (!Array.isArray(filteredPage?.content) || !Number.isInteger(filteredPage.totalPages)) {
-              throw new Error("필터 결과를 확인할 수 없습니다.");
-            }
-            filteredPage.content.forEach((item) => matchingIds.add(item.id));
-          } while (index < filteredPage.totalPages && !controller.signal.aborted);
-          items = items.filter((item) => matchingIds.has(item.id));
-        }
-        const profiles = items.map(toRoommateProfile);
+        const profiles = page.content.map(toRoommateProfile);
         if (!controller.signal.aborted) setResults({ status: "success", profiles,
           totalPages: recommended ? 1 : Math.max(1, page.totalPages), error: "" });
       } catch (error) {

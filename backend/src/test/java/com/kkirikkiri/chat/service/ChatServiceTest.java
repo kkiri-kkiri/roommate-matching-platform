@@ -76,6 +76,7 @@ class ChatServiceTest {
     @BeforeEach
     void setUp() {
         user = user(7L);
+        lenient().when(userRepository.findByIdForAccountUpdate(7L)).thenReturn(Optional.of(user));
         target = user(8L);
         room = room(10L);
         member = new ChatRoomMember(room, user);

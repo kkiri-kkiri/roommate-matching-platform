@@ -39,6 +39,7 @@ class ChatStompInterceptorTest {
         // given
         var accessor = StompHeaderAccessor.create(StompCommand.CONNECT);
         accessor.setNativeHeader(HttpHeaders.AUTHORIZATION, "bEaReR   token  ");
+        accessor.setSessionId("connect");
         var authentication = authenticatedUser();
         when(authenticationProvider.authenticate("token")).thenReturn(authentication);
         Message<?> message = message(accessor);
@@ -185,8 +186,72 @@ class ChatStompInterceptorTest {
         return UsernamePasswordAuthenticationToken.authenticated(new AuthenticatedUser(7L, "USER"), null, List.of());
     }
 
+    @Test
+    void rejectsSendWhenConnectedTokenExpiresOrAccountIsSuspended() {
+        var send = message(authenticated(StompCommand.SEND, "/pub/chat/rooms/10/messages"));
+        when(authenticationProvider.authenticate("token")).thenThrow(new CustomException(ErrorCode.UNAUTHORIZED));
+        assertThrows(CustomException.class, () -> interceptor.preSend(send, null));
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void checksActualBrokerMessageBeforeDeliveryToExistingSubscriber() {
+        authenticated(StompCommand.SUBSCRIBE, "/sub/chat/rooms/10");
+        var delivery = brokerDelivery("session");
+        assertSame(delivery, interceptor.beforeHandle(delivery, null, ignored -> {}));
+        verify(service).validateActiveMember(7L, 10L);
+    }
+
+    @Test
+    void dropsQueuedDeliveryAfterMembershipIsRevoked() {
+        authenticated(StompCommand.SUBSCRIBE, "/sub/chat/rooms/10");
+        var delivery = brokerDelivery("session");
+        doThrow(new CustomException(ErrorCode.FORBIDDEN)).when(service).validateActiveMember(7L, 10L);
+        assertNull(interceptor.beforeHandle(delivery, null, ignored -> {}));
+    }
+
+    @Test
+    void dropsDeliveryAfterTokenExpiryOrAccountDeactivation() {
+        authenticated(StompCommand.SUBSCRIBE, "/sub/chat/rooms/10");
+        when(authenticationProvider.authenticate("token")).thenThrow(new CustomException(ErrorCode.UNAUTHORIZED));
+        assertNull(interceptor.beforeHandle(brokerDelivery("session"), null, ignored -> {}));
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void dropsDeliveryOnDatabaseFailureAndAfterDisconnect() {
+        authenticated(StompCommand.SUBSCRIBE, "/sub/chat/rooms/10");
+        when(authenticationProvider.authenticate("token")).thenThrow(new org.springframework.dao.DataAccessResourceFailureException("offline"));
+        assertNull(interceptor.beforeHandle(brokerDelivery("session"), null, ignored -> {}));
+        var disconnect = StompHeaderAccessor.create(StompCommand.DISCONNECT);
+        disconnect.setSessionId("session");
+        interceptor.preSend(message(disconnect), null);
+        assertNull(interceptor.beforeHandle(brokerDelivery("session"), null, ignored -> {}));
+        assertNull(interceptor.beforeHandle(brokerDelivery("unknown"), null, ignored -> {}));
+    }
+
+    @Test
+    void doesNotDropValidatedInboundApplicationSendOnExecutor() {
+        var send = message(authenticated(StompCommand.SEND, "/pub/chat/rooms/10/messages"));
+        assertSame(send, interceptor.preSend(send, null));
+        assertSame(send, interceptor.beforeHandle(send, null, ignored -> {}));
+    }
+
+    private Message<?> brokerDelivery(String session) {
+        var headers = org.springframework.messaging.simp.SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
+        headers.setSessionId(session);
+        headers.setDestination("/sub/chat/rooms/10");
+        return MessageBuilder.createMessage(new byte[0], headers.getMessageHeaders());
+    }
+
     private StompHeaderAccessor authenticated(StompCommand command, String destination) {
         var accessor = StompHeaderAccessor.create(command);
+        var connect = StompHeaderAccessor.create(StompCommand.CONNECT);
+        connect.setSessionId("session");
+        connect.setNativeHeader(HttpHeaders.AUTHORIZATION, "Bearer token");
+        lenient().when(authenticationProvider.authenticate("token")).thenReturn(authenticatedUser());
+        interceptor.preSend(message(connect), null);
+        accessor.setSessionId("session");
         accessor.setUser(authenticatedUser());
         accessor.setDestination(destination);
         return accessor;
