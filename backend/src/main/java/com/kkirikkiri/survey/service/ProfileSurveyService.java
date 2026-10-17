@@ -21,6 +21,7 @@ import com.kkirikkiri.survey.entity.ProfileSurveyOption;
 import com.kkirikkiri.survey.repository.ProfileSurveyOptionRepository;
 import com.kkirikkiri.survey.repository.ProfileSurveyRepository;
 import com.kkirikkiri.user.entity.User;
+import com.kkirikkiri.user.entity.UserStatus;
 import com.kkirikkiri.user.repository.UserRepository;
 import com.kkirikkiri.user.repository.UserProfileRepository;
 import com.kkirikkiri.user.entity.UserProfile;
@@ -110,6 +111,9 @@ public class ProfileSurveyService {
 		// 최초 생성도 보호하도록 설문 조회 전에 기존 사용자 행을 잠근다.
 		User user = userRepository.findByIdForSurveyUpdate(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+		if (user.getStatus() != UserStatus.ACTIVE) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED);
+		}
 		ProfileSurvey survey = profileSurveyRepository.findByUser_UserId(userId).orElse(null);
 		ProfileSurveyResponse previous = survey == null ? ProfileSurveyResponse.from(null, List.of())
 				: ProfileSurveyResponse.from(survey, profileSurveyOptionRepository
