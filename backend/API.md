@@ -796,6 +796,8 @@ multi 항목에서 상관없음은 다른 값과 동시 선택 불가
 - 갱신 실패·큐 포화는 로그에 기록한다. 작업 큐는 메모리 기반이며 프로세스 종료로 사라진 작업도 전체·관심 목록의 해당 페이지, 상세의 해당 상대, 추천의 해당 요청자 후보 점수를 조회 전에 다시 준비하여 복구한다. 추천 후보 재계산도 100명씩 별도 트랜잭션에서 수행한다.
 - 공개 대상은 자기 자신을 제외한 ACTIVE 사용자 중 USER_PROFILE과 completed=true인 PROFILE_SURVEY가 있는 사용자다. 필수 프로필 값이 없는 대상도 제외하며 major, introduction, profileImageUrl의 null은 허용한다.
 - 제외 조건과 설문 필터는 페이징·count 이전 DB 쿼리에 적용한다. 카드 프로필·설문·관심 여부 및 계산 입력은 대상 ID 기준 일괄 조회한다.
+- 전체·관심 목록은 점수 준비 뒤 공개 조건으로 페이지와 count를 다시 조회한다. 최종 페이지 선택·count·공개 프로필 재조회·DTO 구성은 하나의 REPEATABLE READ 읽기 트랜잭션에서 수행한다. 추천도 점수 준비 뒤 같은 방식으로 조회한다. 마지막 페이지가 사라지면 요청 page를 유지한 빈 content와 최신 totalElements/totalPages를 반환하며 프론트가 이전 페이지로 이동한다.
+- 공개 여부는 최종 읽기 스냅샷 기준이다. 그 스냅샷 이후 커밋되는 계정 상태 변경까지 차단하는 원자적 전송을 보장하지 않는다. 전체·관심 목록에서 준비한 페이지가 이동하면 새로 포함된 대상의 점수는 기존 저장값 또는 null일 수 있으며 다음 조회/비동기 갱신으로 복구한다.
 
 6.1 전체 프로필 조회
 
@@ -863,6 +865,10 @@ matchScore DESC, 상대 userId ASC (동점 보조 정렬)
 요청당 최대 9개 표시. size가 9보다 크면 9로 제한한다.
 명시적 sort는 matchScore,desc만 허용한다.
 
+선택 설문 필터는 전체 목록과 같은 RoommateFilterRequest 키/AND·OR 규칙을 지원한다.
+필터가 있으면 먼저 공개 가능한 matchScore>=60 상위 9명을 확정한 뒤, 해당 ID에 한정한 DB 쿼리로 필터를 적용한다. 순위 10위 이하에서 보충하지 않는다. 필터 결과(최대 9명)에 page/size를 적용하며 totalElements/totalPages도 이 결과 기준이다. 필터가 없으면 기존 추천 페이징·count 계약을 유지한다.
+프론트 추천 탭은 필터를 포함한 추천 요청 한 번으로 결과를 표시하며 전체 목록의 모든 페이지를 조회하지 않는다. 기존 요청자의 점수 준비는 요청당 한 번 수행하며 후보 수에 따른 계산 비용은 남는다.
+
 실제 추천 점수 계산은 백엔드에서 처리한다.
 
 Response item은 전체 프로필 조회와 동일하며 추천 결과의 matchScore는 항상 숫자다.
@@ -903,6 +909,10 @@ Response (공통 ApiResponse.data):
 - 409 MATCH_ANALYSIS_UNAVAILABLE: 선호 미작성 등으로 점수 계산 불가.
 - 503 AI_GATEWAY_UNAVAILABLE: 설정 누락, Gateway HTTP 오류, 연결/시간 초과.
 - 502 AI_GATEWAY_INVALID_RESPONSE: 잘못된 JSON, choices/content 누락, 빈 문자열 또는 문자열이 아닌 content.
+- 429 AI_ANALYSIS_RATE_LIMITED: 인증 사용자별 기본 60초 동안 12회 초과. 최초 승인부터 고정 window이며 auth와 다른 키를 사용해 기존 MySQL auth_limit_bucket에서 원자적으로 예약한다. 업무 실패·Gateway 실패·용량 초과도 승인된 호출량을 환불하지 않는다. 제한 저장 장애 시 우회하지 않는다.
+- 503 AI_ANALYSIS_BUSY: 인스턴스당 동시 분석 기본 2건 초과. 대기 없이 거절하며 예외/타임아웃에도 permit을 반환한다. Gateway 호출 중 DB 트랜잭션/잠금을 유지하지 않는다.
+- 설정: ai.analysis.max-requests / window-seconds / max-concurrent (환경변수 AI_ANALYSIS_MAX_REQUESTS / AI_ANALYSIS_WINDOW_SECONDS / AI_ANALYSIS_MAX_CONCURRENT). 기본값 12/60/2는 추천 카드 9개 확인과 소수의 재시도를 허용하면서 외부 호출 비용을 제한하는 초기값이며 운영 부하에 맞춰 조정한다.
+- 사용자별 quota는 동일 DB·동일 설정을 쓰는 다중 인스턴스에서 공유된다. 동시 실행 semaphore는 인스턴스별이므로 N개 인스턴스의 합산 상한은 N×max-concurrent다. 전체 배포 공통 동시 상한이 필요하면 Gateway/기존 ingress에서 별도 제한해야 한다. 신규 Redis는 추가하지 않았다.
 
 6.3 룸메이트 상세 프로필
 
@@ -2701,6 +2711,8 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 | PASSWORD_RESET_ACCOUNT_INACTIVE | 400 | 계정이 활성 상태가 아니어서 비밀번호를 변경할 수 없습니다. |
 | VALIDATION_ERROR | 400 | 입력값을 확인해 주세요. |
 | AUTH_REQUEST_LIMITED | 429 | 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요. |
+| AI_ANALYSIS_RATE_LIMITED | 429 | AI 분석 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요. |
+| AI_ANALYSIS_BUSY | 503 | AI 분석 요청이 몰리고 있습니다. 잠시 후 다시 시도해 주세요. |
 | EMAIL_VERIFICATION_COOLDOWN | 429 | 인증번호는 잠시 후 다시 요청해 주세요. |
 | EMAIL_VERIFICATION_NOT_FOUND | 400 | 먼저 인증번호를 요청해 주세요. |
 | EMAIL_VERIFICATION_INVALID | 400 | 인증번호가 올바르지 않습니다. |
@@ -2719,6 +2731,14 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 근거: [ApiResponse](src/main/java/com/kkirikkiri/global/response/ApiResponse.java), [GlobalExceptionHandler](src/main/java/com/kkirikkiri/global/exception/GlobalExceptionHandler.java), [ErrorCode](src/main/java/com/kkirikkiri/global/exception/ErrorCode.java), [SecurityConfig](src/main/java/com/kkirikkiri/global/config/SecurityConfig.java). 이 표는 코드 대조이며 SMTP/AI/프록시/운영 DB 응답을 실행 검증한 결과가 아니다.
 
 ### 19.4 문서 수정으로 해결되지 않는 보안·배포 위험
+
+2026-10-18 검증 보완: 관심 프로필 등록/취소, 채팅 설정, 신고 생성은 기존 사용자 행의
+DB 잠금을 첫 읽기 전에 획득하여 동일 사용자 요청을 인스턴스 간 직렬화한다.
+관심 취소의 관계 없음은 기존 400 INVALID_REQUEST를 유지한다.
+STOMP는 SEND/SUBSCRIBE 때 JWT·활성 계정을 다시 확인하며 기존 구독의 실제 메시지
+전달 직전에도 JWT·계정·방 참여 권한을 확인한다. 실패 시 해당 수신자 전달을 차단한다.
+Simple Broker의 서로 다른 JVM 사이 메시지 중계는 제공하지 않는다.
+실행 범위와 잔여 검증은 [1~3단계 종합 보고서](STAGES_1_3_VALIDATION.md)를 따른다.
 
 - #3 기본/prod의 DDL validate·SQL never·local 전용 시드와 #4 Gradle 테스트 H2 격리·연결 전 안전 검사를 구현했다. 적용 조건과 실제 운영에서 확인할 사항은 [DEPLOYMENT.md](DEPLOYMENT.md)를 따른다. 다른 도메인의 #12/#13/#14 등은 이번 user 수정의 배포 승인 범위에 포함하지 않는다.
 - Auth의 이메일 인증·로그인·메일 요청 제한은 아래 운영 정책을 따른다. 공유 저장소/실제 MySQL 검증은 DEPLOYMENT.md를 함께 확인한다.

@@ -49,7 +49,8 @@ public class SurveyMysqlConcurrency {
 
     public static void main(String[] args) throws Exception {
         ((ch.qos.logback.classic.Logger)org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)).setLevel(ch.qos.logback.classic.Level.OFF);
-        check(args.length == 1 && System.getenv("KKIRI_SURVEY_TEST_PASSWORD") != null, "Use the dedicated PowerShell runner");
+        check((args.length == 1 || (args.length == 2 && args[1].equals("--matching")))
+                && System.getenv("KKIRI_SURVEY_TEST_PASSWORD") != null, "Use the dedicated PowerShell runner");
         Path output = Path.of(args[0]).resolve("run-"+UUID.randomUUID()); Files.createDirectories(output);
         boolean claimed = false, passed = false;
         Connection guard = null;
@@ -72,7 +73,7 @@ public class SurveyMysqlConcurrency {
             config.setPassword(System.getenv("KKIRI_SURVEY_TEST_PASSWORD")); config.setMaximumPoolSize(6);
             config.setConnectionTimeout(5000); config.setTransactionIsolation("TRANSACTION_REPEATABLE_READ");
             config.setConnectionInitSql("set session innodb_lock_wait_timeout=3"); pool = new HikariDataSource(config);
-            context = new AnnotationConfigApplicationContext(Config.class);
+            context = new AnnotationConfigApplicationContext(args.length == 2 ? MatchingMysqlChecks.Config.class : Config.class);
             jdbc = context.getBean(JdbcTemplate.class); manager = context.getBean(PlatformTransactionManager.class);
             users = context.getBean(UserRepository.class); profiles = context.getBean(UserProfileRepository.class);
             profileService = context.getBean(ProfileSurveyService.class); preferenceService = context.getBean(RoommatePreferenceService.class);
@@ -88,6 +89,7 @@ public class SurveyMysqlConcurrency {
                     test((preference ? "preference" : "profile")+"-"+state+"-survey-first", () -> surveyFirst(preference, state));
                 }
             }
+            if (args.length == 2) MatchingMysqlChecks.runAll();
             passed = true;
         } catch (Throwable failure) {
             results.add(Map.of("case", "harness", "result", "FAIL", "errorType", failure.getClass().getName()));
@@ -221,6 +223,8 @@ public class SurveyMysqlConcurrency {
     static void cleanup() {
         tx().executeWithoutResult(s -> {
             for (Long id : ownedUsers) {
+                jdbc.update("delete from PROFILE_LIKE where user_id=? or target_user_id=?", id, id);
+                jdbc.update("delete from ROOMMATE_MATCH where requester_user_id=? or target_user_id=?", id, id);
                 jdbc.update("delete o from PROFILE_SURVEY_OPTION o join PROFILE_SURVEY p on p.profile_survey_id=o.profile_survey_id where p.user_id=?", id);
                 jdbc.update("delete o from ROOMMATE_PREFERENCE_OPTION o join ROOMMATE_PREFERENCE p on p.preference_id=o.preference_id where p.user_id=?", id);
                 jdbc.update("delete c from PREFERENCE_CRITERION c join ROOMMATE_PREFERENCE p on p.preference_id=c.preference_id where p.user_id=?", id);
@@ -230,6 +234,11 @@ public class SurveyMysqlConcurrency {
             if (dormId != null) jdbc.update("delete from DORMITORY where dormitory_id=?", dormId);
             if (facultyId != null) jdbc.update("delete from FACULTY where faculty_id=?", facultyId);
         });
+        for (String table : jdbc.queryForList("select table_name from information_schema.tables where table_schema=database()", String.class)) {
+            check(table.matches("[A-Za-z_]+"), "Unexpected table identifier during cleanup verification");
+            check(jdbc.queryForObject("select count(*) from `"+table+"`", Long.class) == 0,
+                    "Owned cleanup left data in the initially empty test schema");
+        }
         results.add(Map.of("case", "owned-row-cleanup", "result", "PASS", "ownedUsers", ownedUsers.size()));
     }
     public static class Recorder {

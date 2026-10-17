@@ -1,5 +1,19 @@
 # user / auth 도메인 운영 준비
 
+2026-10-18 공통 동시성 보완: 관심 프로필 등록/취소, 채팅 설정, 신고 생성도 기존
+User 계정 잠금을 첫 DB 읽기로 사용한다. 기존 API·Entity·DDL은 변경하지 않는다.
+STOMP SEND/SUBSCRIBE와 기존 구독의 실제 전달 직전에 인증/활성 계정/참여 권한을
+재검증한다. 전달 검증의 DB 장애도 차단하며 세션 종료 시 메모리의 토큰 참조를 정리한다.
+JVM 간 메시지 중계를 제공하는 broker relay는 추가하지 않았다. 여러 서버에 나뉜
+채팅 연결의 메시지 전달 정책/인프라는 4단계 통합 검증에서 별도로 결정·검증해야 한다.
+로컬 격리 MySQL·두 실제 JVM의 검증 방법은
+[새 검증 도구](tools/matching-mysql-multi-instance/RUNBOOK.md), 결과는
+[1~3단계 종합 보고서](STAGES_1_3_VALIDATION.md)를 따른다. 운영 배포 승인이 아니다.
+
+Matching 보완(2026-10-17): 사용자별 AI 요청량은 기존 auth_limit_bucket의 별도 SHA-256 키를 사용한다. 신규 DDL은 없으며 모든 인스턴스가 같은 DB와 AI_ANALYSIS_MAX_REQUESTS(12), AI_ANALYSIS_WINDOW_SECONDS(60)를 사용해야 한다. 실패 요청도 승인한 quota를 환불하지 않고 DB 장애 시 제한을 우회하지 않는다. AI_ANALYSIS_MAX_CONCURRENT(2)는 인스턴스별 semaphore 상한이다. 여러 인스턴스의 합산 동시 상한은 Gateway/ingress에서 별도 설정해야 한다. 새 인프라는 추가하지 않았다. 실제 Gateway는 테스트에서 호출하지 않으므로 운영 모델·접근·시간 초과·요금 설정은 별도 확인한다.
+
+목록 최종 조회는 명시적인 REPEATABLE READ 스냅샷을 사용한다. 점수 준비 이전의 ID 페이지를 그대로 응답하지 않으며 공개 조건·페이지/count·프로필·설문을 최종 읽기 트랜잭션에서 조회한다. 스냅샷 이후의 정지/탈퇴 커밋과 HTTP 전송까지의 완전한 원자성은 보장하지 않는다. 격리 MySQL 검증은 [Survey/Matching 실행 안내](tools/survey-mysql-concurrency/RUNBOOK.md)의 -IncludeMatching을 사용한다. 실제 운영 DDL/실행계획·부하 검증을 대체하지 않는다.
+
 이 문서는 user 안정화·auth 보호 및 Calendar 보완의 배포 조건이다. 다른 도메인의 배포 적합성이나 실제 운영 성공을 보장하지 않는다.
 
 ## Calendar 변경의 운영 확인

@@ -26,6 +26,14 @@ async function request(config, authenticated = true) {
 export const getRecommendedRoommates = (signal) =>
   request({ method: "get", url: "/roommates/recommended", params: { page: 0, size: 9 }, signal });
 
+export const getFilteredRecommendedRoommates = (filters = {}, signal) => {
+  const params = new URLSearchParams({ page: "0", size: "9" });
+  Object.entries(filters).forEach(([key, values]) => {
+    values.forEach((value) => params.append(key, value));
+  });
+  return request({ method: "get", url: "/roommates/recommended", params, signal });
+};
+
 export const getRoommateDetail = (userId, signal) =>
   request({ method: "get", url: `/roommates/${userId}`, signal }, false);
 

@@ -1,5 +1,16 @@
 # Survey 전용 MySQL 경합 검증
 
+Matching까지 검증하려면 `run.ps1 -IncludeMatching`을 사용한다. 기본 12개 Survey 시나리오는 유지하며 실제 Matching 서비스·Repository를 사용하는 9개 동작 시나리오(동시 매칭 생성, 설문 수정/계산 경합, 전체/관심 목록 × 정지/탈퇴, 상위 9명 필터, PK/UNIQUE/FK/롤백, 독립 limiter의 공유 MySQL AI quota)를 추가한다. 필터 사례는 120명을 추가해 실행 시간·실제 인덱스·대표 필터 EXPLAIN을 evidence.json에 남긴다. 대표 EXPLAIN은 Hibernate SQL 원문과 완전히 동일한 실행계획을 주장하지 않는다. H2 테스트의 bounded DTO 조회와 프론트 요청 수 검증은 별도다. 요청자별 점수 준비는 기존대로 후보 수에 비례하며 대규모 운영 부하 결과는 아니다.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\backend\tools\survey-mysql-concurrency\run.ps1 -PrepareOnly -IncludeMatching
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\backend\tools\survey-mysql-concurrency\run.ps1 -IncludeMatching
+```
+
+기존 컨테이너·schema·계정·UUID·빈 테이블 확인과 advisory lock을 그대로 적용한다. Matching 정리도 해당 실행에서 만든 사용자 ID의 매칭·관심 행에 한정한다. 운영/개발 DB URL 재정의는 허용하지 않는다. 기본 실행의 12개 사례와 선택 Matching 사례의 성공 여부는 evidence.json의 개별 case로 구분한다.
+
+AI quota 검증은 실제 AuthLimitStore와 독립 limiter 2개를 사용한다. 이 JPA 전용 도구의 물리 테이블명은 대문자이며 Boot 기본 매핑은 소문자이므로, 해당 검증의 JDBC adapter에서 bucket 테이블 식별자와 information_schema 테이블명 비교만 맞춘다. 실제 컬럼 타입/Collation 검증·예약 SQL·잠금·DB 시각은 유지하며 DB 객체나 데이터를 변경하여 우회하지 않는다. 이는 단일 JVM의 독립 객체/연결 검증이며 실제 다중 프로세스 검증은 아니다.
+
 기본 Gradle 테스트는 H2만 사용한다. 이 도구는 별도 MySQL 8 InnoDB에서 실제 Survey 서비스,
 JPA Repository 및 트랜잭션 프록시를 실행한다. Boot 설정, `.env`, SMTP, 스케줄러를 로드하지 않는다.
 관리자 상태 변경은 H2 통합 테스트에서 실제 AdminService로 검증하며, 이 도구에서는 동일한

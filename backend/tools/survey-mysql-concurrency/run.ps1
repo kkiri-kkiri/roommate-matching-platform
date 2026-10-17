@@ -1,4 +1,4 @@
-param([switch] $Provision, [switch] $PrepareOnly)
+param([switch] $Provision, [switch] $PrepareOnly, [switch] $IncludeMatching)
 $ErrorActionPreference = 'Stop'
 if ($Provision -and $PrepareOnly) { throw 'Choose Provision or PrepareOnly.' }
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'))
@@ -30,7 +30,7 @@ try {
     }
 } finally { $archive.Dispose() }
 $classpath = (Join-Path $repoRoot 'backend/build/classes/java/main') + ';' + $libRoot + '/*'
-& javac -encoding UTF-8 -cp $classpath -d $classRoot (Join-Path $PSScriptRoot 'SurveyMysqlConcurrency.java') (Join-Path $repoRoot 'backend/src/test/java/com/kkirikkiri/survey/SurveyTestData.java')
+& javac -encoding UTF-8 -cp $classpath -d $classRoot (Join-Path $PSScriptRoot 'SurveyMysqlConcurrency.java') (Join-Path $PSScriptRoot 'MatchingMysqlChecks.java') (Join-Path $repoRoot 'backend/src/test/java/com/kkirikkiri/survey/SurveyTestData.java')
 if ($LASTEXITCODE -ne 0) { throw 'Survey harness compilation failed; no database accessed.' }
 if ($PrepareOnly) { Write-Output 'Survey harness compiled; no database accessed.'; return }
 # No configurable URL and no .env loading: only the separately labelled Survey container is accepted.
@@ -50,6 +50,8 @@ $passwordLine = @($metadata.Config.Env | Where-Object { $_.StartsWith('MYSQL_PAS
 if ($passwordLine.Count -ne 1) { throw 'Dedicated Survey credentials missing.' }
 $env:KKIRI_SURVEY_TEST_PASSWORD = $passwordLine[0].Substring(15)
 try {
-    & java '-Duser.timezone=Asia/Seoul' -cp ($classRoot + ';' + $classpath) SurveyMysqlConcurrency $workRoot
+    $runArgs = @($workRoot)
+    if ($IncludeMatching) { $runArgs += '--matching' }
+    & java '-Duser.timezone=Asia/Seoul' -cp ($classRoot + ';' + $classpath) SurveyMysqlConcurrency @runArgs
     if ($LASTEXITCODE -ne 0) { throw 'Survey MySQL validation failed. Inspect evidence.json in the reported run directory.' }
 } finally { Remove-Item Env:KKIRI_SURVEY_TEST_UUID,Env:KKIRI_SURVEY_TEST_HOSTNAME,Env:KKIRI_SURVEY_TEST_PASSWORD -ErrorAction SilentlyContinue }

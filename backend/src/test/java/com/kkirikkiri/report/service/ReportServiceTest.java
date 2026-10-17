@@ -99,7 +99,7 @@ class ReportServiceTest {
     @EnumSource(ReportType.class)
     void rejectsMissingTargetWithoutSaving(ReportType type) {
         // given
-        when(userRepository.findById(7L)).thenReturn(Optional.of(reporter));
+        when(userRepository.findByIdForAccountUpdate(7L)).thenReturn(Optional.of(reporter));
         // when / then
         assertError(ErrorCode.INVALID_REQUEST, () -> service.createReport(7L, request(type)));
         verifyNoInteractions(reportRepository);
@@ -139,7 +139,7 @@ class ReportServiceTest {
     }
 
     private void stubReporterAndTarget(ReportType type) {
-        when(userRepository.findById(7L)).thenReturn(Optional.of(reporter));
+        when(userRepository.findByIdForAccountUpdate(7L)).thenReturn(Optional.of(reporter));
         switch (type) {
             case USER -> when(userRepository.findById(10L)).thenReturn(Optional.of(target));
             case POST -> when(communityPostRepository.findById(10L)).thenReturn(Optional.of(post));

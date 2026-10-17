@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import MyPage from "./MyPage";
 import { PROFILE_FIELDS } from "../../data/profileSurvey";
@@ -163,4 +163,62 @@ test("preserves legacy text on load and allows shortening it to the new limit", 
   expect(screen.getByRole("alert")).toHaveTextContent("200자 이하");
   fireEvent.change(input, { target: { value: "가".repeat(200) } });
   expect(input).toHaveValue("가".repeat(200));
+});
+
+test("switching users clears drafts and ignores the previous account's pending save", async () => {
+  surveyApi.getMyProfileSurvey.mockResolvedValueOnce({ completed: true, answers, introduction: "이전 계정" });
+  let finishSave;
+  surveyApi.saveMyProfileSurvey.mockReturnValue(new Promise(resolve => { finishSave = resolve; }));
+  const view = render(<MyPage currentUser={user} />);
+  fireEvent.click(await screen.findByRole("button", { name: "설문 수정" }));
+  fireEvent.click(screen.getByRole("button", { name: "저장" }));
+  fireEvent.submit(screen.getByRole("button", { name: "저장 중…" }).closest("form"));
+  expect(surveyApi.saveMyProfileSurvey).toHaveBeenCalledTimes(1);
+  const nextUser = { ...user, id: 2 };
+  userApi.getMyInfo.mockResolvedValue(nextUser);
+  surveyApi.getMyProfileSurvey.mockResolvedValue({ completed: false, answers: null });
+  view.rerender(<MyPage currentUser={nextUser} />);
+  expect(await screen.findByRole("button", { name: "내 설문 작성하기" })).toBeInTheDocument();
+  await act(async () => finishSave({ completed: true, answers, introduction: "이전 계정 저장" }));
+  expect(screen.queryByText("이전 계정 저장")).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "설문 수정" })).not.toBeInTheDocument();
+});
+
+test("rejects unknown saved options instead of silently submitting them", async () => {
+  surveyApi.getMyProfileSurvey.mockResolvedValue({ completed: true, answers: { ...answers, smoking: "알 수 없는 선택" } });
+  render(<MyPage currentUser={user} />);
+  fireEvent.click(await screen.findByRole("button", { name: "설문 수정" }));
+  fireEvent.click(screen.getByRole("button", { name: "저장" }));
+  expect(surveyApi.saveMyProfileSurvey).not.toHaveBeenCalled();
+  expect(screen.getByText("흡연 여부 항목을 선택해 주세요.")).toBeInTheDocument();
+});
+
+test("moving from a faculty without majors requires selecting a major in the new faculty", async () => {
+  mockTab = "account";
+  const account = { ...user, faculty: "HK자율전공학부", major: null, grade: "3학년" };
+  userApi.getMyInfo.mockResolvedValue(account);
+  userApi.updateMyInfo.mockImplementation(async payload => ({ ...account, ...payload }));
+  render(<MyPage currentUser={account} />);
+  const card = (await screen.findByText("생활관 및 학적 정보")).parentElement.parentElement;
+  fireEvent.click(within(card).getByRole("button", { name: "수정" }));
+  fireEvent.change(screen.getByLabelText(/나의 학부/), { target: { value: "컴퓨터응용수학부" } });
+  fireEvent.click(within(card).getByRole("button", { name: "완료" }));
+  expect(userApi.updateMyInfo).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText(/나의 전공/), { target: { value: "소프트웨어융합전공" } });
+  fireEvent.click(within(card).getByRole("button", { name: "완료" }));
+  await waitFor(() => expect(userApi.updateMyInfo).toHaveBeenCalledWith({ dormitory: "나래", grade: "3학년",
+    faculty: "컴퓨터응용수학부", major: "소프트웨어융합전공" }));
+});
+
+test("nickname edits send no academic fields or major clearing sentinel", async () => {
+  mockTab = "account";
+  const account = { ...user, nickname: "학생하나", faculty: "컴퓨터응용수학부" };
+  userApi.getMyInfo.mockResolvedValue(account);
+  userApi.updateMyInfo.mockResolvedValue({ ...account, nickname: "학생둘" });
+  render(<MyPage currentUser={account} />);
+  const card = (await screen.findByText("기본 정보")).parentElement.parentElement;
+  fireEvent.click(within(card).getByRole("button", { name: "수정" }));
+  fireEvent.change(screen.getByLabelText(/닉네임/), { target: { value: "학생둘" } });
+  fireEvent.click(within(card).getByRole("button", { name: "완료" }));
+  await waitFor(() => expect(userApi.updateMyInfo).toHaveBeenCalledWith({ nickname: "학생둘" }));
 });

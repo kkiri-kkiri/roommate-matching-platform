@@ -1,5 +1,5 @@
 import { PREFERENCE_STEPS } from "../../data/preferenceSurvey";
-import { getMyPreferences, saveMyPreferences, getMyProfileSurvey, saveMyProfileSurvey } from "../../api/surveyApi";
+import { getMyProfileSurvey, saveMyProfileSurvey, getMyPreferences, saveMyPreferences } from "../../api/surveyApi";
 import { getMyInfo, updateMyInfo, changePassword } from "../../api/userApi";
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -139,6 +139,7 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
   const sections = isPreference ? PREFERENCE_STEPS : PROFILE_SECTIONS;
   const [draft, setDraft] = useState(null);
   const [saving, setSaving] = useState(false);
+  const pendingSave = useRef(false);
   const [errors, setErrors] = useState({});
   const formRef = useRef(null);
   const titleRef = useRef(null);
@@ -165,14 +166,21 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
 
   const save = async (event) => {
     event.preventDefault();
-    if (saving) return;
+    if (pendingSave.current) return;
     if (!isPreference && (draft.introduction || "").length > 200) {
       setErrors({ introduction: "나의 한마디는 200자 이하여야 합니다." });
       return;
     }
     const missing = sections
       .flatMap((section) => section.fields)
-      .filter((field) => !hasAnswer(draft[field.id]));
+      .filter((field) => {
+        const value = draft[field.id];
+        if (!hasAnswer(value)) return true;
+        if (field.type !== "multi") return !field.options.includes(value);
+        return !Array.isArray(value) || new Set(value).size !== value.length
+          || value.some((item) => !field.options.includes(item))
+          || (value.length > 1 && value.some((item) => field.exclusiveOptions?.includes(item)));
+      });
     if (missing.length) {
       setErrors(
         Object.fromEntries(
@@ -189,24 +197,26 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
     }
     const saved = isPreference
       ? {
-          ...draft,
-          weights: Object.fromEntries(
-            sections.flatMap((section) =>
-              section.fields.map((field) => [
-                field.id,
-                getPreferenceWeight(draft, field.id),
-              ]),
-            ),
+        ...draft,
+        weights: Object.fromEntries(
+          sections.flatMap((section) =>
+            section.fields.map((field) => [
+              field.id,
+              getPreferenceWeight(draft, field.id),
+            ]),
           ),
-        }
+        ),
+      }
       : draft;
+    pendingSave.current = true;
     setSaving(true);
     try {
-      if ((await onSave(saved)) === false) return;
+      if (await onSave(saved) === false) return;
     } catch (error) {
       window.alert(error.message);
       return;
     } finally {
+      pendingSave.current = false;
       setSaving(false);
     }
     setDraft(null);
@@ -278,17 +288,7 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
       ) : (
         <>
           <S.Stack as="form" ref={formRef} onSubmit={save} noValidate>
-            <fieldset
-              disabled={saving}
-              style={{
-                border: 0,
-                padding: 0,
-                margin: 0,
-                minWidth: 0,
-                display: "grid",
-                gap: 24,
-              }}
-            >
+            <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0, display: "grid", gap: 24 }}>
               {sections.map((section, index) => (
                 <S.Card key={section.id}>
                   <S.CardHeader>
@@ -464,8 +464,7 @@ function SurveyContent({ type, answers, isEmpty, onSave }) {
                     취소
                   </S.GhostButton>
                   <S.PrimaryButton type="submit">
-                    <Check size={17} aria-hidden="true" />{" "}
-                    {saving ? "저장 중…" : "저장"}
+                    <Check size={17} aria-hidden="true" /> {saving ? "저장 중…" : "저장"}
                   </S.PrimaryButton>
                 </S.FormActions>
               )}
@@ -507,12 +506,12 @@ function AccountContent({ account, onSave }) {
       [id]: value,
       ...(id === "faculty"
         ? {
-            major:
-              FACULTY_OPTIONS.find((item) => item.name === value)?.majors
-                .length === 0
-                ? "세부전공 없음"
-                : "",
-          }
+          major:
+            FACULTY_OPTIONS.find((item) => item.name === value)?.majors
+              .length === 0
+              ? "세부전공 없음"
+              : "",
+        }
         : {}),
     }));
     setErrors((current) => ({
@@ -548,23 +547,14 @@ function AccountContent({ account, onSave }) {
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
-    pendingRef.current = true;
-    setSaving(true);
+    pendingRef.current = true; setSaving(true);
     try {
-      const payload = Object.fromEntries(
-        ids
-          .map((id) => [id, id === "major" && noMajor ? "세부전공 없음" : draft[id]]),
-      );
+      const payload = Object.fromEntries(ids.map((id) => [id, id === "major" && noMajor ? "세부전공 없음" : draft[id]]));
       const saved = await onSave(payload);
       setDraft((current) => ({ ...current, ...saved }));
       window.alert("회원정보를 저장했어요.");
-    } catch (error) {
-      window.alert(error.message);
-      return;
-    } finally {
-      pendingRef.current = false;
-      setSaving(false);
-    }
+    } catch (error) { window.alert(error.message); return; }
+    finally { pendingRef.current = false; setSaving(false); }
     setEditingFields((current) =>
       Object.fromEntries(Object.keys(current).map((id) => [id, false])),
     );
@@ -601,22 +591,10 @@ function AccountContent({ account, onSave }) {
       nextErrors.confirmPassword = "새 비밀번호가 일치하지 않아요.";
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
-    pendingRef.current = true;
-    setSaving(true);
-    try {
-      await changePassword(
-        draft.currentPassword,
-        draft.newPassword,
-        draft.confirmPassword,
-      );
-      window.alert("비밀번호를 변경했어요.");
-    } catch (error) {
-      window.alert(error.message);
-      return;
-    } finally {
-      pendingRef.current = false;
-      setSaving(false);
-    }
+    pendingRef.current = true; setSaving(true);
+    try { await changePassword(draft.currentPassword, draft.newPassword, draft.confirmPassword); window.alert("비밀번호를 변경했어요."); }
+    catch (error) { window.alert(error.message); return; }
+    finally { pendingRef.current = false; setSaving(false); }
     setPasswordEditing(false);
     setDraft((current) => ({
       ...current,
@@ -707,32 +685,14 @@ function AccountContent({ account, onSave }) {
   };
 
   return (
-    <S.Stack
-      as="form"
-      ref={formRef}
-      onSubmit={save}
-      noValidate
-      aria-busy={saving}
-    >
-      <fieldset
-        disabled={saving}
-        style={{
-          border: 0,
-          padding: 0,
-          margin: 0,
-          minWidth: 0,
-          display: "flex",
-          flexDirection: "column",
-          gap: 24,
-        }}
-      >
+    <S.Stack as="form" ref={formRef} onSubmit={save} noValidate aria-busy={saving}>
+      <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0, minWidth: 0, display: "flex", flexDirection: "column", gap: 24 }}>
         <S.SectionHeading>
           <div>
             <S.SectionTitle>계정 정보</S.SectionTitle>
-            <S.Description>
-              나의 정보를 최신 상태로 관리해 주세요.
-            </S.Description>
+            <S.Description>나의 정보를 최신 상태로 관리해 주세요.</S.Description>
           </div>
+          <S.Badge $muted>필요한 항목만 수정할 수 있어요</S.Badge>
         </S.SectionHeading>
         <S.Card>
           <S.CardHeader>
@@ -908,9 +868,7 @@ function AccountContent({ account, onSave }) {
           )}
           {passwordEditing && (
             <>
-              <S.Helper>
-                변경을 원할 때만 세 항목을 모두 입력해 주세요.
-              </S.Helper>
+              <S.Helper>변경을 원할 때만 세 항목을 모두 입력해 주세요.</S.Helper>
               <S.FormGrid $compact>
                 {renderField("currentPassword", "현재 비밀번호", {
                   type: "password",
@@ -931,7 +889,7 @@ function AccountContent({ account, onSave }) {
   );
 }
 
-function MyPage({ currentUser, onUserUpdated }) {
+function MyPageContent({ currentUser, onUserUpdated }) {
   const [searchParams] = useSearchParams();
   const activeTab = MENU_ITEMS.some(
     (item) => item.id === searchParams.get("tab"),
@@ -949,38 +907,20 @@ function MyPage({ currentUser, onUserUpdated }) {
   const [accountRevision, setAccountRevision] = useState(0);
   useEffect(() => {
     let cancelled = false;
-    setAccountLoading(true);
-    setAccountError("");
-    setAccount(null);
-    Promise.all([getMyInfo(), getMyPreferences()])
-      .then(([user, preference]) => {
-        if (!cancelled) {
-          setAccount({
-            ...user,
-            major: user.major || "",
-            studentId: user.admissionYear,
-          });
-          setPreferences(preference.answers || {});
-          setPreferencesCompleted(preference.completed);
-        }
-      })
-      .catch((error) => {
-        if (!cancelled) setAccountError(error.message);
-      })
-      .finally(() => {
-        if (!cancelled) setAccountLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+    setAccountLoading(true); setAccountError(""); setAccount(null);
+    Promise.all([getMyInfo(), getMyPreferences()]).then(([user, preference]) => {
+      if (!cancelled) {
+        setAccount({ ...user, major: user.major || "", studentId: user.admissionYear });
+        setPreferences(preference.answers || {});
+        setPreferencesCompleted(preference.completed);
+      }
+    }).catch((error) => { if (!cancelled) setAccountError(error.message); })
+      .finally(() => { if (!cancelled) setAccountLoading(false); });
+    return () => { cancelled = true; };
   }, [currentUser?.id, accountRevision]);
   const saveAccount = async (payload) => {
     const user = await updateMyInfo(payload);
-    const saved = {
-      ...user,
-      major: user.major || "",
-      studentId: user.admissionYear,
-    };
+    const saved = { ...user, major: user.major || "", studentId: user.admissionYear };
     setAccount(saved);
     onUserUpdated?.(user);
     return saved;
@@ -1016,49 +956,27 @@ function MyPage({ currentUser, onUserUpdated }) {
   const likesTitleRef = useRef(null);
   const [likesRevision, setLikesRevision] = useState(0);
   const [likedResults, setLikedResults] = useState({
-    status: "loading",
-    profiles: [],
-    totalElements: 0,
-    totalPages: 0,
-    page: 0,
-    first: true,
-    last: true,
-    error: "",
+    status: "loading", profiles: [], totalElements: 0, totalPages: 0,
+    page: 0, first: true, last: true, error: "",
   });
   const completeCount = Object.values(hasSurveyAnswers).filter(Boolean).length;
 
   const handleLikeChange = () => {
     setLikedResults((current) => ({ ...current, status: "loading" }));
     setLikesRevision((value) => value + 1);
-    requestAnimationFrame(() =>
-      likesTitleRef.current?.focus({ preventScroll: true }),
-    );
+    requestAnimationFrame(() => likesTitleRef.current?.focus({ preventScroll: true }));
   };
 
   useEffect(() => {
     if (activeTab !== "likes") return;
     const controller = new AbortController();
-    setLikedResults((current) => ({
-      ...current,
-      status: "loading",
-      error: "",
-    }));
-    getMyLikedRoommates(
-      { page: likesPage - 1, size: LIKES_PER_PAGE },
-      controller.signal,
-    )
+    setLikedResults((current) => ({ ...current, status: "loading", error: "" }));
+    getMyLikedRoommates({ page: likesPage - 1, size: LIKES_PER_PAGE }, controller.signal)
       .then((page) => {
         if (controller.signal.aborted) return;
-        if (
-          !Array.isArray(page?.content) ||
-          !Number.isInteger(page.totalPages) ||
-          page.totalPages < 0 ||
-          !Number.isInteger(page.totalElements) ||
-          page.totalElements < 0 ||
-          page.page !== likesPage - 1 ||
-          typeof page.first !== "boolean" ||
-          typeof page.last !== "boolean"
-        ) {
+        if (!Array.isArray(page?.content) || !Number.isInteger(page.totalPages)
+          || page.totalPages < 0 || !Number.isInteger(page.totalElements) || page.totalElements < 0
+          || page.page !== likesPage - 1 || typeof page.first !== "boolean" || typeof page.last !== "boolean") {
           throw new Error("관심 프로필 목록 응답을 확인할 수 없습니다.");
         }
         // A deleted last page is corrected only toward a smaller page.
@@ -1067,45 +985,25 @@ function MyPage({ currentUser, onUserUpdated }) {
           setLikesPage(lastPage);
           return;
         }
-        setLikedResults({
-          ...page,
-          profiles: page.content.map(toRoommateProfile),
-          status: "success",
-          error: "",
-        });
-      })
-      .catch((error) => {
+        setLikedResults({ ...page, profiles: page.content.map(toRoommateProfile), status: "success", error: "" });
+      }).catch((error) => {
         if (!controller.signal.aborted) {
-          setLikedResults((current) => ({
-            ...current,
-            status: "error",
-            error: error.message,
-          }));
+          setLikedResults((current) => ({ ...current, status: "error", error: error.message }));
         }
       });
     return () => controller.abort();
   }, [activeTab, likesPage, likesRevision, currentUser?.id]);
 
-  if (accountLoading)
-    return (
-      <S.Page>
-        <p role="status">내 정보를 불러오는 중이에요.</p>
-      </S.Page>
-    );
-  if (accountError || !account)
-    return (
-      <S.Page>
-        <p role="alert">{accountError || "내 정보를 불러오지 못했어요."}</p>
-        <button onClick={() => setAccountRevision((value) => value + 1)}>
-          다시 시도
-        </button>
-      </S.Page>
-    );
+  if (accountLoading) return <S.Page><p role="status">내 정보를 불러오는 중이에요.</p></S.Page>;
+  if (accountError || !account) return <S.Page><p role="alert">{accountError || "내 정보를 불러오지 못했어요."}</p><button onClick={() => setAccountRevision((value) => value + 1)}>다시 시도</button></S.Page>;
 
   const detailItems = [
     ["닉네임", account.nickname],
     ["성별", account.gender],
-    ["만 나이", `${getInternationalAge(account.birthYear) ?? "-"}세`],
+    [
+      "만 나이",
+      `${getInternationalAge(account.birthYear) ?? "-"}세`,
+    ],
     ["생활관", `${account.dormitory}관`],
     ["학년", account.grade],
     ["나의 학부", account.faculty],
@@ -1119,12 +1017,7 @@ function MyPage({ currentUser, onUserUpdated }) {
         <S.Layout>
           <S.Sidebar>
             <S.SidebarProfile>
-              <ProfileImage
-                as={S.Avatar}
-                major={account.major}
-                fallbackSrc={MY_PHOTO}
-                alt=""
-              />
+              <ProfileImage as={S.Avatar} major={account.major} fallbackSrc={MY_PHOTO} alt="" />
               <div>
                 <S.SidebarName>{account.nickname}</S.SidebarName>
                 <S.Muted>
@@ -1306,12 +1199,7 @@ function MyPage({ currentUser, onUserUpdated }) {
                 <S.SectionHeading>
                   <div>
                     <S.SectionTitle ref={likesTitleRef} tabIndex={-1}>
-                      좋아요{" "}
-                      <S.Badge>
-                        {likedResults.status === "success"
-                          ? `${likedResults.totalElements}명`
-                          : "—"}
-                      </S.Badge>
+                      좋아요 <S.Badge>{likedResults.status === "success" ? `${likedResults.totalElements}명` : "—"}</S.Badge>
                     </S.SectionTitle>
                     <S.Description>
                       마음에 담아둔 룸메이트를 다시 만나보세요.
@@ -1323,21 +1211,11 @@ function MyPage({ currentUser, onUserUpdated }) {
                   </S.SubtleLink>
                 </S.SectionHeading>
                 {likedResults.status !== "success" ? (
-                  <S.EmptyCard
-                    role={likedResults.status === "error" ? "alert" : "status"}
-                  >
-                    <S.EmptyTitle>
-                      {likedResults.status === "loading"
-                        ? "관심 프로필을 불러오고 있어요"
-                        : "관심 프로필을 불러오지 못했어요"}
-                    </S.EmptyTitle>
-                    <S.EmptyText>
-                      {likedResults.error || "잠시만 기다려 주세요."}
-                    </S.EmptyText>
+                  <S.EmptyCard role={likedResults.status === "error" ? "alert" : "status"}>
+                    <S.EmptyTitle>{likedResults.status === "loading" ? "관심 프로필을 불러오고 있어요" : "관심 프로필을 불러오지 못했어요"}</S.EmptyTitle>
+                    <S.EmptyText>{likedResults.error || "잠시만 기다려 주세요."}</S.EmptyText>
                     {likedResults.status === "error" && (
-                      <button type="button" onClick={handleLikeChange}>
-                        다시 시도
-                      </button>
+                      <button type="button" onClick={handleLikeChange}>다시 시도</button>
                     )}
                   </S.EmptyCard>
                 ) : likedResults.totalElements === 0 ? (
@@ -1360,18 +1238,10 @@ function MyPage({ currentUser, onUserUpdated }) {
                       currentPage={likedResults.page + 1}
                       totalPages={likedResults.totalPages}
                       onPageChange={(nextPage) => {
-                        if (
-                          (likedResults.first &&
-                            nextPage < likedResults.page + 1) ||
-                          (likedResults.last &&
-                            nextPage > likedResults.page + 1) ||
-                          nextPage === likedResults.page + 1
-                        )
-                          return;
-                        setLikedResults((current) => ({
-                          ...current,
-                          status: "loading",
-                        }));
+                        if ((likedResults.first && nextPage < likedResults.page + 1)
+                          || (likedResults.last && nextPage > likedResults.page + 1)
+                          || nextPage === likedResults.page + 1) return;
+                        setLikedResults((current) => ({ ...current, status: "loading" }));
                         setLikesPage(nextPage);
                         window.scrollTo({ top: 0, behavior: "smooth" });
                       }}
@@ -1390,4 +1260,6 @@ function MyPage({ currentUser, onUserUpdated }) {
   );
 }
 
-export default MyPage;
+export default function MyPage(props) {
+  return <MyPageContent key={props.currentUser?.id ?? "anonymous"} {...props} />;
+}

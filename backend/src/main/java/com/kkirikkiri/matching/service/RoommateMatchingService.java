@@ -46,16 +46,26 @@ public class RoommateMatchingService {
         validateFilter(filter);
         Pageable sorted = ordered(pageable, "userId", "user.userId", false);
         // Choose the page in SQL before preparing only its scores.
-        Page<Long> ids = read(() -> userProfileRepository.findAll(
-                MatchingCandidates.eligible(userId).and(buildFilterSpecification(userId, filter)), sorted)
-                .map(profile -> profile.getUser().getUserId()));
-        if (userId != null) refreshService.refreshTargets(userId, ids.getContent());
-        return read(() -> toIdPage(userId, ids));
+        Specification<UserProfile> spec = MatchingCandidates.eligible(userId).and(buildFilterSpecification(userId, filter));
+        if (userId != null) {
+            Page<Long> ids = read(() -> userProfileRepository.findAll(spec, sorted)
+                    .map(profile -> profile.getUser().getUserId()));
+            refreshService.refreshTargets(userId, ids.getContent());
+        }
+        // Re-select the page and its count after refresh, in the same snapshot as DTO assembly.
+        return read(() -> toIdPage(userId, userProfileRepository.findAll(spec, sorted)
+                .map(profile -> profile.getUser().getUserId())));
     }
 
     public RoommatePageResponse<RoommateProfileResponse> getRecommendedRoommates(Long userId, Pageable pageable) {
+        return getRecommendedRoommates(userId, null, pageable);
+    }
+
+    public RoommatePageResponse<RoommateProfileResponse> getRecommendedRoommates(
+            Long userId, RoommateFilterRequest filter, Pageable pageable) {
         validateUserId(userId);
         validatePageable(pageable);
+        validateFilter(filter);
         Pageable sorted = recommendedPageable(pageable);
         // Ranking needs all scores for this requester, never all user pairs.
         refreshService.refreshOutgoing(userId);
@@ -64,8 +74,20 @@ public class RoommateMatchingService {
                     .and((root, query, cb) -> cb.and(
                             cb.equal(root.get("requesterUser").get("userId"), userId),
                             cb.ge(root.get("matchScore"), 60)));
-            Page<Long> ids = roommateMatchRepository.findAll(spec, sorted)
+            boolean filtered = filter != null && filter.hasFilters();
+            Page<Long> ids = roommateMatchRepository.findAll(spec, filtered ? recommendedPageable(PageRequest.of(0, 9)) : sorted)
                     .map(match -> match.getTargetUser().getUserId());
+            if (filtered) {
+                // Rank first; filters only inspect these at most nine IDs. Never backfill from rank ten.
+                Set<Long> allowed = ids.isEmpty() ? Set.of() : userProfileRepository.findAll(MatchingCandidates.eligible(userId)
+                        .and((root, query, cb) -> root.get("user").get("userId").in(ids.getContent()))
+                        .and(buildFilterSpecification(userId, filter))).stream()
+                        .map(profile -> profile.getUser().getUserId()).collect(Collectors.toSet());
+                List<Long> selected = ids.getContent().stream().filter(allowed::contains).toList();
+                int start = (int) Math.min(sorted.getOffset(), selected.size());
+                return toIdPage(userId, new PageImpl<>(selected.subList(start,
+                        Math.min(start + sorted.getPageSize(), selected.size())), sorted, selected.size()));
+            }
             return toIdPage(userId, ids);
         });
     }
@@ -102,10 +124,8 @@ public class RoommateMatchingService {
         transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         try {
             transaction.executeWithoutResult(status -> {
+                User requester = lockLikeRequester(userId);
                 UserProfile target = findCandidate(userId, targetUserId);
-                User requester = userRepository.findById(userId)
-                        .filter(user -> user.getStatus() == UserStatus.ACTIVE)
-                        .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
                 if (!profileLikeRepository.existsByUser_UserIdAndTargetUser_UserId(userId, targetUserId)) {
                     profileLikeRepository.saveAndFlush(new ProfileLike(requester, target.getUser()));
                 }
@@ -119,9 +139,17 @@ public class RoommateMatchingService {
     @Transactional
     public void cancelProfileLike(Long userId, Long targetUserId) {
         validateDifferentUserIds(userId, targetUserId);
+        lockLikeRequester(userId);
         ProfileLike like = profileLikeRepository.findByUser_UserIdAndTargetUser_UserId(userId, targetUserId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
         profileLikeRepository.delete(like);
+    }
+
+    private User lockLikeRequester(Long userId) {
+        // Serialize registration/cancellation before the first RR snapshot, including absent pairs.
+        return userRepository.findByIdForAccountUpdate(userId)
+                .filter(user -> user.getStatus() == UserStatus.ACTIVE)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
     }
 
     public RoommatePageResponse<RoommateProfileResponse> getLikedRoommates(Long userId, Pageable pageable) {
@@ -132,12 +160,14 @@ public class RoommateMatchingService {
                 .and((root, query, cb) -> cb.equal(root.get("user").get("userId"), userId));
         Page<Long> ids = read(() -> profileLikeRepository.findAll(spec, sorted).map(like -> like.getTargetUser().getUserId()));
         refreshService.refreshTargets(userId, ids.getContent());
-        return read(() -> toIdPage(userId, ids));
+        return read(() -> toIdPage(userId, profileLikeRepository.findAll(spec, sorted)
+                .map(like -> like.getTargetUser().getUserId())));
     }
 
     private RoommatePageResponse<RoommateProfileResponse> toIdPage(Long userId, Page<Long> ids) {
-        if (ids.isEmpty()) return RoommatePageResponse.from(ids.map(id -> (RoommateProfileResponse) null));
-        var profiles = userProfileRepository.findAllByUser_UserIdIn(ids.getContent()).stream()
+        if (ids.isEmpty()) return RoommatePageResponse.from(new PageImpl<>(List.of(), ids.getPageable(), ids.getTotalElements()));
+        var profiles = userProfileRepository.findAll(MatchingCandidates.eligible(userId)
+                .and((root, query, cb) -> root.get("user").get("userId").in(ids.getContent()))).stream()
                 .collect(Collectors.toMap(profile -> profile.getUser().getUserId(), profile -> profile));
         var surveys = profileSurveyRepository.findAllByUser_UserIdIn(ids.getContent()).stream()
                 .collect(Collectors.toMap(survey -> survey.getUser().getUserId(), survey -> survey));
@@ -164,6 +194,7 @@ public class RoommateMatchingService {
     private <T> T read(java.util.function.Supplier<T> work) {
         TransactionTemplate transaction = new TransactionTemplate(transactionManager);
         transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        transaction.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
         transaction.setReadOnly(true);
         return transaction.execute(status -> work.get());
     }

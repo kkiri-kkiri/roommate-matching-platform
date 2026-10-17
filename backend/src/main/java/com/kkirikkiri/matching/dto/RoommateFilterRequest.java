@@ -33,4 +33,11 @@ public record RoommateFilterRequest(
 		List<@NotBlank @Size(max = 50) String> scentProductUse,
 		List<@NotBlank @Size(max = 50) String> desktopUse,
 		List<@NotBlank @Size(max = 50) String> sharedItems) {
+    public boolean hasFilters() {
+        return java.util.stream.Stream.of(sleepTime, wakeTime, sleepTalking, snoring, teethGrinding,
+                sleepSensitivity, indoorEating, smoking, lightingPreference, phoneCall, mediaSound,
+                showerTime, showerDuration, cleaningFrequency, cleaningStyle, dormStayDays, mealPlan,
+                meal, roommateInteraction, temperaturePreference, scentProductUse, desktopUse, sharedItems)
+                .anyMatch(values -> values != null && !values.isEmpty());
+    }
 }
