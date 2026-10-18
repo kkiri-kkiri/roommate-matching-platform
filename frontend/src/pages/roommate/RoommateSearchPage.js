@@ -15,6 +15,7 @@ import { getRoommates, getFilteredRecommendedRoommates, toRoommateProfile } from
 import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
 import * as S from "./RoommateSearchPageCss";
 import { PROFILE_SECTIONS } from "../../data/profileSurvey";
+import { isCurrentAuthenticationSession, useAuthenticationSession } from "../../auth/session";
 
 const FILTER_GROUPS = PROFILE_SECTIONS.flatMap((section) => section.fields);
 
@@ -25,6 +26,7 @@ const DEFAULT_FILTERS = FILTER_GROUPS.reduce(
 const PAGE_SIZE = 9;
 
 function RoommateSearchPage({ currentUser }) {
+  const session = useAuthenticationSession();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") === "recommended" ? "recommended" : "all";
   const userId = currentUser?.id;
@@ -63,14 +65,14 @@ function RoommateSearchPage({ currentUser }) {
           throw new Error("프로필 목록 응답을 확인할 수 없습니다.");
         }
         const profiles = page.content.map(toRoommateProfile);
-        if (!controller.signal.aborted) setResults({ status: "success", profiles,
+        if (!controller.signal.aborted && isCurrentAuthenticationSession(session)) setResults({ status: "success", profiles, session,
           totalPages: recommended ? 1 : Math.max(1, page.totalPages), error: "" });
       } catch (error) {
-        if (!controller.signal.aborted) setResults({ status: "error", profiles: [], totalPages: 1, error: error.message });
+        if (!controller.signal.aborted && isCurrentAuthenticationSession(session)) setResults({ status: "error", profiles: [], totalPages: 1, error: error.message });
       }
     })();
     return () => controller.abort();
-  }, [activeTab, currentPage, filters, revision, requiresLogin, userId]);
+  }, [activeTab, currentPage, filters, revision, requiresLogin, userId, session]);
   const tabRefs = useRef({});
   const filterDialogRef = useRef(null);
 
@@ -96,7 +98,7 @@ function RoommateSearchPage({ currentUser }) {
     [filters],
   );
 
-  const visibleProfiles = results.profiles;
+  const visibleProfiles = results.session === session ? results.profiles : [];
   const totalPages = results.totalPages;
 
   const updateDraftFilter = (filterId, value) => {

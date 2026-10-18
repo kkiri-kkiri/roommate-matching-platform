@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { checkLoginEmail, login } from "../../api/authApi";
+import { storeAccessToken } from "../../auth/session";
 import * as S from "./LoginPageCss";
 
 const REMEMBERED_EMAIL_KEY = "rememberedEmail";
@@ -92,7 +93,7 @@ const LoginPage = ({ onLogin }) => {
 
       if (version !== requestVersion.current) return;
       try {
-        window.localStorage.setItem("accessToken", response.accessToken);
+        storeAccessToken(response.accessToken);
         if (rememberEmail) {
           window.localStorage.setItem(REMEMBERED_EMAIL_KEY, normalizedEmail);
         } else {

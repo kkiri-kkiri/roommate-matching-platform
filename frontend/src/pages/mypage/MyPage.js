@@ -1,7 +1,7 @@
 import { PREFERENCE_STEPS } from "../../data/preferenceSurvey";
 import { getMyProfileSurvey, saveMyProfileSurvey, getMyPreferences, saveMyPreferences } from "../../api/surveyApi";
 import { getMyInfo, updateMyInfo, changePassword } from "../../api/userApi";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
@@ -25,6 +25,8 @@ import { FACULTY_OPTIONS } from "../../data/facultyOptions";
 import Pagination from "../../components/common/Pagination/Pagination";
 import ProfileImage from "../../components/common/ProfileImage";
 import ProfileCard from "../../components/common/ProfileCard/ProfileCard";
+import { subscribeProfileLikeChanges } from "../../components/common/ProfileCard/profileLikes";
+import { isCurrentAuthenticationSession, useAuthenticationSession } from "../../auth/session";
 import * as S from "./MyPageCss";
 import { getMyLikedRoommates, toRoommateProfile } from "../../api/roommateApi";
 import {
@@ -890,6 +892,7 @@ function AccountContent({ account, onSave }) {
 }
 
 function MyPageContent({ currentUser, onUserUpdated }) {
+  const session = useAuthenticationSession();
   const [searchParams] = useSearchParams();
   const activeTab = MENU_ITEMS.some(
     (item) => item.id === searchParams.get("tab"),
@@ -961,11 +964,16 @@ function MyPageContent({ currentUser, onUserUpdated }) {
   });
   const completeCount = Object.values(hasSurveyAnswers).filter(Boolean).length;
 
-  const handleLikeChange = () => {
+  const handleLikeChange = useCallback(() => {
     setLikedResults((current) => ({ ...current, status: "loading" }));
     setLikesRevision((value) => value + 1);
     requestAnimationFrame(() => likesTitleRef.current?.focus({ preventScroll: true }));
-  };
+  }, []);
+
+  useEffect(() => {
+    if (activeTab !== "likes") return;
+    return subscribeProfileLikeChanges(session, handleLikeChange);
+  }, [activeTab, session, handleLikeChange]);
 
   useEffect(() => {
     if (activeTab !== "likes") return;
@@ -973,7 +981,7 @@ function MyPageContent({ currentUser, onUserUpdated }) {
     setLikedResults((current) => ({ ...current, status: "loading", error: "" }));
     getMyLikedRoommates({ page: likesPage - 1, size: LIKES_PER_PAGE }, controller.signal)
       .then((page) => {
-        if (controller.signal.aborted) return;
+        if (controller.signal.aborted || !isCurrentAuthenticationSession(session)) return;
         if (!Array.isArray(page?.content) || !Number.isInteger(page.totalPages)
           || page.totalPages < 0 || !Number.isInteger(page.totalElements) || page.totalElements < 0
           || page.page !== likesPage - 1 || typeof page.first !== "boolean" || typeof page.last !== "boolean") {
@@ -987,12 +995,12 @@ function MyPageContent({ currentUser, onUserUpdated }) {
         }
         setLikedResults({ ...page, profiles: page.content.map(toRoommateProfile), status: "success", error: "" });
       }).catch((error) => {
-        if (!controller.signal.aborted) {
+        if (!controller.signal.aborted && isCurrentAuthenticationSession(session)) {
           setLikedResults((current) => ({ ...current, status: "error", error: error.message }));
         }
       });
     return () => controller.abort();
-  }, [activeTab, likesPage, likesRevision, currentUser?.id]);
+  }, [activeTab, likesPage, likesRevision, currentUser?.id, session]);
 
   if (accountLoading) return <S.Page><p role="status">내 정보를 불러오는 중이에요.</p></S.Page>;
   if (accountError || !account) return <S.Page><p role="alert">{accountError || "내 정보를 불러오지 못했어요."}</p><button onClick={() => setAccountRevision((value) => value + 1)}>다시 시도</button></S.Page>;
@@ -1228,7 +1236,6 @@ function MyPageContent({ currentUser, onUserUpdated }) {
                           key={profile.id}
                           profile={profile}
                           activeTab="all"
-                          onToggleLike={handleLikeChange}
                           showOverlay={false}
                         />
                       ))}
@@ -1261,5 +1268,6 @@ function MyPageContent({ currentUser, onUserUpdated }) {
 }
 
 export default function MyPage(props) {
-  return <MyPageContent key={props.currentUser?.id ?? "anonymous"} {...props} />;
+  const session = useAuthenticationSession();
+  return <MyPageContent key={`${props.currentUser?.id ?? "anonymous"}:${session.generation}`} {...props} />;
 }

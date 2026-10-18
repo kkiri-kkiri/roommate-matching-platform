@@ -1,5 +1,5 @@
 import axios from "axios";
-import { clearStoredAuthentication, readAccessToken } from "../auth/session";
+import { clearStoredAuthentication, getAuthenticationSession, readAccessToken } from "../auth/session";
 
 export function createApiClient(options = {}) {
   const client = axios.create({
@@ -17,6 +17,11 @@ export function createApiClient(options = {}) {
         ? authorization.slice(7)
         : null;
       if (error.response?.status === 401 && token) {
+        // A previous ProfileLike session can share the same JWT after relogin.
+        if (config.authenticationSessionGeneration !== undefined
+            && config.authenticationSessionGeneration !== getAuthenticationSession().generation) {
+          return Promise.reject(error);
+        }
         // 이전 요청의 늦은 응답이 새로 로그인한 사용자를 로그아웃시키지 않도록 합니다.
         if (token === readAccessToken()) clearStoredAuthentication();
         // 공개 조회만 비로그인으로 한 번 재시도합니다. 쓰기 요청은 반복하지 않습니다.

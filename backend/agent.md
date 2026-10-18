@@ -287,7 +287,8 @@ Controller가 그대로 호출할 수 있도록 공개 메서드 시그니처를
 
 - SMTP는 STARTTLS/발신자·자격 증명이 필요한 실제 외부 의존성이고, AI_API_KEY/AI_BASE_URL/AI_MODEL 및 DB/JWT는 placeholder 의존성이 있다. JWT 키 조건, CORS의 정확한 운영 origin, 이메일 링크의 프론트 주소, 외부 연결·오류 처리는 배포 환경에서 검증한다. 실제 `.env` 값을 이 문서에 복사하지 않는다.
 - 현재 이미지 경로는 상대 경로 `uploads/community` 기본값이다. 쓰기 권한·영구 볼륨·백업·공개 URL을 검증해야 한다. WebSocket은 `/ws/chat`의 Upgrade/Connection 전달·TLS·타임아웃과 STOMP 도착 여부를 프록시에서 확인한다. Simple broker의 다중 인스턴스 전달은 별도 환경 검증 대상이다.
-- 익명 게시글/댓글은 [CommunityAuthorResponse](src/main/java/com/kkirikkiri/community/post/dto/CommunityAuthorResponse.java)에서 실제 author.id를 유지한다. 표시 익명과 사용자 식별자 비공개의 정책 차이를 결정해야 하며 계약을 임의 변경하지 않는다.
+- 익명 게시글은 [CommunityAuthorResponse.forPost](src/main/java/com/kkirikkiri/community/post/dto/CommunityAuthorResponse.java)를 사용하는 목록·상세 응답에서 실제 author.id를 유지하고 nickname="익명", major=null로 표시한다. 게시글의 작성자 ID 비공개 여부와 공개 프로필·다른 게시물 연결에 따른 재식별 위험은 미확정 정책으로 남아 있으며 계약을 임의 변경하지 않는다.
+- 익명 댓글·답글은 [CommunityCommentResponse.from](src/main/java/com/kkirikkiri/community/comment/dto/CommunityCommentResponse.java)에서 author.id=null, author.major=null, nickname="익명{anonymousNumber}"로 반환한다. 댓글·답글은 게시글별 익명 번호를 공유하고, mine은 서버 Principal의 인증 사용자 ID와 내부 작성자를 비교해 계산한다(비로그인은 false). 일반 댓글·답글의 작성자 정보는 유지한다. 과거의 "익명 게시글/댓글 모두 실제 author.id 유지" 설명은 현재 댓글·답글 계약에 적용되지 않으며, 이미 구현된 댓글·답글 작성자 ID 마스킹을 미해결 보안 결함으로 취급하지 않는다. API.md 7.4·8장을 함께 따른다.
 - [EmailVerificationService.verify](src/main/java/com/kkirikkiri/auth/service/EmailVerificationService.java)는 6자리 코드·만료·해시를 확인하지만 실패 시도 횟수/검증 요청 제한은 없다. 재발송 cooldown은 검증 시도 제한이 아니다. 추측 공격·BCrypt 반복 처리 부하를 줄이는 제한 정책과 구현, 외부 프록시 제한 여부 확인이 필요하다.
 - [migrations/README.md](migrations/README.md)의 Git 제외를 해제했고 prod 구성·DEPLOYMENT.md를 추가했다. 익명 키 적용은 ERD.md의 사전 점검·백업·수동 적용·롤백·검증 기준과 함께 별도 검토하며 자동 실행하지 않는다.
 
@@ -314,7 +315,7 @@ Controller가 그대로 호출할 수 있도록 공개 메서드 시그니처를
 | 17 | Medium | Entity의 NULL/DEFAULT/PK/FK/UNIQUE와 애플리케이션 검증 구분. 물리 DB는 미검증 |
 | 18 | Medium | 같은 날짜의 두 시간만 비교하는 기간 일정 규칙 정정 |
 
-위 표는 기존 문서 검토의 이력이며 user 안정화에서 #3/#4의 코드를 추가로 보완했다. 다른 도메인의 상태는 이번 작업에서 재검증하지 않았다. 익명 작성자 ID 재식별과 이메일 인증번호 시도 제한 정책도 별도 확인 대상이다. 이전 작업의 테스트 통과 보고를 현재 소스의 실행 결과로 사용하지 않는다.
+위 표는 기존 문서 검토의 이력이며 user 안정화에서 #3/#4의 코드를 추가로 보완했다. 다른 도메인의 상태는 이번 작업에서 재검증하지 않았다. 익명 게시글의 작성자 ID 재식별과 이메일 인증번호 시도 제한 정책도 별도 확인 대상이다. 익명 댓글·답글의 작성자 ID 마스킹은 위의 현재 구현 계약과 구분한다. 이전 작업의 테스트 통과 보고를 현재 소스의 실행 결과로 사용하지 않는다.
 
 모든 구현은 다음 조건을 만족해야 한다.
 

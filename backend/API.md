@@ -1071,6 +1071,11 @@ Response:
 
 목록·상세는 공개 조회이며 likes는 전체 좋아요 수, liked는 인증 사용자 본인의 좋아요 여부다.
 비로그인 요청의 liked는 false다.
+
+목록과 내가 작성한 게시글은 DB에서 선택한 페이지의 게시글 ID에 한정하여 좋아요 수를
+GROUP BY로 일괄 조회하고, 로그인한 경우 본인의 좋아요 ID를 한 번 더 조회한다.
+빈 페이지는 두 조회를 생략하며 좋아요가 없는 항목의 likes는 0이다.
+LIKES 정렬·필터·count·페이징은 계속 DB에서 처리하고 동점은 createdAt DESC, postId DESC다.
 상세의 comments는 댓글·답글을 parentCommentId로 연결하는 기존 배열 구조를 유지한다.
 각 항목은 id, parentCommentId(일반 댓글은 null), content, author, createdAt,
 likes(전체 좋아요 수, 없으면 0), liked(본인 좋아요 여부, 비로그인은 false), anonymous,
@@ -1138,7 +1143,7 @@ Content-Type 및 Validation은 작성과 동일.
 "keepImageIds": [1, 2]
 }
 
-작성 anonymous는 boolean이며 기본 false다. 수정 anonymous는 Boolean으로 생략/null이면 유지한다. 목록·상세 응답에도 anonymous를 포함하며 author는 id/nickname/major다. 익명은 nickname="익명", major=null이고 기존 id를 유지한다. 공개 프로필과 연결 가능한 대상은 재식별될 수 있으므로 익명성 수준은 정책 결정 대상이다. 현재 공개 계약을 임의 변경하지 않는다.
+게시글 작성 anonymous는 boolean이며 기본 false다. 수정 anonymous는 Boolean으로 생략/null이면 유지한다. 목록·상세 응답에도 anonymous를 포함하며 author는 id/nickname/major다. 익명 게시글은 author.nickname="익명", author.major=null이고 author.id는 실제 작성자 ID를 유지한다. 이는 8장의 익명 댓글·답글(author.id=null)과 다른 현재 구현 계약이다. 익명 게시글은 공개 프로필·다른 게시물과 연결해 재식별될 수 있으므로 작성자 ID 비공개 여부와 익명성 수준은 정책 결정 대상이다. 현재 공개 계약을 임의 변경하지 않는다.
 
 작성 성공 data는 postId(number), 수정 성공 data는 null이다. 이미지 URL은 현재 /api/post-images/{파일명} 경로이며 프론트는 API origin 기준으로 해석한다. 파일은 app.community.image-directory(기본 uploads/community)에 저장한다. 연결 제거와 실제 파일 삭제를 동일한 것으로 설명하지 않는다.
 
@@ -1201,7 +1206,7 @@ Validation: 댓글과 동일.
 
 댓글과 답글의 anonymous는 생략/null이면 false(닉네임 공개)이다. 익명인 경우 author.nickname은 "익명1"처럼 게시글별 번호를 포함하고 author.id와 author.major는 null이다. anonymousNumber는 해당 게시글에서 처음 익명으로 참여한 순서대로 배정하며 댓글과 답글이 공유한다. 일반 댓글의 anonymousNumber는 null이며 작성자 ID·닉네임·학과는 기존대로 반환한다. 내용 수정·소프트 삭제·재작성은 기존 번호를 유지한다.
 
-수정·삭제 UI는 실제 작성자 ID 비교 대신 mine을 사용한다. 서버의 권한 검증은 인증 사용자와 내부 작성자 관계로 계속 수행한다. 익명 댓글에는 게시글의 실제 작성자와 연결되는 작성자 배지를 표시하지 않는다. 기존 클라이언트는 author.id의 null 처리가 필요하므로 프론트엔드와 백엔드를 함께 배포한다. 게시글 자체의 익명 표시 계약은 이번 변경 대상이 아니다.
+mine은 서버 Principal에서 얻은 인증 사용자 ID와 댓글·답글의 내부 작성자 ID를 비교해 계산하며, 비로그인은 false다. 익명 여부나 응답 author.id로 계산하지 않는다. 수정·삭제 UI는 실제 작성자 ID 비교 대신 mine을 사용한다. 서버의 권한 검증은 인증 사용자와 내부 작성자 관계로 계속 수행한다. 익명 댓글에는 게시글의 실제 작성자와 연결되는 작성자 배지를 표시하지 않는다. author.id=null과 mine 사용은 현재 구현에 반영된 계약이며, 과거 클라이언트를 배포할 때는 이 nullable 계약을 함께 지원해야 한다. 익명 게시글의 실제 author.id 유지 계약은 7.4를 따른다.
 
 8.3 댓글/답글 수정
 
@@ -2695,6 +2700,7 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 - CalendarEventResponse.startTime/endTime/description/source는 null일 수 있다. source는 Entity의 source_name이며 sourceUrl/collectedAt는 이 DTO에 없다. AdminScheduleCrawlStatusResponse의 실행 시각·상태·실패 값은 이력 없음 시 null이다. 학교 수집은 실행별 이력을 저장하며 기숙사 수집기는 미구현이다. 관리자 응답에서 프로필이 없는 회원의 nickname/major/dormitory 등 프로필 필드도 null일 수 있다. 신고 상세 description은 선택값이다. 처리 시각·담당자는 현재 신고 응답 필드가 아니다.
 - SignupRequest와 비밀번호 변경/재설정의 확인 비밀번호 일치, 출생연도 현재 연도 이하, 캘린더 날짜 범위·동일 날짜 시간 순서 등 @AssertTrue 객체 검증을 적용한다. 회원정보 PATCH의 null은 유지이며 세부전공 없음 선택은 null 저장, 학부·전공 활성 여부/소속과 중복 닉네임은 서비스에서 검증한다. 프로필 설문·선호 저장은 전체 입력이며 부분 PATCH처럼 처리하지 않는다.
 - PostImage 유지 정책은 keepImageIds 생략/null/[] 모두 기존 이미지 제거다. 현재 프론트가 유지할 ID 목록을 전달한다. 익명 게시글 author.id는 실제 작성자 ID이고 별도 정책 확정이 필요하다. API 호환성 변경을 이 문서가 승인하지 않는다.
+- CommunityCommentResponse의 익명 댓글·답글은 author.id=null, author.major=null, author.nickname="익명{anonymousNumber}"다. mine은 서버 인증 사용자와 내부 작성자의 일치 여부이며 비로그인은 false다. 일반 댓글·답글의 작성자 정보는 유지한다. 익명 게시글의 author.id 유지 규칙을 댓글·답글에 적용하지 않는다.
 - REST 오류는 success=false/message/data=null/errorCode, DTO 필드 오류에만 fieldErrors가 추가될 수 있다. CustomException은 아래 ErrorCode와 기본 메시지로 반환하며 내부 예외 메시지를 공개하지 않는다. 대상 없음이 모두 404인 계약은 아니며 일반 서비스 오류는 INVALID_REQUEST 400이다. MVC의 405/413/415 등은 handler의 실제 상태를 유지한다. STOMP 오류는 REST HTTP/envelope가 아니다.
 
 | ErrorCode | 기본 HTTP 상태 | 기본 메시지 |
@@ -2742,5 +2748,5 @@ Simple Broker의 서로 다른 JVM 사이 메시지 중계는 제공하지 않�
 
 - #3 기본/prod의 DDL validate·SQL never·local 전용 시드와 #4 Gradle 테스트 H2 격리·연결 전 안전 검사를 구현했다. 적용 조건과 실제 운영에서 확인할 사항은 [DEPLOYMENT.md](DEPLOYMENT.md)를 따른다. 다른 도메인의 #12/#13/#14 등은 이번 user 수정의 배포 승인 범위에 포함하지 않는다.
 - Auth의 이메일 인증·로그인·메일 요청 제한은 아래 운영 정책을 따른다. 공유 저장소/실제 MySQL 검증은 DEPLOYMENT.md를 함께 확인한다.
-- 익명 게시글·댓글의 author.id가 실제 ID이므로 공개 프로필·다른 게시물과 연결할 수 있다. 표시 익명과 재식별 방지 수준은 정책 결정 사항이다. 공개 계약을 문서만으로 변경하지 않는다.
+- 익명 게시글의 author.id는 실제 작성자 ID이므로 공개 프로필·다른 게시물과 연결할 수 있다. 게시글의 작성자 ID 비공개 여부와 재식별 방지 수준은 미확정 정책이며 공개 계약을 문서만으로 변경하지 않는다. 익명 댓글·답글은 이미 author.id와 author.major를 null로 반환하고 게시글별 익명 번호와 mine을 제공한다(8장). 과거의 "익명 게시글·댓글 모두 실제 author.id 유지" 설명은 댓글·답글의 현재 계약에 적용되지 않으며, 댓글·답글의 작성자 ID 마스킹을 미해결 결함으로 분류하지 않는다.
 - 이미지 쓰기/영구 저장·시간대·CORS·SMTP·AI·필수 환경변수·WebSocket Upgrade와 프록시 타임아웃·다중 인스턴스 전달은 실제 환경 검증 대상이다. 기존 익명 방 키 적용 절차는 ERD.md의 마이그레이션 검증 기준을 따른다. 운영 DB·외부 연결을 이번에 검증하지 않았다.
