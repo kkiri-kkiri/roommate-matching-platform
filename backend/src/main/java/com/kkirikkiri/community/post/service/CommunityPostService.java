@@ -162,18 +162,25 @@ public class CommunityPostService {
 			posts = communityPostRepository.searchPosts(CommunityContentStatus.ACTIVE, request.category(), request.q(),
 					request.dormitory(), pageable);
 		}
-		return RoommatePageResponse.from(posts.map(post -> toListResponse(post, viewerId)));
+		var postIds = posts.getContent().stream().map(CommunityPost::getPostId).toList();
+		Map<Long, Long> likeCounts = postIds.isEmpty() ? Map.of()
+				: postLikeRepository.countLikesByPostIds(postIds).stream().collect(Collectors.toMap(
+						PostLikeRepository.LikeCount::getPostId, PostLikeRepository.LikeCount::getLikes));
+		Set<Long> likedIds = viewerId == null || postIds.isEmpty() ? Set.of()
+				: new HashSet<>(postLikeRepository.findLikedPostIds(postIds, viewerId));
+		return RoommatePageResponse.from(posts.map(post -> toListResponse(post, viewerId,
+				likeCounts.getOrDefault(post.getPostId(), 0L), likedIds.contains(post.getPostId()))));
 	}
 
-	private CommunityPostResponse toListResponse(CommunityPost post, Long userId) {
+	private CommunityPostResponse toListResponse(CommunityPost post, Long userId, long likes, boolean liked) {
 		Long postId = post.getPostId();
 		String content = post.getContent();
 		int previewEnd = content.offsetByCodePoints(0, Math.min(100, content.codePointCount(0, content.length())));
 		String preview = content.substring(0, previewEnd) + (previewEnd < content.length() ? "..." : "");
 		return CommunityPostResponse.from(post, author(post.getAuthor().getUserId()), preview,
-				communityPostReadRepository.countLikes(postId),
+				likes,
 				communityCommentRepository.countByPost_PostIdAndStatus(postId, CommunityContentStatus.ACTIVE),
-				postImageRepository.existsByPost_PostId(postId), communityPostReadRepository.isLiked(postId, userId),
+				postImageRepository.existsByPost_PostId(postId), liked,
 				communityPostReadRepository.isReported(postId, userId));
 	}
 

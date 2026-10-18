@@ -65,4 +65,4 @@ WHERE r.category = 'COMMUNITY'
 - 변환 대상 키가 export 예상과 같고 길이·UNIQUE 위반이 없는지 확인한다.
 - 익명 게시글/댓글 방의 분리·재사용, 일반 방 출처 갱신, 과거 메시지의 익명 senderId/상대 프로필 마스킹을 확인한다.
 - 서버 재기동 후 REST 조회·STOMP CONNECT/SEND/SUBSCRIBE, 나가기·정지·만료 후 송수신 차단을 검증한다.
-- 현재 출처만으로 복원할 수 없는 과거 익명성 및 공개 author.id 재식별 정책은 DEPLOYMENT.md의 보류 항목이다.
+- 현재 출처만으로 복원할 수 없는 과거 채팅방 익명성은 별도 검토 대상이다. 실제 author.id 공개에 따른 재식별 정책 보류는 익명 게시글을 가리킨다([API.md 19.4](../API.md#194-문서-수정으로-해결되지-않는-보안배포-위험)). 익명 댓글·답글의 author.id와 author.major는 현재 응답에서 null이며 이 정책 보류와 구분한다.

@@ -1,5 +1,5 @@
 import { createApiClient } from "./apiClient";
-import { getAccessToken } from "../auth/session";
+import { getAccessToken, getAuthenticationSession } from "../auth/session";
 
 const apiClient = createApiClient({
   baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:8080/api",
@@ -14,6 +14,7 @@ async function request(config, authenticated = true) {
     const response = await apiClient.request({
       ...config,
       optionalAuth: !authenticated,
+      authenticationSessionGeneration: getAuthenticationSession().generation,
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
     });
     return response.data.data;

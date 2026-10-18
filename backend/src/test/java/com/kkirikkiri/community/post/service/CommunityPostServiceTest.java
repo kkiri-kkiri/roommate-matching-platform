@@ -425,6 +425,7 @@ class CommunityPostServiceTest {
 	@ParameterizedTest
 	@ValueSource(ints = {99, 100, 101})
 	void truncatesPreviewAtOneHundredUnicodeCodePoints(int length) {
+		ReflectionTestUtils.setField(post, "postId", 1L);
 		// given
 		String content = "😀".repeat(length);
 		post.updateContent("자유게시판", "제목", content);
@@ -592,14 +593,15 @@ class CommunityPostServiceTest {
 		var pageable = PageRequest.of(1, 2, Sort.by(Sort.Direction.DESC, "createdAt", "postId"));
 		when(communityPostRepository.searchPosts(CommunityContentStatus.ACTIVE, null, null, null, pageable))
 				.thenReturn(new PageImpl<>(List.of(post, other), pageable, 5));
-		when(communityPostReadRepository.countLikes(1L)).thenReturn(3L);
-		when(communityPostReadRepository.countLikes(2L)).thenReturn(0L);
+		var count = mock(PostLikeRepository.LikeCount.class);
+		when(count.getPostId()).thenReturn(1L);
+		when(count.getLikes()).thenReturn(3L);
+		when(postLikeRepository.countLikesByPostIds(List.of(1L, 2L))).thenReturn(List.of(count));
+		when(postLikeRepository.findLikedPostIds(List.of(1L, 2L), 8L)).thenReturn(List.of(1L));
 		when(communityCommentRepository.countByPost_PostIdAndStatus(1L, CommunityContentStatus.ACTIVE)).thenReturn(0L);
 		when(communityCommentRepository.countByPost_PostIdAndStatus(2L, CommunityContentStatus.ACTIVE)).thenReturn(4L);
 		when(postImageRepository.existsByPost_PostId(1L)).thenReturn(true);
 		when(postImageRepository.existsByPost_PostId(2L)).thenReturn(false);
-		when(communityPostReadRepository.isLiked(1L, 8L)).thenReturn(true);
-		when(communityPostReadRepository.isLiked(2L, 8L)).thenReturn(false);
 		when(communityPostReadRepository.isReported(1L, 8L)).thenReturn(false);
 		when(communityPostReadRepository.isReported(2L, 8L)).thenReturn(true);
 		// when
@@ -614,6 +616,10 @@ class CommunityPostServiceTest {
 		assertEquals(1, result.page());
 		assertEquals(2, result.size());
 		assertEquals(5, result.totalElements());
+		verify(postLikeRepository).countLikesByPostIds(List.of(1L, 2L));
+		verify(postLikeRepository).findLikedPostIds(List.of(1L, 2L), 8L);
+		verify(communityPostReadRepository, never()).countLikes(any());
+		verify(communityPostReadRepository, never()).isLiked(any(), any());
 	}
 
 	private void stubPostForLike() {

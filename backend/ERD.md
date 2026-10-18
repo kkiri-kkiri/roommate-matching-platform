@@ -1349,6 +1349,7 @@ UNIQUE(post_id, author_id), UNIQUE(post_id, anonymous_number).
 댓글 수정·삭제 및 회원 탈퇴(소프트 삭제)로 매핑을 삭제하지 않는다. 모든 댓글이 없어도 번호를 보존하며 재사용하지 않는다.
 기존 게시글의 매핑이 비어 있으면 상태와 무관한 익명 댓글 전체를 created_at, comment_id 순으로 읽어 초기화한다.
 번호는 조회 정렬·페이징과 독립적이며 매핑의 author_id는 일반 사용자 응답에 포함하지 않는다.
+COMMUNITY_COMMENT.author_id와 이 매핑의 author_id는 서버 내부의 소유권·번호 관리에 사용한다. API의 익명 댓글·답글 author.id와 author.major는 null이며 nickname은 "익명{anonymousNumber}"다. mine은 서버 인증 사용자와 내부 작성자를 비교해 계산하고 비로그인은 false다. 이는 실제 author.id를 유지하는 익명 게시글 응답과 다르며 API.md 7.4·8장을 따른다.
 
 댓글 좋아요 (COMMENT_LIKE)
 
@@ -2732,7 +2733,7 @@ Enum은 `EnumType.STRING` 선언을 사용한다. 아래 Java 값 목록 자체�
 - 운영의 테이블 대소문자, 실제 컬럼 타입/NULL/DEFAULT, PK/FK/UNIQUE/CHECK/인덱스, 고아 참조·중복, 기존 nullable 컬럼의 데이터는 운영자가 읽기 전용 DDL/데이터 점검으로 확인해야 한다. 이번 작업은 운영 DB에 접근하지 않았다. 기본/prod의 자동 DDL·SQL 초기화를 차단하고 Gradle 테스트는 H2 메모리 DB로 격리했다. 실제 운영 DDL/잠금 동작은 [DEPLOYMENT.md](DEPLOYMENT.md)에 따라 별도 검증한다.
 
 - user 안정화 변경은 Entity의 테이블/컬럼/제약을 변경하지 않는다. 개발 시드 출처는 local 전용 파일에 ID·이메일·저장 자격증명의 SHA-256 지문으로 기록하며 DB 컬럼을 추가하지 않는다. 기록이 없거나 지문이 달라진 기존 사용자는 시드 생성·삭제에서 제외한다. 전공 해제는 요청의 명시적 "세부전공 없음"을 기존 nullable major_id에 저장한다.
-- 익명 게시글 anonymous 선언이 있더라도 기존 DB에 컬럼/DEFAULT/NOT NULL이 적용됐는지 검증해야 한다. 현재 공개 author.id와 익명 채팅 키 변경은 별도 익명성·마이그레이션 검토 대상이며 문서 수정으로 해결되지 않는다.
+- 익명 게시글 anonymous 선언이 있더라도 기존 DB에 컬럼/DEFAULT/NOT NULL이 적용됐는지 검증해야 한다. 익명 게시글의 실제 author.id 공개와 익명 채팅 키 변경은 별도 익명성·마이그레이션 검토 대상이며 문서 수정으로 해결되지 않는다. 익명 댓글·답글의 응답 author.id는 이미 null이며 내부 author_id 저장을 응답 ID 공개로 해석하지 않는다.
 
 ### 기존 익명 채팅 키의 수동 변경 검증 기준
 

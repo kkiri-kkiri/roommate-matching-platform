@@ -8,7 +8,8 @@ import {
 import * as S from "./DetailedProfileCss";
 import ProfileImage from "../ProfileImage";
 import { getRoommateDetail } from "../../../api/roommateApi";
-import { getProfileKey, useProfileLikes } from "./ProfileCard";
+import { getProfileKey, useProfileLikes } from "./profileLikes";
+import { isCurrentAuthenticationSession, useAuthenticationSession } from "../../../auth/session";
 
 // 상세 화면에서 사용하는 설문 항목은 기존 내 설문의 응답 키와 일치시킵니다.
 const SECTIONS = [
@@ -241,6 +242,7 @@ function ProfileDialog({ profile, sourceProfile, onDismiss, returnTo, loading, e
 }
 
 function DetailedProfile({ profileId: providedProfileId, onDismiss } = {}) {
+  const session = useAuthenticationSession();
   const { profileId: routeProfileId } = useParams();
   const profileId = String(providedProfileId ?? routeProfileId);
   const embedded = providedProfileId != null && typeof onDismiss === "function";
@@ -252,19 +254,20 @@ function DetailedProfile({ profileId: providedProfileId, onDismiss } = {}) {
   useEffect(() => {
     if (!serverRoute) return;
     const controller = new AbortController();
-    setRemote({ id: profileId, profile: null, error: "" });
+    setRemote({ id: profileId, session, profile: null, error: "" });
     getRoommateDetail(profileId, controller.signal).then((detail) => {
       if (String(detail?.id) !== profileId) throw new Error("프로필 응답을 확인할 수 없습니다.");
-      if (!controller.signal.aborted) setRemote({ id: profileId, error: "", profile: {
+      if (!controller.signal.aborted && isCurrentAuthenticationSession(session)) setRemote({ id: profileId, session, error: "", profile: {
         ...detail, userId: detail.id, source: "backend", message: detail.introduction,
         photo: detail.profileImageUrl, answers: detail.answers || {},
       } });
     }).catch((failure) => {
-      if (!controller.signal.aborted) setRemote({ id: profileId, profile: null, error: failure.message });
+      if (!controller.signal.aborted && isCurrentAuthenticationSession(session)) setRemote({ id: profileId, session, profile: null, error: failure.message });
     });
     return () => controller.abort();
-  }, [serverRoute, profileId]);
-  const selectedProfile = serverRoute && remote.id === profileId ? remote.profile : null;
+  }, [serverRoute, profileId, session]);
+  const currentRemote = remote.session === session && remote.id === profileId;
+  const selectedProfile = serverRoute && currentRemote ? remote.profile : null;
   const profile = selectedProfile;
   const chatRoomId = location.state?.chatRoomId;
   const returnTo = /^\d+$/.test(String(chatRoomId)) && Number(chatRoomId) > 0
@@ -280,10 +283,10 @@ function DetailedProfile({ profileId: providedProfileId, onDismiss } = {}) {
     else navigate(returnTo, { replace: true });
   }, [embedded, onDismiss, location.state?.fromProfileCard, navigate, returnTo]);
 
-  return <ProfileDialog key={profileId} profile={profile} sourceProfile={selectedProfile}
+  return <ProfileDialog key={`${profileId}:${session.generation}`} profile={profile} sourceProfile={selectedProfile}
     onDismiss={dismiss} returnTo={returnTo} embedded={embedded}
-    loading={serverRoute && !selectedProfile && !(remote.id === profileId && remote.error)}
-    error={serverRoute && remote.id === profileId ? remote.error : ""} />;
+    loading={serverRoute && !selectedProfile && !(currentRemote && remote.error)}
+    error={serverRoute && currentRemote ? remote.error : ""} />;
 }
 
 export default DetailedProfile;
