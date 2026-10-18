@@ -26,9 +26,10 @@ public interface CommunityPostRepository extends JpaRepository<CommunityPost, Lo
 	 */
 	@Query("""
 			select p from CommunityPost p
+			left join p.dormitory d
 			where p.status = :status
 			  and (:category is null or :category = '' or p.category = :category)
-			  and (:dormitory is null or :dormitory = '' or p.dormitory.dormitoryName = :dormitory)
+			  and (:dormitory is null or :dormitory = '' or d.dormitoryName = :dormitory)
 			  and (:keyword is null or :keyword = ''
 			       or locate(:keyword, p.title) > 0
 			       or locate(:keyword, p.content) > 0)
