@@ -15,6 +15,11 @@ import com.kkirikkiri.community.post.entity.CommunityPost;
 
 public interface CommunityPostRepository extends JpaRepository<CommunityPost, Long> {
 
+	/** 댓글 삭제는 이미 삭제된 게시글의 과거 댓글도 정리할 수 있도록 상태를 제한하지 않는다. */
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select p from CommunityPost p where p.postId = :postId")
+	Optional<CommunityPost> findByIdForUpdate(@Param("postId") Long postId);
+
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("select p from CommunityPost p where p.postId = :postId and p.status = :status")
 	Optional<CommunityPost> findDetailForUpdate(@Param("postId") Long postId,

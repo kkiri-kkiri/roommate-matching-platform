@@ -16,18 +16,33 @@ import com.kkirikkiri.community.common.entity.CommunityContentStatus;
 
 public interface CommunityCommentRepository extends JpaRepository<CommunityComment, Long> {
 
+	/** Entity를 미리 로딩하지 않고 게시글 잠금의 대상 ID만 찾는다. 상태는 잠금 후 검증한다. */
+	@Query("select c.post.postId from CommunityComment c where c.commentId = :commentId")
+	Optional<Long> findPostIdByCommentId(@Param("commentId") Long commentId);
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select c from CommunityComment c where c.parentComment.commentId = :parentId and c.status = :status order by c.commentId")
+	List<CommunityComment> findRepliesForUpdate(@Param("parentId") Long parentId,
+			@Param("status") CommunityContentStatus status);
+
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("select c from CommunityComment c where c.post.postId = :postId and c.anonymous = true order by c.createdAt, c.commentId")
 	List<CommunityComment> findAnonymousHistory(@Param("postId") Long postId);
 
+	/** 수정·일반/관리자 삭제·좋아요가 공유한다. 상태와 작성자 권한은 잠금 조회 후 검증한다. */
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("select c from CommunityComment c where c.commentId = :commentId and c.status = :status")
-	Optional<CommunityComment> findForLikeUpdate(@Param("commentId") Long commentId,
+	Optional<CommunityComment> findForUpdate(@Param("commentId") Long commentId,
+			@Param("status") CommunityContentStatus status);
+
+	/** 게시글 잠금 이후 댓글 ID 순서로 잠근다. 단일 댓글 작업은 게시글 잠금을 역으로 획득하지 않는다. */
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select c from CommunityComment c where c.post.postId = :postId and c.status = :status order by c.commentId")
+	List<CommunityComment> findAllForUpdateByPostId(@Param("postId") Long postId,
 			@Param("status") CommunityContentStatus status);
 
 	/**
-	 * 답글 작성의 부모 댓글 및 수정/소프트 삭제할 댓글·답글을 조회한다.
-	 * 작성자 권한과 답글 깊이는 서비스에서 확인한다.
+	 * 잠금이 필요하지 않은 일반 조회용이다. 작성·수정·삭제의 상태 검증에 사용하지 않는다.
 	 */
 	Optional<CommunityComment> findByCommentIdAndStatus(Long commentId, CommunityContentStatus status);
 
@@ -39,7 +54,7 @@ public interface CommunityCommentRepository extends JpaRepository<CommunityComme
 			Pageable pageable);
 
 	/**
-	 * 게시글 상세 표시 및 게시글 삭제 시 소프트 삭제할 댓글/답글을 조회한다.
+	 * 게시글 상세에 표시할 댓글/답글을 조회한다. 전체 삭제는 findAllForUpdateByPostId를 사용한다.
 	 */
 	List<CommunityComment> findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(
 			Long postId, CommunityContentStatus status);

@@ -8,9 +8,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import jakarta.persistence.Tuple;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,6 +39,7 @@ import com.kkirikkiri.community.comment.repository.CommunityCommentRepository;
 import com.kkirikkiri.community.common.entity.CommunityContentStatus;
 import com.kkirikkiri.community.post.entity.CommunityPost;
 import com.kkirikkiri.community.post.repository.CommunityPostReadRepository;
+import com.kkirikkiri.community.post.repository.CommunityPostRepository;
 import com.kkirikkiri.community.repository.AdminCommentQueryRepository;
 import com.kkirikkiri.community.repository.AdminPostQueryRepository;
 import com.kkirikkiri.global.exception.CustomException;
@@ -59,6 +63,8 @@ class AdminServiceTest {
     @Mock AdminPostQueryRepository postRepository;
     @Mock AdminCommentQueryRepository commentRepository;
     @Mock CommunityCommentRepository communityCommentRepository;
+    @Mock CommunityPostRepository communityPostRepository;
+    @Mock EntityManager entityManager;
     @Mock AdminReportQueryRepository reportRepository;
     @Mock AdminCrawledScheduleQueryRepository scheduleRepository;
     @Mock ScheduleCrawlRunRepository crawlRunRepository;
@@ -73,6 +79,15 @@ class AdminServiceTest {
     private final User reporter = user(3L, UserRole.USER);
     private final CommunityPost post = post(10L);
     private final CommunityComment comment = comment(20L, null);
+
+    @BeforeEach
+    void commentWriteService() {
+        ReflectionTestUtils.setField(service, "commentWriteService",
+                new com.kkirikkiri.community.comment.service.CommunityCommentWriteService(
+                        communityPostRepository, communityCommentRepository, entityManager));
+        lenient().when(communityPostRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(post));
+        lenient().when(communityCommentRepository.findPostIdByCommentId(20L)).thenReturn(Optional.of(10L));
+    }
 
     @ParameterizedTest
     @NullSource
@@ -192,8 +207,8 @@ class AdminServiceTest {
         // given
         stubAdmin();
         CommunityComment reply = comment(21L, comment);
-        when(postRepository.findPostById(10L)).thenReturn(Optional.of(post));
-        when(communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(
+        when(communityPostRepository.findDetailForUpdate(10L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+        when(communityCommentRepository.findAllForUpdateByPostId(
                 10L, CommunityContentStatus.ACTIVE)).thenReturn(hasComments ? List.of(comment, reply) : List.of());
         // when
         service.deletePost(1L, 10L);
@@ -209,7 +224,7 @@ class AdminServiceTest {
     void deletesOnlySelectedCommentWithoutDeletingPost() {
         // given
         stubAdmin();
-        when(commentRepository.findCommentById(20L)).thenReturn(Optional.of(comment));
+        when(communityCommentRepository.findForUpdate(20L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(comment));
         // when
         service.deleteComment(1L, 20L);
         // then
@@ -253,7 +268,7 @@ class AdminServiceTest {
         // given
         Report report = stubReport(type);
         if (type == ReportType.POST) {
-            when(communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(
+            when(communityCommentRepository.findAllForUpdateByPostId(
                     10L, CommunityContentStatus.ACTIVE)).thenReturn(List.of(comment));
         }
         // when
@@ -264,6 +279,7 @@ class AdminServiceTest {
                 post.getStatus());
         assertEquals(UserStatus.ACTIVE, target.getStatus());
         assertProcessed(report, ReportStatus.COMPLETED, "DELETE_TARGET");
+        verify(entityManager).refresh(type == ReportType.POST ? post : comment, LockModeType.PESSIMISTIC_WRITE);
     }
 
     @Test

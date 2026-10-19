@@ -8,6 +8,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.Tuple;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import com.kkirikkiri.admin.dto.AdminPostListRequest;
 import com.kkirikkiri.admin.dto.AdminPostResponse;
 import com.kkirikkiri.admin.dto.AdminPostDetailResponse;
 import com.kkirikkiri.community.post.repository.CommunityPostReadRepository;
+import com.kkirikkiri.community.post.repository.CommunityPostRepository;
 import com.kkirikkiri.report.repository.ReportRepository;
 import com.kkirikkiri.admin.dto.AdminCrawledScheduleResponse;
 import com.kkirikkiri.admin.dto.AdminDashboardResponse;
@@ -41,6 +44,7 @@ import com.kkirikkiri.calendar.entity.ScheduleCrawlStatus;
 import com.kkirikkiri.calendar.repository.AdminCrawledScheduleQueryRepository;
 import com.kkirikkiri.calendar.repository.ScheduleCrawlRunRepository;
 import com.kkirikkiri.community.comment.entity.CommunityComment;
+import com.kkirikkiri.community.comment.service.CommunityCommentWriteService;
 import com.kkirikkiri.community.comment.repository.CommunityCommentRepository;
 import com.kkirikkiri.community.common.entity.CommunityContentStatus;
 import com.kkirikkiri.community.post.dto.CommunityAuthorResponse;
@@ -74,6 +78,9 @@ public class AdminService {
 	private final AdminPostQueryRepository postRepository;
 	private final AdminCommentQueryRepository commentRepository;
 	private final CommunityCommentRepository communityCommentRepository;
+	private final CommunityPostRepository communityPostRepository;
+	private final EntityManager entityManager;
+	private final CommunityCommentWriteService commentWriteService;
 	private final AdminReportQueryRepository reportRepository;
 	private final AdminCrawledScheduleQueryRepository scheduleRepository;
 	private final ScheduleCrawlRunRepository crawlRunRepository;
@@ -188,14 +195,15 @@ public class AdminService {
 	public void deletePost(Long adminId, Long postId) {
 		requireAdmin(adminId);
 		validateId(postId);
-		deletePost(postRepository.findPostById(postId).orElseThrow(this::invalidRequest));
+		deletePost(communityPostRepository.findDetailForUpdate(postId, CommunityContentStatus.ACTIVE)
+				.orElseThrow(this::invalidRequest));
 	}
 
 	@Transactional
 	public void deleteComment(Long adminId, Long commentId) {
 		requireAdmin(adminId);
 		validateId(commentId);
-		commentRepository.findCommentById(commentId).orElseThrow(this::invalidRequest).delete();
+		commentWriteService.deleteLocked(commentWriteService.lockForDeletion(commentId));
 	}
 
 	public RoommatePageResponse<AdminReportResponse> getReports(Long adminId, AdminReportListRequest request) {
@@ -247,8 +255,16 @@ public class AdminService {
                     report.getTargetUser().getUserId()).orElseThrow(this::invalidRequest), UserStatus.SUSPENDED);
 			case "DELETE_TARGET" -> {
 				switch (report.getReportType()) {
-					case POST -> deletePost(report.getPost());
-					case COMMENT -> report.getComment().delete();
+					case POST -> {
+						CommunityPost post = report.getPost();
+						// 신고 조회가 이미 로딩한 Entity도 잠금 후 최신 상태(조회수 포함)로 교체한다.
+						entityManager.refresh(post, LockModeType.PESSIMISTIC_WRITE);
+						deletePost(post);
+					}
+					case COMMENT -> {
+						CommunityComment comment = report.getComment();
+						commentWriteService.deleteReported(comment);
+					}
 					case USER -> throw invalidRequest();
 				}
 			}
@@ -354,7 +370,7 @@ public class AdminService {
 	}
 
 	private void deletePost(CommunityPost post) {
-		communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(
+		communityCommentRepository.findAllForUpdateByPostId(
 				post.getPostId(), CommunityContentStatus.ACTIVE).forEach(CommunityComment::delete);
 		post.delete();
 	}

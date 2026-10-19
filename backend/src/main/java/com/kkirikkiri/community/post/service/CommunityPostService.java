@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.validation.Validator;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -32,6 +34,7 @@ import com.kkirikkiri.global.exception.CustomException;
 import com.kkirikkiri.global.exception.ErrorCode;
 import com.kkirikkiri.user.entity.UserProfile;
 import com.kkirikkiri.user.entity.User;
+import com.kkirikkiri.user.entity.UserStatus;
 import com.kkirikkiri.user.repository.UserProfileRepository;
 import com.kkirikkiri.user.repository.UserRepository;
 import com.kkirikkiri.community.post.dto.CommunityPostListRequest;
@@ -64,10 +67,12 @@ public class CommunityPostService {
 	private final UserRepository userRepository;
 	private final CommentLikeRepository commentLikeRepository;
 	private final CommunityAnonymousAuthorService anonymousAuthorService;
+	private final EntityManager entityManager;
 
 	/** 인증 사용자의 좋아요를 등록한다. 이미 좋아요한 경우 변경 없이 완료한다. */
 	@Transactional
 	public void likePost(Long userId, Long postId) {
+		lockActiveUser(userId);
 		CommunityPost post = findPostForLikeUpdate(userId, postId);
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
@@ -79,6 +84,7 @@ public class CommunityPostService {
 	/** 인증 사용자 자신의 좋아요만 취소한다. 좋아요가 없는 경우 변경 없이 완료한다. */
 	@Transactional
 	public void unlikePost(Long userId, Long postId) {
+		lockActiveUser(userId);
 		findPostForLikeUpdate(userId, postId);
 		userRepository.findById(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
@@ -198,7 +204,7 @@ public class CommunityPostService {
 	/** 최대 5장의 이미지와 게시글을 작성한다. images는 생략 가능하다. */
 	@Transactional
 	public Long createPost(Long userId, CommunityPostCreateRequest request, PostImagesRequest images) {
-		validateUserId(userId);
+		lockActiveUser(userId);
 		validateRequest(request);
 		validateImages(images);
 		UserProfile profile = userProfileRepository.findByUser_UserId(userId)
@@ -215,12 +221,13 @@ public class CommunityPostService {
 	@Transactional
 	public void updatePost(Long userId, Long postId, CommunityPostUpdateRequest request,
 			PostImagesRequest images) {
-		validateUserId(userId);
+		lockActiveUser(userId);
 		validateRequest(request);
 		validateImages(images);
 		CommunityPost post = findOwnedPost(userId, postId);
 		List<PostImage> existingImages = postImageRepository
-				.findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(postId);
+				.findAllForUpdateByPostId(postId);
+		existingImages.forEach(image -> entityManager.refresh(image, LockModeType.PESSIMISTIC_WRITE));
 		Set<Long> keepIds = new HashSet<>(request.keepImageIds());
 		if (keepIds.size() + (images == null ? 0 : images.images().size()) > 5) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
@@ -250,9 +257,9 @@ public class CommunityPostService {
 	/** 신고 참조를 보존하도록 게시글과 활성 댓글/답글을 같은 트랜잭션에서 소프트 삭제한다. */
 	@Transactional
 	public void deletePost(Long userId, Long postId) {
-		validateUserId(userId);
+		lockActiveUser(userId);
 		CommunityPost post = findOwnedPost(userId, postId);
-		communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(
+		communityCommentRepository.findAllForUpdateByPostId(
 				postId, CommunityContentStatus.ACTIVE).forEach(CommunityComment::delete);
 		post.delete();
 	}
@@ -261,12 +268,25 @@ public class CommunityPostService {
 		if (postId == null || postId <= 0) {
 			throw new CustomException(ErrorCode.INVALID_REQUEST);
 		}
-		CommunityPost post = communityPostRepository.findByPostIdAndStatus(postId, CommunityContentStatus.ACTIVE)
+		// 상세 조회(조회수)·좋아요·일반/관리자 삭제와 같은 행 잠금을 커밋까지 유지한다.
+		CommunityPost post = communityPostRepository.findDetailForUpdate(postId, CommunityContentStatus.ACTIVE)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+		entityManager.refresh(post, LockModeType.PESSIMISTIC_WRITE);
+		if (post.getStatus() != CommunityContentStatus.ACTIVE) {
+			throw new CustomException(ErrorCode.INVALID_REQUEST);
+		}
 		if (!userId.equals(post.getAuthor().getUserId())) {
 			throw new CustomException(ErrorCode.FORBIDDEN);
 		}
 		return post;
+	}
+
+	/** Account -> post -> comment; held by the caller's write transaction until completion. */
+	private User lockActiveUser(Long userId) {
+		validateUserId(userId);
+		return userRepository.findByIdForAccountUpdate(userId)
+				.filter(user -> user.getStatus() == UserStatus.ACTIVE)
+				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
 	}
 
 	private void validateUserId(Long userId) {

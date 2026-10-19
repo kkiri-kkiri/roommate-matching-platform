@@ -66,6 +66,7 @@ class CommunityPostServiceTest {
 	@Mock com.kkirikkiri.community.comment.service.CommunityAnonymousAuthorService anonymousAuthorService;
 	@Mock PostLikeRepository postLikeRepository;
 	@Mock UserRepository userRepository;
+	@Mock jakarta.persistence.EntityManager entityManager;
 	@InjectMocks CommunityPostService service;
 	User user;
 	CommunityPost post;
@@ -73,6 +74,8 @@ class CommunityPostServiceTest {
 	@BeforeEach
 	void setUp() {
 		user = mock(User.class);
+        lenient().when(userRepository.findByIdForAccountUpdate(anyLong())).thenReturn(Optional.of(user));
+        lenient().when(user.getStatus()).thenReturn(com.kkirikkiri.user.entity.UserStatus.ACTIVE);
 		post = new CommunityPost(user, null, "자유게시판", "제목", "내용");
 	}
 
@@ -96,7 +99,7 @@ class CommunityPostServiceTest {
 	@Test
 	void rejectsMoreThanFiveCombinedImagesBeforeSavingFiles() {
 		when(user.getUserId()).thenReturn(7L);
-		when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE))
+		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE))
 				.thenReturn(Optional.of(post));
 		var file = new org.springframework.mock.web.MockMultipartFile("images", "photo.png", "image/png", new byte[]{1});
 		assertThrows(CustomException.class, () -> service.updatePost(7L, 1L,
@@ -143,9 +146,9 @@ class CommunityPostServiceTest {
 		post.changeAnonymous(true);
 		when(user.getUserId()).thenReturn(7L);
 		when(validator.validate(any(CommunityPostUpdateRequest.class))).thenReturn(Set.of());
-		when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE))
+		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE))
 				.thenReturn(Optional.of(post));
-		when(postImageRepository.findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(1L)).thenReturn(List.of());
+		when(postImageRepository.findAllForUpdateByPostId(1L)).thenReturn(List.of());
 		service.updatePost(7L, 1L, new CommunityPostUpdateRequest("자유게시판", "수정", "내용", List.of(), null), null);
 		assertTrue(post.isAnonymous());
 		service.updatePost(7L, 1L, new CommunityPostUpdateRequest("자유게시판", "수정", "내용", List.of(), false), null);
@@ -158,7 +161,7 @@ class CommunityPostServiceTest {
 		post.changeAnonymous(true);
 		when(user.getUserId()).thenReturn(7L);
 		when(validator.validate(any(CommunityPostUpdateRequest.class))).thenReturn(Set.of());
-		when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE))
+		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE))
 				.thenReturn(Optional.of(post));
 		assertThrows(CustomException.class, () -> service.updatePost(8L, 1L,
 				new CommunityPostUpdateRequest("자유게시판", "수정", "내용", List.of(), false), null));
@@ -350,7 +353,7 @@ class CommunityPostServiceTest {
 	void rejectsForeignOrDuplicateKeptImagesBeforeEditingPost(boolean duplicate) {
 		// given
 		stubOwnedPost();
-		when(postImageRepository.findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(1L))
+		when(postImageRepository.findAllForUpdateByPostId(1L))
 				.thenReturn(List.of(image(10L, 0)));
 		List<Long> keepIds = duplicate ? List.of(10L, 10L) : List.of(99L);
 		// when / then
@@ -368,7 +371,7 @@ class CommunityPostServiceTest {
 		PostImage first = image(10L, 2);
 		PostImage removed = image(11L, 3);
 		PostImage last = image(12L, 4);
-		when(postImageRepository.findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(1L))
+		when(postImageRepository.findAllForUpdateByPostId(1L))
 				.thenReturn(List.of(first, removed, last));
 		var file = new MockMultipartFile("images", "a".repeat(256), "image/png", new byte[]{1});
 		when(postImageStorage.store(file)).thenReturn("/api/post-images/new.png");
@@ -395,7 +398,7 @@ class CommunityPostServiceTest {
 		// given
 		stubOwnedPost();
 		var images = List.of(image(10L, 0), image(11L, 1));
-		when(postImageRepository.findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(1L)).thenReturn(images);
+		when(postImageRepository.findAllForUpdateByPostId(1L)).thenReturn(images);
 		// when
 		service.updatePost(7L, 1L, updateRequest(List.of()), null);
 		// then
@@ -409,7 +412,7 @@ class CommunityPostServiceTest {
 		stubOwnedPost();
 		CommunityComment comment = new CommunityComment(post, user, null, "댓글");
 		CommunityComment reply = new CommunityComment(post, user, comment, "답글");
-		when(communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(1L, CommunityContentStatus.ACTIVE))
+		when(communityCommentRepository.findAllForUpdateByPostId(1L, CommunityContentStatus.ACTIVE))
 				.thenReturn(List.of(comment, reply));
 		// when
 		service.deletePost(7L, 1L);
@@ -629,7 +632,7 @@ class CommunityPostServiceTest {
 
 	private void stubOwnedPost() {
 		when(user.getUserId()).thenReturn(7L);
-		when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
 	}
 
 	private PostImage image(Long id, int order) {
