@@ -9,7 +9,7 @@ public record CommunityAuthorResponse(Long id, String nickname, String major) {
 	}
 
 	public CommunityAuthorResponse forPost(boolean anonymous) {
-		return anonymous ? new CommunityAuthorResponse(id, "익명", null) : this;
+		return anonymous ? new CommunityAuthorResponse(null, "익명", null) : this;
 	}
 
 	public static CommunityAuthorResponse from(UserProfile profile) {

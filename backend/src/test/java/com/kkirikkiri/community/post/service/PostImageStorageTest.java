@@ -132,6 +132,21 @@ class PostImageStorageTest {
 		return directory.resolve(url.substring(url.lastIndexOf('/') + 1));
 	}
 
+	@Test
+	void filenameCollisionNeverOverwritesOrDeletesAnExistingFile() throws Exception {
+		var id = java.util.UUID.randomUUID();
+		Path existing = directory.resolve(id + ".png");
+		byte[] original = {7, 8, 9};
+		Files.write(existing, original);
+		try (var uuids = mockStatic(java.util.UUID.class)) {
+			uuids.when(java.util.UUID::randomUUID).thenReturn(id);
+			var storage = new PostImageStorage(directory.toString());
+			assertEquals(ErrorCode.INTERNAL_SERVER_ERROR, assertThrows(CustomException.class,
+					() -> storage.store(new MockMultipartFile("images", "new.png", "image/png", new byte[]{1}))).getErrorCode());
+		}
+		assertArrayEquals(original, Files.readAllBytes(existing));
+	}
+
 	private void assertDirectoryEmpty() throws IOException {
 		try (var files = Files.list(directory)) {
 			assertEquals(0, files.count());

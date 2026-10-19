@@ -74,8 +74,15 @@ public class CommunityPost {
 	 * 작성자와 생활관은 서비스에서 인증 사용자 기준으로 결정한다.
 	 */
 	public CommunityPost(User author, Dormitory dormitory, String category, String title, String content) {
+		this(author, dormitory, category, title, content, false);
+	}
+
+	/** 익명 여부는 생성할 때만 지정하며 게시글 수정으로 변경할 수 없다. */
+	public CommunityPost(User author, Dormitory dormitory, String category, String title, String content,
+			boolean anonymous) {
 		this.author = Objects.requireNonNull(author, "author");
 		this.dormitory = dormitory;
+		this.anonymous = anonymous;
 		updateContent(category, title, content);
 		this.status = CommunityContentStatus.ACTIVE;
 	}
@@ -91,10 +98,6 @@ public class CommunityPost {
 		this.category = category;
 		this.title = title;
 		this.content = content;
-	}
-
-	public void changeAnonymous(boolean anonymous) {
-		this.anonymous = anonymous;
 	}
 
 	public void increaseViewCount() {

@@ -117,6 +117,22 @@ test("maps existing COMMUNITY post state and rejects missing comment IDs", async
   expect(api.createChatRoom).toHaveBeenCalledTimes(1);
 });
 
+test("creates anonymous COMMUNITY chat with source ID and no recipient ID", async () => {
+  api.createChatRoom.mockResolvedValue({ ...room(9), category: "COMMUNITY", sourcePost: 31,
+    counterpart: { id: null, nickname: "익명", major: null, tags: [] } });
+  const { result } = renderHook(useHarness, { initialProps: {
+    state: { communityChat: { sourcePost: { id: 31, from: "게시글" } } },
+  } });
+  await waitFor(() => expect(onCreated).toHaveBeenCalledWith("9"));
+  expect(api.createChatRoom).toHaveBeenCalledWith({
+    targetUserId: null, category: "COMMUNITY", sourcePostId: 31, sourceFrom: "POST",
+  });
+  const created = result.current.rooms.find(item => item.id === "9");
+  expect(created.counterpartId).toBeNull();
+  expect(created.anonymous).toBe(true);
+  expect(created.photo).toContain("힙합 한경이.png");
+});
+
 test("searches the server without replacing the room history", async () => {
   api.getChatMessages.mockResolvedValue({ content: [{ ...message(1), senderType: "OTHER" }] });
   const { result, rerender } = renderHook(useHarness, { initialProps: { searchQuery: "" } });

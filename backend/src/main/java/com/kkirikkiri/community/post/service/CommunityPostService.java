@@ -1,12 +1,16 @@
 package com.kkirikkiri.community.post.service;
 
 import java.util.HashSet;
+import java.util.Collection;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.validation.Validator;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -32,6 +36,7 @@ import com.kkirikkiri.global.exception.CustomException;
 import com.kkirikkiri.global.exception.ErrorCode;
 import com.kkirikkiri.user.entity.UserProfile;
 import com.kkirikkiri.user.entity.User;
+import com.kkirikkiri.user.entity.UserStatus;
 import com.kkirikkiri.user.repository.UserProfileRepository;
 import com.kkirikkiri.user.repository.UserRepository;
 import com.kkirikkiri.community.post.dto.CommunityPostListRequest;
@@ -57,6 +62,7 @@ public class CommunityPostService {
 	private final CommunityCommentRepository communityCommentRepository;
 	private final PostImageRepository postImageRepository;
 	private final PostImageStorage postImageStorage;
+	private final PostImageCleanupService postImageCleanupService;
 	private final UserProfileRepository userProfileRepository;
 	private final Validator validator;
 	private final CommunityPostReadRepository communityPostReadRepository;
@@ -64,10 +70,12 @@ public class CommunityPostService {
 	private final UserRepository userRepository;
 	private final CommentLikeRepository commentLikeRepository;
 	private final CommunityAnonymousAuthorService anonymousAuthorService;
+	private final EntityManager entityManager;
 
 	/** 인증 사용자의 좋아요를 등록한다. 이미 좋아요한 경우 변경 없이 완료한다. */
 	@Transactional
 	public void likePost(Long userId, Long postId) {
+		lockActiveUser(userId);
 		CommunityPost post = findPostForLikeUpdate(userId, postId);
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
@@ -79,6 +87,7 @@ public class CommunityPostService {
 	/** 인증 사용자 자신의 좋아요만 취소한다. 좋아요가 없는 경우 변경 없이 완료한다. */
 	@Transactional
 	public void unlikePost(Long userId, Long postId) {
+		lockActiveUser(userId);
 		findPostForLikeUpdate(userId, postId);
 		userRepository.findById(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
@@ -96,7 +105,7 @@ public class CommunityPostService {
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
 	}
 
-	/** 공개 목록 조회. userId는 좋아요/신고 여부를 표시하는 데만 사용한다. */
+	/** 공개 목록 조회. userId는 인증된 조회자의 좋아요/신고/소유 여부에 사용한다. */
 	public RoommatePageResponse<CommunityPostResponse> getPosts(Long userId, CommunityPostListRequest request) {
 		validateOptionalUserId(userId);
 		return readPosts(userId, null, request);
@@ -109,17 +118,15 @@ public class CommunityPostService {
 		return readPosts(userId, userId, new CommunityPostListRequest(page, size, null, null, sort));
 	}
 
-	/** 활성 게시글에 잠금을 획득하고 조회수를 증가시킨 뒤 상세 DTO를 반환한다. */
+	/** Read the response snapshot first; serialize only views and anonymous-number initialization at the end. */
 	@Transactional
 	public CommunityPostDetailResponse<CommunityCommentResponse> getPost(Long userId, Long postId) {
 		validateOptionalUserId(userId);
 		if (postId == null || postId <= 0) {
 			throw new CustomException(ErrorCode.INVALID_REQUEST);
 		}
-		CommunityPost post = communityPostRepository.findDetailForUpdate(postId, CommunityContentStatus.ACTIVE)
+		CommunityPost post = communityPostRepository.findByPostIdAndStatus(postId, CommunityContentStatus.ACTIVE)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
-		post.increaseViewCount();
-		var anonymousNumbers = anonymousAuthorService.resolveNumbers(postId, null);
 		var images = postImageRepository.findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(postId)
 				.stream().map(PostImageResponse::from).toList();
 		var commentEntities = communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(
@@ -130,15 +137,29 @@ public class CommunityPostService {
 						CommentLikeRepository.LikeCount::getCommentId, CommentLikeRepository.LikeCount::getLikes));
 		Set<Long> likedIds = userId == null || commentIds.isEmpty() ? Set.of()
 				: new HashSet<>(commentLikeRepository.findLikedCommentIds(commentIds, userId));
+		Set<Long> authorIds = commentEntities.stream().filter(comment -> !comment.isAnonymous())
+				.map(comment -> comment.getAuthor().getUserId()).collect(Collectors.toSet());
+		if (!post.isAnonymous()) authorIds.add(post.getAuthor().getUserId());
+		Map<Long, CommunityAuthorResponse> authors = authors(authorIds);
+		var snapshot = CommunityPostDetailResponse.<CommunityCommentResponse>from(post,
+				author(post.getAuthor().getUserId(), authors), communityPostReadRepository.countLikes(postId),
+				communityPostReadRepository.isLiked(postId, userId), communityPostReadRepository.isReported(postId, userId),
+				images, List.of(), userId);
+
+		// This UPDATE acquires the post row lock late and never writes stale content/status/image fields.
+		// All earlier reads and the following number writes still share this transaction and rollback.
+		if (communityPostRepository.incrementActiveViews(postId, CommunityContentStatus.ACTIVE, LocalDateTime.now()) != 1) {
+			throw new CustomException(ErrorCode.INVALID_REQUEST);
+		}
+		entityManager.refresh(post);
+		var anonymousNumbers = anonymousAuthorService.resolveNumbers(postId, null);
 		var comments = commentEntities.stream()
 				.map(comment -> CommunityCommentResponse.from(comment,
-						comment.isAnonymous() ? null : author(comment.getAuthor().getUserId()),
+						comment.isAnonymous() ? null : author(comment.getAuthor().getUserId(), authors),
 						likeCounts.getOrDefault(comment.getCommentId(), 0L), likedIds.contains(comment.getCommentId()),
 						anonymousNumbers.get(comment.getAuthor().getUserId()), userId))
 				.toList();
-		return CommunityPostDetailResponse.from(post, author(post.getAuthor().getUserId()),
-				communityPostReadRepository.countLikes(postId), communityPostReadRepository.isLiked(postId, userId),
-				communityPostReadRepository.isReported(postId, userId), images, comments);
+		return snapshot.withViewsAndComments(post.getViewCount(), comments);
 	}
 
 	private RoommatePageResponse<CommunityPostResponse> readPosts(Long viewerId, Long authorId,
@@ -168,25 +189,36 @@ public class CommunityPostService {
 						PostLikeRepository.LikeCount::getPostId, PostLikeRepository.LikeCount::getLikes));
 		Set<Long> likedIds = viewerId == null || postIds.isEmpty() ? Set.of()
 				: new HashSet<>(postLikeRepository.findLikedPostIds(postIds, viewerId));
+		Map<Long, Long> commentCounts = postIds.isEmpty() ? Map.of()
+				: communityCommentRepository.countByPostIds(postIds, CommunityContentStatus.ACTIVE).stream()
+						.collect(Collectors.toMap(CommunityCommentRepository.PostCommentCount::getPostId,
+								CommunityCommentRepository.PostCommentCount::getComments));
+		Set<Long> imagePostIds = postIds.isEmpty() ? Set.of() : new HashSet<>(postImageRepository.findPostIdsWithImages(postIds));
+		Set<Long> reportedIds = viewerId == null || postIds.isEmpty() ? Set.of()
+				: new HashSet<>(communityPostReadRepository.findReportedPostIds(postIds, viewerId));
+		Map<Long, CommunityAuthorResponse> authors = authors(posts.getContent().stream().filter(post -> !post.isAnonymous())
+				.map(post -> post.getAuthor().getUserId()).collect(Collectors.toSet()));
 		return RoommatePageResponse.from(posts.map(post -> toListResponse(post, viewerId,
-				likeCounts.getOrDefault(post.getPostId(), 0L), likedIds.contains(post.getPostId()))));
+				author(post.getAuthor().getUserId(), authors), likeCounts.getOrDefault(post.getPostId(), 0L),
+				commentCounts.getOrDefault(post.getPostId(), 0L), imagePostIds.contains(post.getPostId()),
+				likedIds.contains(post.getPostId()), reportedIds.contains(post.getPostId()))));
 	}
 
-	private CommunityPostResponse toListResponse(CommunityPost post, Long userId, long likes, boolean liked) {
-		Long postId = post.getPostId();
+	private CommunityPostResponse toListResponse(CommunityPost post, Long userId, CommunityAuthorResponse author,
+			long likes, long comments, boolean hasImages, boolean liked, boolean reported) {
 		String content = post.getContent();
 		int previewEnd = content.offsetByCodePoints(0, Math.min(100, content.codePointCount(0, content.length())));
 		String preview = content.substring(0, previewEnd) + (previewEnd < content.length() ? "..." : "");
-		return CommunityPostResponse.from(post, author(post.getAuthor().getUserId()), preview,
-				likes,
-				communityCommentRepository.countByPost_PostIdAndStatus(postId, CommunityContentStatus.ACTIVE),
-				postImageRepository.existsByPost_PostId(postId), liked,
-				communityPostReadRepository.isReported(postId, userId));
+		return CommunityPostResponse.from(post, author, preview, likes, comments, hasImages, liked, reported, userId);
 	}
 
-	private CommunityAuthorResponse author(Long userId) {
-		return userProfileRepository.findByUser_UserId(userId).map(CommunityAuthorResponse::from)
-				.orElseGet(() -> new CommunityAuthorResponse(userId, null));
+	private Map<Long, CommunityAuthorResponse> authors(Collection<Long> userIds) {
+		return userIds.isEmpty() ? Map.of() : userProfileRepository.findAllByUser_UserIdIn(userIds).stream()
+				.map(CommunityAuthorResponse::from).collect(Collectors.toMap(CommunityAuthorResponse::id, author -> author));
+	}
+
+	private CommunityAuthorResponse author(Long userId, Map<Long, CommunityAuthorResponse> authors) {
+		return authors.getOrDefault(userId, new CommunityAuthorResponse(userId, null));
 	}
 
 	private void validateOptionalUserId(Long userId) {
@@ -198,14 +230,13 @@ public class CommunityPostService {
 	/** 최대 5장의 이미지와 게시글을 작성한다. images는 생략 가능하다. */
 	@Transactional
 	public Long createPost(Long userId, CommunityPostCreateRequest request, PostImagesRequest images) {
-		validateUserId(userId);
+		lockActiveUser(userId);
 		validateRequest(request);
 		validateImages(images);
 		UserProfile profile = userProfileRepository.findByUser_UserId(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
 		CommunityPost post = new CommunityPost(profile.getUser(), profile.getDormitory(),
-				request.category(), request.title(), request.content());
-		post.changeAnonymous(request.anonymous());
+				request.category(), request.title(), request.content(), request.anonymous());
 		post = communityPostRepository.save(post);
 		saveImages(post, images, 0);
 		return post.getPostId();
@@ -215,12 +246,16 @@ public class CommunityPostService {
 	@Transactional
 	public void updatePost(Long userId, Long postId, CommunityPostUpdateRequest request,
 			PostImagesRequest images) {
-		validateUserId(userId);
+		lockActiveUser(userId);
 		validateRequest(request);
 		validateImages(images);
 		CommunityPost post = findOwnedPost(userId, postId);
+		if (request.anonymous() != null && request.anonymous() != post.isAnonymous()) {
+			throw new CustomException(ErrorCode.VALIDATION_ERROR);
+		}
 		List<PostImage> existingImages = postImageRepository
-				.findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(postId);
+				.findAllForUpdateByPostId(postId);
+		existingImages.forEach(image -> entityManager.refresh(image, LockModeType.PESSIMISTIC_WRITE));
 		Set<Long> keepIds = new HashSet<>(request.keepImageIds());
 		if (keepIds.size() + (images == null ? 0 : images.images().size()) > 5) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
@@ -232,11 +267,10 @@ public class CommunityPostService {
 		}
 
 		post.updateContent(request.category(), request.title(), request.content());
-		if (request.anonymous() != null) {
-			post.changeAnonymous(request.anonymous());
-		}
-		postImageRepository.deleteAll(existingImages.stream()
-				.filter(image -> !keepIds.contains(image.getPostImageId())).toList());
+		var removedImages = existingImages.stream()
+				.filter(image -> !keepIds.contains(image.getPostImageId())).toList();
+		postImageRepository.deleteAll(removedImages);
+		removedImages.stream().map(PostImage::getImageUrl).distinct().forEach(postImageCleanupService::enqueue);
 		// 유지한 이미지는 기존 표시 순서를 보존한다.
 		int sortOrder = 0;
 		for (PostImage image : existingImages) {
@@ -250,9 +284,9 @@ public class CommunityPostService {
 	/** 신고 참조를 보존하도록 게시글과 활성 댓글/답글을 같은 트랜잭션에서 소프트 삭제한다. */
 	@Transactional
 	public void deletePost(Long userId, Long postId) {
-		validateUserId(userId);
+		lockActiveUser(userId);
 		CommunityPost post = findOwnedPost(userId, postId);
-		communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(
+		communityCommentRepository.findAllForUpdateByPostId(
 				postId, CommunityContentStatus.ACTIVE).forEach(CommunityComment::delete);
 		post.delete();
 	}
@@ -261,12 +295,25 @@ public class CommunityPostService {
 		if (postId == null || postId <= 0) {
 			throw new CustomException(ErrorCode.INVALID_REQUEST);
 		}
-		CommunityPost post = communityPostRepository.findByPostIdAndStatus(postId, CommunityContentStatus.ACTIVE)
+		// 상세 조회(조회수)·좋아요·일반/관리자 삭제와 같은 행 잠금을 커밋까지 유지한다.
+		CommunityPost post = communityPostRepository.findDetailForUpdate(postId, CommunityContentStatus.ACTIVE)
 				.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
+		entityManager.refresh(post, LockModeType.PESSIMISTIC_WRITE);
+		if (post.getStatus() != CommunityContentStatus.ACTIVE) {
+			throw new CustomException(ErrorCode.INVALID_REQUEST);
+		}
 		if (!userId.equals(post.getAuthor().getUserId())) {
 			throw new CustomException(ErrorCode.FORBIDDEN);
 		}
 		return post;
+	}
+
+	/** Account -> post -> comment; held by the caller's write transaction until completion. */
+	private User lockActiveUser(Long userId) {
+		validateUserId(userId);
+		return userRepository.findByIdForAccountUpdate(userId)
+				.filter(user -> user.getStatus() == UserStatus.ACTIVE)
+				.orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
 	}
 
 	private void validateUserId(Long userId) {

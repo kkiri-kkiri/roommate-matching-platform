@@ -55,6 +55,11 @@ tasks.named('test') {
     systemProperty 'spring.sql.init.mode', 'never'
     systemProperty 'app.seed.mode', 'NONE'
     systemProperty 'app.calendar.crawl-on-startup', 'false'
+    systemProperty 'app.community.image-cleanup.enabled', 'false'
+    // Metadata-only legacy tests must never run cleanup against the normal upload directory.
+    // Keep the placeholder literal for Spring to resolve independently in each test context.
+    systemProperty 'app.community.image-directory', new File(System.getProperty('java.io.tmpdir'),
+            'kkirikkiri-community-test-${random.uuid}').absolutePath
     // Legacy test URL placeholders cannot select an external database.
     environment 'ANONYMOUS_TEST_DB_URL', 'jdbc:h2:mem:anonymous;MODE=MySQL;NON_KEYWORDS=USER;DB_CLOSE_DELAY=-1'
     environment 'ANONYMOUS_TEST_DB_DRIVER', 'org.h2.Driver'

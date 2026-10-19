@@ -245,7 +245,6 @@ class ChatServiceTest {
         // given
         boolean fromComment = scenario.contains("Comment") && !scenario.equals("extraComment");
         when(userRepository.findById(7L)).thenReturn(Optional.of(user));
-        if (!fromComment) when(userRepository.findById(8L)).thenReturn(Optional.of(target));
         if (!scenario.equals("missingPost")) {
             CommunityPost post = post(20L, scenario.equals("wrongPostAuthor") ? user : target);
             when(communityPostRepository.findByPostIdAndStatus(20L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
@@ -271,7 +270,6 @@ class ChatServiceTest {
     void rejectsMissingOrNonPositiveCommunitySourceIds(Long postId, Long commentId, String source) {
         // given
         when(userRepository.findById(7L)).thenReturn(Optional.of(user));
-        if (!"COMMENT".equals(source)) when(userRepository.findById(8L)).thenReturn(Optional.of(target));
         if (postId != null && postId > 0) {
             when(communityPostRepository.findByPostIdAndStatus(postId, CommunityContentStatus.ACTIVE))
                     .thenReturn(Optional.of(post(postId, target)));
@@ -285,7 +283,7 @@ class ChatServiceTest {
     @Test
     void requiresSourceTypeForCommunityChat() {
         // given
-        stubUsers();
+        when(userRepository.findById(7L)).thenReturn(Optional.of(user));
         when(communityPostRepository.findByPostIdAndStatus(20L, CommunityContentStatus.ACTIVE))
                 .thenReturn(Optional.of(post(20L, target)));
         // when / then
@@ -677,10 +675,8 @@ class ChatServiceTest {
     void anonymousAndRegularPostsHaveSeparateRoomsInEitherOrder(boolean anonymousFirst) {
         stubUsers();
         CommunityPost regular = post(20L, target);
-        CommunityPost anonymous = post(21L, target);
-        anonymous.changeAnonymous(true);
-        CommunityPost another = post(22L, target);
-        another.changeAnonymous(true);
+        CommunityPost anonymous = post(21L, target, true);
+        CommunityPost another = post(22L, target, true);
         for (CommunityPost post : List.of(regular, anonymous, another)) {
             when(communityPostRepository.findByPostIdAndStatus(post.getPostId(), CommunityContentStatus.ACTIVE))
                     .thenReturn(Optional.of(post));
@@ -720,11 +716,11 @@ class ChatServiceTest {
 
     @Test
     void anonymousIdentityIsHiddenInListHistoryAndBroadcastEvenAfterPostEditOrDeletion() {
-        CommunityPost post = post(20L, target);
-        post.changeAnonymous(true);
+        CommunityPost post = post(20L, target, true);
         useCommunityRoom(post);
         // 방 생성 당시 익명성을 유지한다.
-        post.changeAnonymous(false);
+        // Simulate a legacy row changed before anonymity became immutable.
+        ReflectionTestUtils.setField(post, "anonymous", false);
         post.delete();
         stubActiveMember();
         stubCounterpart();
@@ -773,8 +769,7 @@ class ChatServiceTest {
     @Test
     void concurrentAnonymousCreationReusesThePostSpecificWinner() {
         stubUsers();
-        CommunityPost anonymous = post(20L, target);
-        anonymous.changeAnonymous(true);
+        CommunityPost anonymous = post(20L, target, true);
         useCommunityRoom(anonymous);
         when(communityPostRepository.findByPostIdAndStatus(20L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(anonymous));
         when(chatRoomRepository.findByRoomKey("COMMUNITY:7:8:POST:20")).thenReturn(Optional.empty(), Optional.of(room));
@@ -791,8 +786,7 @@ class ChatServiceTest {
 
     @Test
     void anonymousAuthorStillSeesTheOtherParticipantsOrdinaryProfileAndOwnMessageDirection() {
-        CommunityPost anonymous = post(20L, target);
-        anonymous.changeAnonymous(true);
+        CommunityPost anonymous = post(20L, target, true);
         useCommunityRoom(anonymous);
         when(chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalse(8L)).thenReturn(List.of(counterpart));
         when(chatRoomMemberRepository.findByChatRoom_ChatRoomIdAndUser_UserId(10L, 8L)).thenReturn(Optional.of(counterpart));
@@ -1092,7 +1086,11 @@ class ChatServiceTest {
     }
 
     private CommunityPost post(Long id, User author) {
-        CommunityPost post = new CommunityPost(author, null, "자유게시판", "title", "content");
+        return post(id, author, false);
+    }
+
+    private CommunityPost post(Long id, User author, boolean anonymous) {
+        CommunityPost post = new CommunityPost(author, null, "자유게시판", "title", "content", anonymous);
         ReflectionTestUtils.setField(post, "postId", id);
         return post;
     }

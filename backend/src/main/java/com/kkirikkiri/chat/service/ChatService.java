@@ -101,7 +101,7 @@ public class ChatService {
 	public ChatRoomResponse createOrGetRoom(Long userId, ChatRoomCreateRequest request) {
 		validateUserId(userId);
 		validateRequest(request);
-		if (request.category() != ChatRoomCategory.COMMUNITY || !"COMMENT".equals(request.sourceFrom())) {
+		if (request.category() != ChatRoomCategory.COMMUNITY) {
 			validateId(request.targetUserId());
 			if (userId.equals(request.targetUserId())) {
 				throw new CustomException(ErrorCode.INVALID_REQUEST);
@@ -185,8 +185,8 @@ public class ChatService {
 
 	private ChatRoomResponse createRoom(Long userId, ChatRoomCreateRequest request, boolean recovery) {
 		User user = findUser(userId, ErrorCode.UNAUTHORIZED);
-		boolean commentSource = request.category() == ChatRoomCategory.COMMUNITY && "COMMENT".equals(request.sourceFrom());
-		User target = commentSource ? null : findUser(request.targetUserId(), ErrorCode.INVALID_REQUEST);
+		User target = request.category() == ChatRoomCategory.COMMUNITY
+				? null : findUser(request.targetUserId(), ErrorCode.INVALID_REQUEST);
 		CommunityPost post = null;
 		CommunityComment comment = null;
 		if (request.category() == ChatRoomCategory.ROOMMATE) {
@@ -198,9 +198,15 @@ public class ChatService {
 			post = communityPostRepository.findByPostIdAndStatus(request.sourcePostId(), CommunityContentStatus.ACTIVE)
 					.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REQUEST));
 			if ("POST".equals(request.sourceFrom())) {
-				if (request.sourceCommentId() != null || !target.getUserId().equals(post.getAuthor().getUserId())) {
+				if (request.sourceCommentId() != null) {
 					throw new CustomException(ErrorCode.INVALID_REQUEST);
 				}
+				// 익명 작성자 ID를 추측하는 검증 수단이 되지 않도록 전달된 ID는 무시한다.
+				if (!post.isAnonymous() && request.targetUserId() != null
+						&& !request.targetUserId().equals(post.getAuthor().getUserId())) {
+					throw new CustomException(ErrorCode.INVALID_REQUEST);
+				}
+				target = findUser(post.getAuthor().getUserId(), ErrorCode.INVALID_REQUEST);
 			} else if ("COMMENT".equals(request.sourceFrom())) {
 				validateId(request.sourceCommentId());
 				comment = communityCommentRepository.findByCommentIdAndStatus(

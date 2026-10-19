@@ -987,6 +987,40 @@ Response item은 룸메이트 카드 응답과 동일.
 
 7. 커뮤니티
 
+7·8번 보완(2026-10-19): 공개·검색·내 게시글·내 댓글/답글 및 관리자 게시글·댓글·신고 목록의
+size는 1~100이며 생략 시 기존 6을 유지한다. 유효한 정수의 범위 위반·offset 초과는
+400 VALIDATION_ERROR로 데이터 조회 전에 거부한다. 비정수·Integer 범위 초과는 기존 MVC
+바인딩 오류 정책으로 400을 반환한다. 초과 크기를 잘라서 성공 처리하지 않는다.
+관리자 회원·일정 등 다른 도메인의 목록 계약은 이번 변경 범위가 아니다.
+목록의 작성자·활성 댓글 수·이미지 존재·좋아요·신고 정보는 페이지 ID 기준 일괄 조회한다.
+상세의 일반 읽기는 게시글 쓰기 잠금 전에 끝내고, ACTIVE 조건의 조회수 원자 증가와
+익명 번호 초기화를 같은 트랜잭션의 마지막 구간에서 수행한다.
+실측 SQL 수·응답 일관성·롤백·MySQL 검증 한계는 [조회 성능 검증 안내](COMMUNITY_READ_PERFORMANCE.md)를 따른다.
+
+2번 계정 동시성 보완(2026-10-19): 일반 사용자 게시글·댓글·답글 쓰기(좋아요 취소와 이미지 변경 포함)는
+쓰기 트랜잭션에서 계정 행을 먼저 잠그고 ACTIVE를 검증한다. 정지·탈퇴가 먼저 커밋되면 UNAUTHORIZED,
+쓰기 선점 시 상태 변경은 쓰기 완료까지 대기한다. API 형식·소유권·공개 조회수 정책은 유지한다.
+잠금 충돌은 기존 409 ACCOUNT_UPDATE_CONFLICT 정책을 따른다.
+자세한 경로·잠금 순서·검증 한계는 [계정 동시성 안내](COMMUNITY_ACCOUNT_CONCURRENCY.md)를 따른다.
+
+2026-10-19 4·5번 보완: 일반/익명 댓글 작성과 댓글 삭제는 게시글 행 잠금을 공유한다.
+대댓글 작성은 게시글 → 부모 댓글 순서로 잠그고 최신 활성 상태와 기존 1단계 제한을 검증한다.
+부모 댓글 삭제는 일반·관리자·신고 DELETE_TARGET 모두 활성 대댓글을 함께 소프트 삭제하여
+삭제된 부모 아래 ACTIVE 대댓글을 남기지 않는다. 기존 화면에서 함께 사라지는 정책은 유지한다.
+이미지 수정은 기존 게시글 잠금을 재사용하고 잠금 이미지 목록과 캐시를 새로 읽은 뒤
+유지 목록+신규 파일 합계 5장 검증·연결 변경·순서 부여를 한 트랜잭션에서 수행한다.
+keepImageIds는 유지할 전체 ID 목록이며 누락 ID의 연결 제거 계약을 유지한다.
+자세한 범위·파일 롤백·H2/MySQL 차이는 [4·5번 검증 안내](COMMUNITY_CREATION_IMAGE_CONCURRENCY.md)를 따른다.
+
+2026-10-19 동시성 보완(1번 문제): 게시글 수정·일반/관리자 삭제는 상세 조회의 조회수 증가·좋아요와
+같은 게시글 행 잠금을 사용한다. 댓글·대댓글 수정·일반/관리자 삭제·좋아요는 같은 댓글 행 잠금을
+사용하며, 일반 수정·삭제의 작성자 검증은 잠금 조회 뒤에 수행한다. 삭제된 대상은 기존
+INVALID_REQUEST로 거부한다. 관리자 신고 DELETE_TARGET도 대상 행을 잠그고 새로 읽는다.
+요청·응답·익명 처리·부모 댓글 삭제 시 대댓글이 함께 사라지는 표시 정책은 유지한다.
+상세 조회는 인증 여부·반복 여부와 관계없이 성공한 요청마다 1회 증가하며 목록·관리자 상세는
+증가하지 않는다. 잠금 충돌은 기존 공통 예외 처리(409 ACCOUNT_UPDATE_CONFLICT)를 따른다.
+잠금 순서·H2/MySQL 검증 범위는 [동시성 검증 안내](COMMUNITY_CONCURRENCY.md)를 따른다.
+
 7.1 게시글 목록
 
 GET /api/posts
@@ -1067,14 +1101,25 @@ Response:
 "comments": []
 }
 
-게시글 상세 조회 시 조회수 증가 정책은 백엔드에서 처리한다.
+게시글 상세 조회 시 조회수 증가 정책은 백엔드에서 처리한다. 단순 읽기로 게시글·이미지·댓글·
+집계·프로필 스냅샷을 먼저 준비한 뒤 ACTIVE 조건 UPDATE로 view_count만 1 증가시키고
+updated_at을 갱신한다. 관리 Entity를 refresh하여 같은 트랜잭션의 후속 저장이 오래된 값을
+덮어쓰지 않게 한다. 익명 번호 초기화와 DTO 구성도 같은 트랜잭션에 포함하며 실패 시 함께 롤백한다.
+게시글 삭제가 먼저 커밋되면 증가 대상이 없어 기존 INVALID_REQUEST로 거부한다.
+응답 본문·이미지·댓글·일반 집계는 선행 읽기의 값이고 views는 이 요청의 원자 증가 결과다.
+읽기 일관성은 DB 격리 수준을 따른다. MySQL RR은 선행 일관 읽기 스냅샷,
+READ COMMITTED는 문장별 읽기이며 동시 수정 직전의 정상 게시글 내용이 응답될 수 있다.
+조회수 증가 후 서비스 내부 실패는 롤백하지만 서비스 커밋 후 HTTP 직렬화·전송 실패의 조회수는
+기존과 같이 이미 반영될 수 있다. 번호 초기화를 별도 커밋하지 않는다.
 
 목록·상세는 공개 조회이며 likes는 전체 좋아요 수, liked는 인증 사용자 본인의 좋아요 여부다.
 비로그인 요청의 liked는 false다.
 
-목록과 내가 작성한 게시글은 DB에서 선택한 페이지의 게시글 ID에 한정하여 좋아요 수를
-GROUP BY로 일괄 조회하고, 로그인한 경우 본인의 좋아요 ID를 한 번 더 조회한다.
-빈 페이지는 두 조회를 생략하며 좋아요가 없는 항목의 likes는 0이다.
+목록과 내가 작성한 게시글은 DB에서 선택한 페이지의 게시글 ID에 한정하여 좋아요·활성 댓글 수를
+GROUP BY로 일괄 조회한다. 이미지 존재·현재 사용자의 좋아요/신고 여부도 페이지 ID로 조회하고,
+일반 작성자 프로필은 고유 작성자 ID로 일괄 조회한다. 익명 작성자의 실제 ID·전공은 공개하지 않는다.
+빈 페이지는 추가 조회를 생략하며 좋아요·댓글이 없는 항목의 집계는 0이다.
+목록의 to-one 작성자·생활관만 함께 읽으며 컬렉션 fetch join이나 메모리 페이지네이션은 사용하지 않는다.
 LIKES 정렬·필터·count·페이징은 계속 DB에서 처리하고 동점은 createdAt DESC, postId DESC다.
 상세의 comments는 댓글·답글을 parentCommentId로 연결하는 기존 배열 구조를 유지한다.
 각 항목은 id, parentCommentId(일반 댓글은 null), content, author, createdAt,
@@ -1132,7 +1177,7 @@ Auth / 작성자만 가능
 
 Content-Type 및 Validation은 작성과 동일.
 
-유지할 기존 이미지 ID와 신규 파일을 함께 전달한다. keepImageIds의 생략/null/빈 배열은 기존 이미지 연결을 모두 제거한다. 본문만 수정해도 유지할 ID를 명시해야 한다. 유지 ID는 해당 게시글 소유이며 중복을 금지하고 유지+신규 합계는 최대 5개다. 유지 이미지의 기존 순서 다음에 신규 이미지를 추가한다. 프론트 CommunityPage.savePost는 남긴 기존 이미지 ID와 신규 File을 분리하여 전송한다. 이번 문서 수정에서 삭제 정책을 변경하지 않는다.
+유지할 기존 이미지 ID와 신규 파일을 함께 전달한다. keepImageIds의 생략/null/빈 배열은 기존 이미지 연결을 모두 제거한다. 본문만 수정해도 유지할 ID를 명시해야 한다. 유지 ID는 해당 게시글 소유이며 중복을 금지하고 유지+신규 합계는 최대 5개다. 유지 이미지의 기존 순서 다음에 신규 이미지를 추가한다. 프론트 CommunityPage.savePost는 남긴 기존 이미지 ID와 신규 File을 분리하여 전송한다. 개별 연결 제거는 같은 트랜잭션에 영속 정리 작업을 기록하고 커밋 후 파일을 정리한다. 롤백 시 기존 파일은 유지한다.
 
 현재 Request JSON Part 예:
 
@@ -1143,9 +1188,25 @@ Content-Type 및 Validation은 작성과 동일.
 "keepImageIds": [1, 2]
 }
 
-게시글 작성 anonymous는 boolean이며 기본 false다. 수정 anonymous는 Boolean으로 생략/null이면 유지한다. 목록·상세 응답에도 anonymous를 포함하며 author는 id/nickname/major다. 익명 게시글은 author.nickname="익명", author.major=null이고 author.id는 실제 작성자 ID를 유지한다. 이는 8장의 익명 댓글·답글(author.id=null)과 다른 현재 구현 계약이다. 익명 게시글은 공개 프로필·다른 게시물과 연결해 재식별될 수 있으므로 작성자 ID 비공개 여부와 익명성 수준은 정책 결정 대상이다. 현재 공개 계약을 임의 변경하지 않는다.
+게시글 작성 anonymous는 boolean이며 기본 false다. 작성 시 선택한 익명 여부는 작성 후 변경할 수 없다. 수정 anonymous는 호환성을 위해 Boolean으로 유지한다. 생략과 명시적 null은 저장된 값을 유지하고, 동일 값은 허용하며, 다른 값은 400 VALIDATION_ERROR로 전체 요청을 거부한다. 계정 → 게시글 잠금 및 최신 활성 상태·작성자 검증 후 익명 여부를 비교하며 제목·본문·이미지 변경 전에 거부한다. 프론트 수정 화면은 익명 여부를 읽기 전용으로 표시하고 수정 요청에는 anonymous를 보내지 않는다. 관리자 예외나 별도 익명 변경 API는 없다.
 
-작성 성공 data는 postId(number), 수정 성공 data는 null이다. 이미지 URL은 현재 /api/post-images/{파일명} 경로이며 프론트는 API origin 기준으로 해석한다. 파일은 app.community.image-directory(기본 uploads/community)에 저장한다. 연결 제거와 실제 파일 삭제를 동일한 것으로 설명하지 않는다.
+목록·상세·검색·내 게시글 응답에는 anonymous와 mine을 포함하며 author는 id/nickname/major다. 2026-10-19 커뮤니티 3번 요구사항에 따라 익명 게시글은 author.id=null, author.nickname="익명", author.major=null이다. 일반 게시글의 작성자 정보는 유지한다. mine은 인증 Principal과 내부 작성자를 비교하며 비로그인은 false다. 수정·삭제 권한은 내부 작성자로 검증하며 요청의 ID나 mine을 신뢰하지 않는다. 관리자 전용 API의 작성자 정보와 접근 통제는 유지한다.
+
+작성 성공 data는 postId(number), 수정 성공 data는 null이다. 이미지 URL은 /api/post-images/{파일명} 경로를 유지하며 프론트는 API origin 기준으로 해석한다. 파일은 비공개 app.community.image-directory(기본 uploads/community)에 저장한다.
+
+9번 보완(2026-10-19): GET /api/post-images/{filename}은 PostImageController.getImage가 처리하는 바이너리 응답이다.
+비로그인도 해당 URL의 POST_IMAGE 연결 및 부모 ACTIVE 상태를 검증한 뒤 200 image/jpeg|png|webp|gif를 받는다.
+UUID 파일명 및 과거 안전한 영문/숫자/밑줄/하이픈 basename과 허용 확장자를 지원한다.
+연결 없음·DELETED·없는 파일·허용되지 않은 파일명은 404 빈 본문이다. 경로 탐색은 방화벽/라우팅에서
+400/403/404로 차단될 수도 있다. 내부 경로는 반환하지 않는다. 직접 정적 폴더 공개는 제거한다.
+정상/404 이미지 응답은 Cache-Control: no-store, Pragma: no-cache, Expires: 0이다.
+ETag/Last-Modified/304를 사용하지 않으며 Range도 전체 응답 또는 거부로 처리한다.
+개별 제거 커밋 후 파일 삭제에 실패해도 URL은 차단되며 DB 작업으로 재시도한다. 다른 연결(삭제 게시글 포함)이
+하나라도 있으면 파일을 보존한다. 같은 파일이 다른 ACTIVE 게시글에도 연결되어 있으면 그 공개 연결은 유지한다.
+사용자·관리자·신고에 의한 게시글 전체 삭제는 기존 소프트 삭제 및 이미지 연결·실물 파일을 보존하고
+공개 GET만 차단한다. 관리자에게도 이 공개 URL의 예외는 없으며 별도 보존 이미지 열람 API는 없다.
+진행 중 응답이나 이미 저장된 사본을 회수하지는 않는다. 구버전 서버·CDN·직접 볼륨 공개를 함께 제거해야 한다.
+[파일 수명주기·배포 안내](COMMUNITY_IMAGE_LIFECYCLE.md)를 따른다.
 
 7.5 게시글 삭제
 
@@ -1206,7 +1267,7 @@ Validation: 댓글과 동일.
 
 댓글과 답글의 anonymous는 생략/null이면 false(닉네임 공개)이다. 익명인 경우 author.nickname은 "익명1"처럼 게시글별 번호를 포함하고 author.id와 author.major는 null이다. anonymousNumber는 해당 게시글에서 처음 익명으로 참여한 순서대로 배정하며 댓글과 답글이 공유한다. 일반 댓글의 anonymousNumber는 null이며 작성자 ID·닉네임·학과는 기존대로 반환한다. 내용 수정·소프트 삭제·재작성은 기존 번호를 유지한다.
 
-mine은 서버 Principal에서 얻은 인증 사용자 ID와 댓글·답글의 내부 작성자 ID를 비교해 계산하며, 비로그인은 false다. 익명 여부나 응답 author.id로 계산하지 않는다. 수정·삭제 UI는 실제 작성자 ID 비교 대신 mine을 사용한다. 서버의 권한 검증은 인증 사용자와 내부 작성자 관계로 계속 수행한다. 익명 댓글에는 게시글의 실제 작성자와 연결되는 작성자 배지를 표시하지 않는다. author.id=null과 mine 사용은 현재 구현에 반영된 계약이며, 과거 클라이언트를 배포할 때는 이 nullable 계약을 함께 지원해야 한다. 익명 게시글의 실제 author.id 유지 계약은 7.4를 따른다.
+mine은 서버 Principal에서 얻은 인증 사용자 ID와 댓글·답글의 내부 작성자 ID를 비교해 계산하며, 비로그인은 false다. 익명 여부나 응답 author.id로 계산하지 않는다. 수정·삭제 UI는 실제 작성자 ID 비교 대신 mine을 사용한다. 서버의 권한 검증은 인증 사용자와 내부 작성자 관계로 계속 수행한다. 익명 댓글에는 게시글의 실제 작성자와 연결되는 작성자 배지를 표시하지 않는다. author.id=null과 mine 사용은 현재 구현에 반영된 계약이며, 과거 클라이언트를 배포할 때는 이 nullable 계약을 함께 지원해야 한다. 익명 게시글에도 ID 마스킹과 mine을 적용한다(7.4).
 
 8.3 댓글/답글 수정
 
@@ -1411,7 +1472,7 @@ sourceFrom:
 
 필드 기준:
 
-* `targetUserId`: 채팅을 시작할 상대 사용자 ID. COMMUNITY / COMMENT는 생략 또는 null 가능하며 서버가 댓글 작성자를 조회한다.
+* `targetUserId`: ROOMMATE는 필수다. COMMUNITY / POST·COMMENT는 생략 또는 null 가능하며 서버가 출처 작성자를 조회한다.
 * `category`: `ROOMMATE` 또는 `COMMUNITY`
 * `sourcePostId`: 커뮤니티에서 시작한 경우 원 게시글 ID
 * `sourceCommentId`: 댓글에서 시작한 경우 원 댓글 ID
@@ -1424,7 +1485,7 @@ Validation:
 * `sourceFrom = POST`인 경우 `sourcePostId`가 필수이며 `sourceCommentId`는 사용하지 않는다.
 * `sourceFrom = COMMENT`인 경우 `sourcePostId`, `sourceCommentId`가 모두 필수이다.
 * `sourceCommentId`는 해당 `sourcePostId`에 속한 댓글이어야 한다.
-* 게시글 출처의 `targetUserId`는 작성자와 일치해야 한다. 일반 댓글에서 전달한 `targetUserId`도 일치를 검증한다. 익명 댓글에서는 작성자 ID 추측 검증에 악용되지 않도록 전달된 값을 무시하고 댓글의 실제 작성자를 사용한다.
+* 일반 게시글·댓글에서 전달한 `targetUserId`는 작성자와 일치해야 한다. 익명 게시글·댓글에서는 작성자 ID 추측 검증에 악용되지 않도록 전달된 값을 무시하고 출처의 실제 작성자를 사용한다. 위조 ID로 다른 상대를 지정할 수 없으며 ID 일치에 따른 성공/실패 차이도 제공하지 않는다.
 * 자기 자신을 대상으로 채팅방을 생성할 수 없다.
 
 방 재사용 및 출처 표시 규칙:
@@ -2472,7 +2533,7 @@ tags는 별도 저장하지 않고 프로필/설문 값에서 서버가 생성
 
 17.4 커뮤니티 → 채팅 연결
 
-현재 CommunityPostPage.startChat은 게시글·댓글·답글의 실제 사용자/게시글/댓글 ID로 방 생성 API를 직접 호출하고 반환 roomId로 이동한다. useChat의 기존 communityChat Router state 경로는 POST만 지원하지만 현재 댓글 버튼은 이 경로를 사용하지 않는다.
+현재 CommunityPostPage.startChat은 게시글·댓글·답글의 출처 ID로 방 생성 API를 직접 호출하고 반환 roomId로 이동한다. 익명 출처는 targetUserId=null이며 서버가 작성자를 결정한다. useChat의 기존 communityChat Router state 경로도 작성자 ID 없이 POST를 지원한다. 댓글 버튼은 해당 Router state 경로를 사용하지 않는다.
 
 17.5 학교/기숙사 일정 수정 기준
 
@@ -2522,10 +2583,11 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 
 ### 19.1 제공 중인 REST 엔드포인트
 
-성공은 HTTP 200이며 아래 반환 타입은 공통 `ApiResponse<T>`의 **data** 타입이다. `Void`는 null, `Long`은 JSON 숫자이며 `{id: ...}` 객체가 아니다. 경로 ID는 Long이다. JSON은 기본 요청 형식이며 게시글 생성/수정만 JSON request 파트와 images 파일의 multipart를 사용한다. 조회 Request DTO는 query 바인딩이다. 자료형의 List/Map/Enum/LocalDate/LocalDateTime은 각각 JSON 배열/객체/문자열/날짜/날짜시간으로 표현한다. 상세 검증·인증·소유권은 각 본문과 아래 규칙을 함께 적용한다. 이미지 파일 제공 경로는 JSON REST Controller가 아닌 정적 리소스 핸들러다.
+성공은 HTTP 200이며 아래 반환 타입은 공통 `ApiResponse<T>`의 **data** 타입이다. `Void`는 null, `Long`은 JSON 숫자이며 `{id: ...}` 객체가 아니다. 경로 ID는 Long이다. JSON은 기본 요청 형식이며 게시글 생성/수정만 JSON request 파트와 images 파일의 multipart를 사용한다. 조회 Request DTO는 query 바인딩이다. 자료형의 List/Map/Enum/LocalDate/LocalDateTime은 각각 JSON 배열/객체/문자열/날짜/날짜시간으로 표현한다. 상세 검증·인증·소유권은 각 본문과 아래 규칙을 함께 적용한다. 예외로 이미지 파일의 byte[]는 위 9번 계약의 ResponseEntity<byte[]> 바이너리 본문이며 ApiResponse로 감싸지 않는다.
 
-| Method | 경로 | data 타입 | Controller·메서드 |
+| Method | 경로 | data 타입 (이미지는 바이너리 본문) | Controller·메서드 |
 | --- | --- | --- | --- |
+| GET | /api/post-images/{filename} | `byte[]` | [PostImageController.getImage](src/main/java/com/kkirikkiri/community/post/controller/PostImageController.java) |
 | GET | /api/admin/dashboard | `AdminDashboardResponse` | [AdminController.getDashboard](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
 | GET | /api/admin/members | `RoommatePageResponse<AdminMemberResponse>` | [AdminController.getMembers](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
 | GET | /api/admin/members/{memberId} | `AdminMemberDetailResponse` | [AdminController.getMember](src/main/java/com/kkirikkiri/admin/controller/AdminController.java) |
@@ -2603,7 +2665,7 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 
 | DTO (선언 근거) | 필드: Java 자료형 / 요청 annotation |
 | --- | --- |
-| [AdminCommentListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminCommentListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1))<br>`q: String` (없음)<br>`reported: Boolean` (없음) |
+| [AdminCommentListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminCommentListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1), Max(100))<br>`q: String` (없음)<br>`reported: Boolean` (없음) |
 | [AdminCommentResponse](src/main/java/com/kkirikkiri/admin/dto/AdminCommentResponse.java) | `id: Long`<br>`content: String`<br>`author: CommunityAuthorResponse`<br>`createdAt: LocalDateTime`<br>`postId: Long`<br>`postTitle: String`<br>`reported: boolean` |
 | [AdminCrawledScheduleListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminCrawledScheduleListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1))<br>`q: String` (없음)<br>`category: String` (Pattern(regexp = "SCHOOL&#124;DORMITORY")) |
 | [AdminCrawledScheduleResponse](src/main/java/com/kkirikkiri/admin/dto/AdminCrawledScheduleResponse.java) | `id: Long`<br>`title: String`<br>`date: LocalDate`<br>`content: String`<br>`category: String`<br>`source: String`<br>`collectedAt: LocalDateTime` |
@@ -2619,12 +2681,12 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 | [AdminMemberResponse](src/main/java/com/kkirikkiri/admin/dto/AdminMemberResponse.java) | `id: Long`<br>`nickname: String`<br>`schoolEmail: String`<br>`dormitory: String`<br>`major: String`<br>`createdAt: LocalDate`<br>`status: UserStatus` |
 | [AdminMemberStatusUpdateRequest](src/main/java/com/kkirikkiri/admin/dto/AdminMemberStatusUpdateRequest.java) | `status: String` (NotBlank, Pattern(regexp = "ACTIVE&#124;SUSPENDED&#124;WITHDRAWN")) |
 | [AdminPostDetailResponse](src/main/java/com/kkirikkiri/admin/dto/AdminPostDetailResponse.java) | `id: Long`<br>`category: String`<br>`title: String`<br>`author: CommunityAuthorResponse`<br>`createdAt: LocalDateTime`<br>`views: long`<br>`likes: long`<br>`commentCount: long`<br>`reported: boolean`<br>`content: String` |
-| [AdminPostListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminPostListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1))<br>`q: String` (없음)<br>`category: String` (Pattern(regexp = "자유게시판&#124;나눔게시판&#124;택배게시판&#124;민원게시판"))<br>`reported: Boolean` (없음)<br>`sort: String` (Pattern(regexp = "LATEST&#124;VIEWS&#124;LIKES")) |
+| [AdminPostListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminPostListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1), Max(100))<br>`q: String` (없음)<br>`category: String` (Pattern(regexp = "자유게시판&#124;나눔게시판&#124;택배게시판&#124;민원게시판"))<br>`reported: Boolean` (없음)<br>`sort: String` (Pattern(regexp = "LATEST&#124;VIEWS&#124;LIKES")) |
 | [AdminPostResponse](src/main/java/com/kkirikkiri/admin/dto/AdminPostResponse.java) | `id: Long`<br>`category: String`<br>`title: String`<br>`author: CommunityAuthorResponse`<br>`createdAt: LocalDateTime`<br>`views: long`<br>`likes: long`<br>`commentCount: long`<br>`reported: boolean` |
 | [AdminReportDetailResponse](src/main/java/com/kkirikkiri/admin/dto/AdminReportDetailResponse.java) | `id: Long`<br>`type: ReportType`<br>`targetId: Long`<br>`targetUser: TargetUser`<br>`targetContent: String`<br>`reporter: Reporter`<br>`reason: String`<br>`description: String`<br>`createdAt: LocalDateTime`<br>`status: ReportStatus` |
 | [AdminReportDetailResponse.Reporter](src/main/java/com/kkirikkiri/admin/dto/AdminReportDetailResponse.java) | `id: Long`<br>`nickname: String`<br>`schoolEmail: String` |
 | [AdminReportDetailResponse.TargetUser](src/main/java/com/kkirikkiri/admin/dto/AdminReportDetailResponse.java) | `id: Long`<br>`nickname: String`<br>`schoolEmail: String`<br>`status: UserStatus` |
-| [AdminReportListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminReportListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1))<br>`q: String` (없음)<br>`type: String` (Pattern(regexp = "USER&#124;POST&#124;COMMENT"))<br>`status: String` (Pattern(regexp = "PENDING&#124;COMPLETED&#124;REJECTED")) |
+| [AdminReportListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminReportListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1), Max(100))<br>`q: String` (없음)<br>`type: String` (Pattern(regexp = "USER&#124;POST&#124;COMMENT"))<br>`status: String` (Pattern(regexp = "PENDING&#124;COMPLETED&#124;REJECTED")) |
 | [AdminReportProcessRequest](src/main/java/com/kkirikkiri/admin/dto/AdminReportProcessRequest.java) | `action: String` (NotBlank, Pattern(regexp = "COMPLETE&#124;REJECT&#124;SUSPEND_USER&#124;DELETE_TARGET")) |
 | [AdminReportResponse](src/main/java/com/kkirikkiri/admin/dto/AdminReportResponse.java) | `id: Long`<br>`type: ReportType`<br>`targetContent: String`<br>`reporter: CommunityAuthorResponse`<br>`targetUser: CommunityAuthorResponse`<br>`reason: String`<br>`createdAt: LocalDateTime`<br>`status: ReportStatus` |
 | [AdminScheduleCrawlStatusResponse](src/main/java/com/kkirikkiri/admin/dto/AdminScheduleCrawlStatusResponse.java) | `category: ScheduleCrawlCategory`<br>`status: ScheduleCrawlStatus`<br>`lastRunAt: LocalDateTime`<br>`recentCollectedCount: long`<br>`totalCollectedCount: long`<br>`lastCompletedAt: LocalDateTime`<br>`lastFailure: LastFailure` |
@@ -2668,9 +2730,9 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 | [MyCommunityCommentResponse](src/main/java/com/kkirikkiri/community/comment/dto/MyCommunityCommentResponse.java) | `id: Long`<br>`content: String`<br>`createdAt: LocalDateTime`<br>`isReply: boolean`<br>`postId: Long`<br>`postTitle: String`<br>`category: String` |
 | [CommunityAuthorResponse](src/main/java/com/kkirikkiri/community/post/dto/CommunityAuthorResponse.java) | `id: Long`<br>`nickname: String`<br>`major: String` |
 | [CommunityPostCreateRequest](src/main/java/com/kkirikkiri/community/post/dto/CommunityPostCreateRequest.java) | `category: String` (NotBlank, Pattern(regexp = "자유게시판&#124;나눔게시판&#124;택배게시판&#124;민원게시판"))<br>`title: String` (NotBlank, Size(max = 100))<br>`content: String` (NotBlank, Size(max = 5000))<br>`anonymous: boolean` (없음) |
-| [CommunityPostDetailResponse](src/main/java/com/kkirikkiri/community/post/dto/CommunityPostDetailResponse.java) | `id: Long`<br>`category: String`<br>`dormitory: String`<br>`title: String`<br>`content: String`<br>`author: CommunityAuthorResponse`<br>`anonymous: boolean`<br>`createdAt: LocalDateTime`<br>`views: int`<br>`likes: long`<br>`liked: boolean`<br>`reported: boolean`<br>`images: List<PostImageResponse>`<br>`comments: List<T>` |
-| [CommunityPostListRequest](src/main/java/com/kkirikkiri/community/post/dto/CommunityPostListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1))<br>`category: String` (Pattern(regexp = "자유게시판&#124;나눔게시판&#124;택배게시판&#124;민원게시판"))<br>`q: String` (없음)<br>`dormitory: String` (Pattern(regexp = "나래&#124;호연&#124;비봉&#124;창조"))<br>`sort: String` (Pattern(regexp = "LATEST&#124;VIEWS&#124;LIKES")) |
-| [CommunityPostResponse](src/main/java/com/kkirikkiri/community/post/dto/CommunityPostResponse.java) | `id: Long`<br>`category: String`<br>`dormitory: String`<br>`title: String`<br>`contentPreview: String`<br>`author: CommunityAuthorResponse`<br>`anonymous: boolean`<br>`createdAt: LocalDateTime`<br>`views: int`<br>`likes: long`<br>`commentCount: long`<br>`hasImages: boolean`<br>`liked: boolean`<br>`reported: boolean` |
+| [CommunityPostDetailResponse](src/main/java/com/kkirikkiri/community/post/dto/CommunityPostDetailResponse.java) | `id: Long`<br>`category: String`<br>`dormitory: String`<br>`title: String`<br>`content: String`<br>`author: CommunityAuthorResponse`<br>`anonymous: boolean`<br>`createdAt: LocalDateTime`<br>`views: int`<br>`likes: long`<br>`liked: boolean`<br>`reported: boolean`<br>`images: List<PostImageResponse>`<br>`comments: List<T>`<br>`mine: boolean` |
+| [CommunityPostListRequest](src/main/java/com/kkirikkiri/community/post/dto/CommunityPostListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1), Max(100))<br>`category: String` (Pattern(regexp = "자유게시판&#124;나눔게시판&#124;택배게시판&#124;민원게시판"))<br>`q: String` (없음)<br>`dormitory: String` (Pattern(regexp = "나래&#124;호연&#124;비봉&#124;창조"))<br>`sort: String` (Pattern(regexp = "LATEST&#124;VIEWS&#124;LIKES")) |
+| [CommunityPostResponse](src/main/java/com/kkirikkiri/community/post/dto/CommunityPostResponse.java) | `id: Long`<br>`category: String`<br>`dormitory: String`<br>`title: String`<br>`contentPreview: String`<br>`author: CommunityAuthorResponse`<br>`anonymous: boolean`<br>`createdAt: LocalDateTime`<br>`views: int`<br>`likes: long`<br>`commentCount: long`<br>`hasImages: boolean`<br>`liked: boolean`<br>`reported: boolean`<br>`mine: boolean` |
 | [CommunityPostUpdateRequest](src/main/java/com/kkirikkiri/community/post/dto/CommunityPostUpdateRequest.java) | `category: String` (NotBlank, Pattern(regexp = "자유게시판&#124;나눔게시판&#124;택배게시판&#124;민원게시판"))<br>`title: String` (NotBlank, Size(max = 100))<br>`content: String` (NotBlank, Size(max = 5000))<br>`keepImageIds: List< Long>` (Size(max = 5), NotNull, Positive)<br>`anonymous: Boolean` (없음) |
 | [PostImageResponse](src/main/java/com/kkirikkiri/community/post/dto/PostImageResponse.java) | `id: Long`<br>`url: String` |
 | [PostImagesRequest](src/main/java/com/kkirikkiri/community/post/dto/PostImagesRequest.java) | `images: List< MultipartFile>` (Size(max = 5), NotNull) |
@@ -2699,8 +2761,8 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 - ChatRoomResponse.sourcePost/lastMessage는 null일 수 있다. 익명 상대 CounterpartResponse는 nickname="익명", tags=[], 그 외 필드 null이다. 익명 메시지 senderId는 null이다. 탈퇴/정지/토큰 만료·기존 구독 문제(#12)는 nullable 계약 보완으로 해결되지 않는다.
 - CalendarEventResponse.startTime/endTime/description/source는 null일 수 있다. source는 Entity의 source_name이며 sourceUrl/collectedAt는 이 DTO에 없다. AdminScheduleCrawlStatusResponse의 실행 시각·상태·실패 값은 이력 없음 시 null이다. 학교 수집은 실행별 이력을 저장하며 기숙사 수집기는 미구현이다. 관리자 응답에서 프로필이 없는 회원의 nickname/major/dormitory 등 프로필 필드도 null일 수 있다. 신고 상세 description은 선택값이다. 처리 시각·담당자는 현재 신고 응답 필드가 아니다.
 - SignupRequest와 비밀번호 변경/재설정의 확인 비밀번호 일치, 출생연도 현재 연도 이하, 캘린더 날짜 범위·동일 날짜 시간 순서 등 @AssertTrue 객체 검증을 적용한다. 회원정보 PATCH의 null은 유지이며 세부전공 없음 선택은 null 저장, 학부·전공 활성 여부/소속과 중복 닉네임은 서비스에서 검증한다. 프로필 설문·선호 저장은 전체 입력이며 부분 PATCH처럼 처리하지 않는다.
-- PostImage 유지 정책은 keepImageIds 생략/null/[] 모두 기존 이미지 제거다. 현재 프론트가 유지할 ID 목록을 전달한다. 익명 게시글 author.id는 실제 작성자 ID이고 별도 정책 확정이 필요하다. API 호환성 변경을 이 문서가 승인하지 않는다.
-- CommunityCommentResponse의 익명 댓글·답글은 author.id=null, author.major=null, author.nickname="익명{anonymousNumber}"다. mine은 서버 인증 사용자와 내부 작성자의 일치 여부이며 비로그인은 false다. 일반 댓글·답글의 작성자 정보는 유지한다. 익명 게시글의 author.id 유지 규칙을 댓글·답글에 적용하지 않는다.
+- PostImage 유지 정책은 keepImageIds 생략/null/[] 모두 기존 이미지 제거다. 현재 프론트가 유지할 ID 목록을 전달한다. 익명 게시글 author.id는 null이며 목록·상세에 mine을 제공한다. 클라이언트는 author.id 비교 대신 mine을 사용하고 채팅은 출처 ID로 연결해야 한다.
+- CommunityCommentResponse의 익명 댓글·답글은 author.id=null, author.major=null, author.nickname="익명{anonymousNumber}"다. mine은 서버 인증 사용자와 내부 작성자의 일치 여부이며 비로그인은 false다. 일반 댓글·답글의 작성자 정보와 게시글별 익명 번호는 유지한다.
 - REST 오류는 success=false/message/data=null/errorCode, DTO 필드 오류에만 fieldErrors가 추가될 수 있다. CustomException은 아래 ErrorCode와 기본 메시지로 반환하며 내부 예외 메시지를 공개하지 않는다. 대상 없음이 모두 404인 계약은 아니며 일반 서비스 오류는 INVALID_REQUEST 400이다. MVC의 405/413/415 등은 handler의 실제 상태를 유지한다. STOMP 오류는 REST HTTP/envelope가 아니다.
 
 | ErrorCode | 기본 HTTP 상태 | 기본 메시지 |
@@ -2748,5 +2810,5 @@ Simple Broker의 서로 다른 JVM 사이 메시지 중계는 제공하지 않�
 
 - #3 기본/prod의 DDL validate·SQL never·local 전용 시드와 #4 Gradle 테스트 H2 격리·연결 전 안전 검사를 구현했다. 적용 조건과 실제 운영에서 확인할 사항은 [DEPLOYMENT.md](DEPLOYMENT.md)를 따른다. 다른 도메인의 #12/#13/#14 등은 이번 user 수정의 배포 승인 범위에 포함하지 않는다.
 - Auth의 이메일 인증·로그인·메일 요청 제한은 아래 운영 정책을 따른다. 공유 저장소/실제 MySQL 검증은 DEPLOYMENT.md를 함께 확인한다.
-- 익명 게시글의 author.id는 실제 작성자 ID이므로 공개 프로필·다른 게시물과 연결할 수 있다. 게시글의 작성자 ID 비공개 여부와 재식별 방지 수준은 미확정 정책이며 공개 계약을 문서만으로 변경하지 않는다. 익명 댓글·답글은 이미 author.id와 author.major를 null로 반환하고 게시글별 익명 번호와 mine을 제공한다(8장). 과거의 "익명 게시글·댓글 모두 실제 author.id 유지" 설명은 댓글·답글의 현재 계약에 적용되지 않으며, 댓글·답글의 작성자 ID 마스킹을 미해결 결함으로 분류하지 않는다.
+- 커뮤니티 3번 보완으로 익명 게시글 author.id와 author.major는 null이고 서버 계산 mine을 제공한다. 채팅도 출처로 작성자를 결정하며 기존 상대 프로필·메시지 ID 마스킹과 방 분리 규칙을 재사용한다. 추가 확정 정책으로 작성 후 일반 ↔ 익명 전환은 양방향 금지한다. 과거 전환 이력이 있는 게시글·방은 소급 수정하지 않으며 기존 공개 신원이 연결될 수 있다. 과거 응답·브라우저 캐시의 ID와 본문·첨부 내용의 식별 정보도 회수하지 않는다. [익명성 검증 안내](COMMUNITY_POST_PRIVACY.md)를 따른다.
 - 이미지 쓰기/영구 저장·시간대·CORS·SMTP·AI·필수 환경변수·WebSocket Upgrade와 프록시 타임아웃·다중 인스턴스 전달은 실제 환경 검증 대상이다. 기존 익명 방 키 적용 절차는 ERD.md의 마이그레이션 검증 기준을 따른다. 운영 DB·외부 연결을 이번에 검증하지 않았다.

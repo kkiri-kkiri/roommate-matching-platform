@@ -34,7 +34,7 @@ import com.kkirikkiri.user.repository.UserRepository;
 		"spring.jpa.hibernate.ddl-auto=create-drop", "spring.jpa.show-sql=false"
 })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({CommunityAnonymousAuthorService.class, CommunityCommentService.class,
+@Import({CommunityAnonymousAuthorService.class, CommunityCommentService.class, CommunityCommentWriteService.class,
 		CommunityAnonymousAuthorIntegrationTest.ValidationConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class CommunityAnonymousAuthorIntegrationTest {

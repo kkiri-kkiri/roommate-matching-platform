@@ -47,6 +47,7 @@ class CommunityCommentServiceTest {
     @Mock ConstraintViolation<Object> violation;
     @Mock CommentLikeRepository commentLikeRepository;
     @Mock CommunityAnonymousAuthorService anonymousAuthorService;
+    @Mock jakarta.persistence.EntityManager entityManager;
     @InjectMocks CommunityCommentService service;
     User author;
     CommunityPost activePost;
@@ -55,8 +56,16 @@ class CommunityCommentServiceTest {
     @BeforeEach
     void setUp() {
         author = mock(User.class);
+        lenient().when(userRepository.findByIdForAccountUpdate(anyLong())).thenReturn(Optional.of(author));
+        lenient().when(author.getStatus()).thenReturn(com.kkirikkiri.user.entity.UserStatus.ACTIVE);
         activePost = new CommunityPost(author, null, "자유게시판", "제목", "내용");
         activeComment = new CommunityComment(activePost, author, null, "댓글");
+        ReflectionTestUtils.setField(activePost, "postId", 1L);
+        ReflectionTestUtils.setField(activeComment, "commentId", 2L);
+        ReflectionTestUtils.setField(service, "commentWriteService",
+                new CommunityCommentWriteService(communityPostRepository, communityCommentRepository, entityManager));
+        lenient().when(communityCommentRepository.findPostIdByCommentId(2L)).thenReturn(Optional.of(1L));
+        lenient().when(communityPostRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(activePost));
     }
 
     @ParameterizedTest
@@ -68,8 +77,8 @@ class CommunityCommentServiceTest {
         CommunityComment parent = new CommunityComment(post, user, null, "부모");
         when(validator.validate(any())).thenReturn(Set.of());
         when(userRepository.findById(7L)).thenReturn(Optional.of(user));
-        when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
-        when(communityCommentRepository.findByCommentIdAndStatus(2L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(parent));
+        when(communityPostRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(post));
+        when(communityCommentRepository.findForUpdate(2L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(parent));
         when(communityCommentRepository.save(any())).thenAnswer(invocation -> {
             CommunityComment saved = invocation.getArgument(0);
             assertEquals(anonymous, saved.isAnonymous());
@@ -90,7 +99,7 @@ class CommunityCommentServiceTest {
         // given
         ReflectionTestUtils.setField(activePost, "postId", 1L);
         if (reply) stubActiveComment();
-        else when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE))
+        else when(communityPostRepository.findByIdForUpdate(1L))
                 .thenReturn(Optional.of(activePost));
         when(userRepository.findById(7L)).thenReturn(Optional.of(author));
         var failure = new CustomException(ErrorCode.INVALID_REQUEST);
@@ -129,7 +138,7 @@ class CommunityCommentServiceTest {
     void savesCommentOrReplyWithCorrectParentAndReturnsId(boolean reply) {
         // given
         if (reply) stubActiveComment();
-        else when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE))
+        else when(communityPostRepository.findByIdForUpdate(1L))
                 .thenReturn(Optional.of(activePost));
         when(userRepository.findById(7L)).thenReturn(Optional.of(author));
         when(communityCommentRepository.save(any())).thenAnswer(invocation -> {
@@ -152,12 +161,13 @@ class CommunityCommentServiceTest {
     void rejectsReplyToAnotherReplyBeforeSaving() {
         // given
         CommunityComment reply = new CommunityComment(activePost, author, activeComment, "답글");
-        when(communityCommentRepository.findByCommentIdAndStatus(3L, CommunityContentStatus.ACTIVE))
+        when(communityCommentRepository.findPostIdByCommentId(3L)).thenReturn(Optional.of(1L));
+        when(communityCommentRepository.findForUpdate(3L, CommunityContentStatus.ACTIVE))
                 .thenReturn(Optional.of(reply));
         // when / then
         assertError(ErrorCode.INVALID_REQUEST, () -> service.createReply(7L, 3L, createRequest()));
         verify(communityCommentRepository, never()).save(any());
-        verifyNoInteractions(userRepository);
+        verify(userRepository).findByIdForAccountUpdate(7L);
     }
 
     @Test
@@ -171,7 +181,7 @@ class CommunityCommentServiceTest {
     void rejectsCommentAndReplyCreationWhenUserNoLongerExists() {
         // given
         stubActiveComment();
-        when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE))
+        when(communityPostRepository.findByIdForUpdate(1L))
                 .thenReturn(Optional.of(activePost));
         // when / then
         assertError(ErrorCode.UNAUTHORIZED, () -> service.createComment(7L, 1L, createRequest()));
@@ -194,18 +204,23 @@ class CommunityCommentServiceTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
-    void softDeletesOnlyOwnedTargetAndPreservesRelatedComments(boolean deleteReply) {
+    void softDeletesOwnedThreadOrOnlySelectedReply(boolean deleteReply) {
         // given
         when(author.getUserId()).thenReturn(7L);
         CommunityComment reply = new CommunityComment(activePost, author, activeComment, "답글");
         CommunityComment target = deleteReply ? reply : activeComment;
-        when(communityCommentRepository.findByCommentIdAndStatus(2L, CommunityContentStatus.ACTIVE))
+        when(communityCommentRepository.findForUpdate(2L, CommunityContentStatus.ACTIVE))
                 .thenReturn(Optional.of(target));
+        if (!deleteReply) {
+            when(communityCommentRepository.findRepliesForUpdate(2L, CommunityContentStatus.ACTIVE))
+                    .thenReturn(List.of(reply));
+        }
         // when
         service.deleteComment(7L, 2L);
         // then
         assertEquals(CommunityContentStatus.DELETED, target.getStatus());
-        assertEquals(CommunityContentStatus.ACTIVE, (deleteReply ? activeComment : reply).getStatus());
+        assertEquals(deleteReply ? CommunityContentStatus.ACTIVE : CommunityContentStatus.DELETED,
+                (deleteReply ? activeComment : reply).getStatus());
         assertEquals(CommunityContentStatus.ACTIVE, activePost.getStatus());
         assertSame(activeComment, reply.getParentComment());
         verify(communityCommentRepository, never()).delete(any(CommunityComment.class));
@@ -227,8 +242,6 @@ class CommunityCommentServiceTest {
         // given
         activePost.delete();
         stubActiveComment();
-        when(communityCommentRepository.findForLikeUpdate(2L, CommunityContentStatus.ACTIVE))
-                .thenReturn(Optional.of(activeComment));
         // when / then
         assertError(ErrorCode.INVALID_REQUEST, () -> service.createReply(7L, 2L, createRequest()));
         assertError(ErrorCode.INVALID_REQUEST, () -> service.updateComment(7L, 2L, new CommunityCommentUpdateRequest("수정")));
@@ -238,7 +251,8 @@ class CommunityCommentServiceTest {
         assertEquals("댓글", activeComment.getContent());
         assertEquals(CommunityContentStatus.ACTIVE, activeComment.getStatus());
         verify(communityCommentRepository, never()).save(any());
-        verifyNoInteractions(commentLikeRepository, userRepository);
+        verifyNoInteractions(commentLikeRepository);
+        verify(userRepository, atLeastOnce()).findByIdForAccountUpdate(7L);
     }
 
     @ParameterizedTest
@@ -253,7 +267,8 @@ class CommunityCommentServiceTest {
         assertError(ErrorCode.INVALID_REQUEST, () -> service.likeComment(7L, id));
         assertError(ErrorCode.INVALID_REQUEST, () -> service.unlikeComment(7L, id));
         verify(communityCommentRepository, never()).save(any());
-        verifyNoInteractions(commentLikeRepository, userRepository);
+        verifyNoInteractions(commentLikeRepository);
+        verify(userRepository, atLeastOnce()).findByIdForAccountUpdate(7L);
     }
 
     @ParameterizedTest
@@ -327,7 +342,7 @@ class CommunityCommentServiceTest {
     @Test
     void rejectsCommentLikesWhenUserNoLongerExists() {
         // given
-        when(communityCommentRepository.findForLikeUpdate(2L, CommunityContentStatus.ACTIVE))
+        when(communityCommentRepository.findForUpdate(2L, CommunityContentStatus.ACTIVE))
                 .thenReturn(Optional.of(activeComment));
         // when / then
         assertError(ErrorCode.UNAUTHORIZED, () -> service.likeComment(7L, 2L));
@@ -378,17 +393,18 @@ class CommunityCommentServiceTest {
     }
 
     private void stubActiveComment() {
-        when(communityCommentRepository.findByCommentIdAndStatus(2L, CommunityContentStatus.ACTIVE))
+        when(communityCommentRepository.findForUpdate(2L, CommunityContentStatus.ACTIVE))
                 .thenReturn(Optional.of(activeComment));
     }
 
     private void stubOwnedComment() {
-        stubActiveComment();
+        when(communityCommentRepository.findForUpdate(2L, CommunityContentStatus.ACTIVE))
+                .thenReturn(Optional.of(activeComment));
         when(author.getUserId()).thenReturn(7L);
     }
 
     private void stubCommentForLike() {
-        when(communityCommentRepository.findForLikeUpdate(2L, CommunityContentStatus.ACTIVE))
+        when(communityCommentRepository.findForUpdate(2L, CommunityContentStatus.ACTIVE))
                 .thenReturn(Optional.of(activeComment));
         when(userRepository.findById(7L)).thenReturn(Optional.of(author));
     }

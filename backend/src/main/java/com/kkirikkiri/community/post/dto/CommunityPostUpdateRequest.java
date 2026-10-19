@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Size;
 /**
  * request JSON part. keepImageIds에 지정한 기존 이미지와 새 파일을 함께 유지한다.
  * 생략한 keepImageIds는 빈 목록으로 처리한다. 이미지 소유권과 유지/추가 합계는 서비스에서 검증한다.
+ * anonymous 생략/null은 유지, 동일 값은 허용한다. 다른 값은 잠금 조회 후 서비스에서 거부한다.
  */
 public record CommunityPostUpdateRequest(
 		@NotBlank

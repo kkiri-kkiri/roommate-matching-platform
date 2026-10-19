@@ -2,12 +2,16 @@ package com.kkirikkiri.admin.service;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.Tuple;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +27,8 @@ import com.kkirikkiri.admin.dto.AdminPostListRequest;
 import com.kkirikkiri.admin.dto.AdminPostResponse;
 import com.kkirikkiri.admin.dto.AdminPostDetailResponse;
 import com.kkirikkiri.community.post.repository.CommunityPostReadRepository;
+import com.kkirikkiri.community.post.repository.PostLikeRepository;
+import com.kkirikkiri.community.post.repository.CommunityPostRepository;
 import com.kkirikkiri.report.repository.ReportRepository;
 import com.kkirikkiri.admin.dto.AdminCrawledScheduleResponse;
 import com.kkirikkiri.admin.dto.AdminDashboardResponse;
@@ -41,6 +47,7 @@ import com.kkirikkiri.calendar.entity.ScheduleCrawlStatus;
 import com.kkirikkiri.calendar.repository.AdminCrawledScheduleQueryRepository;
 import com.kkirikkiri.calendar.repository.ScheduleCrawlRunRepository;
 import com.kkirikkiri.community.comment.entity.CommunityComment;
+import com.kkirikkiri.community.comment.service.CommunityCommentWriteService;
 import com.kkirikkiri.community.comment.repository.CommunityCommentRepository;
 import com.kkirikkiri.community.common.entity.CommunityContentStatus;
 import com.kkirikkiri.community.post.dto.CommunityAuthorResponse;
@@ -74,20 +81,35 @@ public class AdminService {
 	private final AdminPostQueryRepository postRepository;
 	private final AdminCommentQueryRepository commentRepository;
 	private final CommunityCommentRepository communityCommentRepository;
+	private final CommunityPostRepository communityPostRepository;
+	private final EntityManager entityManager;
+	private final CommunityCommentWriteService commentWriteService;
 	private final AdminReportQueryRepository reportRepository;
 	private final AdminCrawledScheduleQueryRepository scheduleRepository;
 	private final ScheduleCrawlRunRepository crawlRunRepository;
 	private final ReportRepository reportExistenceRepository;
 	private final CommunityPostReadRepository postReadRepository;
+	private final PostLikeRepository postLikeRepository;
 	private final Validator validator;
 
 	public RoommatePageResponse<AdminPostResponse> getPosts(Long adminId, AdminPostListRequest request) {
 		requireAdmin(adminId);
 		validateRequest(request);
+		validateCommunityPage(request.page(), request.size());
 		Page<CommunityPost> page = postRepository.searchPosts(request.q(), request.category(), request.reported(),
 				request.sort(), PageRequest.of(request.page(), request.size()));
 		var profiles = profiles(page.getContent().stream().map(CommunityPost::getAuthor).toList());
-		return RoommatePageResponse.from(page.map(post -> postResponse(post, profiles)));
+		var ids = page.getContent().stream().map(CommunityPost::getPostId).toList();
+		Map<Long, Long> likes = ids.isEmpty() ? Map.of() : postLikeRepository.countLikesByPostIds(ids).stream()
+				.collect(Collectors.toMap(PostLikeRepository.LikeCount::getPostId,
+						PostLikeRepository.LikeCount::getLikes));
+		Map<Long, Long> counts = ids.isEmpty() ? Map.of() : communityCommentRepository.countByPostIds(ids, CommunityContentStatus.ACTIVE).stream()
+				.collect(Collectors.toMap(CommunityCommentRepository.PostCommentCount::getPostId,
+						CommunityCommentRepository.PostCommentCount::getComments));
+		var reported = ids.isEmpty() ? Set.<Long>of() : new HashSet<>(reportExistenceRepository.findReportedPostIds(ids));
+		return RoommatePageResponse.from(page.map(post -> new AdminPostResponse(post.getPostId(), post.getCategory(),
+				post.getTitle(), author(post.getAuthor(), profiles), post.getCreatedAt(), post.getViewCount(),
+				likes.getOrDefault(post.getPostId(), 0L), counts.getOrDefault(post.getPostId(), 0L), reported.contains(post.getPostId()))));
 	}
 
 	public AdminPostDetailResponse getPost(Long adminId, Long postId) {
@@ -103,10 +125,15 @@ public class AdminService {
 	public RoommatePageResponse<AdminCommentResponse> getComments(Long adminId, AdminCommentListRequest request) {
 		requireAdmin(adminId);
 		validateRequest(request);
+		validateCommunityPage(request.page(), request.size());
 		Page<CommunityComment> page = commentRepository.searchComments(request.q(), request.reported(),
 				PageRequest.of(request.page(), request.size()));
 		var profiles = profiles(page.getContent().stream().map(CommunityComment::getAuthor).toList());
-		return RoommatePageResponse.from(page.map(comment -> commentResponse(comment, profiles)));
+		var ids = page.getContent().stream().map(CommunityComment::getCommentId).toList();
+		var reported = ids.isEmpty() ? Set.<Long>of() : new HashSet<>(reportExistenceRepository.findReportedCommentIds(ids));
+		return RoommatePageResponse.from(page.map(comment -> new AdminCommentResponse(comment.getCommentId(), comment.getContent(),
+				author(comment.getAuthor(), profiles), comment.getCreatedAt(), comment.getPost().getPostId(),
+				comment.getPost().getTitle(), reported.contains(comment.getCommentId()))));
 	}
 
 	public AdminCommentResponse getComment(Long adminId, Long commentId) {
@@ -188,19 +215,21 @@ public class AdminService {
 	public void deletePost(Long adminId, Long postId) {
 		requireAdmin(adminId);
 		validateId(postId);
-		deletePost(postRepository.findPostById(postId).orElseThrow(this::invalidRequest));
+		deletePost(communityPostRepository.findDetailForUpdate(postId, CommunityContentStatus.ACTIVE)
+				.orElseThrow(this::invalidRequest));
 	}
 
 	@Transactional
 	public void deleteComment(Long adminId, Long commentId) {
 		requireAdmin(adminId);
 		validateId(commentId);
-		commentRepository.findCommentById(commentId).orElseThrow(this::invalidRequest).delete();
+		commentWriteService.deleteLocked(commentWriteService.lockForDeletion(commentId));
 	}
 
 	public RoommatePageResponse<AdminReportResponse> getReports(Long adminId, AdminReportListRequest request) {
 		requireAdmin(adminId);
 		validateRequest(request);
+		validateCommunityPage(request.page(), request.size());
 		Page<Report> page = reportRepository.searchReports(request.q(),
 				request.type() == null ? null : ReportType.valueOf(request.type()),
 				request.status() == null ? null : ReportStatus.valueOf(request.status()),
@@ -247,8 +276,16 @@ public class AdminService {
                     report.getTargetUser().getUserId()).orElseThrow(this::invalidRequest), UserStatus.SUSPENDED);
 			case "DELETE_TARGET" -> {
 				switch (report.getReportType()) {
-					case POST -> deletePost(report.getPost());
-					case COMMENT -> report.getComment().delete();
+					case POST -> {
+						CommunityPost post = report.getPost();
+						// 신고 조회가 이미 로딩한 Entity도 잠금 후 최신 상태(조회수 포함)로 교체한다.
+						entityManager.refresh(post, LockModeType.PESSIMISTIC_WRITE);
+						deletePost(post);
+					}
+					case COMMENT -> {
+						CommunityComment comment = report.getComment();
+						commentWriteService.deleteReported(comment);
+					}
 					case USER -> throw invalidRequest();
 				}
 			}
@@ -354,13 +391,19 @@ public class AdminService {
 	}
 
 	private void deletePost(CommunityPost post) {
-		communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(
+		communityCommentRepository.findAllForUpdateByPostId(
 				post.getPostId(), CommunityContentStatus.ACTIVE).forEach(CommunityComment::delete);
 		post.delete();
 	}
 
 	private void validateRequest(Object request) {
 		if (request == null || !validator.validate(request).isEmpty()) {
+			throw new CustomException(ErrorCode.VALIDATION_ERROR);
+		}
+	}
+
+	private void validateCommunityPage(int page, int size) {
+		if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
 	}

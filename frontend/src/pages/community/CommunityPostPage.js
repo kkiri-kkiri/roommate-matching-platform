@@ -221,7 +221,7 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
   const [reportReason, setReportReason] = useState("");
   const [otherReason, setOtherReason] = useState("");
   const comments = post.comments || [];
-  const mine = Boolean(currentUser && currentUser.id === post.author.id);
+  const mine = Boolean(currentUser && post.mine === true);
   const authorDisplay = getPostAuthorDisplay(post);
   const liked = post.liked;
   const reported = post.reported;
@@ -344,7 +344,7 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
               <span><Eye size={13} aria-hidden="true" />조회 {post.views.toLocaleString()}</span>
             </S.Metadata>
           </S.AuthorInfo>
-          {!mine && <S.ChatButton type="button" onClick={() => startChat(post.author.id)}
+          {!mine && <S.ChatButton type="button" onClick={() => startChat(post.anonymous ? null : post.author.id)}
             aria-label={`${authorDisplay.nickname}님에게 채팅 보내기`}>
             <MessageCircle size={15} aria-hidden="true" />채팅
           </S.ChatButton>}
