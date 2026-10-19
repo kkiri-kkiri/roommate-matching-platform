@@ -262,7 +262,7 @@ class CommunityPostAnonymityPolicyIntegrationTest {
         jdbc.update("update community_post set anonymous=true where post_id=?", regularPostId);
         success(edit(regularPostId, payload("legacy edit", null)), authorId);
         assertState(detail(regularPostId), true);
-        JsonNode preserved = success(get("/api/chat/rooms"), visitorId).get(0);
+        JsonNode preserved = success(get("/api/chat/rooms"), visitorId).get("content").get(0);
         assertEquals(room, preserved);
         assertEquals(authorId.longValue(), preserved.get("counterpart").get("id").asLong());
     }

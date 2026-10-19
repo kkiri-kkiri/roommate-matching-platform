@@ -16,6 +16,7 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 import com.kkirikkiri.user.entity.User;
 
@@ -23,6 +24,7 @@ import com.kkirikkiri.user.entity.User;
 @Table(name = "CHAT_MESSAGE")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@DynamicUpdate
 public class ChatMessage {
 
 	/** 메시지 최대 길이: UTF-16 코드 단위가 아닌 유니코드 코드 포인트 기준. */
@@ -46,6 +48,14 @@ public class ChatMessage {
 
 	@Column(name = "sent_at", nullable = false, updatable = false, columnDefinition = "DATETIME")
 	private LocalDateTime sentAt;
+
+	/** Receipt for the other participant in this two-person room; unrelated to timestamp ordering. */
+	@Column(name = "is_read", nullable = false, columnDefinition = "BOOLEAN")
+	private boolean read;
+
+	public void markRead() {
+		this.read = true;
+	}
 
 	/**
 	 * 발신자의 인증 및 활성 참여 여부는 서비스에서 검증한다.

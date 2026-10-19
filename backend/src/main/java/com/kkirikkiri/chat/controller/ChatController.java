@@ -1,6 +1,7 @@
 package com.kkirikkiri.chat.controller;
 
 import java.util.List;
+import com.kkirikkiri.chat.dto.ChatMessageReadStatusResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kkirikkiri.chat.dto.ChatMessageListRequest;
 import com.kkirikkiri.chat.dto.ChatMessageResponse;
+import com.kkirikkiri.chat.dto.ChatReadRequest;
 import com.kkirikkiri.chat.dto.ChatRoomCreateRequest;
 import com.kkirikkiri.chat.dto.ChatRoomListRequest;
 import com.kkirikkiri.chat.dto.ChatRoomResponse;
+import com.kkirikkiri.chat.dto.ChatRoomPageResponse;
 import com.kkirikkiri.chat.dto.ChatRoomSettingsRequest;
 import com.kkirikkiri.chat.service.ChatService;
 import com.kkirikkiri.global.response.ApiResponse;
@@ -34,10 +37,16 @@ public class ChatController {
 	private final ChatService chatService;
 
 	@GetMapping
-	public ApiResponse<List<ChatRoomResponse>> getRooms(
+	public ApiResponse<ChatRoomPageResponse> getRooms(
 			@AuthenticationPrincipal AuthenticatedUser user,
 			@Valid @ModelAttribute ChatRoomListRequest request) {
 		return ApiResponse.success(chatService.getRooms(user.userId(), request));
+	}
+
+	@GetMapping("/{roomId}")
+	public ApiResponse<ChatRoomResponse> getRoom(@AuthenticationPrincipal AuthenticatedUser user,
+			@PathVariable Long roomId) {
+		return ApiResponse.success(chatService.getRoom(user.userId(), roomId));
 	}
 
 	@PostMapping
@@ -57,9 +66,16 @@ public class ChatController {
 
 	@PostMapping("/{roomId}/read")
 	public ApiResponse<Void> markRead(@AuthenticationPrincipal AuthenticatedUser user,
-			@PathVariable Long roomId) {
-		chatService.markRead(user.userId(), roomId);
+			@PathVariable Long roomId, @Valid @RequestBody ChatReadRequest request) {
+		chatService.markRead(user.userId(), roomId, request);
 		return ApiResponse.successWithoutData();
+	}
+
+	@PostMapping("/{roomId}/messages/read-status")
+	public ApiResponse<List<ChatMessageReadStatusResponse>> getReadStatuses(
+			@AuthenticationPrincipal AuthenticatedUser user, @PathVariable Long roomId,
+			@Valid @RequestBody ChatReadRequest request) {
+		return ApiResponse.success(chatService.getReadStatuses(user.userId(), roomId, request));
 	}
 
 	@PatchMapping("/{roomId}/settings")

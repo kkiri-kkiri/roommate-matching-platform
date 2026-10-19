@@ -2,13 +2,20 @@ package com.kkirikkiri.chat.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.LockModeType;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.kkirikkiri.chat.entity.ChatRoomCategory;
 import com.kkirikkiri.chat.entity.ChatRoomMember;
 
-public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, Long> {
+public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, Long>, ChatMemberLockRepository {
 
 	/**
 	 * ALL 목록의 현재 사용자 참여 정보를 조회한다. 나간 방은 제외한다.
@@ -32,6 +39,23 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
 	List<ChatRoomMember> findAllByChatRoom_ChatRoomId(Long roomId);
 
 	long countByUser_UserIdAndPinnedTrueAndLeftFalse(Long userId);
+
+	/**
+	 * Current read rather than a potentially pre-lock MySQL RR COUNT snapshot.
+	 * READ locks must not masquerade as the refresh/WRITE lock acquired by findMemberForUpdate.
+	 */
+	@Lock(LockModeType.PESSIMISTIC_READ)
+	@Query("select m from ChatRoomMember m where m.user.userId = :userId and m.pinned = true and m.left = false order by m.chatRoomMemberId")
+	List<ChatRoomMember> findPinnedMembersForUpdate(@Param("userId") Long userId);
+
+	/** Flush receipts first; the caller also synchronizes the locked managed membership afterward. */
+	@Modifying(flushAutomatically = true)
+	@Query("""
+			update ChatRoomMember m set m.lastReadAt = :readAt
+			where m.chatRoomMemberId = :memberId and m.left = false
+			  and (m.lastReadAt is null or m.lastReadAt < :readAt)
+			""")
+	int advanceReadTime(@Param("memberId") Long memberId, @Param("readAt") LocalDateTime readAt);
 
 	long countByChatRoom_ChatRoomIdAndLeftFalse(Long roomId);
 }

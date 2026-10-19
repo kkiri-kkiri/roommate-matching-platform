@@ -186,7 +186,7 @@ class CommunityPostPrivacyIntegrationTest {
         assertAnonymousProfile(created);
         assertEquals(created.get("id"), room(anonymousPostId, authorId).get("id"));
         assertEquals(created.get("id"), room(anonymousPostId, visitorId).get("id"));
-        JsonNode restored = read(get("/api/chat/rooms"), visitorId).get(0);
+        JsonNode restored = read(get("/api/chat/rooms"), visitorId).get("content").get(0);
         assertEquals(created, restored);
         assertAnonymousProfile(restored);
     }
@@ -216,7 +216,7 @@ class CommunityPostPrivacyIntegrationTest {
         JsonNode mine = read(get("/api/chat/rooms/" + roomId + "/messages"), authorId).get("content").get(0);
         assertTrue(mine.get("senderId").isNull());
         assertEquals("ME", mine.get("senderType").asText());
-        assertEquals(visitorId.longValue(), read(get("/api/chat/rooms"), authorId).get(0).get("counterpart").get("id").asLong());
+        assertEquals(visitorId.longValue(), read(get("/api/chat/rooms"), authorId).get("content").get(0).get("counterpart").get("id").asLong());
         mvc.perform(as(get("/api/chat/rooms/" + roomId + "/messages"), adminId)).andExpect(status().isForbidden());
     }
 
@@ -227,7 +227,7 @@ class CommunityPostPrivacyIntegrationTest {
         mvc.perform(as(post("/api/chat/rooms").contentType(MediaType.APPLICATION_JSON).content(
                 "{\"category\":\"COMMUNITY\",\"sourceFrom\":\"POST\",\"sourcePostId\":" + anonymousPostId + "}"), visitorId))
                 .andExpect(status().isBadRequest());
-        assertEquals(created, read(get("/api/chat/rooms"), visitorId).get(0));
+        assertEquals(created, read(get("/api/chat/rooms"), visitorId).get("content").get(0));
     }
 
     @Test

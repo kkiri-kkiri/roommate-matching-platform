@@ -1,5 +1,26 @@
 # user / auth 도메인 운영 준비
 
+## 채팅 배포 토폴로지 결정 보류 (2026-10-19)
+
+저장소 점검에서 Dockerfile/Compose, CI/CD, 로드밸런서/replica/자동 확장 설정을 찾지 못했고,
+사용자도 실제/예정 배포 구성을 “아직 미정 / 확인 불가”로 확인했다. 운영 JVM 수·LB 존재 여부·
+확장 요구는 확정하지 않는다. 로컬 jar 실행이나 다른 도메인의 두 JVM 검증 도구는 운영 배포 명세가 아니다.
+현재 JVM별 Simple Broker는 서로 다른 JVM의 구독자에게 중계하지 않는다.
+공유 DB·sticky session·15초 REST polling은 JVM 간 STOMP 실시간 전달의 해결이 아니다.
+따라서 이번 문제 2는 미해결이며 단일 JVM 조건부 위험 수용으로 승인하지 않는다.
+
+단일 JVM을 **향후 확정하는 경우에만** 모든 채팅 WebSocket 연결과 SEND 처리가 같은 하나의
+활성 JVM으로 도착하는지 배포/LB 설정에서 확인한다. 한 호스트라도 프로세스가 둘이면 다중 JVM이다.
+배포 중 구·신 JVM에 연결이 나뉘는 rolling/blue-green 중첩도 같은 제한을 받는다.
+이 조건을 유지할 전환·기존 연결 drain 계획, 단일 장애점/재시작·용량 한계의 수용 결정이 필요하다.
+기본 /ws/chat, WSS/TLS, 정확한 CORS Origin, 프록시 Upgrade/Connection·idle timeout을 실제 환경에서 검증한다.
+자동 확장·동시 활성 replica가 필요하다면 현재 구성을 승인하지 않고 별도 공유 중계 설계를 검토한다.
+
+공유 STOMP broker relay와 Redis 기반 앱 fan-out의 후보·인증/익명성/커밋 이후 발행·장애 복구
+검증 계획은 [채팅 배포·문서 점검 보고서](CHAT_DEPLOYMENT_API_VALIDATION.md)를 따른다.
+후보는 미선정이고 의존성·환경변수·컨테이너를 추가하지 않았다. API.md 10장은 현재 계약으로 갱신했으며
+이는 운영 배포 승인 또는 실제 MySQL/두 JVM/브라우저 E2E 통과를 뜻하지 않는다.
+
 ## 커뮤니티 9번 이미지 수명주기 보완 (2026-10-19)
 
 - `/api/post-images/{filename}`은 DB 연결 및 ACTIVE 부모를 확인하는 바이너리 Controller가 처리한다.
@@ -131,6 +152,25 @@ Matching 보완(2026-10-17): 사용자별 AI 요청량은 기존 auth_limit_buck
 - 알려진 시드에도 다른 기능의 참조가 있으면 FK 오류로 삭제 전체가 롤백될 수 있다. 이를 우회하기 위해 실제 회원이나 참조 데이터를 일괄 삭제하지 않는다.
 
 ## 스키마 변경 절차
+
+채팅 상태 동기화/메시지·검색 추가 조회/Unicode는
+[검증 보고](CHAT_SYNC_PAGINATION_UNICODE_VALIDATION.md)를 따른다. 새 프론트 전환 전에
+메시지 beforeId/afterId와 POST /api/chat/rooms/{roomId}/messages/read-status를 제공하는 서버를 배포한다.
+기존 offset·STOMP 계약과 DB 스키마는 유지한다. 보이는 탭의 15초 polling은 응답/브라우저 타이머에 따른 반영 지연·추가 REST 부하가 있으므로
+대표 사용량과 실제 브라우저/프록시에서 확인한다. MySQL·브라우저 E2E·다중 JVM은 미실행이다.
+
+채팅 조회 제한/목록 최적화는 [검증 보고](CHAT_QUERY_PERFORMANCE_VALIDATION.md)와
+[조회 인덱스 수동 절차](migrations/20261019_chat_query_indexes.md)를 따른다.
+메시지/방 목록은 기본 50, 최대 100이며 목록 `data`가 배열에서 페이지 객체로 변경된다.
+관련 프론트 및 다른 클라이언트의 content/last 처리를 함께 배포한다. 단건 GET /api/chat/rooms/{roomId}는
+페이지 밖 선택 방과 읽음 수 갱신에 사용한다. 이번 조회 작업은 Entity 컬럼/제약·DDL 설정을 변경하지 않는다.
+H2 SQL 수 측정은 MySQL의 최신 메시지 correlated subquery/정렬/집계 비용이나 운영 지연 보장이 아니다.
+MySQL 실행계획·인덱스 DDL·큰 offset·동시성/다중 JVM 검증은 미실행이며 최종 통합 검증으로 남긴다.
+
+채팅 참여 상태 덮어쓰기와 읽음 정합성 보완에는 CHAT_MESSAGE.is_read 추가 및 기존 표시 결과 전환이 필요하다.
+[수동 절차](migrations/20261019_chat_message_receipts.md)를 먼저 따른다. 자동 실행하지 않는다.
+읽음 API는 실제 수신한 messageIds 본문이 필요하므로 구버전 쓰기를 drain하고 서버·관련 프론트를 함께 배포한다.
+H2 동시성/rollback 통과와 실제 InnoDB RR·두 JVM 검증은 별개이며, 운영 DB 적용·배포 성공을 보장하지 않는다.
 
 user 안정화에는 Entity 스키마 변경이 없었다. auth 보호에는 신규 AUTH_LIMIT_BUCKET 테이블만 추가했으며,
 [auth 수동 마이그레이션](migrations/20261014_auth_limits.md)을 먼저 따른다. 운영에서 자동 적용하지 않는다.

@@ -1376,7 +1376,11 @@ COMMENT
 
 10. 채팅
 
-현재 프론트는 REST 조회/설정과 WebSocket(STOMP) 송수신을 사용한다. 연결 이후 권한 철회는 아래 미해결 #12를 별도로 확인해야 한다.
+현재 프론트는 REST 조회/설정과 WebSocket(STOMP) 송수신을 사용한다. 아래 내용은 현재
+Controller/Service/DTO와 프론트 호출의 계약이다. 이번 최신화는 API나 실행 코드를 변경하지 않는다.
+REST는 인증된 Principal의 사용자 ID를 사용하며 성공은 공통 ApiResponse/HTTP 200이다.
+현재 참여자 검사가 필요한 방 단건·메시지·읽음·설정·나가기에는 관리자 우회 권한이 없다.
+연결 이후 권한 재검증은 10.4, 실제 배포 구조와 JVM 간 전달 제한은 10.8을 따른다.
 
 10.1 채팅방 목록
 
@@ -1386,7 +1390,7 @@ Auth
 
 Query:
 
-?category=ALL&q=포근한구름
+?category=ALL&q=포근한구름&page=0&size=50
 
 Category:
 
@@ -1394,7 +1398,30 @@ ALL
 ROOMMATE
 COMMUNITY
 
-Response item:
+응답 `data`는 종전 배열에서 다음 페이지 객체로 변경되었다. 서버와 해당 프론트를 함께 배포한다.
+기존 `ChatRoomResponse` 항목 필드는 유지한다. 전수 조회를 남기는 호환 경로는 두지 않으며
+다른 클라이언트도 `data.content`와 `last`를 사용하도록 먼저 전환해야 한다.
+
+```json
+{
+  "content": [],
+  "page": 0,
+  "size": 50,
+  "totalElements": 0,
+  "totalPages": 0,
+  "first": true,
+  "last": true,
+  "counts": { "all": 0, "roommate": 0, "community": 0, "pinned": 0 }
+}
+```
+
+`page` 기본값 0, `size` 기본값 50 / 최대 100이다. page<0, size<1 또는 >100,
+page×size>Integer.MAX_VALUE는 400 VALIDATION_ERROR다. 정수 바인딩 범위를 넘는 값도 400이다.
+`totalElements`는 category/q가 적용된 전체 결과 수다. `counts`는 현재 필터·페이지와 무관하게
+내가 나가지 않은 ACTIVE 방 전체의 카테고리/고정 개수다. 클라이언트는 `last=false`일 때 다음
+페이지를 요청한다. 프론트는 “채팅방 더 보기”와 재시도를 제공하고 검색/필터 변경 시 첫 페이지부터 조회한다.
+
+Response content item:
 
 {
 "id": 15,
@@ -1422,9 +1449,16 @@ Response item:
 
 정렬:
 
-고정 채팅방
+고정 우선 → 마지막 메시지 sentAt 내림차순(NULL 마지막) → roomId 내림차순이다.
+마지막 메시지는 sentAt, messageId 내림차순으로 결정한다. q는 trim한 상대 표시 닉네임의
+대소문자 무시 부분 일치이며 %, _, !는 문자 그대로 검색한다. 익명 상대는 “익명”으로만 검색되며
+실제 닉네임을 검색 조건에 노출하지 않는다. 검색/정렬/페이지 제한은 DB에서 수행한다.
+동일 정렬값은 roomId로 고정하지만 서로 다른 페이지 요청 사이에 메시지/고정/나가기 변경이
+있으면 offset 위치도 바뀔 수 있다. 클라이언트가 아는 변경 후에는 첫 페이지를 새로 조회하고 ID를 중복 제거한다.
 
-최근 메시지 순
+선택한 방이 현재 페이지·필터에 없어도 `GET /api/chat/rooms/{roomId}`로 단건 조회한다.
+인증된 현재 참여자만 가능하며 `data`는 같은 ChatRoomResponse다. 나간/존재하지 않는/타인 방은
+기존 403 FORBIDDEN, 잘못된 roomId는 400이다. 읽음 성공 후 미읽음 수 갱신도 이 단건 경로를 사용한다.
 
 ### 10.2 채팅방 생성 또는 기존 방 조회
 
@@ -1472,7 +1506,7 @@ sourceFrom:
 
 필드 기준:
 
-* `targetUserId`: ROOMMATE는 필수다. COMMUNITY / POST·COMMENT는 생략 또는 null 가능하며 서버가 출처 작성자를 조회한다.
+* `targetUserId`: DTO에 @NotNull/@Positive는 없다. ROOMMATE는 서비스에서 양수·필수를 검사한다. COMMUNITY / POST·COMMENT는 생략 또는 null 가능하며 서버가 출처 작성자를 조회한다.
 * `category`: `ROOMMATE` 또는 `COMMUNITY`
 * `sourcePostId`: 커뮤니티에서 시작한 경우 원 게시글 ID
 * `sourceCommentId`: 댓글에서 시작한 경우 원 댓글 ID
@@ -1480,13 +1514,14 @@ sourceFrom:
 
 Validation:
 
-* `ROOMMATE` 채팅에서는 `sourcePostId`, `sourceCommentId`, `sourceFrom`을 사용하지 않는다.
+* `category`는 DTO @NotNull이다. `sourceFrom`의 DTO @Pattern은 null을 허용하며 출처별 필수 조건은 서비스가 검사한다.
+* `ROOMMATE` 채팅의 `sourcePostId`, `sourceCommentId`, `sourceFrom`은 모두 생략/null이어야 하며 전달하면 400 VALIDATION_ERROR다.
 * `COMMUNITY` 채팅에서는 `sourceFrom`이 필수이다.
 * `sourceFrom = POST`인 경우 `sourcePostId`가 필수이며 `sourceCommentId`는 사용하지 않는다.
 * `sourceFrom = COMMENT`인 경우 `sourcePostId`, `sourceCommentId`가 모두 필수이다.
 * `sourceCommentId`는 해당 `sourcePostId`에 속한 댓글이어야 한다.
 * 일반 게시글·댓글에서 전달한 `targetUserId`는 작성자와 일치해야 한다. 익명 게시글·댓글에서는 작성자 ID 추측 검증에 악용되지 않도록 전달된 값을 무시하고 출처의 실제 작성자를 사용한다. 위조 ID로 다른 상대를 지정할 수 없으며 ID 일치에 따른 성공/실패 차이도 제공하지 않는다.
-* 자기 자신을 대상으로 채팅방을 생성할 수 없다.
+* 자기 자신을 대상으로 채팅방을 생성할 수 없다. ROOMMATE의 잘못된 targetUserId, COMMUNITY의 누락/잘못된 출처 ID와 존재하지 않는 대상은 서비스의 400 INVALID_REQUEST다. annotation 검증 실패는 400 VALIDATION_ERROR다.
 
 방 재사용 및 출처 표시 규칙:
 
@@ -1499,6 +1534,7 @@ Validation:
 * 생성 응답과 방 목록의 익명 작성자 `counterpart`는 `id=null`, `nickname="익명"`, `tags=[]`, 그 외 프로필 필드 `null`이다. 작성자가 보는 상대 참여자의 일반 프로필은 유지한다.
 * 메시지 목록 및 WebSocket 응답의 익명 작성자 `senderId`도 `null`이다. REST는 `senderType`으로 송수신을 구분한다. WebSocket은 `senderId`와 방의 `counterpart.id`를 비교하며, 익명 작성자는 둘 모두 `null`로 표현한다.
 * UNIQUE 충돌 시 실패한 생성 트랜잭션을 롤백하고 새 쓰기 트랜잭션에서 출처 검증, 기존 방 조회, 최신 출처 갱신을 수행한다. 겹치는 일반 게시글 요청은 마지막으로 DB에 반영된 요청의 출처를 표시한다.
+* 성공 data는 ChatRoomResponse이며 신규 생성과 기존 방 재사용 모두 HTTP 200이다. 이미 나간 본인의 재입장은 허용하지 않고 403 FORBIDDEN을 반환한다.
 
 기존 데이터 적용 절차는 `migrations/README.md`를 참고한다.
 
@@ -1513,6 +1549,44 @@ Query:
 
 ?page=0&size=50&q=청소
 
+기본 page=0 / size=50, 허용 size=1~100이다. Controller Bean Validation과 Service에서 함께
+검사한다. 음수 page, 허용 범위 밖 size, page×size>Integer.MAX_VALUE는 400 VALIDATION_ERROR이며
+정수 바인딩 범위 밖 값도 400이다. 최대 100은 기존 기본값의 두 배로 조회·직렬화량을 제한한다.
+응답은 기존 페이지 객체(content/page/size/totalElements/totalPages/first/last)를 유지하며
+sentAt DESC, messageId DESC 정렬, 빈 페이지, 참여자 권한, q 본문 검색 동작은 그대로다.
+
+과거 메시지/검색 결과의 추가 조회에는 선택적 `beforeId`를 사용한다.
+`?page=0&size=50&q=청소&beforeId=1001`은 같은 방의 기준 메시지보다
+`(sentAt,messageId)`가 작은 항목을 DESC로 조회한다. 신규 삽입에 의한 offset 이동을 피한다.
+재연결/polling 누락 복구에는 `afterId`를 사용하며 기준보다 큰 항목을 ASC로 조회한다.
+예: `?page=0&size=50&afterId=1001`. 클라이언트는 마지막 반환 ID로 다음 묶음을 요청한다.
+동률 시각은 ID로 구분하며 클라이언트가 임의 시각을 전달하지 않는다.
+커서는 양수이고 beforeId/afterId는 동시에 사용할 수 없으며 page는 0 또는 생략이어야 한다(400 VALIDATION_ERROR).
+기준 메시지가 해당 방에 없으면 400 INVALID_REQUEST, 타인/나간 방은 기존 403이다.
+커서 사용 시에도 기존 페이지 객체를 반환하되 totalElements는 해당 커서 조건 아래의 결과 수이고
+page=0이다. 클라이언트는 last로 추가 조회 종료를 판단한다. 커서 없는 기존 offset 호출은 유지한다.
+이는 여러 HTTP 요청에 걸친 DB snapshot은 아니다. 이미 지나간 구간의 늦은 커밋은
+재진입·검색 재실행으로 해당 구간을 다시 조회해야 확인할 수 있다. 실제 MySQL 지연 커밋은 통합 검증 대상이다.
+
+읽음 상태 조회(조회 전용): `POST /api/chat/rooms/{roomId}/messages/read-status`
+
+인증된 현재 참여자만 가능하다. 본문은 `{ "messageIds": [1001, 1002] }`이며
+기존 ChatReadRequest의 1~100개 양수 ID 검증을 재사용하고 중복은 제거한다.
+응답 data는 `[{ "id": 1001, "read": true }, { "id": 1002, "read": false }]`다.
+senderId/프로필/사용자 ID를 포함하지 않으며 순서는 보장하지 않는다. 다른 방/존재하지 않는 ID가
+하나라도 있으면 400 INVALID_REQUEST다. 이 조회는 읽음/last_read_at을 변경하지 않는다.
+실제 읽음 확인은 기존 POST /read와 정확한 messageIds 본문을 계속 사용한다.
+
+프론트는 보이는 동안 15초마다 방 목록 첫 페이지와 선택 방의 이후 메시지·화면에 보이는
+미확인 자기 메시지의 receipt(최대 100개)를 조회한다. 재연결/포커스/visibility 복귀에도 재조회한다.
+한 번에 한 동기화만 실행하고 중복 수신은 ID로 병합한다. 50개를 넘는 전방 누락은 1초 간격의
+추가 50개 묶음으로 따라잡는다. 목록 첫 페이지 ID/총수가 같으면 추가로 불러온 페이지를 유지하고,
+변경되면 첫 페이지로 재동기화한다. 매번 방 전체를 조회하지 않는다.
+선택 방 STOMP payload/목적지와 Simple Broker를 사용하며 인증·구독·전달 권한 검사는 10.4를 따른다.
+별도 상태 이벤트를 발행하지 않으며 REST는 커밋된 상태를 다시 읽어 롤백된 변경을 확정 알림으로 취급하지 않는다.
+polling 주기는 15초이며 미선택 방·상대 읽음 상태에 즉시 push를 보장하지 않는다.
+응답 대기·브라우저 타이머 제한·복구 묶음 수에 따라 반영은 15초보다 늦어질 수 있다.
+
 Response item:
 
 {
@@ -1526,15 +1600,38 @@ Response item:
 
 Validation:
 
-메시지 최대 2,000자
+메시지 최대 2,000 Unicode 코드 포인트다. 프론트는 Array.from(text).length로 표시/검사하며
+UTF-16 maxLength는 사용하지 않는다. 초과 입력은 자르지 않고 유지하되 전송을 막는다.
+IME 조합 중 Enter 전송을 막고 공백 메시지는 기존대로 거절한다. 복합 이모지/결합 문자는
+grapheme 1개라도 여러 코드 포인트로 계산한다. 추가로 로딩한 이력 전체를 자동 읽음 처리하지 않고
+보이는 탭의 메시지 viewport와 겹친 상대 메시지 ID만 확인한다. 프로필/상세/나가기 대화상자가
+열린 동안에는 뒤의 메시지를 확인하지 않는다. 서버 전송 DTO는 @NotBlank와
+@CodePointLength(max=ChatMessage.MAX_CONTENT_LENGTH=2000)를 사용하고 Entity도 코드 포인트를 검사한다.
+문자열에 대한 @Size(max=2000) 검증이 아니다. 사람의 실제 독서를 증명하는 계약은 아니다.
 
 10.4 메시지 전송 - WebSocket
 
 현재 STOMP Contract:
 
-연결은 /ws/chat이며 SockJS를 사용하지 않는다. STOMP CONNECT의 Authorization: Bearer {accessToken}에서 JWT 서명·만료·ACTIVE 계정을 확인한다. SUBSCRIBE는 당시 활성 방 참여를 검사하고 SEND의 저장 경로도 방 참여를 검사한다.
+기본 연결은 /ws/chat이며 SockJS를 사용하지 않는다. 실제 등록 경로는
+application.properties의 app.chat.websocket.endpoint다. 프론트는 API base URL의 /api를
+/ws/chat으로 바꾸어 ws/wss로 연결하므로 서버 endpoint나 프록시 경로를 바꾸면 함께 확인해야 한다.
+허용 Origin은 WebSocketConfig의 app.cors.allowed-origins를 따른다. HTTP handshake 허용은
+STOMP 인증을 대신하지 않는다.
 
-**미해결 #12 (High):** JWT와 계정 상태는 CONNECT 이후 재검증하지 않으며, findActiveMember는 계정 상태를 검사하지 않는다. 방을 나간 사용자의 새로운 방 접근은 거절하지만 이미 등록된 구독을 철회하거나 outbound 전달 권한을 재검증하는 구현은 없다. 따라서 기존 연결의 만료·정지·탈퇴 후 송신과 기존 구독 수신 차단을 보장하지 않는다. 이는 보안 결함이며 배포 전 서버 코드·테스트 보완이 필요하다. 문서 수정으로 해결 처리하지 않는다.
+현재 ChatStompInterceptor/JwtAuthenticationProvider는 다음을 수행한다.
+
+* CONNECT: Authorization: Bearer {accessToken} 하나와 sessionId를 요구한다. JWT 서명·만료와 DB의 ACTIVE 계정을 검증하고 세션별 토큰 참조를 보관한다.
+* SEND: 목적지 형식과 인증 Principal을 확인하고 저장된 세션 토큰의 JWT·ACTIVE 계정을 다시 검증한다. 실제 방 참여/나가기/ACTIVE 방 여부는 ChatService.sendMessage가 검사한다.
+* SUBSCRIBE: /sub/chat/rooms/{양수 roomId}만 허용하며 JWT·ACTIVE 계정·Principal 일치와 현재 활성 참여를 다시 검사한다. 다른 사용자 ID를 구독하는 별도 경로는 없다.
+* 기존 구독의 실제 MESSAGE 전달 직전: outbound executor의 beforeHandle에서 JWT·ACTIVE 계정·활성 참여를 다시 검사한다. 실패나 DB 장애면 해당 수신자 메시지를 null로 차단한다. 세션 종료/DISCONNECT 시 토큰 참조를 제거한다.
+
+따라서 과거의 “CONNECT 이후 재검증하지 않음/기존 구독 전달 검증 없음” 설명(#12)은 현재 코드와 다르다.
+이는 매 프레임/전달 시점의 검증이며, 정지 즉시 모든 소켓을 강제 종료하거나 구독 레코드를 삭제하는
+기능을 뜻하지 않는다. 판정 이후의 동시 권한 변경과 네트워크 전송까지 완전한 원자성도 보장하지 않는다.
+근거: [WebSocketConfig](src/main/java/com/kkirikkiri/global/config/WebSocketConfig.java),
+[ChatStompInterceptor](src/main/java/com/kkirikkiri/global/config/ChatStompInterceptor.java),
+[JwtAuthenticationProvider](src/main/java/com/kkirikkiri/global/security/JwtAuthenticationProvider.java).
 
 SEND /pub/chat/rooms/{roomId}/messages
 SUBSCRIBE /sub/chat/rooms/{roomId}
@@ -1556,7 +1653,11 @@ Payload:
 "read": false
 }
 
-REST 메시지 전송 API는 제공하지 않는다. STOMP text는 공백 금지, 최대 2,000자다.
+REST 메시지 전송 API는 제공하지 않는다. STOMP text는 null/빈 문자열/공백만인 문자열을 거절하며
+최대 2,000 Unicode 코드 포인트다. 중간 공백을 금지하지 않는다. STOMP 오류는 HTTP/ApiResponse가 아니다.
+ChatWebSocketController는 트랜잭션 서비스 호출이 정상 반환된 후 DTO를 Simple Broker로 전달한다.
+DB 커밋과 WebSocket 전달은 하나의 원자적 작업이 아니므로 커밋 후 프로세스 장애/전달 실패 가능성은 남는다.
+브로커 전달 확인·영속 재시도/outbox·JVM 간 중계가 구현됐다는 뜻은 아니다. REST 재조회가 복구를 보조한다.
 
 10.5 읽음 처리
 
@@ -1564,7 +1665,26 @@ POST /api/chat/rooms/{roomId}/read
 
 Auth
 
-채팅방 진입 시 상대방이 보낸 미읽음 메시지를 읽음 처리한다.
+조회·WebSocket 수신 결과가 화면에 반영된 뒤 상대방 메시지의 정확한 ID만 읽음 확인한다.
+시간이나 최대 ID 이하를 일괄 처리하지 않으므로 지연 커밋·동일 시각·전달 순서 역전이 다른 메시지의 읽음에 영향을 주지 않는다.
+
+Request (필수):
+
+```json
+{ "messageIds": [1001, 1002] }
+```
+
+1~100개 양수 ID를 받으며 중복은 제거한다. 해당 방의 상대 메시지만 허용하고 존재하지 않는 ID·다른 방·자기 메시지가
+하나라도 있으면 전체 요청을 400 INVALID_REQUEST로 거절한다. 빈/누락/잘못된 본문은 400이며 DTO 검증은 VALIDATION_ERROR다.
+나간 참여자는 기존 403 FORBIDDEN, 비활성 계정은 401 UNAUTHORIZED다. 성공 응답은 기존 HTTP 200 / data=null이다.
+본문 없는 종전 호출은 최신 메시지를 임의로 읽음 처리하지 않고 거절하므로 관련 클라이언트와 함께 배포해야 한다.
+
+참여자 쓰기(읽음/설정/나가기)는 USER → CHAT_ROOM_MEMBER → 확인할 메시지 ID 오름차순으로 DB 잠금을 획득한다.
+현재 참여자 상태를 잠금과 함께 다시 읽고, last_read_at은 DB 조건부 UPDATE로도 역행을 막는 보조 정보로 유지한다.
+실제 read·unreadCount는 CHAT_MESSAGE.is_read를 사용한다. 조회에 실패하거나 수신하지 않은 ID는 클라이언트가 전송하지 않는다.
+기존 메시지 정렬, 익명성, 응답 구조와 고정 최대 2개 정책은 유지한다.
+스키마·기존 읽음 데이터 전환 및 격리 수준의 검증 범위는
+[수동 배포 안내](migrations/20261019_chat_message_receipts.md)를 따른다.
 
 10.6 채팅방 설정 변경
 
@@ -1579,7 +1699,14 @@ Request 예:
 "muted": false
 }
 
-기능 기준은 사용자별 고정 최대 2개다. 현재 updateSettings는 개수 조회 후 변경하며 초과 요청에 400 INVALID_REQUEST를 반환한다. **미해결 #13 (Medium):** 사용자 단위 잠금이 없어 동시 고정 요청에서는 제한을 보장하지 않는다. 서버 동시성 제어와 테스트 보완이 필요하다.
+사용자별 나가지 않은 고정 방은 최대 2개이며 초과하는 새 고정은 400 INVALID_REQUEST다.
+updateSettings는 USER 계정의 PESSIMISTIC_WRITE/활성 검사 → 자신의 CHAT_ROOM_MEMBER 잠금/refresh
+순으로 진행한다. 새 고정이면 findPinnedMembersForUpdate의 PESSIMISTIC_READ로 현재 고정 행을
+읽어 상한을 검사한다. 이미 고정된 방을 다시 true로 설정하는 요청은 새 고정으로 세지 않는다.
+고정 행 목록의 READ 잠금과 대상 참여자의 refresh/WRITE 잠금은 다르다.
+따라서 과거의 “사용자 단위 잠금 없음” 설명(#13)은 현재 코드와 다르다.
+pinned/muted는 Boolean이며 생략/null은 기존 값 유지다. 잘못된 상태의 참여자/방은 403이며,
+H2 회귀 통과와 실제 MySQL의 current read·잠금 대기·교착 검증은 구분한다.
 
 10.7 채팅방 나가기
 
@@ -1587,7 +1714,24 @@ DELETE /api/chat/rooms/{roomId}/members/me
 
 Auth
 
-채팅방 자체 삭제가 아니라 현재 사용자의 채팅방 나가기 상태를 처리한다.
+채팅방 자체 삭제가 아니라 현재 사용자의 is_left/left_at을 변경한다. 메시지를 삭제하거나 상대방을
+함께 나가게 하지 않는다. USER → 자신의 CHAT_ROOM_MEMBER 잠금/refresh로 오래된 읽음/설정 요청의
+덮어쓰기를 막는다. 성공은 HTTP 200/data=null이다. 이미 나간 사용자·타인/존재하지 않는 방은
+403 FORBIDDEN이며 다시 나가기/읽음/설정/메시지 접근·재입장을 허용하지 않는다.
+클라이언트는 성공 후 목록을 재조회하고 선택/작성 중 초안을 정리한다.
+
+### 10.8 배포 구성과 JVM 간 전달 제한
+
+현재 WebSocketConfig는 /pub application prefix와 JVM 내부 enableSimpleBroker("/sub")를 사용한다.
+동일 JVM의 목적지 구독자에게 전달하며 서로 다른 JVM의 Simple Broker 사이 중계는 없다.
+공유 MySQL·JWT 키·클라이언트 sticky session만으로 이 중계가 추가되지 않는다.
+15초 polling은 DB의 목록/이후 메시지/읽음 상태를 다시 읽는 복구 경로이며 인스턴스 간 STOMP 실시간 전달의 해결책이 아니다.
+
+2026-10-19 저장소 점검에서는 Dockerfile/Compose, CI/CD, 로드밸런서·replica 설정을 찾지 못했다.
+사용자도 실제/예정 배포는 “아직 미정 / 확인 불가”라고 확인했다. 따라서 단일 JVM 운영을
+확정하거나 문제 2를 조건부 수용 처리하지 않는다. 다중 JVM 메시지 전달 문제는 미해결이다.
+단일 JVM 선택 시의 연결 집중·배포 전환 조건, 공유 relay 후보 및 별도 구현/검증 계획은
+[채팅 배포·문서 점검 보고서](CHAT_DEPLOYMENT_API_VALIDATION.md)와 [DEPLOYMENT.md](DEPLOYMENT.md)를 따른다.
 
 11. 캘린더
 
@@ -2622,9 +2766,11 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 | POST | /api/calendar/categories/custom | `CalendarCategoryResponse` | [CalendarController.createCategory](src/main/java/com/kkirikkiri/calendar/controller/CalendarController.java) |
 | PATCH | /api/calendar/categories/{categoryId} | `CalendarCategoryResponse` | [CalendarController.updateCategory](src/main/java/com/kkirikkiri/calendar/controller/CalendarController.java) |
 | DELETE | /api/calendar/categories/{categoryId} | `Void` | [CalendarController.deleteCategory](src/main/java/com/kkirikkiri/calendar/controller/CalendarController.java) |
-| GET | /api/chat/rooms | `List<ChatRoomResponse>` | [ChatController.getRooms](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
+| GET | /api/chat/rooms | `ChatRoomPageResponse` | [ChatController.getRooms](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
+| GET | /api/chat/rooms/{roomId} | `ChatRoomResponse` | [ChatController.getRoom](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
 | POST | /api/chat/rooms | `ChatRoomResponse` | [ChatController.createOrGetRoom](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
 | GET | /api/chat/rooms/{roomId}/messages | `RoommatePageResponse<ChatMessageResponse>` | [ChatController.getMessages](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
+| POST | /api/chat/rooms/{roomId}/messages/read-status | `List<ChatMessageReadStatusResponse>` | [ChatController.getReadStatuses](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
 | POST | /api/chat/rooms/{roomId}/read | `Void` | [ChatController.markRead](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
 | PATCH | /api/chat/rooms/{roomId}/settings | `Void` | [ChatController.updateSettings](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
 | DELETE | /api/chat/rooms/{roomId}/members/me | `Void` | [ChatController.leaveRoom](src/main/java/com/kkirikkiri/chat/controller/ChatController.java) |
@@ -2715,11 +2861,15 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 | [CalendarEventResponse](src/main/java/com/kkirikkiri/calendar/dto/CalendarEventResponse.java) | `id: Long`<br>`title: String`<br>`startDate: LocalDate`<br>`endDate: LocalDate`<br>`startTime: LocalTime`<br>`endTime: LocalTime`<br>`category: String`<br>`categoryId: Long`<br>`description: String`<br>`editable: boolean`<br>`source: String` |
 | [CalendarEventUpdateRequest](src/main/java/com/kkirikkiri/calendar/dto/CalendarEventUpdateRequest.java) | `title: String` (Pattern(regexp = "(?s).*\\S.*"), Size(max = 80))<br>`startDate: LocalDate` (없음)<br>`endDate: LocalDate` (없음)<br>`startTime: String` (Pattern(regexp = "([01][0-9]&#124;2[0-3]):[0-5][0-9]"))<br>`endTime: String` (Pattern(regexp = "([01][0-9]&#124;2[0-3]):[0-5][0-9]"))<br>`categoryId: Long` (Positive)<br>`description: String` (Size(max = 2000)) |
 | [ChatMessageBroadcastResponse](src/main/java/com/kkirikkiri/chat/dto/ChatMessageBroadcastResponse.java) | `id: Long`<br>`roomId: Long`<br>`senderId: Long`<br>`text: String`<br>`sentAt: LocalDateTime`<br>`read: boolean` |
-| [ChatMessageListRequest](src/main/java/com/kkirikkiri/chat/dto/ChatMessageListRequest.java) | `page: Integer` (없음)<br>`size: Integer` (없음)<br>`q: String` (없음) |
+| [ChatMessageListRequest](src/main/java/com/kkirikkiri/chat/dto/ChatMessageListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1), Max(100))<br>`q: String` (없음)<br>`beforeId: Long` (Positive)<br>`afterId: Long` (Positive) |
+| [ChatMessageReadStatusResponse](src/main/java/com/kkirikkiri/chat/dto/ChatMessageReadStatusResponse.java) | `id: Long`<br>`read: boolean` |
 | [ChatMessageResponse](src/main/java/com/kkirikkiri/chat/dto/ChatMessageResponse.java) | `id: Long`<br>`senderId: Long`<br>`senderType: String`<br>`text: String`<br>`sentAt: LocalDateTime`<br>`read: boolean` |
-| [ChatMessageSendRequest](src/main/java/com/kkirikkiri/chat/dto/ChatMessageSendRequest.java) | `text: String` (NotBlank, Size(max = 2000)) |
-| [ChatRoomCreateRequest](src/main/java/com/kkirikkiri/chat/dto/ChatRoomCreateRequest.java) | `targetUserId: Long` (NotNull)<br>`category: ChatRoomCategory` (NotNull)<br>`sourcePostId: Long` (없음)<br>`sourceCommentId: Long` (없음)<br>`sourceFrom: String` (Pattern(regexp = "POST&#124;COMMENT")) |
-| [ChatRoomListRequest](src/main/java/com/kkirikkiri/chat/dto/ChatRoomListRequest.java) | `category: String` (Pattern(regexp = "ALL&#124;ROOMMATE&#124;COMMUNITY"))<br>`q: String` (없음) |
+| [ChatMessageSendRequest](src/main/java/com/kkirikkiri/chat/dto/ChatMessageSendRequest.java) | `text: String` (NotBlank, CodePointLength(max = ChatMessage.MAX_CONTENT_LENGTH = 2000); message는 Size 검증 메시지 키를 재사용) |
+| [ChatReadRequest](src/main/java/com/kkirikkiri/chat/dto/ChatReadRequest.java) | `messageIds: List<Long>` (NotEmpty, Size(max = 100); 각 원소 NotNull, Positive) |
+| [ChatRoomCreateRequest](src/main/java/com/kkirikkiri/chat/dto/ChatRoomCreateRequest.java) | `targetUserId: Long` (annotation 없음; ROOMMATE 필수·양수는 서비스 검증)<br>`category: ChatRoomCategory` (NotNull)<br>`sourcePostId: Long` (없음)<br>`sourceCommentId: Long` (없음)<br>`sourceFrom: String` (Pattern(regexp = "POST&#124;COMMENT")) |
+| [ChatRoomListRequest](src/main/java/com/kkirikkiri/chat/dto/ChatRoomListRequest.java) | `category: String` (Pattern(regexp = "ALL&#124;ROOMMATE&#124;COMMUNITY"))<br>`q: String` (없음)<br>`page: Integer` (Min(0))<br>`size: Integer` (Min(1), Max(100)) |
+| [ChatRoomCountsResponse](src/main/java/com/kkirikkiri/chat/dto/ChatRoomCountsResponse.java) | `all: long`<br>`roommate: long`<br>`community: long`<br>`pinned: long` |
+| [ChatRoomPageResponse](src/main/java/com/kkirikkiri/chat/dto/ChatRoomPageResponse.java) | `content: List<ChatRoomResponse>`<br>`page: int`<br>`size: int`<br>`totalElements: long`<br>`totalPages: int`<br>`first: boolean`<br>`last: boolean`<br>`counts: ChatRoomCountsResponse` |
 | [ChatRoomResponse](src/main/java/com/kkirikkiri/chat/dto/ChatRoomResponse.java) | `id: Long`<br>`category: ChatRoomCategory`<br>`counterpart: CounterpartResponse`<br>`sourcePost: Long`<br>`unreadCount: long`<br>`pinned: boolean`<br>`muted: boolean`<br>`lastMessage: LastMessageResponse` |
 | [ChatRoomResponse.CounterpartResponse](src/main/java/com/kkirikkiri/chat/dto/ChatRoomResponse.java) | `id: Long`<br>`nickname: String`<br>`profileImageUrl: String`<br>`dormitory: String`<br>`admissionYear: String`<br>`major: String`<br>`matchScore: Integer`<br>`introduction: String`<br>`tags: List<String>` |
 | [ChatRoomResponse.LastMessageResponse](src/main/java/com/kkirikkiri/chat/dto/ChatRoomResponse.java) | `text: String`<br>`sentAt: LocalDateTime` |
@@ -2758,7 +2908,7 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 
 - 설문 미저장 GET은 answers=null, 선호 조건 미저장도 해당 DTO 계약을 따른다. 저장된 프로필 설문은 현재 23개 필드다. 선택지·배열 중복·가중치 key 18개·상관없음 조합은 annotation 외 서비스 검증도 적용한다. hairDryer/bugHandling은 현재 요청·응답·Entity 필드가 아니다.
 - UserResponse.major, 룸메이트 목록·상세의 major/introduction/profileImageUrl/matchScore는 null일 수 있다. 비로그인 전체/상세 조회는 매칭 점수 null·liked=false다. recommended 필드는 반환하지 않는다. 로그인해도 계산 불가한 점수는 null일 수 있다. JWT가 제시된 요청의 유효성 검사와 공개 접근 허용은 별개다.
-- ChatRoomResponse.sourcePost/lastMessage는 null일 수 있다. 익명 상대 CounterpartResponse는 nickname="익명", tags=[], 그 외 필드 null이다. 익명 메시지 senderId는 null이다. 탈퇴/정지/토큰 만료·기존 구독 문제(#12)는 nullable 계약 보완으로 해결되지 않는다.
+- ChatRoomResponse.sourcePost/lastMessage는 null일 수 있다. 익명 상대 CounterpartResponse는 nickname="익명", tags=[], 그 외 필드 null이다. 익명 메시지 senderId는 null이다. 연결 후 권한은 10.4의 실제 재검증 경로를 따르며, JVM 간 중계 미지원은 10.8의 별도 제한이다.
 - CalendarEventResponse.startTime/endTime/description/source는 null일 수 있다. source는 Entity의 source_name이며 sourceUrl/collectedAt는 이 DTO에 없다. AdminScheduleCrawlStatusResponse의 실행 시각·상태·실패 값은 이력 없음 시 null이다. 학교 수집은 실행별 이력을 저장하며 기숙사 수집기는 미구현이다. 관리자 응답에서 프로필이 없는 회원의 nickname/major/dormitory 등 프로필 필드도 null일 수 있다. 신고 상세 description은 선택값이다. 처리 시각·담당자는 현재 신고 응답 필드가 아니다.
 - SignupRequest와 비밀번호 변경/재설정의 확인 비밀번호 일치, 출생연도 현재 연도 이하, 캘린더 날짜 범위·동일 날짜 시간 순서 등 @AssertTrue 객체 검증을 적용한다. 회원정보 PATCH의 null은 유지이며 세부전공 없음 선택은 null 저장, 학부·전공 활성 여부/소속과 중복 닉네임은 서비스에서 검증한다. 프로필 설문·선호 저장은 전체 입력이며 부분 PATCH처럼 처리하지 않는다.
 - PostImage 유지 정책은 keepImageIds 생략/null/[] 모두 기존 이미지 제거다. 현재 프론트가 유지할 ID 목록을 전달한다. 익명 게시글 author.id는 null이며 목록·상세에 mine을 제공한다. 클라이언트는 author.id 비교 대신 mine을 사용하고 채팅은 출처 ID로 연결해야 한다.
@@ -2808,7 +2958,7 @@ STOMP는 SEND/SUBSCRIBE 때 JWT·활성 계정을 다시 확인하며 기존 구
 Simple Broker의 서로 다른 JVM 사이 메시지 중계는 제공하지 않는다.
 실행 범위와 잔여 검증은 [1~3단계 종합 보고서](STAGES_1_3_VALIDATION.md)를 따른다.
 
-- #3 기본/prod의 DDL validate·SQL never·local 전용 시드와 #4 Gradle 테스트 H2 격리·연결 전 안전 검사를 구현했다. 적용 조건과 실제 운영에서 확인할 사항은 [DEPLOYMENT.md](DEPLOYMENT.md)를 따른다. 다른 도메인의 #12/#13/#14 등은 이번 user 수정의 배포 승인 범위에 포함하지 않는다.
+- #3 기본/prod의 DDL validate·SQL never·local 전용 시드와 #4 Gradle 테스트 H2 격리·연결 전 안전 검사를 구현했다. 적용 조건과 실제 운영에서 확인할 사항은 [DEPLOYMENT.md](DEPLOYMENT.md)를 따른다. 채팅 #12/#13의 현재 구현은 10.4/10.6으로 대조했으며 과거 미해결 설명을 현재 결함으로 재사용하지 않는다. 이 문서 점검은 다른 도메인이나 실제 운영의 배포 승인이 아니다.
 - Auth의 이메일 인증·로그인·메일 요청 제한은 아래 운영 정책을 따른다. 공유 저장소/실제 MySQL 검증은 DEPLOYMENT.md를 함께 확인한다.
 - 커뮤니티 3번 보완으로 익명 게시글 author.id와 author.major는 null이고 서버 계산 mine을 제공한다. 채팅도 출처로 작성자를 결정하며 기존 상대 프로필·메시지 ID 마스킹과 방 분리 규칙을 재사용한다. 추가 확정 정책으로 작성 후 일반 ↔ 익명 전환은 양방향 금지한다. 과거 전환 이력이 있는 게시글·방은 소급 수정하지 않으며 기존 공개 신원이 연결될 수 있다. 과거 응답·브라우저 캐시의 ID와 본문·첨부 내용의 식별 정보도 회수하지 않는다. [익명성 검증 안내](COMMUNITY_POST_PRIVACY.md)를 따른다.
 - 이미지 쓰기/영구 저장·시간대·CORS·SMTP·AI·필수 환경변수·WebSocket Upgrade와 프록시 타임아웃·다중 인스턴스 전달은 실제 환경 검증 대상이다. 기존 익명 방 키 적용 절차는 ERD.md의 마이그레이션 검증 기준을 따른다. 운영 DB·외부 연결을 이번에 검증하지 않았다.

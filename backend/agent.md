@@ -8,6 +8,10 @@
 
 검토 기준일: 2026-10-14. 문서의 **현재 구현**, **배포 전 필요한 보완**, **미확정 정책**을 구분한다. user 안정화의 코드·설정·테스트 보완을 반영했으며 실제 운영 DB/배포 검증은 별도다.
 
+2026-10-19 채팅 문서 대조: 아래 과거 #12(연결 후 권한), #13(고정 상한)의 현재 구현을
+API.md 10.4/10.6과 맞췄다. 실제 배포 토폴로지는 미정·확인 불가이며 Simple Broker의 JVM 간
+중계는 미구현이다. [채팅 배포·문서 점검](CHAT_DEPLOYMENT_API_VALIDATION.md)을 함께 따른다.
+
 ---
 
 ## 기술 스택
@@ -281,8 +285,8 @@ Controller가 그대로 호출할 수 있도록 공개 메서드 시그니처를
 | --- | --- | --- |
 | #3 운영 설정 | [application.properties](src/main/resources/application.properties), [EnvironmentSafetyInitializer](src/main/java/com/kkirikkiri/global/config/EnvironmentSafetyInitializer.java) | validate/SQL never·프로필 충돌·시드 차단 구현. 실제 운영 DDL/환경 확인은 DEPLOYMENT.md |
 | #4 테스트 격리 | [build.gradle](build.gradle), [BackendApplicationTests](src/test/java/com/kkirikkiri/BackendApplicationTests.java) | H2/프로필 강제·연결 전 검사 구현. 별도 격리 MySQL 검증은 미완료 |
-| #12 WebSocket | [ChatStompInterceptor](src/main/java/com/kkirikkiri/global/config/ChatStompInterceptor.java), [WebSocketConfig](src/main/java/com/kkirikkiri/global/config/WebSocketConfig.java), [ChatService](src/main/java/com/kkirikkiri/chat/service/ChatService.java) | 만료·계정 상태·참여 철회 후 송신 및 기존 구독 수신 차단과 테스트 |
-| #13 고정 개수 | [ChatService.updateSettings](src/main/java/com/kkirikkiri/chat/service/ChatService.java) | 동시 고정 요청에 사용자별 최대 2개 제한 보장 |
+| #12 WebSocket | [ChatStompInterceptor](src/main/java/com/kkirikkiri/global/config/ChatStompInterceptor.java), [WebSocketConfig](src/main/java/com/kkirikkiri/global/config/WebSocketConfig.java), [ChatService](src/main/java/com/kkirikkiri/chat/service/ChatService.java) | SEND/SUBSCRIBE 재인증과 outbound 전달 직전 참여 권한 검증 구현. 실제 프록시/브라우저 검증 및 미구현 JVM 간 중계는 별도 |
+| #13 고정 개수 | [ChatService.updateSettings](src/main/java/com/kkirikkiri/chat/service/ChatService.java) | USER → 대상 참여자 잠금/refresh와 현재 고정 행 READ 잠금으로 최대 2개 검사 구현. 실제 MySQL 잠금·current read는 별도 검증 |
 | #14 실행 이력 | [CalendarCrawlingService](src/main/java/com/kkirikkiri/calendar/service/CalendarCrawlingService.java), [ScheduleCrawlRun](src/main/java/com/kkirikkiri/calendar/entity/ScheduleCrawlRun.java) | 실행 시작·완료·건수·실패를 저장하고 일정 롤백과 독립된 실패 이력 보존 |
 
 - SMTP는 STARTTLS/발신자·자격 증명이 필요한 실제 외부 의존성이고, AI_API_KEY/AI_BASE_URL/AI_MODEL 및 DB/JWT는 placeholder 의존성이 있다. JWT 키 조건, CORS의 정확한 운영 origin, 이메일 링크의 프론트 주소, 외부 연결·오류 처리는 배포 환경에서 검증한다. 실제 `.env` 값을 이 문서에 복사하지 않는다.
@@ -307,8 +311,8 @@ Controller가 그대로 호출할 수 있도록 공개 메서드 시그니처를
 | 9 | Medium | 현재 70개 REST의 반환 data, DTO 선언, nullable, HTTP/ErrorCode 보완 |
 | 10 | Medium | 게시글 anonymous를 API와 ERD에 추가 |
 | 11 | High | keepImageIds의 제거 의미 명시, 프론트 유지 ID 전달 코드 대조 |
-| 12 | High | CONNECT 이후 권한 재검증/기존 구독 수신 제한은 코드 미해결 |
-| 13 | Medium | 동시 고정 2개 제한은 코드 미해결 |
+| 12 | High | 과거 미해결 설명을 정정. SEND/SUBSCRIBE 및 기존 구독 outbound 재검증 구현; 운영 검증·JVM 간 중계는 별도 |
+| 13 | Medium | 과거 미해결 설명을 정정. 사용자 잠금·대상 refresh·현재 고정 행 조회로 상한 보호 구현; 실제 MySQL 검증은 별도 |
 | 14 | High | Calendar 보완에서 시작/실패 독립 커밋·일정/성공 원자적 커밋 구현. 실제 MySQL/프로세스 종료 운영 검증은 별도 |
 | 15 | High | DORMITORY 수집 미구현 표시, 임의 구현 없음 |
 | 16 | High | 현재 프론트 점수 계산 유지, 서버 API를 예정 설계로 분리 |

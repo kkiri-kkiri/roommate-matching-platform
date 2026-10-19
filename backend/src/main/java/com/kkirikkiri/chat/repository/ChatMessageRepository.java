@@ -1,17 +1,46 @@
 package com.kkirikkiri.chat.repository;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.List;
+import java.util.Collection;
+
+import jakarta.persistence.LockModeType;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.kkirikkiri.chat.entity.ChatMessage;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
+
+	Optional<ChatMessage> findByMessageIdAndChatRoom_ChatRoomId(Long messageId, Long roomId);
+
+	@Query("""
+			select m from ChatMessage m where m.chatRoom.chatRoomId = :roomId
+			and (:pattern is null or m.content like :pattern escape '!')
+			and (m.sentAt < :sentAt or (m.sentAt = :sentAt and m.messageId < :id))
+			""")
+	Page<ChatMessage> findBefore(@Param("roomId") Long roomId, @Param("sentAt") java.time.LocalDateTime sentAt,
+			@Param("id") Long id, @Param("pattern") String pattern, Pageable pageable);
+
+	@Query("""
+			select m from ChatMessage m where m.chatRoom.chatRoomId = :roomId
+			and (:pattern is null or m.content like :pattern escape '!')
+			and (m.sentAt > :sentAt or (m.sentAt = :sentAt and m.messageId > :id))
+			""")
+	Page<ChatMessage> findAfter(@Param("roomId") Long roomId, @Param("sentAt") java.time.LocalDateTime sentAt,
+			@Param("id") Long id, @Param("pattern") String pattern, Pageable pageable);
+
+	@Query("""
+			select new com.kkirikkiri.chat.dto.ChatMessageReadStatusResponse(m.messageId, m.read)
+			from ChatMessage m where m.chatRoom.chatRoomId = :roomId and m.messageId in :ids
+			""")
+	List<com.kkirikkiri.chat.dto.ChatMessageReadStatusResponse> findReadStatuses(
+			@Param("roomId") Long roomId, @Param("ids") Collection<Long> ids);
 
 	/**
 	 * 메시지 목록의 정렬은 Pageable로 전달한다.
@@ -38,15 +67,31 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 	Optional<ChatMessage> findFirstByChatRoom_ChatRoomIdAndSender_UserIdNotOrderBySentAtDescMessageIdDesc(
 			Long roomId, Long userId);
 
-	/**
-	 * lastReadAt이 null이면 상대 메시지 전체를 미읽음으로 센다.
-	 */
+	/** Exact receipts; a delayed commit or equal sentAt must not inherit another message's receipt. */
 	@Query("""
 			select count(m) from ChatMessage m
 			where m.chatRoom.chatRoomId = :roomId
 			  and m.sender.userId <> :userId
-			  and (:lastReadAt is null or m.sentAt > :lastReadAt)
+			  and m.read = false
 			""")
-	long countUnreadMessages(@Param("roomId") Long roomId, @Param("userId") Long userId,
-			@Param("lastReadAt") LocalDateTime lastReadAt);
+	long countUnreadMessages(@Param("roomId") Long roomId, @Param("userId") Long userId);
+
+	@Query("""
+			select new com.kkirikkiri.chat.repository.ChatUnreadCount(m.chatRoom.chatRoomId, count(m))
+			from ChatMessage m where m.chatRoom.chatRoomId in :roomIds
+			and m.sender.userId <> :userId and m.read = false
+			group by m.chatRoom.chatRoomId
+			""")
+	List<ChatUnreadCount> countUnreadForRooms(@Param("roomIds") Collection<Long> roomIds, @Param("userId") Long userId);
+
+	/** Current/locking read also works when an enclosing RR transaction already has a snapshot. */
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("""
+			select m from ChatMessage m
+			where m.chatRoom.chatRoomId = :roomId and m.sender.userId <> :userId
+			  and m.messageId in :messageIds
+			order by m.messageId
+			""")
+	List<ChatMessage> findIncomingForRead(@Param("roomId") Long roomId, @Param("userId") Long userId,
+			@Param("messageIds") Collection<Long> messageIds);
 }
