@@ -2,6 +2,8 @@ package com.kkirikkiri.admin.service;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -25,6 +27,7 @@ import com.kkirikkiri.admin.dto.AdminPostListRequest;
 import com.kkirikkiri.admin.dto.AdminPostResponse;
 import com.kkirikkiri.admin.dto.AdminPostDetailResponse;
 import com.kkirikkiri.community.post.repository.CommunityPostReadRepository;
+import com.kkirikkiri.community.post.repository.PostLikeRepository;
 import com.kkirikkiri.community.post.repository.CommunityPostRepository;
 import com.kkirikkiri.report.repository.ReportRepository;
 import com.kkirikkiri.admin.dto.AdminCrawledScheduleResponse;
@@ -86,15 +89,27 @@ public class AdminService {
 	private final ScheduleCrawlRunRepository crawlRunRepository;
 	private final ReportRepository reportExistenceRepository;
 	private final CommunityPostReadRepository postReadRepository;
+	private final PostLikeRepository postLikeRepository;
 	private final Validator validator;
 
 	public RoommatePageResponse<AdminPostResponse> getPosts(Long adminId, AdminPostListRequest request) {
 		requireAdmin(adminId);
 		validateRequest(request);
+		validateCommunityPage(request.page(), request.size());
 		Page<CommunityPost> page = postRepository.searchPosts(request.q(), request.category(), request.reported(),
 				request.sort(), PageRequest.of(request.page(), request.size()));
 		var profiles = profiles(page.getContent().stream().map(CommunityPost::getAuthor).toList());
-		return RoommatePageResponse.from(page.map(post -> postResponse(post, profiles)));
+		var ids = page.getContent().stream().map(CommunityPost::getPostId).toList();
+		Map<Long, Long> likes = ids.isEmpty() ? Map.of() : postLikeRepository.countLikesByPostIds(ids).stream()
+				.collect(Collectors.toMap(PostLikeRepository.LikeCount::getPostId,
+						PostLikeRepository.LikeCount::getLikes));
+		Map<Long, Long> counts = ids.isEmpty() ? Map.of() : communityCommentRepository.countByPostIds(ids, CommunityContentStatus.ACTIVE).stream()
+				.collect(Collectors.toMap(CommunityCommentRepository.PostCommentCount::getPostId,
+						CommunityCommentRepository.PostCommentCount::getComments));
+		var reported = ids.isEmpty() ? Set.<Long>of() : new HashSet<>(reportExistenceRepository.findReportedPostIds(ids));
+		return RoommatePageResponse.from(page.map(post -> new AdminPostResponse(post.getPostId(), post.getCategory(),
+				post.getTitle(), author(post.getAuthor(), profiles), post.getCreatedAt(), post.getViewCount(),
+				likes.getOrDefault(post.getPostId(), 0L), counts.getOrDefault(post.getPostId(), 0L), reported.contains(post.getPostId()))));
 	}
 
 	public AdminPostDetailResponse getPost(Long adminId, Long postId) {
@@ -110,10 +125,15 @@ public class AdminService {
 	public RoommatePageResponse<AdminCommentResponse> getComments(Long adminId, AdminCommentListRequest request) {
 		requireAdmin(adminId);
 		validateRequest(request);
+		validateCommunityPage(request.page(), request.size());
 		Page<CommunityComment> page = commentRepository.searchComments(request.q(), request.reported(),
 				PageRequest.of(request.page(), request.size()));
 		var profiles = profiles(page.getContent().stream().map(CommunityComment::getAuthor).toList());
-		return RoommatePageResponse.from(page.map(comment -> commentResponse(comment, profiles)));
+		var ids = page.getContent().stream().map(CommunityComment::getCommentId).toList();
+		var reported = ids.isEmpty() ? Set.<Long>of() : new HashSet<>(reportExistenceRepository.findReportedCommentIds(ids));
+		return RoommatePageResponse.from(page.map(comment -> new AdminCommentResponse(comment.getCommentId(), comment.getContent(),
+				author(comment.getAuthor(), profiles), comment.getCreatedAt(), comment.getPost().getPostId(),
+				comment.getPost().getTitle(), reported.contains(comment.getCommentId()))));
 	}
 
 	public AdminCommentResponse getComment(Long adminId, Long commentId) {
@@ -209,6 +229,7 @@ public class AdminService {
 	public RoommatePageResponse<AdminReportResponse> getReports(Long adminId, AdminReportListRequest request) {
 		requireAdmin(adminId);
 		validateRequest(request);
+		validateCommunityPage(request.page(), request.size());
 		Page<Report> page = reportRepository.searchReports(request.q(),
 				request.type() == null ? null : ReportType.valueOf(request.type()),
 				request.status() == null ? null : ReportStatus.valueOf(request.status()),
@@ -377,6 +398,12 @@ public class AdminService {
 
 	private void validateRequest(Object request) {
 		if (request == null || !validator.validate(request).isEmpty()) {
+			throw new CustomException(ErrorCode.VALIDATION_ERROR);
+		}
+	}
+
+	private void validateCommunityPage(int page, int size) {
+		if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
 	}

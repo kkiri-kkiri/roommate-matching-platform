@@ -44,8 +44,7 @@ class PostLikeListIntegrationTest {
         em.persist(dorm); em.persist(otherDorm);
         for (int i = 0; i < 24; i++) {
             var p = new CommunityPost(i % 2 == 0 ? a : b, i % 2 == 0 ? dorm : otherDorm,
-                    i % 3 == 0 ? "나눔게시판" : "자유게시판", "게시글 " + i, "검색 본문 " + i);
-            p.changeAnonymous(i == 0);
+                    i % 3 == 0 ? "나눔게시판" : "자유게시판", "게시글 " + i, "검색 본문 " + i, i == 0);
             ReflectionTestUtils.setField(p, "viewCount", i % 4);
             em.persist(p);
             // Equal timestamps verify the final postId DESC tie-breaker as well.
@@ -101,7 +100,9 @@ class PostLikeListIntegrationTest {
         }
         var mine = service.getMyPosts(a.getUserId(), 0, 20, sort);
         assertEquals(12, mine.totalElements()); assertTrue(mine.first()); assertTrue(mine.last());
-        assertTrue(mine.content().stream().allMatch(row -> row.author().id().equals(a.getUserId())));
+        assertTrue(mine.content().stream().allMatch(CommunityPostResponse::mine));
+        assertTrue(mine.content().stream().allMatch(row -> row.anonymous()
+                ? row.author().id() == null : row.author().id().equals(a.getUserId())));
     }
 
     @Test void writesRefreshListsAndDetailWithoutMixingUsersOrCommentLikes() {
@@ -115,7 +116,8 @@ class PostLikeListIntegrationTest {
         assertEquals(2, rowA.likes()); assertTrue(rowA.liked()); assertTrue(rowB.liked());
         assertFalse(listRow(null, id).liked());
         assertTrue(rowA.anonymous()); assertEquals("익명", rowA.author().nickname());
-        assertEquals(a.getUserId(), rowA.author().id()); assertNull(rowA.author().major());
+        assertNull(rowA.author().id()); assertNull(rowA.author().major());
+        assertTrue(rowA.mine()); assertFalse(rowB.mine()); assertFalse(listRow(null, id).mine());
         var detail = service.getPost(a.getUserId(), id);
         assertEquals(2, detail.likes()); assertTrue(detail.liked());
         service.unlikePost(a.getUserId(), id); service.unlikePost(a.getUserId(), id);

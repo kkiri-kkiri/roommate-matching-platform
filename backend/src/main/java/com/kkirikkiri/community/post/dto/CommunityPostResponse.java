@@ -22,15 +22,17 @@ public record CommunityPostResponse(
 		long commentCount,
 		boolean hasImages,
 		boolean liked,
-		boolean reported) {
+		boolean reported,
+		boolean mine) {
 
 	public static CommunityPostResponse from(
 			CommunityPost post, CommunityAuthorResponse author, String contentPreview,
-			long likes, long commentCount, boolean hasImages, boolean liked, boolean reported) {
+			long likes, long commentCount, boolean hasImages, boolean liked, boolean reported, Long viewerId) {
 		return new CommunityPostResponse(
 				post.getPostId(), post.getCategory(),
 				post.getDormitory() == null ? null : post.getDormitory().getDormitoryName(),
 				post.getTitle(), contentPreview, author.forPost(post.isAnonymous()), post.isAnonymous(), post.getCreatedAt(), post.getViewCount(),
-				likes, commentCount, hasImages, liked, reported);
+				likes, commentCount, hasImages, liked, reported,
+				viewerId != null && viewerId.equals(post.getAuthor().getUserId()));
 	}
 }

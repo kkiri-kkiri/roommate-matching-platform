@@ -70,6 +70,7 @@ class AdminServiceTest {
     @Mock ScheduleCrawlRunRepository crawlRunRepository;
     @Mock ReportRepository reportExistenceRepository;
     @Mock CommunityPostReadRepository postReadRepository;
+    @Mock com.kkirikkiri.community.post.repository.PostLikeRepository postLikeRepository;
     @Mock Validator validator;
     @Mock ConstraintViolation<AdminReportProcessRequest> violation;
     @InjectMocks AdminService service;
@@ -481,7 +482,7 @@ class AdminServiceTest {
         stubAdmin();
         when(commentRepository.searchComments("query", true, PageRequest.of(0, 6)))
                 .thenReturn(new PageImpl<>(List.of(comment), PageRequest.of(0, 6), 1));
-        when(reportExistenceRepository.existsByComment_CommentId(20L)).thenReturn(true);
+        when(reportExistenceRepository.findReportedCommentIds(List.of(20L))).thenReturn(List.of(20L));
         // when
         var result = service.getComments(1L, new AdminCommentListRequest(null, null, "query", true)).content().getFirst();
         // then

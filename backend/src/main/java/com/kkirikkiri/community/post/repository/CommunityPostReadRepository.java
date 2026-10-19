@@ -43,7 +43,20 @@ public class CommunityPostReadRepository {
 				.setParameter("authorId", authorId)
 				.setFirstResult(Math.toIntExact(pageable.getOffset())).setMaxResults(pageable.getPageSize());
 		List<CommunityPost> posts = query.getResultList();
+		if (!posts.isEmpty()) {
+			// Native entity mapping cannot apply a fetch graph; initialize only paged to-one relations.
+			entityManager.createQuery("select p from CommunityPost p join fetch p.author left join fetch p.dormitory "
+					+ "where p.postId in :postIds", CommunityPost.class)
+					.setParameter("postIds", posts.stream().map(CommunityPost::getPostId).toList()).getResultList();
+		}
 		return new PageImpl<>(posts, pageable, total);
+	}
+
+	public List<Long> findReportedPostIds(java.util.Collection<Long> postIds, Long userId) {
+		return entityManager.createQuery("select distinct r.post.postId from Report r "
+				+ "where r.post.postId in :postIds and r.reporter.userId = :userId "
+				+ "and r.reportType = com.kkirikkiri.report.entity.ReportType.POST", Long.class)
+				.setParameter("postIds", postIds).setParameter("userId", userId).getResultList();
 	}
 
 	public long countLikes(Long postId) {

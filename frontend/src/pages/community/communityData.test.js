@@ -31,11 +31,12 @@ test("groups unordered flat replies and preserves numeric authors and server ima
 });
 
 
-test("defaults legacy posts to public and preserves author IDs for anonymous posts", () => {
+test("defaults legacy posts to public and displays anonymous posts independently of identity", () => {
   const author = { id: 7, nickname: "실제이름", major: "소프트웨어융합전공" };
   expect(normalizePost({ author }).anonymous).toBe(false);
-  const anonymous = normalizePost({ author, anonymous: true });
-  expect(anonymous.author.id).toBe(7);
+  const anonymous = normalizePost({ author: { id: null, nickname: "익명", major: null }, anonymous: true, mine: true });
+  expect(anonymous.author.id).toBeNull();
+  expect(anonymous.mine).toBe(true);
   expect(getPostAuthorDisplay(anonymous)).toEqual({ nickname: "익명", image: "/img/한경이 이미지/감정/힙합 한경이.png" });
   expect(getPostAuthorDisplay({ author, anonymous: false })).toEqual({ nickname: author.nickname, image: getProfileImage(author.major) });
 });

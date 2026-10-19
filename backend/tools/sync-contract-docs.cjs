@@ -66,7 +66,7 @@ let endpointCount = 0;
 for (const match of api.matchAll(/^\| (GET|POST|PUT|PATCH|DELETE) \| ([^|]+) \| `([^`]+)` \| \[(\w+)\.(\w+)\]\((src\/main\/java\/[^)]+)\) \|/gm)) {
   const source = read(match[6]);
   const base = source.match(/@RequestMapping\(\s*"([^"]+)"\s*\)/)?.[1] || '';
-  const mapping = [...source.matchAll(/@(Get|Post|Put|Patch|Delete)Mapping(?:\(([^)]*)\))?[\s\S]*?public\s+ApiResponse<([\s\S]*?)>\s+(\w+)\s*\(/g)]
+  const mapping = [...source.matchAll(/@(Get|Post|Put|Patch|Delete)Mapping(?:\(([^)]*)\))?[\s\S]*?public\s+(?:ApiResponse|ResponseEntity)<([\s\S]*?)>\s+(\w+)\s*\(/g)]
     .find(item => item[4] === match[5]);
   if (!mapping || mapping[1].toUpperCase() !== match[1]
       || base + (mapping[2]?.match(/"([^"]*)"/)?.[1] || '') !== match[2].trim()

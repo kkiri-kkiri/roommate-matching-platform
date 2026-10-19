@@ -280,8 +280,8 @@ class CommunityCreationAndImageConcurrencyIntegrationTest {
         // keepImageIds is the full replacement list. Omitting the first upload removes its DB link.
         assertTrue(rows.stream().noneMatch(i -> i.name().startsWith("first")));
         assertImageIntegrity(postId);
-        // Successful unlinking retains physical files under the existing policy (#9 is out of scope).
-        assertEquals(initial + 2 * added, files().size());
+        // The second committed replacement also cleans files detached from the first upload.
+        assertEquals(5, files().size());
     }
 
     @Test
@@ -304,7 +304,7 @@ class CommunityCreationAndImageConcurrencyIntegrationTest {
         contend(addFirst ? add : remove, addFirst ? remove : () -> assertError(ErrorCode.INVALID_REQUEST, add));
         assertEquals(remaining, imageIds(postId));
         assertEquals("remove", postTitle());
-        assertEquals(addFirst ? 5 : 4, files().size());
+        assertEquals(2, files().size());
         assertImageIntegrity(postId);
     }
 

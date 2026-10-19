@@ -12,6 +12,11 @@ import com.kkirikkiri.community.post.entity.PostImage;
 
 public interface PostImageRepository extends JpaRepository<PostImage, Long> {
 
+	boolean existsByImageUrl(String imageUrl);
+
+	boolean existsByImageUrlAndPost_Status(String imageUrl,
+			com.kkirikkiri.community.common.entity.CommunityContentStatus status);
+
 	/** 게시글 잠금 이후 current read로 읽어 기존 RR 스냅샷의 이미지 목록을 사용하지 않는다. */
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("select i from PostImage i where i.post.postId = :postId order by i.sortOrder, i.postImageId")
@@ -20,4 +25,7 @@ public interface PostImageRepository extends JpaRepository<PostImage, Long> {
 	List<PostImage> findAllByPost_PostIdOrderBySortOrderAscPostImageIdAsc(Long postId);
 
 	boolean existsByPost_PostId(Long postId);
+
+	@Query("select distinct i.post.postId from PostImage i where i.post.postId in :postIds")
+	List<Long> findPostIdsWithImages(@Param("postIds") java.util.Collection<Long> postIds);
 }

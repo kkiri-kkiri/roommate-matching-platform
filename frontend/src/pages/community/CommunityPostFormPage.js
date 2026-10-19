@@ -155,7 +155,8 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
     setSaving(true);
     setSaveError("");
     try {
-      await onSave({ category, title: title.trim(), content: content.trim(), anonymous, images });
+      await onSave({ category, title: title.trim(), content: content.trim(),
+        ...(isEditing ? {} : { anonymous }), images });
     } catch (error) {
       setSaveError(error.message);
     } finally {
@@ -266,9 +267,11 @@ function CommunityPostFormPage({ post, onSave, onCancel }) {
           </S.Field>
 
           <S.AnonymousChoice>
-            <input type="checkbox" checked={anonymous} onChange={(event) => setAnonymous(event.target.checked)} disabled={saving} />
+            <input type="checkbox" checked={isEditing ? post.anonymous === true : anonymous}
+              onChange={(event) => setAnonymous(event.target.checked)} disabled={isEditing || saving} />
             익명
-            <small>체크하면 닉네임과 학과 프로필이 표시되지 않아요.</small>
+            <small>{isEditing ? "작성 후에는 익명 여부를 변경할 수 없어요."
+              : "체크하면 닉네임과 학과 프로필이 표시되지 않아요."}</small>
           </S.AnonymousChoice>
 
           <S.ImageField>

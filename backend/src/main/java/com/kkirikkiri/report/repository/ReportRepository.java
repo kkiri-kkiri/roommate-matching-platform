@@ -1,11 +1,21 @@
 package com.kkirikkiri.report.repository;
 
+import java.util.Collection;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.kkirikkiri.report.entity.Report;
 import com.kkirikkiri.report.entity.ReportType;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
+
+	@Query("select distinct r.post.postId from Report r where r.post.postId in :ids")
+	List<Long> findReportedPostIds(@Param("ids") Collection<Long> ids);
+
+	@Query("select distinct r.comment.commentId from Report r where r.comment.commentId in :ids")
+	List<Long> findReportedCommentIds(@Param("ids") Collection<Long> ids);
 
 	/** 관리자 응답용. 신고자와 처리 상태에 관계없이 전체 신고 존재 여부를 확인한다. */
 	boolean existsByPost_PostId(Long postId);

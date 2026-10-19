@@ -105,11 +105,11 @@ export function useChat({ isAuthenticated, rooms, setRooms, activeRoom, searchQu
     } else {
       const targetUserId = communityChat.recipientId;
       const sourcePostId = communityChat.sourcePost?.id;
-      if (!positiveId(targetUserId) || !positiveId(sourcePostId) || communityChat.sourcePost?.from !== "게시글") {
-        setStatus("커뮤니티 채팅에 실제 사용자·게시글 ID가 필요하며 댓글 채팅은 댓글 ID 전달이 아직 연결되지 않았습니다.");
+      if ((targetUserId != null && !positiveId(targetUserId)) || !positiveId(sourcePostId) || communityChat.sourcePost?.from !== "게시글") {
+        setStatus("커뮤니티 채팅에 유효한 게시글 ID가 필요하며 댓글 채팅은 댓글 ID 전달이 아직 연결되지 않았습니다.");
         return;
       }
-      payload = { targetUserId: Number(targetUserId), category: "COMMUNITY", sourcePostId: Number(sourcePostId), sourceFrom: "POST" };
+      payload = { targetUserId: targetUserId == null ? null : Number(targetUserId), category: "COMMUNITY", sourcePostId: Number(sourcePostId), sourceFrom: "POST" };
     }
     // StrictMode 재실행 중에는 이미 진행 중인 생성 요청을 재사용합니다.
     const key = JSON.stringify(payload);

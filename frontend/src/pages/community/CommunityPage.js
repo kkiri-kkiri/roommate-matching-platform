@@ -131,7 +131,7 @@ function CommunityPage({ currentUser }) {
   const requireLogin = () => navigate("/login");
   const startPost = () => currentUser ? navigate("/community/posts/new") : requireLogin();
   const savePost = async ({ category, title, content, anonymous, images }) => {
-    const payload = { category, title, content, anonymous };
+    const payload = { category, title, content, ...(isEdit ? {} : { anonymous }) };
     const files = images.filter((image) => image.file instanceof File).map((image) => image.file);
     let id = post?.id;
     if (isEdit) {
@@ -155,7 +155,7 @@ function CommunityPage({ currentUser }) {
       <p>삭제되었거나 올바르지 않은 주소예요. 다른 이야기를 둘러보세요.</p>
       <S.PrimaryLink to="/community">커뮤니티로 돌아가기 <ArrowRight size={16} aria-hidden="true" /></S.PrimaryLink>
     </S.EmptyState>;
-  } else if (isEdit && post.author.id !== currentUser.id) {
+  } else if (isEdit && post.mine !== true) {
     content = <S.EmptyState>
       <S.EmptyIcon><ShieldCheck aria-hidden="true" /></S.EmptyIcon>
       <h1>내가 작성한 글만 수정할 수 있어요</h1>
@@ -227,13 +227,13 @@ function CommunityPage({ currentUser }) {
               </S.ActivityContentRow>
               <S.OriginalPostLink to={`/community/posts/${item.postId}#comment-${item.id}`}><MessageSquare size={16} aria-hidden="true" /><span>{item.postTitle}</span><ArrowRight size={16} aria-hidden="true" /></S.OriginalPostLink>
             </S.PostRow> : <S.PostRow key={item.id}>
-              <S.PostHeading>{category === "전체" && <S.CategoryBadge $category={item.category}>{item.category.replace("게시판", "")}</S.CategoryBadge>}<S.DormitoryBadge>{item.dormitory}</S.DormitoryBadge>{currentUser && item.author.id === currentUser.id && <S.OwnBadge>내 글</S.OwnBadge>}</S.PostHeading>
+              <S.PostHeading>{category === "전체" && <S.CategoryBadge $category={item.category}>{item.category.replace("게시판", "")}</S.CategoryBadge>}<S.DormitoryBadge>{item.dormitory}</S.DormitoryBadge>{currentUser && item.mine === true && <S.OwnBadge>내 글</S.OwnBadge>}</S.PostHeading>
               <S.ActivityContentRow>
                 <S.ActivityContent>
                   <S.PostTitleLink to={`/community/posts/${item.id}`}><h3>{item.title}</h3>{item.hasImages && <S.ImageLabel role="img" aria-label="사진 첨부" title="사진 첨부"><Image size={16} aria-hidden="true" /></S.ImageLabel>}</S.PostTitleLink>
                   <S.Excerpt>{item.contentPreview}</S.Excerpt>
                 </S.ActivityContent>
-                {isMyPosts && item.author.id === currentUser.id && <CommunityActivityActions item={item}
+                {isMyPosts && item.mine === true && <CommunityActivityActions item={item}
                   onEdit={() => navigate(`/community/posts/${item.id}/edit`, { state: { returnToMyPosts: pathname + location.search } })}
                   onChanged={() => setListRevision((value) => value + 1)} />}
               </S.ActivityContentRow>

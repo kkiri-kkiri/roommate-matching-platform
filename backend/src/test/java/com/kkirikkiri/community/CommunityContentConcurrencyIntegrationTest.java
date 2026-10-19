@@ -399,14 +399,14 @@ class CommunityContentConcurrencyIntegrationTest {
     }
 
     @Test
-    void failedPostEditRollsBackContentAnonymousFlagAndImageDeletion() {
+    void failedPostEditRollsBackContentAndImagesWithoutChangingAnonymity() {
         Long imageId = tx(() -> {
             var image = new PostImage(em.find(CommunityPost.class, postId), "/api/post-images/test.png", "test.png", 0);
             em.persist(image); return image.getPostImageId();
         });
         assertThrows(IllegalStateException.class, () -> tx(() -> {
             posts.updatePost(authorId, postId,
-                    new CommunityPostUpdateRequest("자유게시판", "changed", "changed", List.of(), true), null);
+                    new CommunityPostUpdateRequest("자유게시판", "changed", "changed", List.of(), false), null);
             em.flush();
             throw new IllegalStateException("test rollback after all writes");
         }));

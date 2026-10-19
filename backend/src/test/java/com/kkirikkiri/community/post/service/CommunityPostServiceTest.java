@@ -57,6 +57,7 @@ class CommunityPostServiceTest {
 	@Mock CommunityPostReadRepository communityPostReadRepository;
 	@Mock PostImageRepository postImageRepository;
 	@Mock PostImageStorage postImageStorage;
+	@Mock PostImageCleanupService postImageCleanupService;
 	@Mock UserProfileRepository userProfileRepository;
 	@Mock Validator validator;
 	@Mock ConstraintViolation<Object> violation;
@@ -142,8 +143,8 @@ class CommunityPostServiceTest {
 	}
 
 	@Test
-	void updatePreservesOmittedFlagAndAllowsChangingIt() {
-		post.changeAnonymous(true);
+	void updatePreservesOmittedFlagAndRejectsChangingIt() {
+		post = new CommunityPost(user, null, post.getCategory(), post.getTitle(), post.getContent(), true);
 		when(user.getUserId()).thenReturn(7L);
 		when(validator.validate(any(CommunityPostUpdateRequest.class))).thenReturn(Set.of());
 		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE))
@@ -151,14 +152,18 @@ class CommunityPostServiceTest {
 		when(postImageRepository.findAllForUpdateByPostId(1L)).thenReturn(List.of());
 		service.updatePost(7L, 1L, new CommunityPostUpdateRequest("자유게시판", "수정", "내용", List.of(), null), null);
 		assertTrue(post.isAnonymous());
-		service.updatePost(7L, 1L, new CommunityPostUpdateRequest("자유게시판", "수정", "내용", List.of(), false), null);
-		assertFalse(post.isAnonymous());
+		var error = assertThrows(CustomException.class, () -> service.updatePost(7L, 1L,
+				new CommunityPostUpdateRequest("자유게시판", "다른 제목", "다른 내용", List.of(), false), null));
+		assertEquals(ErrorCode.VALIDATION_ERROR, error.getErrorCode());
+		assertTrue(post.isAnonymous());
+		assertEquals("수정", post.getTitle());
+		assertEquals("내용", post.getContent());
 		assertSame(user, post.getAuthor());
 	}
 
 	@Test
 	void anonymousPostStillRejectsUpdatesAndDeletesByAnotherUser() {
-		post.changeAnonymous(true);
+		post = new CommunityPost(user, null, post.getCategory(), post.getTitle(), post.getContent(), true);
 		when(user.getUserId()).thenReturn(7L);
 		when(validator.validate(any(CommunityPostUpdateRequest.class))).thenReturn(Set.of());
 		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE))
@@ -171,18 +176,18 @@ class CommunityPostServiceTest {
 	}
 
 	@Test
-	void responseDefaultsToPublicAndMasksAnonymousAuthorWithoutRemovingId() {
+	void responseDefaultsToPublicAndMasksAnonymousAuthorId() {
 		var author = new CommunityAuthorResponse(7L, "닉네임", "소프트웨어융합전공");
 		assertFalse(post.isAnonymous());
-		var publicResponse = CommunityPostResponse.from(post, author, "내용", 0, 0, false, false, false);
+		var publicResponse = CommunityPostResponse.from(post, author, "내용", 0, 0, false, false, false, null);
 		assertFalse(publicResponse.anonymous());
 		assertEquals(author, publicResponse.author());
-		post.changeAnonymous(true);
-		var list = CommunityPostResponse.from(post, author, "내용", 0, 0, false, false, false);
-		var detail = CommunityPostDetailResponse.from(post, author, 0, false, false, List.of(), List.of());
+		post = new CommunityPost(user, null, post.getCategory(), post.getTitle(), post.getContent(), true);
+		var list = CommunityPostResponse.from(post, author, "내용", 0, 0, false, false, false, null);
+		var detail = CommunityPostDetailResponse.from(post, author, 0, false, false, List.of(), List.of(), null);
 		assertTrue(list.anonymous());
 		assertTrue(detail.anonymous());
-		assertEquals(7L, list.author().id());
+		assertNull(list.author().id());
 		assertEquals("익명", list.author().nickname());
 		assertNull(list.author().major());
 		assertEquals(list.author(), detail.author());
@@ -490,7 +495,9 @@ class CommunityPostServiceTest {
 	void readsGuestDetailAndIncrementsViewsWithoutQueryingCommentLikesForEmptyComments() {
 		// given
 		when(user.getUserId()).thenReturn(7L);
-		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+		when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+		when(communityPostRepository.incrementActiveViews(eq(1L), eq(CommunityContentStatus.ACTIVE), any()))
+				.thenAnswer(invocation -> { post.increaseViewCount(); return 1; });
 		// when
 		var result = service.getPost(null, 1L);
 		// then
@@ -512,7 +519,9 @@ class CommunityPostServiceTest {
 		CommunityComment reply = new CommunityComment(post, user, comment, "답글");
 		ReflectionTestUtils.setField(comment, "commentId", 10L);
 		ReflectionTestUtils.setField(reply, "commentId", 11L);
-		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+		when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+		when(communityPostRepository.incrementActiveViews(eq(1L), eq(CommunityContentStatus.ACTIVE), any()))
+				.thenAnswer(invocation -> { post.increaseViewCount(); return 1; });
 		when(communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(1L, CommunityContentStatus.ACTIVE))
 				.thenReturn(List.of(comment, reply));
 		var count = mock(CommentLikeRepository.LikeCount.class);
@@ -546,7 +555,9 @@ class CommunityPostServiceTest {
 		CommunityComment comment = new CommunityComment(post, user, null, "익명 댓글");
 		comment.changeAnonymous(true);
 		ReflectionTestUtils.setField(comment, "commentId", 10L);
-		when(communityPostRepository.findDetailForUpdate(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+		when(communityPostRepository.findByPostIdAndStatus(1L, CommunityContentStatus.ACTIVE)).thenReturn(Optional.of(post));
+		when(communityPostRepository.incrementActiveViews(eq(1L), eq(CommunityContentStatus.ACTIVE), any()))
+				.thenAnswer(invocation -> { post.increaseViewCount(); return 1; });
 		when(anonymousAuthorService.resolveNumbers(1L, null)).thenReturn(java.util.Map.of(7L, 4L));
 		when(communityCommentRepository.findAllByPost_PostIdAndStatusOrderByCreatedAtAscCommentIdAsc(1L, CommunityContentStatus.ACTIVE))
 				.thenReturn(List.of(comment));
@@ -557,7 +568,7 @@ class CommunityPostServiceTest {
 		assertNull(response.author().major());
 		assertEquals(Long.valueOf(7).equals(viewerId), response.mine());
 		// 게시글 프로필 조회 1회 외에 익명 댓글의 프로필은 조회하지 않는다.
-		verify(userProfileRepository, times(1)).findByUser_UserId(7L);
+		verify(userProfileRepository, times(1)).findAllByUser_UserIdIn(Set.of(7L));
 	}
 
 	@ParameterizedTest
@@ -601,12 +612,12 @@ class CommunityPostServiceTest {
 		when(count.getLikes()).thenReturn(3L);
 		when(postLikeRepository.countLikesByPostIds(List.of(1L, 2L))).thenReturn(List.of(count));
 		when(postLikeRepository.findLikedPostIds(List.of(1L, 2L), 8L)).thenReturn(List.of(1L));
-		when(communityCommentRepository.countByPost_PostIdAndStatus(1L, CommunityContentStatus.ACTIVE)).thenReturn(0L);
-		when(communityCommentRepository.countByPost_PostIdAndStatus(2L, CommunityContentStatus.ACTIVE)).thenReturn(4L);
-		when(postImageRepository.existsByPost_PostId(1L)).thenReturn(true);
-		when(postImageRepository.existsByPost_PostId(2L)).thenReturn(false);
-		when(communityPostReadRepository.isReported(1L, 8L)).thenReturn(false);
-		when(communityPostReadRepository.isReported(2L, 8L)).thenReturn(true);
+		var comments = mock(CommunityCommentRepository.PostCommentCount.class);
+		when(comments.getPostId()).thenReturn(2L);
+		when(comments.getComments()).thenReturn(4L);
+		when(communityCommentRepository.countByPostIds(List.of(1L, 2L), CommunityContentStatus.ACTIVE)).thenReturn(List.of(comments));
+		when(postImageRepository.findPostIdsWithImages(List.of(1L, 2L))).thenReturn(List.of(1L));
+		when(communityPostReadRepository.findReportedPostIds(List.of(1L, 2L), 8L)).thenReturn(List.of(2L));
 		// when
 		var result = service.getPosts(8L, new CommunityPostListRequest(1, 2, null, null, null));
 		// then

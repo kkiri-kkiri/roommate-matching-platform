@@ -6,6 +6,11 @@
 4번 보완 내용을 함께 따른다. 이후 2번 계정 선행 잠금과 현재 전체 잠금 순서는
 [계정 동시성 안내](COMMUNITY_ACCOUNT_CONCURRENCY.md)를 따른다. 아래 실행 결과는 1번 작업 당시 기록이다.
 
+7·8번 후속 보완: 현재 상세는 일반 읽기를 먼저 수행한 뒤 ACTIVE 조건 조회수 UPDATE와
+익명 번호 초기화 구간에서 같은 게시글 쓰기 잠금을 사용한다. 아래의 초기 상세 구현 설명과
+현재 잠금 구간·스냅샷·실측 결과는 구분하며 [조회 성능 안내](COMMUNITY_READ_PERFORMANCE.md)를 따른다.
+기존 47개 동시성 테스트는 후속 구현에서도 모두 통과했다.
+
 ## 원인과 선택한 방식
 
 CommunityPost/CommunityComment에는 `@Version`과 `@DynamicUpdate`가 없다. 수정/삭제 서비스에는

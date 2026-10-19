@@ -49,8 +49,7 @@ class PostNullableDormitoryIntegrationTest {
             String category = i % 3 == 0 ? "나눔게시판" : "자유게시판";
             String title = i == 0 ? "target-null-only" : "N1 post " + i;
             String body = (i % 2 == 0 ? "needle" : "other") + " body " + i;
-            var p = new CommunityPost(owner, location, category, title, body);
-            p.changeAnonymous(i == 0);
+            var p = new CommunityPost(owner, location, category, title, body, i == 0);
             ReflectionTestUtils.setField(p, "viewCount", i % 4);
             if (i == 23) p.delete();
             em.persist(p);
@@ -145,7 +144,8 @@ class PostNullableDormitoryIntegrationTest {
         for (Long viewer : Arrays.asList(null, a.getUserId(), b.getUserId())) {
             var detail = service.getPost(viewer, id);
             assertNull(detail.dormitory()); assertEquals(2, detail.likes()); assertEquals(viewer != null, detail.liked());
-            assertEquals(a.getUserId(), detail.author().id()); assertEquals("익명", detail.author().nickname());
+            assertNull(detail.author().id()); assertEquals("익명", detail.author().nickname());
+            assertEquals(a.getUserId().equals(viewer), detail.mine());
             for (String sort : List.of("LATEST", "VIEWS", "LIKES")) {
                 var page = service.getPosts(viewer, new CommunityPostListRequest(0, 6, null, "target-null-only", sort));
                 assertEquals(1, page.totalElements());

@@ -114,7 +114,7 @@ public class CommunityCommentService {
 		validateUserId(userId);
 		int pageNumber = page == null ? 0 : page;
 		int pageSize = size == null ? 6 : size;
-		if (pageNumber < 0 || pageSize < 1 || (long) pageNumber * pageSize > Integer.MAX_VALUE) {
+		if (pageNumber < 0 || pageSize < 1 || pageSize > 100 || (long) pageNumber * pageSize > Integer.MAX_VALUE) {
 			throw new CustomException(ErrorCode.VALIDATION_ERROR);
 		}
 		PageRequest pageable = PageRequest.of(pageNumber, pageSize,

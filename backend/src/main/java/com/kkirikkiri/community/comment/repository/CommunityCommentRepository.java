@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.repository.query.Param;
 import jakarta.persistence.LockModeType;
 
@@ -15,6 +16,16 @@ import com.kkirikkiri.community.comment.entity.CommunityComment;
 import com.kkirikkiri.community.common.entity.CommunityContentStatus;
 
 public interface CommunityCommentRepository extends JpaRepository<CommunityComment, Long> {
+
+	interface PostCommentCount {
+		Long getPostId();
+		long getComments();
+	}
+
+	@Query("select c.post.postId as postId, count(c) as comments from CommunityComment c "
+			+ "where c.post.postId in :postIds and c.status = :status group by c.post.postId")
+	List<PostCommentCount> countByPostIds(@Param("postIds") java.util.Collection<Long> postIds,
+			@Param("status") CommunityContentStatus status);
 
 	/** Entity를 미리 로딩하지 않고 게시글 잠금의 대상 ID만 찾는다. 상태는 잠금 후 검증한다. */
 	@Query("select c.post.postId from CommunityComment c where c.commentId = :commentId")
@@ -50,6 +61,7 @@ public interface CommunityCommentRepository extends JpaRepository<CommunityComme
 	 * 인증 사용자의 ID와 ACTIVE 상태로 내가 작성한 댓글·답글을 함께 조회한다.
 	 * 최신순은 Pageable의 createdAt, commentId 내림차순으로 지정한다.
 	 */
+	@EntityGraph(attributePaths = "post")
 	Page<CommunityComment> findAllByAuthor_UserIdAndStatus(Long userId, CommunityContentStatus status,
 			Pageable pageable);
 
