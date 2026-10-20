@@ -281,8 +281,10 @@ export default function AdminPage() {
             <DetailFields items={[["회원 번호", selected.id], ["닉네임", selected.nickname], ["이메일", selected.schoolEmail], ["성별", selected.gender], ["생활관", selected.dormitory], ["학부", selected.faculty], ["전공", selected.major], ["입학 연도", selected.admissionYear], ["학년", selected.grade], ["MBTI", selected.mbti], ["가입일", selected.createdAt]]} />
             <S.Activity>{[["작성 게시글", selected.activity?.postCount ?? 0], ["작성 댓글", selected.activity?.commentCount ?? 0], ["신고 받은 횟수", selected.activity?.reportsReceived ?? 0]].map(([label, count]) => <div key={label}><strong>{count}</strong><span>{label}</span></div>)}</S.Activity>
             <S.Actions>
-              <S.Button type="button" $variant="danger" onClick={() => requestAction("withdraw", selected.id, "회원 탈퇴", `${selected.nickname} 회원을 탈퇴 상태로 변경합니다.`, true)}>회원 탈퇴 처리</S.Button>
-              <S.Button type="button" $variant="primary" onClick={() => requestAction(["SUSPENDED", "WITHDRAWN"].includes(selected.status) ? "restore" : "suspend", selected.id, ["SUSPENDED", "WITHDRAWN"].includes(selected.status) ? "이용 정지 해제" : "이용 정지", `${selected.nickname} 회원의 이용 상태를 변경합니다.`)}>{["SUSPENDED", "WITHDRAWN"].includes(selected.status) ? "이용 정지 해제" : "이용 정지"}</S.Button>
+              {selected.status === "WITHDRAWN" ? <S.Meta>탈퇴 회원은 상태를 변경할 수 없습니다.</S.Meta> : <>
+                <S.Button type="button" $variant="danger" onClick={() => requestAction("withdraw", selected.id, "회원 탈퇴", `${selected.nickname} 회원을 탈퇴 상태로 변경합니다.`, true)}>회원 탈퇴 처리</S.Button>
+                <S.Button type="button" $variant="primary" onClick={() => requestAction(selected.status === "SUSPENDED" ? "restore" : "suspend", selected.id, selected.status === "SUSPENDED" ? "이용 정지 해제" : "이용 정지", `${selected.nickname} 회원의 이용 상태를 변경합니다.`)}>{selected.status === "SUSPENDED" ? "이용 정지 해제" : "이용 정지"}</S.Button>
+              </>}
             </S.Actions>
           </>}
           {modal.kind === "post" && <>

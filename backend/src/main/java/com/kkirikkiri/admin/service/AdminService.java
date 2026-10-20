@@ -180,6 +180,7 @@ public class AdminService {
 	public RoommatePageResponse<AdminMemberResponse> getMembers(Long adminId, AdminMemberListRequest request) {
 		requireAdmin(adminId);
 		validateRequest(request);
+		validateCommunityPage(request.page(), request.size());
 		return RoommatePageResponse.from(memberRepository.searchMembers(request.q(),
 				request.status() == null ? null : UserStatus.valueOf(request.status()), request.dormitory(),
 				PageRequest.of(request.page(), request.size())).map(this::memberResponse));
@@ -321,6 +322,7 @@ public class AdminService {
 			Long adminId, AdminCrawledScheduleListRequest request) {
 		requireAdmin(adminId);
 		validateRequest(request);
+		validateCommunityPage(request.page(), request.size());
 		return RoommatePageResponse.from(scheduleRepository.searchSchedules(request.q(),
 				request.category() == null ? null : ScheduleCrawlCategory.valueOf(request.category()),
 				PageRequest.of(request.page(), request.size())).map(AdminCrawledScheduleResponse::from));

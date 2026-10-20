@@ -94,15 +94,50 @@ test.each([["이용 정지", "SUSPENDED"], ["회원 탈퇴 처리", "WITHDRAWN"]
   expect(api.getAdminMember).toHaveBeenCalledTimes(2);
 });
 
-test("shows server status-transition errors, including withdrawn reactivation", async () => {
-  api.getAdminMember.mockResolvedValue({ ...memberDetail, status: "WITHDRAWN" });
-  api.updateAdminMemberStatus.mockRejectedValue(new Error("탈퇴한 회원은 변경할 수 없습니다."));
+test("shows server status-transition errors without refetching failed changes", async () => {
+  api.getAdminMember.mockResolvedValue({ ...memberDetail, status: "SUSPENDED" });
+  api.updateAdminMemberStatus.mockRejectedValue(new Error("다른 변경 요청을 처리 중입니다."));
   render(<AdminPage />);
   fireEvent.click(await screen.findByRole("button", { name: member.schoolEmail }));
   await dialog().findByText("입학 연도");
   await confirm("이용 정지 해제");
   expect(api.updateAdminMemberStatus).toHaveBeenCalledWith(1, "ACTIVE");
-  expect(await dialog().findByRole("alert")).toHaveTextContent("탈퇴한 회원은 변경할 수 없습니다.");
+  expect(await dialog().findByRole("alert")).toHaveTextContent("다른 변경 요청을 처리 중입니다.");
+  expect(api.getAdminMembers).toHaveBeenCalledTimes(1);
+});
+
+test("restores suspended members and refetches their active state", async () => {
+  api.getAdminMember.mockResolvedValue({ ...memberDetail, status: "SUSPENDED" });
+  render(<AdminPage />);
+  fireEvent.click(await screen.findByRole("button", { name: member.schoolEmail }));
+  await dialog().findByText("입학 연도");
+  expect(dialog().getByText("이용 정지", { selector: "span" })).toBeInTheDocument();
+  expect(dialog().queryByRole("button", { name: "이용 정지", exact: true })).not.toBeInTheDocument();
+  api.getAdminMember.mockResolvedValue(memberDetail);
+  await confirm("이용 정지 해제");
+  await waitFor(() => expect(api.updateAdminMemberStatus).toHaveBeenCalledWith(1, "ACTIVE"));
+  await waitFor(() => expect(api.getAdminMembers).toHaveBeenCalledTimes(2));
+  await dialog().findByRole("button", { name: "이용 정지", exact: true });
+  expect(dialog().getByText("정상", { selector: "span" })).toBeInTheDocument();
+  expect(dialog().queryByRole("button", { name: "이용 정지 해제" })).not.toBeInTheDocument();
+});
+
+test("withdrawn members show an immutable state and cannot request reactivation", async () => {
+  api.getAdminMember.mockResolvedValue({ ...memberDetail, status: "WITHDRAWN" });
+  render(<AdminPage />);
+  fireEvent.click(await screen.findByRole("button", { name: member.schoolEmail }));
+  await dialog().findByText("입학 연도");
+  expect(dialog().getByText("탈퇴", { selector: "span" })).toBeInTheDocument();
+  expect(dialog().getByText("탈퇴 회원은 상태를 변경할 수 없습니다.")).toBeInTheDocument();
+  expect(dialog().queryByRole("button", { name: "이용 정지 해제" })).not.toBeInTheDocument();
+  expect(dialog().queryByRole("button", { name: "이용 정지", exact: true })).not.toBeInTheDocument();
+  expect(dialog().queryByRole("button", { name: "회원 탈퇴 처리" })).not.toBeInTheDocument();
+  expect(api.updateAdminMemberStatus).not.toHaveBeenCalled();
+  await act(async () => {
+    fireEvent.click(dialog().getByRole("button", { name: "상세 닫기" }));
+  });
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(api.updateAdminMemberStatus).not.toHaveBeenCalled();
   expect(api.getAdminMembers).toHaveBeenCalledTimes(1);
 });
 
