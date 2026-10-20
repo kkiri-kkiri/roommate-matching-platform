@@ -2041,6 +2041,10 @@ Response:
 
 GET /api/admin/members
 
+page는 0 이상, size는 1~100(기본 6)이다. `(long) page * size`는
+Integer.MAX_VALUE 이하여야 하며 정확히 같은 값은 허용한다. 범위 초과는 목록 DB 조회 전
+400 VALIDATION_ERROR로 거절하며 서비스 직접 호출에도 동일하게 적용한다.
+
 Query:
 
 ?page=0
@@ -2104,6 +2108,8 @@ SUSPENDED 이용 정지
 WITHDRAWN 탈퇴 처리
 
 탈퇴 회원을 다시 정상/정지 상태로 변경하지 않도록 제한.
+관리자 화면은 SUSPENDED에만 정지 해제를 제공하며 WITHDRAWN에는 상태 변경 버튼 대신
+변경 불가 안내를 표시한다. ACTIVE의 정지와 SUSPENDED의 정지 해제·탈퇴 기능은 유지한다.
 
 13.5 관리자 게시글 목록
 
@@ -2289,6 +2295,10 @@ CalendarCrawlingService는 실행마다 ScheduleCrawlRun을 기록하며 상태 
 13.15 수집 일정 목록
 
 GET /api/admin/crawled-schedules
+
+page는 0 이상, size는 1~100(기본 6)이다. `(long) page * size`는
+Integer.MAX_VALUE 이하여야 하며 정확히 같은 값은 허용한다. 범위 초과는 목록 DB 조회 전
+400 VALIDATION_ERROR로 거절하며 서비스 직접 호출에도 동일하게 적용한다.
 
 Query:
 
@@ -2829,7 +2839,7 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 | --- | --- |
 | [AdminCommentListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminCommentListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1), Max(100))<br>`q: String` (없음)<br>`reported: Boolean` (없음) |
 | [AdminCommentResponse](src/main/java/com/kkirikkiri/admin/dto/AdminCommentResponse.java) | `id: Long`<br>`content: String`<br>`author: CommunityAuthorResponse`<br>`createdAt: LocalDateTime`<br>`postId: Long`<br>`postTitle: String`<br>`reported: boolean` |
-| [AdminCrawledScheduleListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminCrawledScheduleListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1))<br>`q: String` (없음)<br>`category: String` (Pattern(regexp = "SCHOOL&#124;DORMITORY")) |
+| [AdminCrawledScheduleListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminCrawledScheduleListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1), Max(100))<br>`q: String` (없음)<br>`category: String` (Pattern(regexp = "SCHOOL&#124;DORMITORY")) |
 | [AdminCrawledScheduleResponse](src/main/java/com/kkirikkiri/admin/dto/AdminCrawledScheduleResponse.java) | `id: Long`<br>`title: String`<br>`date: LocalDate`<br>`content: String`<br>`category: String`<br>`source: String`<br>`collectedAt: LocalDateTime` |
 | [AdminDashboardResponse](src/main/java/com/kkirikkiri/admin/dto/AdminDashboardResponse.java) | `stats: Stats`<br>`recentMembers: List<MemberSummary>`<br>`recentPosts: List<PostSummary>`<br>`recentReports: List<ReportSummary>`<br>`recentSchoolSchedules: List<ScheduleSummary>`<br>`recentDormitorySchedules: List<ScheduleSummary>` |
 | [AdminDashboardResponse.Stats](src/main/java/com/kkirikkiri/admin/dto/AdminDashboardResponse.java) | `totalMembers: long`<br>`totalPosts: long`<br>`totalComments: long`<br>`totalReports: long`<br>`pendingReports: long`<br>`schoolSchedules: long`<br>`dormitorySchedules: long` |
@@ -2839,7 +2849,7 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 | [AdminDashboardResponse.ScheduleSummary](src/main/java/com/kkirikkiri/admin/dto/AdminDashboardResponse.java) | `id: Long`<br>`title: String`<br>`date: LocalDate`<br>`collectedAt: LocalDateTime` |
 | [AdminMemberDetailResponse](src/main/java/com/kkirikkiri/admin/dto/AdminMemberDetailResponse.java) | `id: Long`<br>`nickname: String`<br>`schoolEmail: String`<br>`gender: String`<br>`dormitory: String`<br>`faculty: String`<br>`major: String`<br>`admissionYear: String`<br>`grade: String`<br>`mbti: String`<br>`createdAt: LocalDate`<br>`status: UserStatus`<br>`activity: Activity` |
 | [AdminMemberDetailResponse.Activity](src/main/java/com/kkirikkiri/admin/dto/AdminMemberDetailResponse.java) | `postCount: long`<br>`commentCount: long`<br>`reportsReceived: long` |
-| [AdminMemberListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminMemberListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1))<br>`q: String` (없음)<br>`status: String` (Pattern(regexp = "ACTIVE&#124;SUSPENDED&#124;WITHDRAWN"))<br>`dormitory: String` (없음) |
+| [AdminMemberListRequest](src/main/java/com/kkirikkiri/admin/dto/AdminMemberListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1), Max(100))<br>`q: String` (없음)<br>`status: String` (Pattern(regexp = "ACTIVE&#124;SUSPENDED&#124;WITHDRAWN"))<br>`dormitory: String` (없음) |
 | [AdminMemberResponse](src/main/java/com/kkirikkiri/admin/dto/AdminMemberResponse.java) | `id: Long`<br>`nickname: String`<br>`schoolEmail: String`<br>`dormitory: String`<br>`major: String`<br>`createdAt: LocalDate`<br>`status: UserStatus` |
 | [AdminMemberStatusUpdateRequest](src/main/java/com/kkirikkiri/admin/dto/AdminMemberStatusUpdateRequest.java) | `status: String` (NotBlank, Pattern(regexp = "ACTIVE&#124;SUSPENDED&#124;WITHDRAWN")) |
 | [AdminPostDetailResponse](src/main/java/com/kkirikkiri/admin/dto/AdminPostDetailResponse.java) | `id: Long`<br>`category: String`<br>`title: String`<br>`author: CommunityAuthorResponse`<br>`createdAt: LocalDateTime`<br>`views: long`<br>`likes: long`<br>`commentCount: long`<br>`reported: boolean`<br>`content: String` |
