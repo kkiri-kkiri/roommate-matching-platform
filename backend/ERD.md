@@ -1681,7 +1681,8 @@ nullable
 
 채팅방 고정과 알림 끄기는 사용자마다 다른 설정이므로 CHAT_ROOM이 아닌 CHAT_ROOM_MEMBER에 저장한다.
 
-프론트의 읽지 않은 메시지 수는 last_read_at보다 이후에 수신된 상대방 메시지 개수로 계산한다.
+프론트의 읽지 않은 메시지 수는 해당 방에서 상대방이 보낸 CHAT_MESSAGE 중 is_read=false인 개수로 계산한다.
+last_read_at은 확인한 메시지의 최대 시각을 단조 증가시키는 보조 정보이며 읽음 판정 기준이 아니다.
 
 채팅방 나가기 시 메시지 데이터를 즉시 삭제하지 않고 left_at을 기록한다.
 
@@ -1735,7 +1736,8 @@ DATETIME
 
 현재 완료된 프론트에서는 텍스트 메시지를 사용하고 있으므로 이미지·파일 첨부용 테이블은 포함하지 않는다.
 
-메시지의 읽음 여부는 상대 참여자의 CHAT_ROOM_MEMBER.last_read_at과 비교하여 판단한다.
+메시지의 읽음 여부는 CHAT_MESSAGE.is_read로 판단한다. 두 참여자 방의 수신자가 조회·수신한 정확한 ID를
+확인한 경우에만 true가 된다. 시간/최대 ID 이하 일괄 처리는 하지 않는다.
 
 채팅 목록의 최근 메시지와 최근 메시지 시간은 가장 최근 CHAT_MESSAGE를 조회하여 표시한다.
 
@@ -2132,7 +2134,16 @@ CHAT_ROOM과 USER의 N 관계는 CHAT_ROOM_MEMBER로 관리한다.
 
 CHAT_ROOM 1개에 여러 CHAT_MESSAGE가 연결될 수 있다.
 
-CHAT_ROOM_MEMBER.last_read_at을 기준으로 메시지 읽음 여부와 미읽음 수를 계산한다.
+CHAT_MESSAGE.is_read를 기준으로 메시지 읽음 여부와 미읽음 수를 계산한다.
+기존 timestamp 판정의 데이터 보존·수동 전환과 적용 조건은
+[채팅 읽음 마이그레이션](migrations/20261019_chat_message_receipts.md)을 따른다.
+
+20261019 조회 최적화는 컬럼/제약 변경 없이 목록 scalar projection·DB 페이지/검색/정렬,
+페이지별 프로필/설문/점수 및 is_read=false 미읽음 집계를 사용한다.
+비고유 인덱스 후보는 CHAT_MESSAGE(chat_room_id,sent_at,message_id),
+CHAT_MESSAGE(chat_room_id,is_read,sender_id), CHAT_ROOM_MEMBER(user_id,is_left,chat_room_id)다.
+Entity의 @Index나 자동 DDL로 적용하지 않으며 실제 운영에 존재한다고 판단하지 않는다.
+기존 동등 인덱스와 실행계획·쓰기 비용을 확인한 뒤 [수동 절차](migrations/20261019_chat_query_indexes.md)를 따른다.
 
 CALENDAR_CATEGORY와 USER의 사용자별 표시 설정은 CALENDAR_CATEGORY_SETTING에서 관리한다.
 
@@ -2380,6 +2391,7 @@ CALENDAR_CATEGORY.created_at도 같은 정책을 사용한다. 기존 데이터�
 | sender_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
 | content | VARCHAR(2000) | NOT NULL | DEFAULT 없음 |
 | sent_at | DATETIME | NOT NULL | DEFAULT 없음 |
+| is_read | BOOLEAN | NOT NULL | Entity DEFAULT 없음; 수동 DDL DEFAULT FALSE |
 
 복합 UNIQUE: 명시 선언 없음.
 

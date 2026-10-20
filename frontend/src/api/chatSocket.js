@@ -58,9 +58,10 @@ export function createChatSocket({ onConnect, onStatus, onError }) {
     connect: () => client.activate(),
     subscribe: (roomId, onMessage) => {
       unsubscribe();
-      selected = { roomId, onMessage };
+      const target = { roomId, onMessage };
+      selected = target;
       attach();
-      return unsubscribe;
+      return () => { if (selected === target) unsubscribe(); };
     },
     unsubscribe,
     publish: (roomId, text) => {

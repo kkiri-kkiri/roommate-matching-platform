@@ -91,4 +91,12 @@ class ChatMessageSendRequestTest {
             assertThrows(IllegalArgumentException.class, () -> new ChatMessage(room, sender, text));
         }
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"👨‍👩‍👧‍👦", "é"})
+    void complexEmojiAndCombiningMarksStillUseCodePoints(String prefix) {
+        String text = prefix + "가".repeat(2000 - prefix.codePointCount(0, prefix.length()));
+        assertLengthValidation(text, 2000);
+        assertLengthValidation(text + "́", 2001);
+    }
 }

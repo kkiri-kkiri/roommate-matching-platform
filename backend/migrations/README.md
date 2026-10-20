@@ -1,5 +1,12 @@
 # 익명 채팅 키 마이그레이션
 
+채팅 참여 상태 및 메시지별 읽음 확인 전환은 [20261019_chat_message_receipts.md](20261019_chat_message_receipts.md)를 따른다.
+
+채팅 목록 페이지 조회/집계의 비고유 인덱스 후보 3개는
+[20261019_chat_query_indexes.md](20261019_chat_query_indexes.md)에 따라 실제 MySQL 실행계획과
+기존 인덱스를 확인한 뒤 수동 적용한다. 자동 실행/실제 DB 적용은 하지 않았다.
+새 읽음 본문과 메시지 컬럼이 필요하며 구버전과 혼재 배포하지 않는다. 자동 적용하지 않는다.
+
 Auth 공유 제한 테이블의 별도 절차는 [20261014_auth_limits.md](20261014_auth_limits.md)를 따른다.
 이메일 변형 제한 우회·인증 잠금 간섭 수정은 그 후
 [20261015_auth_email_identity_indexes.md](20261015_auth_email_identity_indexes.md)를 따른다.

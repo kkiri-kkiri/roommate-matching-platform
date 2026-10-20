@@ -62,4 +62,23 @@ class SharedAccountConcurrencyIntegrationTest {
         assertEquals(ErrorCode.UNAUTHORIZED,assertThrows(CustomException.class,()->chat.updateSettings(owner,rooms.getFirst(),new ChatRoomSettingsRequest(true,true))).getErrorCode());
         assertEquals(ErrorCode.UNAUTHORIZED,assertThrows(CustomException.class,()->reports.createReport(owner,new ReportCreateRequest("USER",people.get(1),"도배·스팸",null))).getErrorCode());
     }
+
+    @Test void pinCountReadDoesNotMakeAStaleOtherMembershipAuthoritative() {
+        tx.executeWithoutResult(status -> {
+            var stale = em.createQuery("select m from ChatRoomMember m where m.user.userId=:user and m.chatRoom.chatRoomId=:room", ChatRoomMember.class)
+                    .setParameter("user", owner).setParameter("room", rooms.get(1)).getSingleResult();
+            assertFalse(stale.isPinned());
+            try (var worker = Executors.newVirtualThreadPerTaskExecutor()) {
+                worker.submit(() -> chat.updateSettings(owner, rooms.get(1), new ChatRoomSettingsRequest(true, true)))
+                        .get(15, TimeUnit.SECONDS);
+            } catch (Exception failure) {
+                throw new AssertionError(failure);
+            }
+            // The pin-count query sees this DB row but may return the stale managed instance.
+            chat.updateSettings(owner, rooms.get(0), new ChatRoomSettingsRequest(true, false));
+            chat.updateSettings(owner, rooms.get(1), new ChatRoomSettingsRequest(null, false));
+        });
+        assertEquals(2, jdbc.queryForObject("SELECT COUNT(*) FROM chat_room_member WHERE user_id=? AND is_pinned=true AND is_left=false", Integer.class, owner));
+        assertFalse(jdbc.queryForObject("SELECT is_muted FROM chat_room_member WHERE user_id=? AND chat_room_id=?", Boolean.class, owner, rooms.get(1)));
+    }
 }

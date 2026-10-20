@@ -36,30 +36,178 @@ const rooms = [
   { id: 41, category: "ROOMMATE", counterpart, sourcePost: null, unreadCount: 2, pinned: false, muted: false },
   { id: 42, category: "COMMUNITY", counterpart, sourcePost: 31, unreadCount: 3, pinned: false, muted: false },
 ];
+const serverById = new Map();
+const originalRect = HTMLElement.prototype.getBoundingClientRect;
+function roomPage(content, extra = {}) {
+  content.forEach((room) => serverById.set(String(room.id), room));
+  return { content, page: 0, size: 50, totalElements: content.length, totalPages: content.length ? 1 : 0,
+    first: true, last: true, counts: { all: content.length, roommate: content.filter((room) => room.category === "ROOMMATE").length,
+      community: content.filter((room) => room.category === "COMMUNITY").length, pinned: content.filter((room) => room.pinned).length }, ...extra };
+}
 
 beforeEach(() => {
   jest.resetAllMocks();
+  jest.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function () {
+    if (this.hasAttribute("data-message-id") || this.getAttribute("aria-label") === "대화 내용") {
+      return { top: 0, bottom: 100, left: 0, right: 100, width: 100, height: 100 };
+    }
+    return originalRect.call(this);
+  });
+  serverById.clear();
   localStorage.setItem("accessToken", "test-token");
   mockLocation = { pathname: "/chat", search: "?room=41", state: null };
   window.requestAnimationFrame = (callback) => { callback(); return 0; };
   HTMLDialogElement.prototype.showModal = jest.fn(function () { this.open = true; });
   HTMLDialogElement.prototype.close = jest.fn(function () { this.open = false; });
-  chatApi.getChatRooms.mockResolvedValue(rooms);
+  chatApi.getChatRooms.mockResolvedValue(roomPage(rooms));
+  chatApi.getChatRoom.mockImplementation((id) => Promise.resolve(serverById.get(String(id))));
   chatApi.getChatMessages.mockResolvedValue({ content: [] });
   chatApi.markChatRoomRead.mockResolvedValue();
+  chatApi.getChatReadStatuses.mockResolvedValue([]);
   getCommunityPost.mockResolvedValue({ id: 31, title: "원래 게시글" });
   getRoommateDetail.mockResolvedValue({ ...counterpart, answers: {} });
   createChatSocket.mockReturnValue({ connect: jest.fn(), disconnect: jest.fn(), subscribe: () => jest.fn() });
 });
 
-afterEach(() => localStorage.clear());
+afterEach(() => {
+  localStorage.clear();
+  Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" });
+});
+
+test("messages behind a profile dialog are acknowledged only after it closes", async () => {
+  mockLocation.search = "?room=41&view=profile";
+  chatApi.getChatMessages.mockResolvedValue({ content: [
+    { id: 7, text: "behind dialog", senderType: "OTHER", sentAt: "2026-10-10T12:00:00" },
+  ], last: true });
+  render(<ChatPage currentUser={{ id: 1 }} />);
+  const dialog = await screen.findByRole("dialog", { name: "상대방 프로필" });
+  await screen.findByText("behind dialog");
+  expect(chatApi.markChatRoomRead).not.toHaveBeenCalled();
+  fireEvent.click(within(dialog).getByRole("button", { name: "닫기" }));
+  await waitFor(() => expect(chatApi.markChatRoomRead).toHaveBeenCalledWith("41", [7]));
+});
+
+test("a hidden tab does not acknowledge history until it becomes visible", async () => {
+  Object.defineProperty(document, "visibilityState", { configurable: true, value: "hidden" });
+  chatApi.getChatMessages.mockResolvedValue({ content: [
+    { id: 8, text: "hidden tab message", senderType: "OTHER", sentAt: "2026-10-10T12:00:00" },
+  ], last: true });
+  render(<ChatPage currentUser={{ id: 1 }} />);
+  await screen.findByText("hidden tab message");
+  expect(chatApi.markChatRoomRead).not.toHaveBeenCalled();
+  Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" });
+  fireEvent(document, new Event("visibilitychange"));
+  await waitFor(() => expect(chatApi.markChatRoomRead).toHaveBeenCalledWith("41", [8]));
+});
+
+function connectedSocket() {
+  const socket = { connect: jest.fn(), disconnect: jest.fn(), subscribe: jest.fn(() => jest.fn()), publish: jest.fn() };
+  createChatSocket.mockImplementation((options) => {
+    socket.connect.mockImplementation(() => options.onStatus(true));
+    return socket;
+  });
+  return socket;
+}
+
+test.each(["a", "가", "😀"])("composes and sends 2000 %s code points and blocks 2001 without truncation", async (character) => {
+  const socket = connectedSocket();
+  render(<ChatPage currentUser={{ id: 1 }} />);
+  const input = await screen.findByRole("textbox", { name: "메시지 보내기" });
+  expect(input).not.toHaveAttribute("maxlength");
+  const text = character.repeat(2000);
+  fireEvent.change(input, { target: { value: text } });
+  expect(screen.getByText("2000 / 2000")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "메시지 전송" }));
+  expect(socket.publish).toHaveBeenCalledWith("41", text);
+  const overflow = character.repeat(2001);
+  fireEvent.change(input, { target: { value: overflow } });
+  expect(input).toHaveValue(overflow);
+  expect(input).toHaveAttribute("aria-invalid", "true");
+  expect(screen.getByRole("button", { name: "메시지 전송" })).toBeDisabled();
+  fireEvent.keyDown(input, { key: "Enter" });
+  expect(socket.publish).toHaveBeenCalledTimes(1);
+});
+
+test("paste and IME composition preserve compound text and do not send until composition ends", async () => {
+  const socket = connectedSocket();
+  render(<ChatPage currentUser={{ id: 1 }} />);
+  const input = await screen.findByRole("textbox", { name: "메시지 보내기" });
+  const text = "👨‍👩‍👧‍👦é가a😀";
+  fireEvent.paste(input, { clipboardData: { getData: () => text } });
+  // Browsers insert pasted text through the subsequent input/change event.
+  fireEvent.change(input, { target: { value: text } });
+  expect(input).toHaveValue(text);
+  fireEvent.compositionStart(input);
+  fireEvent.keyDown(input, { key: "Enter", isComposing: true, keyCode: 229 });
+  expect(socket.publish).not.toHaveBeenCalled();
+  expect(screen.getByRole("button", { name: "메시지 전송" })).toBeDisabled();
+  fireEvent.compositionEnd(input);
+  fireEvent.keyDown(input, { key: "Enter" });
+  expect(socket.publish).toHaveBeenCalledWith("41", text);
+  fireEvent.change(input, { target: { value: " \n\t" } });
+  expect(screen.getByRole("button", { name: "메시지 전송" })).toBeDisabled();
+});
+
+test("prepending older messages preserves the visible anchor and acknowledges only the viewport", async () => {
+  chatApi.getChatMessages.mockResolvedValueOnce({ content: [
+    { id: 52, text: "recent", senderType: "OTHER", sentAt: "2026-10-10T12:00:00" },
+    { id: 51, text: "anchor", senderType: "OTHER", sentAt: "2026-10-10T12:00:00" },
+  ], last: false }).mockResolvedValue({ content: [
+    { id: 50, text: "older", senderType: "OTHER", sentAt: "2026-10-10T12:00:00" },
+  ], last: true });
+  const { container } = render(<ChatPage currentUser={{ id: 1 }} />);
+  await screen.findByText("anchor");
+  const scroller = screen.getByLabelText("대화 내용");
+  scroller.scrollTop = 123;
+  const element = container.querySelector('[data-message-id="51"]');
+  element.getBoundingClientRect = () => ({ top: container.querySelector('[data-message-id="50"]') ? 180 : 100, bottom: 250, height: 70 });
+  fireEvent.click(screen.getByRole("button", { name: "이전 메시지 보기" }));
+  await screen.findByText("older");
+  expect(scroller.scrollTop).toBe(203);
+  expect(chatApi.getChatMessages).toHaveBeenLastCalledWith("41", { page: 0, size: 50, q: undefined, beforeId: 51 });
+  expect(screen.queryByRole("button", { name: "이전 메시지 보기" })).not.toBeInTheDocument();
+});
+
+test("account replacement cleans up the old socket and does not retain its cached rooms", async () => {
+  const sockets = [];
+  createChatSocket.mockImplementation(() => {
+    const socket = { connect: jest.fn(), disconnect: jest.fn(), subscribe: jest.fn(() => jest.fn()) };
+    sockets.push(socket); return socket;
+  });
+  const { rerender } = render(<ChatPage currentUser={{ id: 1 }} />);
+  await screen.findByRole("list", { name: "전체 채팅 목록" });
+  chatApi.getChatRooms.mockResolvedValue(roomPage([{ ...rooms[0], id: 99,
+    counterpart: { ...counterpart, nickname: "new account room" } }]));
+  chatApi.getChatRoom.mockRejectedValue(Object.assign(new Error("forbidden"), { status: 403 }));
+  rerender(<ChatPage currentUser={{ id: 2 }} />);
+  await screen.findByText("new account room");
+  expect(screen.queryByText("같은상대")).not.toBeInTheDocument();
+  expect(sockets[0].disconnect).toHaveBeenCalledTimes(1);
+});
+
+test("loads more rooms visibly while retaining global category counts", async () => {
+  const counts = { all: 60, roommate: 59, community: 1, pinned: 0 };
+  chatApi.getChatRooms.mockResolvedValueOnce(roomPage([rooms[0]], {
+    counts, totalElements: 60, totalPages: 2, last: false,
+  })).mockResolvedValue(roomPage([rooms[1]], {
+    counts, page: 1, first: false, totalElements: 60, totalPages: 2,
+  }));
+  render(<ChatPage currentUser={{ id: 1 }} />);
+  const more = await screen.findByRole("button", { name: "채팅방 더 보기" });
+  expect(screen.getByRole("button", { name: "전체 60" })).toBeInTheDocument();
+  fireEvent.click(more);
+  await waitFor(() => expect(within(screen.getByRole("list", { name: "전체 채팅 목록" }))
+    .getAllByRole("listitem")).toHaveLength(2));
+  expect(chatApi.getChatRooms).toHaveBeenLastCalledWith({ category: "ALL", q: undefined, page: 1, size: 50 });
+  expect(screen.queryByRole("button", { name: "채팅방 더 보기" })).not.toBeInTheDocument();
+});
 
 test("anonymous authors have no profile link or profile modal even via a direct URL", async () => {
   mockLocation.search = "?room=42&view=profile";
-  chatApi.getChatRooms.mockResolvedValue([{ ...rooms[1], counterpart: {
+  chatApi.getChatRooms.mockResolvedValue(roomPage([{ ...rooms[1], counterpart: {
     id: null, nickname: "익명", profileImageUrl: null, dormitory: null,
     admissionYear: null, major: null, matchScore: null, introduction: null, tags: [],
-  } }]);
+  } }]));
   render(<ChatPage currentUser={{ id: 1 }} />);
   expect(await screen.findByLabelText("익명 참여자")).toBeInTheDocument();
   expect(screen.queryByRole("dialog", { name: "상대방 프로필" })).not.toBeInTheDocument();
@@ -70,10 +218,10 @@ test("anonymous authors have no profile link or profile modal even via a direct 
 
 test.each([true, false])("chat avatars preserve anonymous=%s identity in the list, header and messages", async (anonymous) => {
   mockLocation.search = "?room=42";
-  chatApi.getChatRooms.mockResolvedValue([{ ...rooms[1], counterpart: {
+  chatApi.getChatRooms.mockResolvedValue(roomPage([{ ...rooms[1], counterpart: {
     ...counterpart, id: anonymous ? null : counterpart.id,
     profileImageUrl: "/real-user-photo.jpg", major: "컴퓨터공학",
-  } }]);
+  } }]));
   chatApi.getChatMessages.mockResolvedValue({ content: [
     { id: 1, text: "프로필 확인 메시지", senderType: "OTHER", sentAt: "2026-10-10T12:00:00" },
   ] });
@@ -106,8 +254,8 @@ test.each([
   const profile = Object.freeze({ ...counterpart, tags, major: "컴퓨터공학", matchScore: 92,
     introduction: "서로 배려하며 지내요.", profileImageUrl: "/profile-test.jpg" });
   mockLocation.search = "?room=41&view=profile";
-  chatApi.getChatRooms.mockResolvedValue([{ ...rooms[0], category, counterpart: profile,
-    sourcePost: category === "COMMUNITY" ? 31 : null }]);
+  chatApi.getChatRooms.mockResolvedValue(roomPage([{ ...rooms[0], category, counterpart: profile,
+    sourcePost: category === "COMMUNITY" ? 31 : null }]));
   render(<ChatPage currentUser={{ id: 1 }} />);
   const dialog = within(await screen.findByRole("dialog", { name: "상대방 프로필" }));
   expect(dialog.queryByLabelText("생활 습관")).not.toBeInTheDocument();
@@ -143,7 +291,7 @@ test.each([
 
 test.each([0, null])("preserves roommate score handling for %s", async (matchScore) => {
   mockLocation.search = "?room=41&view=profile";
-  chatApi.getChatRooms.mockResolvedValue([{ ...rooms[0], counterpart: { ...counterpart, matchScore } }]);
+  chatApi.getChatRooms.mockResolvedValue(roomPage([{ ...rooms[0], counterpart: { ...counterpart, matchScore } }]));
   render(<ChatPage currentUser={{ id: 1 }} />);
   const dialog = within(await screen.findByRole("dialog", { name: "상대방 프로필" }));
   if (matchScore === null) {
@@ -154,14 +302,19 @@ test.each([0, null])("preserves roommate score handling for %s", async (matchSco
 });
 
 test("keeps the same counterpart's rooms separate and counts each category", async () => {
+  chatApi.getChatRooms.mockImplementation(({ category }) => Promise.resolve(roomPage(
+    rooms.filter((room) => category === "ALL" || room.category === category),
+    { counts: { all: 2, roommate: 1, community: 1, pinned: 0 } },
+  )));
   render(<ChatPage currentUser={{ id: 1 }} />);
   const list = await screen.findByRole("list", { name: "전체 채팅 목록" });
   expect(within(list).getAllByRole("listitem")).toHaveLength(2);
   expect(screen.getByRole("button", { name: "전체 2" })).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "룸메찾기 1" }));
-  expect(within(screen.getByRole("list", { name: "룸메찾기 채팅 목록" })).getAllByRole("listitem")).toHaveLength(1);
+  const roommate = await screen.findByRole("list", { name: "룸메찾기 채팅 목록" });
+  expect(within(roommate).getAllByRole("listitem")).toHaveLength(1);
   fireEvent.click(screen.getByRole("button", { name: "커뮤니티 1" }));
-  const community = screen.getByRole("list", { name: "커뮤니티 채팅 목록" });
+  const community = await screen.findByRole("list", { name: "커뮤니티 채팅 목록" });
   expect(within(community).getAllByRole("listitem")).toHaveLength(1);
   fireEvent.click(within(community).getByRole("button", { name: /같은상대.*커뮤니티/ }));
   expect(await screen.findByRole("link", { name: "원래 게시글" })).toHaveAttribute("href", "/community/posts/31");
@@ -169,7 +322,7 @@ test("keeps the same counterpart's rooms separate and counts each category", asy
 });
 
 test.each(["close", "escape", "backdrop"])("opens detail locally and preserves chat state on %s", async (dismiss) => {
-  chatApi.getChatRooms.mockResolvedValue([{ ...rooms[0], counterpart: { ...counterpart, id: 27 } }]);
+  chatApi.getChatRooms.mockResolvedValue(roomPage([{ ...rooms[0], counterpart: { ...counterpart, id: 27 } }]));
   getRoommateDetail.mockResolvedValue({ ...counterpart, id: 27, answers: { sleepTime: "밤 11시" } });
   chatApi.getChatMessages.mockResolvedValue({ content: [
     { id: 1, text: "기존 대화", senderType: "OTHER", sentAt: "2026-10-10T12:00:00" },
@@ -184,7 +337,10 @@ test.each(["close", "escape", "backdrop"])("opens detail locally and preserves c
   scroller.scrollTop = 123;
   const draft = screen.getByRole("textbox");
   fireEvent.change(draft, { target: { value: "작성 중인 메시지" } });
+  // Reading the displayed history refreshes its unread count before opening the detail.
+  await act(async () => {});
   const calls = chatApi.getChatMessages.mock.calls.length;
+  const roomCalls = chatApi.getChatRooms.mock.calls.length;
   fireEvent.click(screen.getByRole("button", { name: "같은상대님 프로필 보기" }));
   const dialog = screen.getByRole("dialog", { name: "상대방 프로필" });
   expect(screen.queryByText("룸메찾기를 통해 시작된 채팅")).not.toBeInTheDocument();
@@ -211,7 +367,7 @@ test.each(["close", "escape", "backdrop"])("opens detail locally and preserves c
   expect(draft).toHaveValue("작성 중인 메시지");
   expect(screen.getByText("기존 대화")).toBeInTheDocument();
   expect(chatApi.getChatMessages).toHaveBeenCalledTimes(calls);
-  expect(chatApi.getChatRooms).toHaveBeenCalledTimes(1);
+  expect(chatApi.getChatRooms).toHaveBeenCalledTimes(roomCalls);
   expect(getCommunityPost).not.toHaveBeenCalled();
   expect(chatApi.createChatRoom).not.toHaveBeenCalled();
 });
@@ -290,7 +446,7 @@ test.each([
   expect(screen.getByText(notice).closest("a")).toBeNull();
   expect(screen.queryByText("게시글 #31")).not.toBeInTheDocument();
   expect(await screen.findByText("기존 대화")).toBeInTheDocument();
-  expect(chatApi.markChatRoomRead).toHaveBeenCalledWith("42");
+  expect(chatApi.markChatRoomRead).toHaveBeenCalledWith("42", [1]);
   expect(chatApi.leaveChatRoom).not.toHaveBeenCalled();
   expect(screen.getByRole("button", { name: "전체 2" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "커뮤니티 1" })).toBeInTheDocument();
@@ -298,9 +454,9 @@ test.each([
 
 test("ignores a late deleted-post response after switching to another community room", async () => {
   mockLocation.search = "?room=42";
-  chatApi.getChatRooms.mockResolvedValue([...rooms, {
+  chatApi.getChatRooms.mockResolvedValue(roomPage([...rooms, {
     ...rooms[1], id: 43, sourcePost: 32, counterpart: { ...counterpart, id: 20, nickname: "다른상대" },
-  }]);
+  }]));
   let rejectOldPost;
   getCommunityPost.mockImplementation((id) => id === 31
     ? new Promise((resolve, reject) => { rejectOldPost = reject; })
@@ -324,9 +480,9 @@ test("ignores a late deleted-post response after switching to another community 
 
 test("clears a deleted source notice when switching to a normal community post", async () => {
   mockLocation.search = "?room=42";
-  chatApi.getChatRooms.mockResolvedValue([...rooms, {
+  chatApi.getChatRooms.mockResolvedValue(roomPage([...rooms, {
     ...rooms[1], id: 43, sourcePost: 32, counterpart: { ...counterpart, nickname: "다른상대" },
-  }]);
+  }]));
   getCommunityPost.mockRejectedValueOnce({ status: 400, errorCode: "INVALID_REQUEST" })
     .mockResolvedValueOnce({ id: 32, title: "새 게시글" });
   render(<ChatPage currentUser={{ id: 1 }} />);
@@ -339,7 +495,7 @@ test("clears a deleted source notice when switching to a normal community post",
 
 test("does not classify an invalid source ID as a deleted post", async () => {
   mockLocation.search = "?room=42";
-  chatApi.getChatRooms.mockResolvedValue([{ ...rooms[1], sourcePost: -1 }]);
+  chatApi.getChatRooms.mockResolvedValue(roomPage([{ ...rooms[1], sourcePost: -1 }]));
   render(<ChatPage currentUser={{ id: 1 }} />);
   expect(await screen.findByText("게시글 정보를 불러올 수 없습니다.")).toBeInTheDocument();
   expect(getCommunityPost).not.toHaveBeenCalled();

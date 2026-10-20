@@ -15,18 +15,26 @@ async function request(config) {
     });
     return response.data.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || error.message || "채팅 요청에 실패했습니다.");
+    const failure = new Error(error.response?.data?.message || error.message || "채팅 요청에 실패했습니다.");
+    failure.status = error.response?.status;
+    failure.errorCode = error.response?.data?.errorCode;
+    throw failure;
   }
 }
 
-export const getChatRooms = ({ category = "ALL", q } = {}) =>
-  request({ method: "get", url: "/chat/rooms", params: { category, q } });
+export const getChatRooms = ({ category = "ALL", q, page = 0, size = 50 } = {}) =>
+  request({ method: "get", url: "/chat/rooms", params: { category, q, page, size } });
+export const getChatRoom = (roomId) =>
+  request({ method: "get", url: `/chat/rooms/${roomId}` });
 export const createChatRoom = (payload) =>
   request({ method: "post", url: "/chat/rooms", data: payload });
-export const getChatMessages = (roomId, { page = 0, size = 50, q } = {}) =>
-  request({ method: "get", url: `/chat/rooms/${roomId}/messages`, params: { page, size, q } });
-export const markChatRoomRead = (roomId) =>
-  request({ method: "post", url: `/chat/rooms/${roomId}/read` });
+export const getChatMessages = (roomId, { page = 0, size = 50, q, beforeId, afterId } = {}) =>
+  request({ method: "get", url: `/chat/rooms/${roomId}/messages`,
+    params: { page, size, q, ...(beforeId == null ? {} : { beforeId }), ...(afterId == null ? {} : { afterId }) } });
+export const getChatReadStatuses = (roomId, messageIds) =>
+  request({ method: "post", url: `/chat/rooms/${roomId}/messages/read-status`, data: { messageIds } });
+export const markChatRoomRead = (roomId, messageIds) =>
+  request({ method: "post", url: `/chat/rooms/${roomId}/read`, data: { messageIds } });
 export const updateChatRoomSettings = (roomId, payload) =>
   request({ method: "patch", url: `/chat/rooms/${roomId}/settings`, data: payload });
 export const leaveChatRoom = (roomId) =>

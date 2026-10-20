@@ -311,19 +311,14 @@ class ChatServiceTest {
 
     @Test
     void sortsActiveRoomsByPinnedThenLatestMessageThenDescendingId() {
-        // given
-        ChatRoomMember pinned = listMember(11L, true, SENT_AT.minusDays(1));
-        ChatRoomMember recent = listMember(12L, false, SENT_AT);
-        ChatRoomMember tied = listMember(13L, false, SENT_AT);
-        ChatRoomMember empty = listMember(14L, false, null);
-        when(chatMessageRepository.findFirstByChatRoom_ChatRoomIdOrderBySentAtDescMessageIdDesc(14L))
-                .thenReturn(Optional.empty());
-        ChatRoom closed = room(15L);
-        ReflectionTestUtils.setField(closed, "status", ChatRoomStatus.CLOSED);
-        when(chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalse(7L))
-                .thenReturn(List.of(empty, recent, new ChatRoomMember(closed, user), tied, pinned));
+        // DB ordering/filtering is verified with real JPA in ChatRoomReadPerformanceIntegrationTest.
+        // The service must preserve the page order and batch only its counterpart IDs.
+        stubPage(7L, null, null, List.of(row(11L, 8L, false, true, SENT_AT.minusDays(1)),
+                row(13L, 8L, false, false, SENT_AT), row(12L, 8L, false, false, SENT_AT),
+                row(14L, 8L, false, false, null)));
+        stubPageProfile(target, "Target");
         // when
-        var result = service.getRooms(7L, null);
+        var result = service.getRooms(7L, null).content();
         // then
         assertEquals(List.of(11L, 13L, 12L, 14L), result.stream().map(ChatRoomResponse::id).toList());
         assertNull(result.getLast().lastMessage());
@@ -332,14 +327,10 @@ class ChatServiceTest {
 
     @Test
     void filtersCategoryAndMatchesTrimmedNicknameIgnoringCase() {
-        // given
-        ChatRoomMember match = listMember(11L, false, null);
-        ChatRoomMember other = new ChatRoomMember(room(12L), user);
-        stubResponse(other, new ChatRoomMember(other.getChatRoom(), user(9L)), "Someone Else");
-        when(chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalseAndChatRoom_Category(7L, ChatRoomCategory.ROOMMATE))
-                .thenReturn(List.of(other, match));
+        stubPage(7L, ChatRoomCategory.ROOMMATE, "%target%", List.of(row(11L, 8L, false, false, null)));
+        stubPageProfile(target, "Target");
         // when
-        var result = service.getRooms(7L, new ChatRoomListRequest("ROOMMATE", "  tArGeT  "));
+        var result = service.getRooms(7L, new ChatRoomListRequest("ROOMMATE", "  tArGeT  ")).content();
         // then
         assertEquals(List.of(11L), result.stream().map(ChatRoomResponse::id).toList());
         verify(chatRoomMemberRepository, never()).findAllByUser_UserIdAndLeftFalse(any());
@@ -348,31 +339,35 @@ class ChatServiceTest {
     @Test
     void returnsEmptyRoomListForAllCategory() {
         // when / then
-        assertTrue(service.getRooms(7L, new ChatRoomListRequest("ALL", " ")).isEmpty());
-        verify(chatRoomMemberRepository).findAllByUser_UserIdAndLeftFalse(7L);
+        stubPage(7L, null, null, List.of());
+        assertTrue(service.getRooms(7L, new ChatRoomListRequest("ALL", " ")).content().isEmpty());
+        verifyNoInteractions(chatRoomMemberRepository, chatMessageRepository, userProfileRepository,
+                profileSurveyRepository, roommateMatchRepository);
     }
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     void includesOnlyCompletedSurveyTagsAndOptionalMatchScore(boolean completed) {
         // given
-        when(chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalse(7L)).thenReturn(List.of(member));
-        stubResponse(member, counterpart, "Target");
+        stubPage(7L, null, null, List.of(row(10L, 8L, false, false, null)));
+        stubPageProfile(target, "Target");
         ProfileSurvey survey = mock(ProfileSurvey.class);
+        when(survey.getUser()).thenReturn(target);
         when(survey.isCompleted()).thenReturn(completed);
-        when(profileSurveyRepository.findByUser_UserId(8L)).thenReturn(Optional.of(survey));
+        when(profileSurveyRepository.findAllByUser_UserIdIn(List.of(8L))).thenReturn(List.of(survey));
         if (completed) {
             when(survey.getSmoking()).thenReturn("non-smoker");
             when(survey.getCleaningFrequency()).thenReturn("daily");
             RoommateMatch match = mock(RoommateMatch.class);
+            when(match.getTargetUser()).thenReturn(target);
             when(match.getMatchScore()).thenReturn(87);
-            when(roommateMatchRepository.findByRequesterUser_UserIdAndTargetUser_UserId(7L, 8L))
-                    .thenReturn(Optional.of(match));
+            when(roommateMatchRepository.findAllByRequesterUser_UserIdAndTargetUser_UserIdIn(7L, List.of(8L)))
+                    .thenReturn(List.of(match));
         }
         member.markRead(SENT_AT);
-        when(chatMessageRepository.countUnreadMessages(10L, 7L, SENT_AT)).thenReturn(3L);
+        when(chatMessageRepository.countUnreadForRooms(List.of(10L), 7L)).thenReturn(List.of(new ChatUnreadCount(10L, 3)));
         // when
-        var result = service.getRooms(7L, null).getFirst();
+        var result = service.getRooms(7L, null).content().getFirst();
         // then
         assertEquals(completed ? List.of("non-smoker", "daily") : List.of(), result.counterpart().tags());
         assertEquals(completed ? Integer.valueOf(87) : null, result.counterpart().matchScore());
@@ -382,23 +377,24 @@ class ChatServiceTest {
     @Test
     void rejectsRoomListingWhenCounterpartProfileIsMissing() {
         // given
-        when(chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalse(7L)).thenReturn(List.of(member));
-        stubCounterpart();
+        stubPage(7L, null, null, List.of(row(10L, 8L, false, false, null)));
         // when / then
         assertError(ErrorCode.INVALID_REQUEST, () -> service.getRooms(7L, null));
     }
 
     @ParameterizedTest
-    @CsvSource({"-1,false", "0,true", "1,true"})
-    void determinesReadStatusUsingRecipientsTimestampIncludingEquality(int seconds, boolean read) {
+    @CsvSource({"-1,true", "0,false", "1,true"})
+    void determinesReadStatusFromExactReceiptRegardlessOfRecipientsTimestamp(int seconds, boolean read) {
         // given
         stubActiveMember();
         stubCounterpart();
         counterpart.markRead(SENT_AT.plusSeconds(seconds));
         member.markRead(SENT_AT.minusSeconds(1));
         PageRequest pageable = messagePage(0, 50);
+        var sent = message(room, user, SENT_AT);
+        if (read) sent.markRead();
         when(chatMessageRepository.findAllByChatRoom_ChatRoomId(10L, pageable)).thenReturn(
-                new PageImpl<>(List.of(message(room, user, SENT_AT), message(room, target, SENT_AT)), pageable, 2));
+                new PageImpl<>(List.of(sent, message(room, target, SENT_AT)), pageable, 2));
         // when
         var result = service.getMessages(7L, 10L, null);
         // then
@@ -429,7 +425,7 @@ class ChatServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"-1,50", "0,0", "0,-1", "2147483647,2"})
+    @CsvSource({"-1,50", "0,0", "0,-1", "2147483647,2", "0,101", "0,2147483647", "1073741824,2"})
     void rejectsInvalidPaginationBeforeQueryingMessages(int page, int size) {
         // given
         stubActiveMember();
@@ -453,9 +449,28 @@ class ChatServiceTest {
         assertEquals(Integer.MAX_VALUE, result.page());
     }
 
+    @Test
+    void acceptsMaximumMessagePageSizeWithoutChangingOrderOrShape() {
+        stubActiveMember(); stubCounterpart();
+        var pageable = messagePage(0, 100);
+        when(chatMessageRepository.findAllByChatRoom_ChatRoomId(10L, pageable)).thenReturn(Page.empty(pageable));
+        var response = service.getMessages(7L, 10L, new ChatMessageListRequest(0, 100, null));
+        assertEquals(100, response.size()); assertTrue(response.content().isEmpty());
+        verify(chatMessageRepository).findAllByChatRoom_ChatRoomId(10L, pageable);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"-1,50", "0,0", "0,-1", "0,101", "0,2147483647", "2147483647,2"})
+    void rejectsInvalidRoomPaginationBeforeAnyListQuery(int page, int size) {
+        assertError(ErrorCode.VALIDATION_ERROR,
+                () -> service.getRooms(7L, new ChatRoomListRequest("ALL", null, page, size)));
+        verifyNoInteractions(chatRoomRepository, chatRoomMemberRepository, chatMessageRepository,
+                userProfileRepository, profileSurveyRepository, roommateMatchRepository);
+    }
+
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
-    void savesMessageWithAuthenticatedSenderAndRecipientReadStatus(boolean read) {
+    void savesNewMessageUnreadEvenWhenRecipientHasALaterLegacyReadTime(boolean read) {
         // given
         stubActiveMember();
         stubCounterpart();
@@ -475,7 +490,7 @@ class ChatServiceTest {
         assertEquals(10L, result.roomId());
         assertEquals(7L, result.senderId());
         assertEquals(" hello ", result.text());
-        assertEquals(read, result.read());
+        assertFalse(result.read());
     }
 
     @ParameterizedTest
@@ -502,10 +517,10 @@ class ChatServiceTest {
         // given
         stubActiveMember();
         member.markRead(SENT_AT);
-        when(chatMessageRepository.findFirstByChatRoom_ChatRoomIdAndSender_UserIdNotOrderBySentAtDescMessageIdDesc(10L, 7L))
-                .thenReturn(Optional.of(message(room, target, SENT_AT.plusSeconds(seconds))));
+        when(chatMessageRepository.findIncomingForRead(10L, 7L, List.of(42L)))
+                .thenReturn(List.of(message(room, target, SENT_AT.plusSeconds(seconds))));
         // when
-        service.markRead(7L, 10L);
+        service.markRead(7L, 10L, new ChatReadRequest(List.of(42L)));
         // then
         assertEquals(seconds > 0 ? SENT_AT.plusSeconds(seconds) : SENT_AT, member.getLastReadAt());
     }
@@ -514,21 +529,21 @@ class ChatServiceTest {
     void initializesReadTimestampFromLatestIncomingMessage() {
         // given
         stubActiveMember();
-        when(chatMessageRepository.findFirstByChatRoom_ChatRoomIdAndSender_UserIdNotOrderBySentAtDescMessageIdDesc(10L, 7L))
-                .thenReturn(Optional.of(message(room, target, SENT_AT)));
+        when(chatMessageRepository.findIncomingForRead(10L, 7L, List.of(42L)))
+                .thenReturn(List.of(message(room, target, SENT_AT)));
         // when
-        service.markRead(7L, 10L);
+        service.markRead(7L, 10L, new ChatReadRequest(List.of(42L)));
         // then
         assertEquals(SENT_AT, member.getLastReadAt());
         assertNull(counterpart.getLastReadAt());
     }
 
     @Test
-    void leavesReadTimestampUnchangedWhenNoIncomingMessageExists() {
+    void rejectsUnknownIncomingReceiptWithoutChangingReadTimestamp() {
         // given
         stubActiveMember();
         // when
-        service.markRead(7L, 10L);
+        assertError(ErrorCode.INVALID_REQUEST, () -> service.markRead(7L, 10L, new ChatReadRequest(List.of(42L))));
         // then
         assertNull(member.getLastReadAt());
     }
@@ -538,7 +553,8 @@ class ChatServiceTest {
     void enforcesTwoPinnedRoomsBeforeChangingEitherSetting(long count) {
         // given
         stubActiveMember();
-        when(chatRoomMemberRepository.countByUser_UserIdAndPinnedTrueAndLeftFalse(7L)).thenReturn(count);
+        when(chatRoomMemberRepository.findPinnedMembersForUpdate(7L))
+                .thenReturn(java.util.Collections.nCopies((int) count, member));
         var request = new ChatRoomSettingsRequest(true, true);
         // when / then
         if (count < 2) {
@@ -563,7 +579,7 @@ class ChatServiceTest {
         // then
         assertEquals(pinned == null || pinned, member.isPinned());
         assertEquals(muted == null || muted, member.isMuted());
-        verify(chatRoomMemberRepository, never()).countByUser_UserIdAndPinnedTrueAndLeftFalse(any());
+        verify(chatRoomMemberRepository, never()).findPinnedMembersForUpdate(any());
     }
 
     @Test
@@ -592,7 +608,7 @@ class ChatServiceTest {
         assertError(ErrorCode.FORBIDDEN, () -> service.validateActiveMember(7L, 10L));
         assertError(ErrorCode.FORBIDDEN, () -> service.getMessages(7L, 10L, null));
         assertError(ErrorCode.FORBIDDEN, () -> service.sendMessage(7L, 10L, new ChatMessageSendRequest("hello")));
-        assertError(ErrorCode.FORBIDDEN, () -> service.markRead(7L, 10L));
+        assertError(ErrorCode.FORBIDDEN, () -> service.markRead(7L, 10L, new ChatReadRequest(List.of(42L))));
         assertError(ErrorCode.FORBIDDEN, () -> service.updateSettings(7L, 10L, new ChatRoomSettingsRequest(true, true)));
         assertError(ErrorCode.FORBIDDEN, () -> service.leaveRoom(7L, 10L));
         verifyNoInteractions(chatMessageRepository);
@@ -661,9 +677,12 @@ class ChatServiceTest {
             return saved;
         });
         service.sendMessage(7L, 10L, new ChatMessageSendRequest("new message"));
-        service.markRead(7L, 10L);
-        when(chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalse(7L)).thenReturn(List.of(member));
-        assertEquals(20L, service.getRooms(7L, null).getFirst().sourcePost());
+        when(chatMessageRepository.findIncomingForRead(10L, 7L, List.of(42L))).thenReturn(List.of(history));
+        service.markRead(7L, 10L, new ChatReadRequest(List.of(42L)));
+        stubPage(7L, null, null, List.of(new ChatRoomListRow(10L, ChatRoomCategory.COMMUNITY, 8L, 20L,
+                false, false, false, null, null, 2)));
+        stubPageProfile(target, "Target");
+        assertEquals(20L, service.getRooms(7L, null).content().getFirst().sourcePost());
         assertSame(first, room.getSourcePost());
         verify(chatRoomRepository, never()).save(any());
         verify(chatMessageRepository, never()).delete(any(ChatMessage.class));
@@ -724,10 +743,12 @@ class ChatServiceTest {
         post.delete();
         stubActiveMember();
         stubCounterpart();
-        when(chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalse(7L)).thenReturn(List.of(member));
-        var profile = service.getRooms(7L, null).getFirst().counterpart();
+        stubPage(7L, null, null, List.of(new ChatRoomListRow(10L, ChatRoomCategory.COMMUNITY, 8L, 20L,
+                true, false, false, null, null, 2)));
+        stubPage(7L, null, "%target%", List.of());
+        var profile = service.getRooms(7L, null).content().getFirst().counterpart();
         assertEquals(new ChatRoomResponse.CounterpartResponse(null, "익명", null, null, null, null, null, null, List.of()), profile);
-        assertTrue(service.getRooms(7L, new ChatRoomListRequest(null, "Target")).isEmpty());
+        assertTrue(service.getRooms(7L, new ChatRoomListRequest(null, "Target")).content().isEmpty());
         ChatMessage message = message(room, target, SENT_AT);
         when(chatMessageRepository.findAllByChatRoom_ChatRoomId(10L, messagePage(0, 50)))
                 .thenReturn(new PageImpl<>(List.of(message)));
@@ -788,10 +809,12 @@ class ChatServiceTest {
     void anonymousAuthorStillSeesTheOtherParticipantsOrdinaryProfileAndOwnMessageDirection() {
         CommunityPost anonymous = post(20L, target, true);
         useCommunityRoom(anonymous);
-        when(chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalse(8L)).thenReturn(List.of(counterpart));
+        stubPage(8L, null, null, List.of(new ChatRoomListRow(10L, ChatRoomCategory.COMMUNITY, 7L, 20L,
+                false, false, false, null, null, 2)));
         when(chatRoomMemberRepository.findByChatRoom_ChatRoomIdAndUser_UserId(10L, 8L)).thenReturn(Optional.of(counterpart));
-        stubResponse(counterpart, member, "Visitor");
-        var response = service.getRooms(8L, null).getFirst();
+        stubCounterpart();
+        stubPageProfile(user, "Visitor");
+        var response = service.getRooms(8L, null).content().getFirst();
         assertEquals(7L, response.counterpart().id());
         assertEquals("Visitor", response.counterpart().nickname());
         when(chatMessageRepository.findAllByChatRoom_ChatRoomId(10L, messagePage(0, 50)))
@@ -873,7 +896,8 @@ class ChatServiceTest {
         counterpart = new ChatRoomMember(room, target);
         comment.changeAnonymous(false);
         comment.delete();
-        when(chatRoomMemberRepository.findAllByUser_UserIdAndLeftFalse(7L)).thenReturn(List.of(member));
+        stubPage(7L, null, null, List.of(new ChatRoomListRow(10L, ChatRoomCategory.COMMUNITY, 8L, 20L,
+                true, false, false, null, null, 2)));
         stubActiveMember();
         stubCounterpart();
         when(chatRoomMemberRepository.findByChatRoom_ChatRoomIdAndUser_UserId(10L, 8L))
@@ -887,7 +911,7 @@ class ChatServiceTest {
         });
 
         // when
-        var listed = service.getRooms(7L, null).getFirst();
+        var listed = service.getRooms(7L, null).content().getFirst();
         var history = service.getMessages(7L, 10L, null).content().getFirst();
         var broadcast = service.sendMessage(8L, 10L, new ChatMessageSendRequest("hello"));
 
@@ -1120,7 +1144,8 @@ class ChatServiceTest {
     }
 
     private void stubActiveMember() {
-        when(chatRoomMemberRepository.findByChatRoom_ChatRoomIdAndUser_UserId(10L, 7L)).thenReturn(Optional.of(member));
+        lenient().when(chatRoomMemberRepository.findByChatRoom_ChatRoomIdAndUser_UserId(10L, 7L)).thenReturn(Optional.of(member));
+        lenient().when(chatRoomMemberRepository.findMemberForUpdate(10L, 7L)).thenReturn(Optional.of(member));
     }
 
     private void stubCounterpart() {
@@ -1135,14 +1160,20 @@ class ChatServiceTest {
         when(userProfileRepository.findByUser_UserId(other.getUser().getUserId())).thenReturn(Optional.of(profile));
     }
 
-    private ChatRoomMember listMember(Long id, boolean pinned, LocalDateTime sentAt) {
-        ChatRoom listRoom = room(id);
-        ChatRoomMember current = new ChatRoomMember(listRoom, user);
-        current.changeSettings(pinned, null);
-        stubResponse(current, new ChatRoomMember(listRoom, target), "Target");
-        if (sentAt != null) when(chatMessageRepository.findFirstByChatRoom_ChatRoomIdOrderBySentAtDescMessageIdDesc(id))
-                .thenReturn(Optional.of(message(listRoom, target, sentAt)));
-        return current;
+    private ChatRoomListRow row(Long id, Long targetId, boolean anonymous, boolean pinned, LocalDateTime sentAt) {
+        return new ChatRoomListRow(id, ChatRoomCategory.ROOMMATE, targetId, null, anonymous, pinned, false,
+                sentAt == null ? null : "hello", sentAt, 2);
+    }
+
+    private void stubPage(Long userId, ChatRoomCategory category, String pattern, List<ChatRoomListRow> rows) {
+        when(chatRoomRepository.findRoomPage(userId, category, pattern, PageRequest.of(0, 50)))
+                .thenReturn(new PageImpl<>(rows, PageRequest.of(0, 50), rows.size()));
+    }
+
+    private void stubPageProfile(User other, String nickname) {
+        var profile = new UserProfile(other, nickname, "F", mock(Dormitory.class), mock(Faculty.class), null,
+                (short) 2000, "20", "1", "INTJ");
+        when(userProfileRepository.findAllByUser_UserIdIn(List.of(other.getUserId()))).thenReturn(List.of(profile));
     }
 
     private PageRequest messagePage(int page, int size) {

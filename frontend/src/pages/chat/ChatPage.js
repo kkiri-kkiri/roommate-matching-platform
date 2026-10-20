@@ -9,6 +9,7 @@ import * as S from "./ChatPageCss";
 import ProfileImage from "../../components/common/ProfileImage";
 import DetailedProfile from "../../components/common/ProfileCard/DetailedProfile";
 import { useChat } from "./useChat";
+import { codePointLength, MAX_MESSAGE_LENGTH, validMessage } from "./chatMessages";
 
 const CATEGORIES = [
   { id: "all", label: "전체" },
@@ -16,7 +17,6 @@ const CATEGORIES = [
   { id: "community", label: "커뮤니티" },
 ];
 const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map(({ id, label }) => [id, label]));
-const MAX_MESSAGE_LENGTH = 2000;
 const SOURCE_POST_MESSAGES = {
   loading: "게시글 정보를 불러오는 중입니다.",
   deleted: "삭제된 게시글입니다.",
@@ -24,6 +24,7 @@ const SOURCE_POST_MESSAGES = {
   unauthorized: "로그인 상태를 확인한 후 게시글을 조회해 주세요.",
   forbidden: "게시글을 조회할 권한이 없습니다.",
 };
+
 function lastActivity(room) { return room.lastMessage?.sentAt; }
 
 function dateKey(timestamp) {
@@ -82,7 +83,7 @@ function ChatDialog({ title, description, onDismiss, children }) {
   );
 }
 
-function ChatPage({ currentUser }) {
+function ChatWorkspace({ currentUser }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isAuthenticated = Boolean(currentUser);
@@ -117,6 +118,11 @@ function ChatPage({ currentUser }) {
     };
   }, [optionsRoomId]);
   const [status, setStatus] = useState("");
+  const [visibleMessageIds, setVisibleMessageIds] = useState([]);
+  const [composing, setComposing] = useState(false);
+  const scrollAnchorRef = useRef(null);
+  const followLatestRef = useRef(true);
+  const previousViewRef = useRef("");
   const scrollerRef = useRef(null);
   const inputRef = useRef(null);
   const listHeadingRef = useRef(null);
@@ -130,15 +136,6 @@ function ChatPage({ currentUser }) {
   const profileOpen = profileView === "summary" && Boolean(activeRoom) && !activeRoom.anonymous;
   const detailedProfileOpen = profileView === "detail" && activeRoom?.category === "roommate" && !activeRoom.anonymous;
   const roomSearchQuery = roomSearch.trim().toLocaleLowerCase();
-  const pinnedCount = rooms.filter((room) => room.pinned).length;
-  const categoryCounts = Object.fromEntries(CATEGORIES.map(({ id }) => [
-    id, rooms.filter((room) => id === "all" || room.category === id).length,
-  ]));
-  const visibleRooms = rooms
-    .filter((room) => category === "all" || room.category === category)
-    .filter((room) => room.nickname.toLocaleLowerCase().includes(roomSearchQuery))
-    .sort((first, second) => Number(Boolean(second.pinned)) - Number(Boolean(first.pinned))
-      || new Date(lastActivity(second) || 0) - new Date(lastActivity(first) || 0));
   const draft = drafts[selectedId] || "";
   const messages = activeRoom?.messages || [];
   const searchQuery = messageSearch.trim().toLocaleLowerCase();
@@ -147,21 +144,77 @@ function ChatPage({ currentUser }) {
   const profileHref = `/chat?room=${encodeURIComponent(selectedId)}&view=profile`;
 
   const { connected, loadingRooms, roomError, messageLoading, messageError, searchResults,
-    updateSettings, send, leave, sourcePost } = useChat({
+    updateSettings, send, leave, sourcePost, roomIds, roomCounts, totalRooms,
+    hasMoreRooms, loadingMoreRooms, moreRoomsError, loadMoreRooms,
+    hasOlderMessages, moreMessagesLoading, moreMessagesError, loadOlderMessages } = useChat({
     isAuthenticated, rooms, setRooms, activeRoom, searchQuery, location, setStatus,
+    selectedRoomId: selectedId, roomCategory: category, roomQuery: roomSearch, visibleMessageIds,
     onCreated: (roomId) => {
       setCategory("all"); setRoomSearch(""); setMobileOpen(true);
       setSearchParams({ room: roomId }, { replace: true, state: null });
     },
   });
+  const pinnedCount = roomCounts.pinned;
+  const categoryCounts = roomCounts;
+  const byId = new Map(rooms.map((room) => [room.id, room]));
+  const visibleRooms = roomIds.map((id) => byId.get(id)).filter(Boolean);
   const displayedMessages = searchQuery ? searchResults : messages;
   useEffect(() => { setMessageSearch(""); }, [selectedId]);
 
   useLayoutEffect(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
+    const viewKey = `${selectedId}:${searchQuery}`;
+    const newView = previousViewRef.current !== viewKey;
+    previousViewRef.current = viewKey;
+    const anchor = scrollAnchorRef.current;
+    if (anchor && anchor.key === `${selectedId}:${searchQuery}`) {
+      // Keep the same message at the same viewport offset, including a concurrent append.
+      const element = [...scroller.querySelectorAll("[data-message-id]")]
+        .find((node) => node.dataset.messageId === anchor.id);
+      if (element) scroller.scrollTop += element.getBoundingClientRect().top - anchor.top;
+      if (!moreMessagesLoading) scrollAnchorRef.current = null;
+      return;
+    }
+    scrollAnchorRef.current = null;
+    if (!newView && !searchQuery && !followLatestRef.current) return;
     scroller.scrollTop = searchQuery ? 0 : scroller.scrollHeight;
-  }, [selectedId, lastMessageId, mobileOpen, searchQuery, messageLoading]);
+  }, [selectedId, lastMessageId, mobileOpen, searchQuery, messageLoading, moreMessagesLoading]);
+
+  useLayoutEffect(() => {
+    const scroller = scrollerRef.current;
+    const updateVisible = () => {
+      if (scroller) followLatestRef.current = scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop <= 80;
+      const boundary = scroller?.getBoundingClientRect();
+      const ids = boundary && document.visibilityState !== "hidden" && !profileOpen && !detailedProfileOpen && !leaveRoom
+        ? [...scroller.querySelectorAll("[data-message-id]")]
+        .filter((node) => {
+          const rect = node.getBoundingClientRect();
+          return rect.height > 0 && rect.bottom > boundary.top && rect.top < boundary.bottom;
+        }).map((node) => node.dataset.messageId) : [];
+      setVisibleMessageIds((previous) => previous.join(",") === ids.join(",") ? previous : ids);
+    };
+    updateVisible();
+    scroller?.addEventListener("scroll", updateVisible);
+    window.addEventListener("resize", updateVisible);
+    document.addEventListener("visibilitychange", updateVisible);
+    return () => {
+      scroller?.removeEventListener("scroll", updateVisible);
+      window.removeEventListener("resize", updateVisible);
+      document.removeEventListener("visibilitychange", updateVisible);
+    };
+  }, [selectedId, searchQuery, displayedMessages, mobileOpen, profileOpen, detailedProfileOpen, leaveRoom]);
+
+  const loadEarlier = () => {
+    if (moreMessagesLoading) return;
+    const scroller = scrollerRef.current;
+    const boundary = scroller?.getBoundingClientRect();
+    const element = boundary && [...scroller.querySelectorAll("[data-message-id]")]
+      .find((node) => node.getBoundingClientRect().bottom > boundary.top);
+    if (element) scrollAnchorRef.current = { key: `${selectedId}:${searchQuery}`,
+      id: element.dataset.messageId, top: element.getBoundingClientRect().top };
+    void loadOlderMessages();
+  };
 
   const selectRoom = (roomId) => {
     setRoommateProfile(null);
@@ -197,7 +250,7 @@ function ChatPage({ currentUser }) {
   const sendMessage = (event) => {
     event.preventDefault();
     const text = draft.trim();
-    if (!activeRoom || !text || text.length > MAX_MESSAGE_LENGTH) return;
+    if (!activeRoom || composing || !validMessage(draft)) return;
     if (!send(selectedId, text)) return;
     setDrafts((current) => ({ ...current, [selectedId]: "" }));
 
@@ -329,9 +382,18 @@ function ChatPage({ currentUser }) {
               <S.EmptyState $compact>
                 <S.EmptyImage src="img\한경이 이미지\감정\당황 한경.png" alt="당황한 한경" />
                 <h3>현재 채팅방이 없어요</h3>
-                {category !== "all" && rooms.length > 0 && (
+                {category !== "all" && categoryCounts.all > 0 && (
                   <S.SecondaryButton type="button" onClick={() => selectCategory("all")}>전체 대화 보기</S.SecondaryButton>
                 )}
+              </S.EmptyState>
+            )}
+            {!loadingRooms && !roomError && (hasMoreRooms || moreRoomsError) && (
+              <S.EmptyState $compact>
+                <p>{visibleRooms.length} / {totalRooms}개 채팅방</p>
+                {moreRoomsError && <p role="alert">{moreRoomsError}</p>}
+                <S.SecondaryButton type="button" disabled={loadingMoreRooms} onClick={loadMoreRooms}>
+                  {loadingMoreRooms ? "불러오는 중…" : moreRoomsError ? "채팅방 다시 불러오기" : "채팅방 더 보기"}
+                </S.SecondaryButton>
               </S.EmptyState>
             )}
           </S.Sidebar>
@@ -387,6 +449,15 @@ function ChatPage({ currentUser }) {
                 </S.SearchBar>
 
                 <S.MessageScroller ref={scrollerRef} tabIndex={0} aria-label="대화 내용">
+                  {(hasOlderMessages || moreMessagesError) && (
+                    <S.EmptyState $compact>
+                      {moreMessagesError && <p role="alert">{moreMessagesError}</p>}
+                      <S.SecondaryButton type="button" disabled={moreMessagesLoading} onClick={loadEarlier}>
+                        {moreMessagesLoading ? "불러오는 중…" : moreMessagesError ? "메시지 다시 불러오기"
+                          : searchQuery ? "이전 검색 결과 보기" : "이전 메시지 보기"}
+                      </S.SecondaryButton>
+                    </S.EmptyState>
+                  )}
                   {!searchQuery && messages.length > 0 && <S.ConversationStart>최근 대화 내역이에요.</S.ConversationStart>}
 
                   {messageLoading || messageError ? <S.EmptyState><p role="status">{messageError || "메시지를 불러오는 중입니다."}</p></S.EmptyState> : displayedMessages.length ? displayedMessages.map((item, index) => {
@@ -394,7 +465,7 @@ function ChatPage({ currentUser }) {
                     const showDate = !previous || dateKey(previous.sentAt) !== dateKey(item.sentAt);
                     const own = item.sender === "me";
                     return (
-                      <S.MessageGroup key={item.id}>
+                      <S.MessageGroup key={item.id} data-message-id={String(item.id)}>
                         {showDate && <S.DateDivider><span><time dateTime={dateKey(item.sentAt)}>{formatDate(item.sentAt)}</time></span></S.DateDivider>}
                         <S.MessageRow $own={own}>
                           {!own && <ProfileImage as={S.Avatar} $small major={activeRoom.photo ? undefined : activeRoom.major} fallbackSrc={activeRoom.photo} alt="" />}
@@ -429,7 +500,10 @@ function ChatPage({ currentUser }) {
                   <S.ScreenReaderOnly as="label" htmlFor="chat-message">메시지 보내기</S.ScreenReaderOnly>
                   <S.ComposerField>
                     <S.MessageInput id="chat-message" ref={inputRef} value={draft} rows={1}
-                      maxLength={MAX_MESSAGE_LENGTH} placeholder={`${activeRoom.nickname}님에게 메시지를 남겨보세요`}
+                      placeholder={`${activeRoom.nickname}님에게 메시지를 남겨보세요`}
+                      aria-invalid={codePointLength(draft) > MAX_MESSAGE_LENGTH}
+                      aria-describedby="chat-message-count"
+                      onCompositionStart={() => setComposing(true)} onCompositionEnd={() => setComposing(false)}
                       onChange={(event) => setDrafts((current) => ({ ...current, [selectedId]: event.target.value }))}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) {
@@ -437,10 +511,12 @@ function ChatPage({ currentUser }) {
                           if (!event.repeat) sendMessage(event);
                         }
                       }} />
-                    <S.SendButton type="submit" disabled={!draft.trim() || !connected} aria-label="메시지 전송">
+                    <S.SendButton type="submit" disabled={!validMessage(draft) || composing || !connected} aria-label="메시지 전송">
                       <Send size={18} aria-hidden="true" />전송
                     </S.SendButton>
                   </S.ComposerField>
+                  <span id="chat-message-count" role="status">{codePointLength(draft)} / {MAX_MESSAGE_LENGTH}
+                    {codePointLength(draft) > MAX_MESSAGE_LENGTH ? " · 입력 한도를 초과했습니다." : ""}</span>
                 </S.Composer>
               </>
             ) : (
@@ -497,4 +573,7 @@ function ChatPage({ currentUser }) {
   );
 }
 
-export default ChatPage;
+// Reset all caches, pending requests and subscriptions when the authenticated account changes.
+export default function ChatPage(props) {
+  return <ChatWorkspace key={String(props.currentUser?.id ?? props.currentUser?.userId ?? "guest")} {...props} />;
+}
