@@ -1,11 +1,14 @@
 package com.kkirikkiri.report.repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.kkirikkiri.global.repository.AdminQuerySupport;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -67,5 +70,22 @@ public class AdminReportQueryRepository extends AdminQuerySupport {
 
 	public Optional<Report> findReportById(Long reportId) {
 		return one(SELECT + "where r.reportId = :id", Report.class, parameters("id", reportId));
+	}
+
+	/** Lock only REPORT before sanction locks; refresh also replaces a stale managed snapshot. */
+	@Transactional
+	public Optional<Report> findReportByIdForUpdate(Long reportId) {
+		try {
+			Report report = entityManager.getReference(Report.class, reportId);
+			LockModeType lock = entityManager.getLockMode(report);
+			if (lock != LockModeType.PESSIMISTIC_WRITE && lock != LockModeType.PESSIMISTIC_FORCE_INCREMENT) {
+				entityManager.refresh(report, LockModeType.PESSIMISTIC_WRITE,
+						Map.of("jakarta.persistence.lock.timeout", 5000));
+			}
+			// Reentrant calls must retain this transaction's unflushed processing decision.
+			return Optional.of(report);
+		} catch (EntityNotFoundException missing) {
+			return Optional.empty();
+		}
 	}
 }

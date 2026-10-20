@@ -3,6 +3,10 @@ package com.kkirikkiri.report.entity;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.stream.Stream;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -10,6 +14,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.util.ReflectionTestUtils;
+import static org.mockito.Mockito.*;
 import com.kkirikkiri.user.entity.User;
 
 class ReportTest {
@@ -138,6 +143,47 @@ class ReportTest {
         assertThrows(IllegalArgumentException.class,
                 () -> report.process(ReportStatus.COMPLETED, null, admin, createdAt.minusNanos(1)));
         assertUnprocessed(report);
+    }
+
+    @ParameterizedTest
+    @MethodSource("descriptionBoundaries")
+    void enforcesDescriptionLimitInEveryFactory(String unit, int length) {
+        String description = unit.repeat(length / unit.length()) + "a".repeat(length % unit.length());
+        var post = new com.kkirikkiri.community.post.entity.CommunityPost(target, null, "자유게시판", "title", "body");
+        var comment = new com.kkirikkiri.community.comment.entity.CommunityComment(post, target, null, "body");
+        for (var factory : java.util.List.<java.util.function.Supplier<Report>>of(
+                () -> Report.forUser(reporter, target, "기타", description),
+                () -> Report.forPost(reporter, post, "기타", description),
+                () -> Report.forComment(reporter, comment, "기타", description))) {
+            if (length <= 500) assertEquals(description, factory.get().getDescription());
+            else assertThrows(IllegalArgumentException.class, factory::get);
+        }
+    }
+
+    static Stream<Arguments> descriptionBoundaries() {
+        return Stream.of("a", "가", "😀").flatMap(unit -> Stream.of(499, 500, 501, 70000)
+                .map(length -> Arguments.of(unit, length)));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {" ", "\t\n"})
+    void keepsOptionalDescriptionUnchangedForSpecificReason(String description) {
+        assertEquals(description, Report.forUser(reporter, target, "욕설·비방", description).getDescription());
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {0, 50000000, 100000000, 1100000000})
+    void normalizesCreationAndProcessingBeforeDatabaseRounding(long elapsedNanos) {
+        LocalDateTime submitted = createdAt.withNano(900000000);
+        Report report = Report.forUser(reporter, target, "기타", "body");
+        try (var clock = mockStatic(LocalDateTime.class, CALLS_REAL_METHODS)) {
+            clock.when(LocalDateTime::now).thenReturn(submitted);
+            ReflectionTestUtils.invokeMethod(report, "onCreate");
+        }
+        report.process(ReportStatus.COMPLETED, "NONE", admin, submitted.plusNanos(elapsedNanos));
+        assertEquals(createdAt, report.getCreatedAt());
+        assertEquals(submitted.plusNanos(elapsedNanos).truncatedTo(ChronoUnit.SECONDS), report.getProcessedAt());
     }
 
     private Report pendingReport() {
