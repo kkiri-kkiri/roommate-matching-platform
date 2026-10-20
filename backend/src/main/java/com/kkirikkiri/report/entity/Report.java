@@ -1,6 +1,7 @@
 package com.kkirikkiri.report.entity;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 import jakarta.persistence.Column;
@@ -93,6 +94,10 @@ public class Report {
 		if (reason.equals("기타") && (description == null || description.isBlank())) {
 			throw new IllegalArgumentException("description is required for 기타");
 		}
+		// String.length(), Bean Validation @Size and HTML maxLength all count UTF-16 units.
+		if (description != null && description.length() > 500) {
+			throw new IllegalArgumentException("description cannot exceed 500 characters");
+		}
 		this.reason = reason;
 		this.description = description;
 		this.status = ReportStatus.PENDING;
@@ -129,20 +134,22 @@ public class Report {
 		}
 		Objects.requireNonNull(processedBy, "processedBy");
 		Objects.requireNonNull(processedAt, "processedAt");
+		LocalDateTime processingTime = processedAt.truncatedTo(ChronoUnit.SECONDS);
 		if (resolutionAction != null && resolutionAction.length() > 30) {
 			throw new IllegalArgumentException("resolutionAction cannot exceed 30 characters");
 		}
-		if (createdAt != null && processedAt.isBefore(createdAt)) {
+		if (createdAt != null && processingTime.isBefore(createdAt)) {
 			throw new IllegalArgumentException("processedAt cannot be before createdAt");
 		}
 		this.status = status;
 		this.resolutionAction = resolutionAction;
 		this.processedBy = processedBy;
-		this.processedAt = processedAt;
+		this.processedAt = processingTime;
 	}
 
 	@PrePersist
 	protected void onCreate() {
-		this.createdAt = LocalDateTime.now();
+		// Match the existing DATETIME(0) mapping before the database can round upward.
+		this.createdAt = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 	}
 }

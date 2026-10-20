@@ -1524,6 +1524,14 @@ report_type = COMMENT이면 comment_id를 저장한다.
 
 관리자가 회원 이용 정지, 게시글 삭제, 댓글 삭제, 신고 반려, 처리 완료 등을 수행한 결과를 저장한다.
 
+2026-10-20 Admin·Report 보완: 테이블·컬럼·FK·인덱스·UNIQUE는 변경하지 않는다.
+상세 사유 최대 500 UTF-16 단위는 DTO/Entity의 업무 제약이며 TEXT 선언은 유지한다.
+유효한 utf8mb4 입력은 이 한도에서 최대 2,000바이트 이내이므로 TEXT 용량을 넘지 않는다.
+created_at/processed_at의 기존 DATETIME 선언을 유지하고 신규 값은 Java에서 초 단위로
+절삭하여 DB 반올림을 방지한다. 기존 행을 갱신하거나 시간 값을 소급 보정하지 않는다.
+신고 처리의 잠금 순서는 REPORT → 대상 USER 또는 게시글 → 댓글/답글이다.
+실제 물리 정밀도·문자셋·잠금·제약은 [검증 안내](REPORT_ADMIN_VALIDATION.md)에 따라 별도 확인한다.
+
 5. 채팅
 
 채팅방 (CHAT_ROOM)

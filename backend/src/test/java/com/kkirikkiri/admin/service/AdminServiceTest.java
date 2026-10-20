@@ -394,7 +394,7 @@ class AdminServiceTest {
     @EnumSource(ReportType.class)
     void resolvesReportTargetIdAndContentByType(ReportType type) {
         // given
-        stubReport(type);
+        stubReport(type, false);
         UserProfile targetProfile = profile(target, "target");
         UserProfile reporterProfile = profile(reporter, "reporter");
         when(memberRepository.findProfilesByUserIds(List.of(2L, 3L)))
@@ -415,7 +415,7 @@ class AdminServiceTest {
     @Test
     void returnsUserReportWithoutProfiles() {
         // given
-        stubReport(ReportType.USER);
+        stubReport(ReportType.USER, false);
         // when
         var result = service.getReport(1L, 30L);
         // then
@@ -568,13 +568,21 @@ class AdminServiceTest {
     }
 
     private Report stubReport(ReportType type) {
+        return stubReport(type, true);
+    }
+
+    private Report stubReport(ReportType type, boolean forUpdate) {
         stubAdmin();
         Report report = switch (type) {
             case USER -> Report.forUser(reporter, target, "욕설·비방", null);
             case POST -> Report.forPost(reporter, post, "욕설·비방", null);
             case COMMENT -> Report.forComment(reporter, comment, "욕설·비방", null);
         };
-        when(reportRepository.findReportById(30L)).thenReturn(Optional.of(report));
+        if (forUpdate) {
+            when(reportRepository.findReportByIdForUpdate(30L)).thenReturn(Optional.of(report));
+        } else {
+            when(reportRepository.findReportById(30L)).thenReturn(Optional.of(report));
+        }
         return report;
     }
 

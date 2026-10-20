@@ -1372,7 +1372,12 @@ COMMENT
 
 기타 선택 시 description 필수.
 
-동일 사용자가 동일 대상에 중복 신고하지 않도록 제한 권장.
+description은 최대 500 UTF-16 코드 단위다(Java String.length / Bean Validation @Size /
+HTML maxLength 기준). 한글 1자는 1, 보조 평면 이모지 1개는 보통 2를 사용한다.
+기타가 아닌 사유의 null·빈 문자열·공백 허용과 입력값을 trim하지 않는 정책은 유지한다.
+초과 입력은 저장 전에 400 VALIDATION_ERROR로 거절한다.
+
+동일 사용자의 동일 대상 신고는 처리 상태와 관계없이 중복을 거절한다(400 INVALID_REQUEST).
 
 10. 채팅
 
@@ -2241,6 +2246,14 @@ DELETE_TARGET 신고 대상 게시글/댓글 삭제 + 신고 처리 완료
 
 처리 대기(PENDING) 상태에서만 Action 수행.
 
+신고 행의 비관적 쓰기 잠금과 최신 상태 재조회 후 PENDING을 확인한다. 같은 신고를
+동시에 처리하면 먼저 커밋한 한 요청만 성공하며 후속 요청은 400 INVALID_REQUEST다.
+선행 요청이 롤백되면 대기 요청은 PENDING을 확인하고 처리할 수 있다. 잠금 충돌/시간
+초과는 기존 409 ACCOUNT_UPDATE_CONFLICT다. 제재·삭제와 신고 이력은 함께 커밋/롤백한다.
+신규 신고의 생성·처리 시각은 기존 DATETIME에 맞춰 저장 전에 초 단위로 절삭한다.
+동일 초 처리는 허용하며 이전 초 처리는 거절한다. 과거 이력은 변경하지 않는다.
+H2 검증 범위와 MySQL 후속 계획은 [Admin·Report 검증 안내](REPORT_ADMIN_VALIDATION.md)를 따른다.
+
 13.14 일정 크롤링 상태 조회
 
 GET /api/admin/schedule-crawls/status
@@ -2896,7 +2909,7 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 | [RoommateFilterRequest](src/main/java/com/kkirikkiri/matching/dto/RoommateFilterRequest.java) | `sleepTime: List< String>` (NotBlank, Size(max = 50))<br>`wakeTime: List< String>` (NotBlank, Size(max = 50))<br>`sleepTalking: List< String>` (NotBlank, Size(max = 20))<br>`snoring: List< String>` (NotBlank, Size(max = 20))<br>`teethGrinding: List< String>` (NotBlank, Size(max = 20))<br>`sleepSensitivity: List< String>` (NotBlank, Size(max = 50))<br>`indoorEating: List< String>` (NotBlank, Size(max = 50))<br>`smoking: List< String>` (NotBlank, Size(max = 30))<br>`lightingPreference: List< String>` (NotBlank, Size(max = 30))<br>`phoneCall: List< String>` (NotBlank, Size(max = 50))<br>`mediaSound: List< String>` (NotBlank, Size(max = 100))<br>`showerTime: List< String>` (NotBlank, Size(max = 30))<br>`showerDuration: List< String>` (NotBlank, Size(max = 30))<br>`cleaningFrequency: List< String>` (NotBlank, Size(max = 30))<br>`cleaningStyle: List< String>` (NotBlank, Size(max = 50))<br>`dormStayDays: List< String>` (NotBlank, Size(max = 30))<br>`mealPlan: List< String>` (NotBlank, Size(max = 30))<br>`meal: List< String>` (NotBlank, Size(max = 60))<br>`roommateInteraction: List< String>` (NotBlank, Size(max = 50))<br>`temperaturePreference: List< String>` (NotBlank, Size(max = 30))<br>`scentProductUse: List< String>` (NotBlank, Size(max = 50))<br>`desktopUse: List< String>` (NotBlank, Size(max = 50))<br>`sharedItems: List< String>` (NotBlank, Size(max = 50)) |
 | [RoommatePageResponse](src/main/java/com/kkirikkiri/matching/dto/RoommatePageResponse.java) | `content: List<T>`<br>`page: int`<br>`size: int`<br>`totalElements: long`<br>`totalPages: int`<br>`first: boolean`<br>`last: boolean` |
 | [RoommateProfileResponse](src/main/java/com/kkirikkiri/matching/dto/RoommateProfileResponse.java) | `id: Long`<br>`nickname: String`<br>`admissionYear: String`<br>`grade: String`<br>`faculty: String`<br>`major: String`<br>`dormitory: String`<br>`mbti: String`<br>`introduction: String`<br>`tags: List<String>`<br>`profileImageUrl: String`<br>`matchScore: Integer`<br>`liked: boolean` |
-| [ReportCreateRequest](src/main/java/com/kkirikkiri/report/dto/ReportCreateRequest.java) | `targetType: String` (NotBlank, Pattern(regexp = "USER&#124;POST&#124;COMMENT"))<br>`targetId: Long` (NotNull, Positive)<br>`reason: String` (NotBlank, Pattern(regexp = "욕설·비방&#124;광고·홍보&#124;음란성 콘텐츠&#124;개인정보 노출&#124;도배·스팸&#124;기타"))<br>`description: String` (없음) |
+| [ReportCreateRequest](src/main/java/com/kkirikkiri/report/dto/ReportCreateRequest.java) | `targetType: String` (NotBlank, Pattern(regexp = "USER&#124;POST&#124;COMMENT"))<br>`targetId: Long` (NotNull, Positive)<br>`reason: String` (NotBlank, Pattern(regexp = "욕설·비방&#124;광고·홍보&#124;음란성 콘텐츠&#124;개인정보 노출&#124;도배·스팸&#124;기타"))<br>`description: String` (Size(max = 500)) |
 | [ProfileSurveyRequest](src/main/java/com/kkirikkiri/survey/dto/ProfileSurveyRequest.java) | `sleepTime: String` (NotBlank, Size(max = 50))<br>`wakeTime: String` (NotBlank, Size(max = 50))<br>`sleepTalking: String` (NotBlank, Size(max = 20))<br>`snoring: String` (NotBlank, Size(max = 20))<br>`teethGrinding: String` (NotBlank, Size(max = 20))<br>`sleepSensitivity: String` (NotBlank, Size(max = 50))<br>`indoorEating: String` (NotBlank, Size(max = 50))<br>`smoking: String` (NotBlank, Size(max = 30))<br>`lightingPreference: String` (NotBlank, Size(max = 30))<br>`phoneCall: String` (NotBlank, Size(max = 50))<br>`mediaSound: String` (NotBlank, Size(max = 100))<br>`showerTime: String` (NotBlank, Size(max = 30))<br>`showerDuration: String` (NotBlank, Size(max = 30))<br>`cleaningFrequency: String` (NotBlank, Size(max = 30))<br>`cleaningStyle: String` (NotBlank, Size(max = 50))<br>`dormStayDays: List< String>` (NotEmpty, NotBlank, Size(max = 30))<br>`mealPlan: List< String>` (NotEmpty, NotBlank, Size(max = 30))<br>`meal: String` (NotBlank, Size(max = 60))<br>`roommateInteraction: String` (NotBlank, Size(max = 50))<br>`temperaturePreference: String` (NotBlank, Size(max = 30))<br>`scentProductUse: String` (NotBlank, Size(max = 50))<br>`desktopUse: String` (NotBlank, Size(max = 50))<br>`sharedItems: String` (NotBlank, Size(max = 50))<br>`introduction: String` (Size(max = 200)) |
 | [ProfileSurveyResponse](src/main/java/com/kkirikkiri/survey/dto/ProfileSurveyResponse.java) | `completed: boolean`<br>`answers: Answers`<br>`introduction: String` |
 | [ProfileSurveyResponse.Answers](src/main/java/com/kkirikkiri/survey/dto/ProfileSurveyResponse.java) | `sleepTime: String`<br>`wakeTime: String`<br>`sleepTalking: String`<br>`snoring: String`<br>`teethGrinding: String`<br>`sleepSensitivity: String`<br>`indoorEating: String`<br>`smoking: String`<br>`lightingPreference: String`<br>`phoneCall: String`<br>`mediaSound: String`<br>`showerTime: String`<br>`showerDuration: String`<br>`cleaningFrequency: String`<br>`cleaningStyle: String`<br>`dormStayDays: List<String>`<br>`mealPlan: List<String>`<br>`meal: String`<br>`roommateInteraction: String`<br>`temperaturePreference: String`<br>`scentProductUse: String`<br>`desktopUse: String`<br>`sharedItems: String` |

@@ -266,7 +266,8 @@ public class AdminService {
 	public void processReport(Long adminId, Long reportId, AdminReportProcessRequest request) {
 		User admin = requireAdmin(adminId);
 		validateRequest(request);
-		Report report = findReport(reportId);
+		validateId(reportId);
+		Report report = reportRepository.findReportByIdForUpdate(reportId).orElseThrow(this::invalidRequest);
 		if (report.getStatus() != ReportStatus.PENDING) {
 			throw invalidRequest();
 		}
