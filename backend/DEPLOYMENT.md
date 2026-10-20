@@ -1,25 +1,41 @@
 # user / auth 도메인 운영 준비
 
-## 채팅 배포 토폴로지 결정 보류 (2026-10-19)
+## 채팅 단일 JVM 배포 및 문제 2 위험 수용 (2026-10-20)
 
-저장소 점검에서 Dockerfile/Compose, CI/CD, 로드밸런서/replica/자동 확장 설정을 찾지 못했고,
-사용자도 실제/예정 배포 구성을 “아직 미정 / 확인 불가”로 확인했다. 운영 JVM 수·LB 존재 여부·
-확장 요구는 확정하지 않는다. 로컬 jar 실행이나 다른 도메인의 두 JVM 검증 도구는 운영 배포 명세가 아니다.
-현재 JVM별 Simple Broker는 서로 다른 JVM의 구독자에게 중계하지 않는다.
-공유 DB·sticky session·15초 REST polling은 JVM 간 STOMP 실시간 전달의 해결이 아니다.
-따라서 이번 문제 2는 미해결이며 단일 JVM 조건부 위험 수용으로 승인하지 않는다.
+사용자가 팀원 확인 후 졸업작품의 배포 계획을 **Spring Boot 백엔드 인스턴스 1개(단일 JVM)**로
+확정했다. 문제 2(다중 JVM WebSocket 전달)는 이 배포 조건에 따른 **위험 수용**으로 처리한다.
+현재 `enableSimpleBroker("/sub")` 구조를 유지하고 Redis·RabbitMQ 등 외부 메시지 브로커를 도입하지 않는다.
+의존성·설정·인프라·운영 코드를 변경하는 결정은 포함하지 않는다.
 
-단일 JVM을 **향후 확정하는 경우에만** 모든 채팅 WebSocket 연결과 SEND 처리가 같은 하나의
-활성 JVM으로 도착하는지 배포/LB 설정에서 확인한다. 한 호스트라도 프로세스가 둘이면 다중 JVM이다.
-배포 중 구·신 JVM에 연결이 나뉘는 rolling/blue-green 중첩도 같은 제한을 받는다.
-이 조건을 유지할 전환·기존 연결 drain 계획, 단일 장애점/재시작·용량 한계의 수용 결정이 필요하다.
-기본 /ws/chat, WSS/TLS, 정확한 CORS Origin, 프록시 Upgrade/Connection·idle timeout을 실제 환경에서 검증한다.
-자동 확장·동시 활성 replica가 필요하다면 현재 구성을 승인하지 않고 별도 공유 중계 설계를 검토한다.
+수용 범위와 배포 조건:
 
-공유 STOMP broker relay와 Redis 기반 앱 fan-out의 후보·인증/익명성/커밋 이후 발행·장애 복구
-검증 계획은 [채팅 배포·문서 점검 보고서](CHAT_DEPLOYMENT_API_VALIDATION.md)를 따른다.
-후보는 미선정이고 의존성·환경변수·컨테이너를 추가하지 않았다. API.md 10장은 현재 계약으로 갱신했으며
-이는 운영 배포 승인 또는 실제 MySQL/두 JVM/브라우저 E2E 통과를 뜻하지 않는다.
+1. 모든 채팅 WebSocket 연결·구독·SEND가 동일한 하나의 활성 백엔드 JVM에 도착해야 한다.
+   replica는 1개로 유지하고 자동 수평 확장·두 프로세스 동시 처리를 사용하지 않는다.
+   호스트가 하나여도 활성 JVM이 둘이면 이 조건을 만족하지 않는다.
+2. 재배포 시 기존 JVM의 채팅 연결/처리를 종료한 뒤 새 JVM으로 전환한다. rolling/blue-green 중
+   구·신 JVM에 활성 연결이 나뉘는 중첩을 허용하지 않는다. 연결 종료·일시 중단과 재접속이 필요하다.
+3. 단일 장애점·단일 프로세스의 용량 한계·재시작 시 메모리 구독 소멸을 수용한다. 클라이언트는
+   재접속·재구독 후 저장된 메시지를 REST로 복구한다. DB 커밋과 push 사이 장애의 전달 유실 및
+   즉시 전달·무손실 재전송을 보장하지 않는 한계는 남는다.
+4. 실제 배포의 프로세스 수·replica/전환 설정과 기본 /ws/chat, WSS/TLS, 정확한 CORS Origin,
+   프록시 Upgrade/Connection·idle timeout, 재연결·REST 복구는 배포 시 확인한다.
+   사용자 확인은 배포 계획의 확정이며 실제 인프라 설정 점검을 완료했다는 뜻은 아니다.
+
+**실제 단일 JVM WebSocket 메시지 전달 검증은 미실시**다. 기존 Controller의 mock
+SimpMessagingTemplate 호출·STOMP 인가/H2 회귀는 실제 socket/broker 전달 성공의 증거가 아니다.
+배포 전 한 JVM에 실제 두 클라이언트를 연결해 같은 방을 구독하고 양방향 SEND→수신,
+익명 마스킹·다른 방 격리·나가기/정지/토큰 만료 후 차단, 재시작/재접속·REST 복구를 확인한다.
+이번 문서 작업에서는 서버·클라이언트를 실행하거나 DB에 접속하지 않았다.
+
+향후 다중 JVM/자동 확장/구·신 JVM 동시 운영이 필요해지면 이 위험 수용의 적용 범위를 벗어난다.
+Simple Broker 사이 중계는 여전히 미구현이며 공유 DB·sticky session·15초 polling으로 대체할 수 없다.
+그때 별도 설계로 공유 중계, 커밋 이후 발행·장애 복구/중복·순서 정책, 기존 JWT/참여 인가·익명성
+보존을 검토하고 실제 두 JVM의 양방향 전달·권한 변경·장애/재연결 검증을 수행한다.
+공유 STOMP relay·앱 fan-out 등의 후보는 [채팅 배포·문서 점검 보고서](CHAT_DEPLOYMENT_API_VALIDATION.md)를
+참고하되 이번에는 선택·도입하지 않는다. 문제 2 위험 수용과 별개로 실제 단일 JVM 전달과
+브라우저 검증은 남아 있다. [최종 MySQL 재검증](CHAT_MYSQL_FINAL_REVALIDATION.md)에서
+인덱스 롤백/재적용·데이터 보존은 통과했고 조회 성능도 크게 개선됐지만 방별 정렬/반복 평가가
+남아 전체 운영 배포 승인으로 해석하지 않는다.
 
 ## 커뮤니티 9번 이미지 수명주기 보완 (2026-10-19)
 
@@ -157,7 +173,8 @@ Matching 보완(2026-10-17): 사용자별 AI 요청량은 기존 auth_limit_buck
 [검증 보고](CHAT_SYNC_PAGINATION_UNICODE_VALIDATION.md)를 따른다. 새 프론트 전환 전에
 메시지 beforeId/afterId와 POST /api/chat/rooms/{roomId}/messages/read-status를 제공하는 서버를 배포한다.
 기존 offset·STOMP 계약과 DB 스키마는 유지한다. 보이는 탭의 15초 polling은 응답/브라우저 타이머에 따른 반영 지연·추가 REST 부하가 있으므로
-대표 사용량과 실제 브라우저/프록시에서 확인한다. MySQL·브라우저 E2E·다중 JVM은 미실행이다.
+대표 사용량과 실제 브라우저/프록시에서 확인한다. 이 보고서 작성 당시 MySQL·브라우저 E2E·다중 JVM은 미실행이었다.
+후속 MySQL 실행 결과와 현재 미검증 범위는 아래 최종 재검증 기록을 따른다.
 
 채팅 조회 제한/목록 최적화는 [검증 보고](CHAT_QUERY_PERFORMANCE_VALIDATION.md)와
 [조회 인덱스 수동 절차](migrations/20261019_chat_query_indexes.md)를 따른다.
@@ -165,12 +182,28 @@ Matching 보완(2026-10-17): 사용자별 AI 요청량은 기존 auth_limit_buck
 관련 프론트 및 다른 클라이언트의 content/last 처리를 함께 배포한다. 단건 GET /api/chat/rooms/{roomId}는
 페이지 밖 선택 방과 읽음 수 갱신에 사용한다. 이번 조회 작업은 Entity 컬럼/제약·DDL 설정을 변경하지 않는다.
 H2 SQL 수 측정은 MySQL의 최신 메시지 correlated subquery/정렬/집계 비용이나 운영 지연 보장이 아니다.
-MySQL 실행계획·인덱스 DDL·큰 offset·동시성/다중 JVM 검증은 미실행이며 최종 통합 검증으로 남긴다.
+초기 조회 보고서의 MySQL 실행계획·인덱스 DDL·동시성 미실행 기록은 당시 점검 범위다.
 
 채팅 참여 상태 덮어쓰기와 읽음 정합성 보완에는 CHAT_MESSAGE.is_read 추가 및 기존 표시 결과 전환이 필요하다.
 [수동 절차](migrations/20261019_chat_message_receipts.md)를 먼저 따른다. 자동 실행하지 않는다.
 읽음 API는 실제 수신한 messageIds 본문이 필요하므로 구버전 쓰기를 drain하고 서버·관련 프론트를 함께 배포한다.
-H2 동시성/rollback 통과와 실제 InnoDB RR·두 JVM 검증은 별개이며, 운영 DB 적용·배포 성공을 보장하지 않는다.
+H2 통과와 실제 InnoDB 검증은 구분하며, 어느 쪽도 운영 DB 적용·배포 성공을 보장하지 않는다.
+
+2026-10-20 후속 [최종 MySQL 재검증](CHAT_MYSQL_FINAL_REVALIDATION.md)의 현재 결과는 다음과 같다.
+
+- **격리 MySQL 8.0.44 / InnoDB:** 실제 SQL·EXPLAIN/EXPLAIN ANALYZE를 비교하고 수정 조회의
+  1/10/60/100개 방 동작을 확인했다. 기능·동시성 및 기존 데이터 보존 회귀는 19/19 PASS,
+  인덱스 FK 지원 복원·롤백·부분 실패 복구·재적용은 7/7 PASS이며 FK·기존 행 해시 보존을 확인했다.
+- **실패 이력·잔여 비용:** 과거 7 FAIL과 별도로 최종 실행은 47 case / 46 PASS / 1 FAIL이다.
+  FAIL은 수정 전 anti-join의 100개 방 조회가 3초 제한으로 중단된 3024이며 수정 조회 100개 방은 통과했다.
+  같은 데이터의 60개 방 서비스 중앙값은 1,904.2→54.4ms로 개선됐지만 방별 정렬·scalar 반복 평가가 남아
+  문제 10은 부분 완료다. 실행계획 전체 최적화나 전체 무실패 통합 검증으로 판정하지 않는다.
+- **운영 미검증:** 기존 `kkirikkiri`·`kkiri_kkiri`의 실제 DDL 적용 여부와 운영 데이터 전환,
+  대형 DDL 잠금·쓰기 비용·복제 영향·백업 전체 복구, 큰 offset·p95/p99·장시간 부하는 확인하지 않았다.
+  실제 단일 JVM WebSocket 양방향 전달·프록시·브라우저 E2E도 미검증이며 운영 배포는 보류다.
+
+격리 DB 통과를 운영 배포 승인으로 해석하지 않는다. 현재 단일 JVM 배포에서는 위 실제 전달·운영 조건을
+확인하며, 다중 JVM 검증은 향후 확장 시 수행할 항목으로 현재 배포의 선행 조건이 아니다.
 
 user 안정화에는 Entity 스키마 변경이 없었다. auth 보호에는 신규 AUTH_LIMIT_BUCKET 테이블만 추가했으며,
 [auth 수동 마이그레이션](migrations/20261014_auth_limits.md)을 먼저 따른다. 운영에서 자동 적용하지 않는다.

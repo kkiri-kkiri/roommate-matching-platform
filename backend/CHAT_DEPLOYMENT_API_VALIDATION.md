@@ -1,17 +1,20 @@
 # 채팅 배포 구조·API 문서 점검
 
 검증일: 2026-10-19 (Asia/Seoul), 브랜치 `test/chat-validation`.
+배포 결정 갱신: 2026-10-20. 사용자가 팀원 확인 후 백엔드 단일 JVM 계획과 문제 2 위험 수용을 확정했다.
+아래 5장의 실행 결과는 2026-10-19 기록이며 이번 문서 갱신에서 테스트/빌드를 재실행한 결과가 아니다.
 범위는 요청의 문제 2(다중 JVM 전달)와 문제 9(채팅 문서)다.
 이전 문제 1·3·4·5·6·7·8의 미커밋 변경을 보존했다. 이번에는 문서만 수정했다.
 운영/공유 DB 접근·수정, Docker/인프라 변경, 마이그레이션 실행, Git commit/push/merge는 하지 않았다.
 
 ## 1. 작업 결과
 
-- 문제 2: **미해결**. 코드의 인스턴스 간 중계 미지원은 확인했지만 실제 배포 토폴로지는 확인 불가다.
-  사용자도 질의에 “아직 미정 / 확인 불가”로 답했다. 단일 JVM 운영을 전제한 위험 수용이나
-  다중 JVM 요구 확정으로 처리하지 않는다. 외부 브로커를 추가하거나 WebSocket 코드를 바꾸지 않았다.
+- 문제 2: **단일 JVM 배포 조건에 따른 위험 수용**. 2026-10-20 사용자가 졸업작품의
+  Spring Boot 백엔드 인스턴스 1개 계획을 확정하고 위험 수용을 요청했다. Simple Broker를 유지하며
+  Redis·RabbitMQ 등 외부 메시지 브로커는 도입하지 않는다. JVM 간 중계 기능은 미구현으로 남는다.
+  실제 단일 JVM WebSocket 메시지 전달은 미검증이며 위험 수용을 실검증 통과로 기록하지 않는다.
 - 문제 9: 현재 채팅 Controller/Service/DTO·프론트에 맞춰 API.md와 중복된 채팅 지침을 정정했다.
-  배포의 미확정 상태는 제한 사항으로 명시했다. 문서 수정은 실행 계약 변경이나 운영 승인과 다르다.
+  배포 계획은 단일 JVM으로 갱신하되 실제 인프라 설정/전달 검증은 남긴다. 문서 수정은 실행 계약 변경이나 운영 승인과 다르다.
 - 이번 자동 검증 결과는 5장에 기록한다. 과거 검증 결과를 이번 실행 결과로 대체하지 않는다.
 
 ## 2. 배포 구조
@@ -21,14 +24,14 @@
 | 항목 | 저장소에서 확인한 사실 | 확인하지 못한 사실 |
 |---|---|---|
 | 실행 버전 | build.gradle의 Java 21/Spring Boot 4.1.1. bootJar 내부 spring-core/messaging/websocket은 7.0.9 | 실제 운영 아티팩트/프로세스 버전 |
-| 패키징 | Gradle bootJar로 실행 jar 생성 | 운영 프로세스 수·replica·배포 명령·실행 플랫폼 |
+| 패키징 | Gradle bootJar로 실행 jar 생성. 사용자 확인 배포 계획은 백엔드 단일 JVM | 실제 프로세스 수·replica 설정·배포 명령·실행 플랫폼 |
 | Docker/CI/CD | 숨김·ignore 대상도 포함한 파일명 점검에서 Dockerfile/Compose, Docker/CI/CD YAML, Jenkinsfile/Procfile, Kubernetes/Terraform/서비스·nginx 배포 설정을 찾지 못함 | 실제 컨테이너·서비스·LB 존재 여부. 파일 부재가 인프라 부재를 뜻하지 않음 |
 | 문서/예제 | 루트 README는 프로젝트 소개, DEPLOYMENT.md는 운영 검증 지침. .env.example에는 DB/SMTP/JWT/AI 예제 키가 있고 broker/replica 설정은 없음 | 단일 서버 확약, 확장 규모·HA/SLA·무중단 배포 요구 |
 | WebSocket | WebSocketConfig의 application prefix /pub, enableSimpleBroker("/sub"). 기본 endpoint /ws/chat. SockJS 없음 | 실제 WSS/TLS/프록시 Upgrade·timeout·LB 라우팅 |
 | 인스턴스 간 전달 | 채팅 발행은 ChatWebSocketController의 SimpMessagingTemplate.convertAndSend. relay/Redis 수신/공유 fan-out 없음 | 향후 공유 브로커 선택·관리 주체 |
 | 프론트 | chatSocket.js는 API base로 ws/wss URL 생성, 선택 방 1개 구독·재연결 복구. useChatSync는 보이는 탭 15초 REST polling | 운영 origin/base URL/백그라운드 타이머·브라우저 네트워크 동작 |
 | 기존 두 JVM 도구 | tools/matching-mysql-multi-instance/RUNBOOK.md는 방의 두 연결을 같은 JVM에 두고 다른 JVM REST로 권한을 변경한다고 명시 | 서로 다른 JVM에 연결된 두 사용자의 채팅 중계 성공 증거는 아님 |
-| 사용자 확인 | 실제/예정 JVM 수·LB 구성은 “아직 미정 / 확인 불가” | 단일 JVM 조건부 위험 수용이나 다중 JVM 구현 요구 결정 |
+| 사용자 확인 | 2026-10-20 팀원 확인 후 Spring Boot 백엔드 1개로 배포, 문제 2 위험 수용 확정 | 실제 LB/전환/replica 설정, 단일 JVM 두 클라이언트 전달 결과 |
 
 코드 근거: [WebSocketConfig](src/main/java/com/kkirikkiri/global/config/WebSocketConfig.java),
 [ChatWebSocketController](src/main/java/com/kkirikkiri/chat/controller/ChatWebSocketController.java),
@@ -44,22 +47,36 @@ Simple Broker의 메모리 구독 구조와 cluster 제한은 Spring의
 15초 polling은 저장된 데이터를 재조회할 뿐 STOMP의 JVM 간 push를 구현하지 않는다.
 사용자별 sticky session도 두 참여자가 서로 다른 서버로 고정되면 같은 문제를 남긴다.
 
-### 단일 JVM을 나중에 확정할 때 필요한 조건
+### 확정된 단일 JVM 배포의 수용 조건
 
-현재 사용 명령·목적지는 같은 JVM Simple Broker로 처리하는 구조다. 이를 선택하려면 운영자가 다음을 확정해야 한다.
+현재 사용 명령·목적지는 같은 JVM Simple Broker로 처리한다. 사용자 결정에 따라 아래 조건에서
+문제 2를 위험 수용으로 처리한다. 실제 배포 설정과 전달 검증은 별도로 확인한다.
 
 1. 모든 채팅 연결/SEND가 하나의 활성 채팅 JVM에 도착하도록 실제 replica·LB·라우팅 구성을 확인한다.
-   한 물리 서버라도 JVM이 둘이면 이 조건을 만족하지 않는다. 부하분산/자동 확장을 켠 채 단일 JVM이라고 부르지 않는다.
-2. rolling/blue-green 배포 중 이전 연결과 새 연결이 다른 활성 JVM에 나뉘지 않도록 drain/전환 계획을 정한다.
-   기존 연결 종료/재접속에 따른 서비스 중단과 단일 장애점·용량 제한을 운영 정책으로 수용해야 한다.
+   한 물리 서버라도 JVM이 둘이면 이 조건을 만족하지 않는다. LB를 두는 경우에도 활성 대상은
+   한 JVM이어야 하며 복수 JVM 분산/자동 확장을 단일 JVM으로 취급하지 않는다.
+2. 재배포는 기존 JVM의 채팅 연결/처리를 종료한 뒤 새 JVM으로 전환한다. rolling/blue-green 중
+   구·신 JVM이 동시에 활성 연결을 받지 않도록 한다. 연결 종료·재접속에 따른 일시 중단,
+   단일 장애점·용량 제한·재시작 시 메모리 구독 소멸은 이번 단일 JVM 선택의 수용 범위다.
 3. /ws/chat 경로, 정확한 CORS Origin, WSS/TLS, 프록시 Upgrade/Connection·idle timeout,
    재연결 및 REST 복구를 실제 프록시/브라우저에서 검증한다. endpoint 재정의 시 프론트 경로도 확인한다.
-4. 부하·장애·재시작 검증 후에만 **단일 JVM 조건부 위험 수용**을 별도로 판단한다.
-   이 판단은 문제 2의 근본 해결이 아니다. 현재는 이 조건이나 운영 수용이 확정되지 않았다.
+4. 실제 부하·장애·재시작 및 전달 검증은 남아 있다. 이번 사용자 결정으로 **위험 수용 상태는
+   확정**했지만 기술적인 JVM 간 중계 구현이나 전체 운영 배포 승인을 뜻하지 않는다.
+
+### 실제 단일 JVM WebSocket 전달 검증 상태
+
+**미실시/미검증.** ChatWebSocketControllerTest는 mock SimpMessagingTemplate의 목적지/호출과
+저장 실패 시 미발행을 검사한다. 기존 STOMP 인가/H2 테스트도 실제 WebSocket 두 클라이언트가
+같은 Simple Broker를 통해 메시지를 받았다는 증거가 아니다. 이번에는 서버·클라이언트·DB를 실행하지 않았다.
+
+배포 전 하나의 JVM에 실제 두 참여자 클라이언트를 연결하고 같은 방을 SUBSCRIBE한 뒤
+A→B/B→A SEND·수신을 확인한다. 다른 방 격리·익명 senderId/프로필 마스킹,
+나가기/계정 정지/토큰 만료 후 기존 구독 차단, 서버 재시작→재연결/재구독·REST 복구도 확인한다.
+운영 프록시/WSS/CORS·idle timeout을 포함한 결과를 별도로 기록하며 polling 성공을 push 성공으로 세지 않는다.
 
 ### 다중 JVM이 필요해질 때의 후보 비교 — 미선정·미구현
 
-아래는 별도 설계를 위한 후보이며 현재 적용한 아키텍처가 아니다.
+아래는 향후 단일 JVM 조건을 벗어날 때의 별도 설계 후보다. 현재는 외부 브로커를 도입하지 않는다.
 
 | 후보 | 범위/장점 | 추가 책임·제한 |
 |---|---|---|
@@ -99,9 +116,12 @@ Redis Pub/Sub은 재전송을 보장하지 않는 at-most-once 특성이 있으�
 | 파일 | 이번 변경 |
 |---|---|
 | [API.md](API.md) | 채팅 10장, 관련 DTO 표/nullable·위험 설명의 오래된 #12/#13·Size·NotNull 정정. 현재 API·권한·잠금·polling·배포 한계 명시 |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | 미확정 토폴로지, 단일 JVM 선택 시 조건과 다중 JVM 설계 보류 안내 |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | 단일 JVM 확정·문제 2 위험 수용, 배포/재시작 조건·실제 전달 미검증·향후 확장 개선 안내 |
 | [agent.md](agent.md) | 채팅 #12/#13 지침·표의 중복된 과거 미해결 설명만 정정. 다른 도메인 지침은 유지 |
-| [CHAT_DEPLOYMENT_API_VALIDATION.md](CHAT_DEPLOYMENT_API_VALIDATION.md) | 근거·후보·결정 보류·검증 및 최종 판정 |
+| [CHAT_DEPLOYMENT_API_VALIDATION.md](CHAT_DEPLOYMENT_API_VALIDATION.md) | 근거·향후 후보·위험 수용·실제 전달 미검증 및 최종 판정 |
+
+2026-10-20 갱신은 위 배포 문서/API 10.8/agent 지침과 이 보고서, MySQL 통합/조회 후속 보고서의
+배포 상태만 맞췄다. 코드·DB·설정·의존성·테스트 파일은 수정하지 않았고 기존 미커밋 변경은 보존했다.
 
 코드/테스트/설정/의존성/인프라/API 계약/DB 스키마는 이번 작업에서 수정하지 않았다.
 기존 작업 때문에 Git에 표시되는 그 파일들의 변경은 이전부터 있던 미커밋 변경이다.
@@ -122,7 +142,7 @@ Redis Pub/Sub은 재전송을 보장하지 않는 at-most-once 특성이 있으�
 | STOMP | /ws/chat 및 origin 설정, /pub SEND·/sub SUBSCRIBE, senderId 마스킹, HTTP와 다른 오류 전달, 커밋/전달 비원자성 대조 |
 | 익명성/방 분리 | 카테고리별 키, 익명 POST/COMMENT 키 고정, 공개 counterpart 유지, 익명 senderId와 프로필 마스킹, 출처 갱신 범위 대조 |
 | polling | 보이는 탭 15초, focus/visibility/재연결·broadcast 합치기, 50개 전방 묶음 복구·100개 visible receipt, 목록 prefix 유지/안전 초기화 대조. 15초는 최대 전달 지연 보장이 아니라 요청 주기임을 정정 |
-| 배포 한계 | 미확정 실제 구조, JVM 내부 broker/중계 없음과 polling 역할 분리. 단일 JVM 확정이나 위험 수용을 가정하지 않음 |
+| 배포 한계 | 사용자 확정 단일 JVM 계획·위험 수용과 실제 전달 미검증 구분. JVM 내부 broker/중계 없음·polling 역할·향후 확장 조건 명시 |
 
 주요 대조 파일은 ChatController/ChatWebSocketController, ChatService, ChatRoom/ChatRoomMember/ChatMessage,
 ChatRoomRepository/ChatMessageRepository/ChatMemberLockRepositoryImpl/ChatRoomMemberRepository,
@@ -133,7 +153,7 @@ CodePointLength와 조건부 targetUserId 등은 위 파일을 직접 대조했�
 현재 요청의 채팅 범위에서 남아 있는 확인된 문서/코드 불일치는 없다. 운영 미확정·기능 한계는
 문서 오류와 구분해 명시했다. 다른 도메인의 문서 전체를 검증·정정한 것은 아니다.
 
-## 5. 테스트 결과
+## 5. 테스트 결과 (2026-10-19 실행 기록)
 
 이번 작업에서 테스트를 추가·삭제·비활성화하거나 제한 시간을 바꾸지 않았다.
 
@@ -171,6 +191,8 @@ PowerShell의 stderr 리디렉션에 JVM/Node 경고가 NativeCommandError로 �
 
 실제 MySQL·다중 JVM·브라우저 E2E·운영 배포는 요청대로 미실행이다.
 한 JVM의 mock/H2 회귀가 실제 broker 네트워크 전달 성공이나 운영 승인을 뜻하지 않는다.
+2026-10-20 배포 결정 문서 갱신에서도 실제 단일 JVM 전달·MySQL·브라우저 E2E는 실행하지 않았다.
+문서 계약 검사와 변경 형식 검사 결과는 아래 최종 판정에 별도로 기록한다.
 
 ## 6. 기존 기능 영향
 
@@ -181,8 +203,11 @@ DB 목록 페이지·검색/정렬·15초 polling·cursor 추가 조회·Unicode
 
 ## 7. 남은 위험
 
-- 다중 JVM: 각 JVM의 구독 고립과 커밋/전달 사이 장애 유실. relay/공유 fan-out·배포 요구·SLA 결정이 필요하다.
-- 실제 배포: JVM/LB/replica·전환·Origin/TLS/경로·WebSocket timeout·연결/DB 풀 용량이 확인되지 않았다.
+- 단일 JVM: 사용자 결정으로 단일 장애점·용량/재시작 한계를 수용했다. 실제 양방향 WebSocket 전달,
+  재접속·재구독·REST 복구·운영 프록시 검증은 남아 있다. DB 커밋/전달 사이 장애 유실도 남는다.
+- 향후 다중 JVM: 구독 고립을 해소할 공유 중계·중복/순서·장애 복구 설계와 실제 두 JVM 검증이 필요하다.
+  현재 위험 수용은 다중 JVM/자동 확장/구·신 JVM 동시 활성 배포에 적용하지 않는다.
+- 실제 배포: JVM 수 계획은 확정했지만 실제 LB/replica·전환·Origin/TLS/경로·WebSocket timeout·용량은 미확인이다.
 - MySQL: 실제 is_read/room_key 물리 DDL/기존 데이터 전환, USER→membership current read·잠금/교착·rollback,
   cursor/최신 메시지·미읽음·목록 집계 실행계획/인덱스와 대규모 polling 부하를 확인해야 한다.
 - 브라우저 E2E: 두 참여자의 전송/읽음·다른 방·재연결/백그라운드 복귀, JWT 만료/정지/나가기,
@@ -195,7 +220,18 @@ DB 목록 페이지·검색/정렬·15초 polling·cursor 추가 조회·Unicode
 
 ## 8. 최종 판정
 
-문제 2는 **미해결**이다. 배포 구조가 미정/확인 불가이므로 단일 JVM 조건부 위험 수용을 확정하지 않는다.
+문제 2는 **단일 JVM 배포 조건에 따른 위험 수용**이다. 2026-10-20 사용자 확인을 근거로
+졸업작품은 Spring Boot 백엔드 1개를 유지한다. Simple Broker 구조를 유지하고 외부 브로커는 도입하지 않는다.
+JVM 간 중계는 미구현이며 확장 시 별도 개선해야 한다. **실제 단일 JVM WebSocket 전달은 미검증**이다.
 문제 9는 **해결(요청한 채팅 문서 범위)**이다. 현재 코드/호출과 대조해 불일치를 정정했고 계약 검사도 통과했다.
 전체 백엔드 1,220개/프론트 232개와 빌드가 이번 실행에서 통과했지만 운영 승인 근거로 단독 사용하지 않는다.
-전체 채팅의 운영 배포는 **보류**다. 배포 토폴로지 결정과 실제 MySQL/브라우저/다중 JVM 검증 없이 승인하지 않는다.
+전체 채팅의 운영 배포는 **보류**다. 실제 단일 JVM WebSocket 전달/프록시·브라우저 E2E 및
+조회의 잔여 정렬/반복 평가 검토가 남아 있다. 후속 [MySQL 최종 재검증](CHAT_MYSQL_FINAL_REVALIDATION.md)에서
+인덱스 롤백/재적용·데이터 보존 통과와 조회 성능 개선을 확인했다. 다중 JVM 실검증은 현재 단일 JVM 배포의
+선행 조건으로 요구하지 않으며 향후 확장 시 수행한다. MySQL 최신 상태는
+[조회·인덱스 후속 보고서](CHAT_MYSQL_QUERY_INDEX_IMPROVEMENT.md)를 따른다.
+
+2026-10-20 문서 갱신 검증: `node backend/tools/sync-contract-docs.cjs --check` 성공
+(73 endpoints / 75 record DTOs / 30 entities), `git diff --check` 성공.
+작업 시작/종료 시 기존 비문서 변경 파일 6개의 SHA-256이 동일함을 확인했다.
+문서만 수정해 테스트/빌드는 재실행하지 않았으며 DB 접속·인프라 조작·Git commit/push/merge도 하지 않았다.

@@ -1,6 +1,9 @@
-param([switch] $PrepareOnly, [switch] $Provision, [switch] $KeepSession, [string] $EnvironmentFile)
+param([switch] $PrepareOnly, [switch] $Provision, [switch] $KeepSession, [string] $EnvironmentFile,
+    [ValidateSet('Full','Regression','Inspect','QueryComparison','ExistingRegression','FinalPerformance','IndexCycle','Optimized100')] [string] $Mode,
+    [string] $CredentialFile)
 $ErrorActionPreference = 'Stop'
 if ($PrepareOnly -and $Provision) { throw 'PrepareOnly cannot provision.' }
+if ($Provision -and $CredentialFile) { throw 'CredentialFile is for reuse only; cannot provision.' }
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'))
 $workRoot = Join-Path $repoRoot 'backend/build/chat-mysql-validation'
 New-Item -ItemType Directory -Force -Path $workRoot | Out-Null
@@ -88,9 +91,25 @@ if ($Provision) {
 if (!$EnvironmentFile) { throw 'Use -PrepareOnly, approved -Provision, or -EnvironmentFile pointing to previously created resources.' }
 $environment = Get-Content -LiteralPath $EnvironmentFile -Raw -Encoding UTF8 | ConvertFrom-Json
 if ($environment.state -ne 'created-retain-no-automatic-deletion') { throw 'Incomplete provisioning; no tests will run.' }
+if ($CredentialFile) {
+    if ($env:KKIRI_CHAT_TEST_PASSWORD) { throw 'Choose a DPAPI file or a process password, not both.' }
+    $importedCredential=$null
+    try {
+        $importedCredential=Import-Clixml -LiteralPath $CredentialFile -ErrorAction Stop
+        if ($importedCredential -isnot [Management.Automation.PSCredential] -or
+            $importedCredential.UserName -cne $environment.username -or
+            $importedCredential.Password -isnot [Security.SecureString] -or $importedCredential.Password.Length -eq 0) {
+            throw 'Credential type/account mismatch.'
+        }
+        $env:KKIRI_CHAT_TEST_PASSWORD=$importedCredential.GetNetworkCredential().Password
+    } catch {
+        Remove-Item Env:KKIRI_CHAT_TEST_PASSWORD -ErrorAction SilentlyContinue
+        throw 'DPAPI credential restore failed; use the same Windows user/computer and matching account. No DB connection attempted.'
+    } finally { $importedCredential=$null }
+}
 if (!$env:KKIRI_CHAT_TEST_PASSWORD) { throw 'Test password must be supplied in process memory. No password is saved or reset automatically.' }
 try {
-    $mode = 'Full'
+    if (!$Mode) { $Mode = if ($Provision) { 'Full' } else { 'Inspect' } }
     do {
         & javac -encoding UTF-8 -cp $classpath -d $classRoot @sources
         if ($LASTEXITCODE -ne 0) { throw 'Harness compilation failed.' }

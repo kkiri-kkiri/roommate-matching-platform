@@ -78,7 +78,7 @@ class ChatRoomReadPerformanceIntegrationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {1, 10, 60})
+    @ValueSource(ints = {1, 10, 60, 100})
     void measuresRoomReadQueryCount(int count) throws Exception {
         long owner = fixtures(count).owner();
         var statistics = em.getEntityManagerFactory().unwrap(SessionFactory.class).getStatistics();
@@ -98,6 +98,44 @@ class ChatRoomReadPerformanceIntegrationTest {
         System.out.print("CHAT_READ_PERF " + evidence);
         var directory = Path.of("build/chat-read-performance"); Files.createDirectories(directory);
         Files.writeString(directory.resolve("after.csv"), evidence, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    }
+
+    @Test
+    void latestMessageUsesTimestampThenIdAndReceiptsRemainIndependentOfThePage() {
+        var f = fixtures(3);
+        var time = LocalDateTime.of(2026, 1, 1, 12, 0);
+        var messages = new TransactionTemplate(manager).execute(status -> {
+            for (long roomId : f.rooms()) em.createNativeQuery("UPDATE chat_message SET sent_at=:time WHERE chat_room_id=:id")
+                    .setParameter("time", time).setParameter("id", roomId).executeUpdate();
+            var room = em.getReference(ChatRoom.class, f.rooms().getFirst());
+            var sender = em.getReference(User.class, f.targets().getFirst());
+            var timestampWinner = new ChatMessage(room, sender, "timestamp-winner"); em.persist(timestampWinner);
+            var tieWinner = new ChatMessage(room, sender, "tie-winner"); em.persist(tieWinner);
+            var greatestId = new ChatMessage(room, sender, "greater-id-older-time"); em.persist(greatestId);
+            em.flush();
+            for (var message : List.of(timestampWinner, tieWinner, greatestId)) {
+                em.createNativeQuery("UPDATE chat_message SET sent_at=:time WHERE message_id=:id")
+                        .setParameter("time", message == greatestId ? time.minusDays(1) : time.plusDays(1))
+                        .setParameter("id", message.getMessageId()).executeUpdate();
+            }
+            return List.of(timestampWinner.getMessageId(), tieWinner.getMessageId(), greatestId.getMessageId());
+        });
+        var first = chat.getRooms(f.owner(), new ChatRoomListRequest("ALL", null, 0, 1));
+        assertEquals(3, first.totalElements());
+        assertEquals(3, first.totalPages());
+        assertFalse(first.last());
+        assertEquals(f.rooms().getFirst(), first.content().getFirst().id());
+        assertEquals("tie-winner", first.content().getFirst().lastMessage().text());
+        assertEquals(time.plusDays(1), first.content().getFirst().lastMessage().sentAt());
+        assertEquals(4, first.content().getFirst().unreadCount());
+        chat.markRead(f.owner(), f.rooms().getFirst(), new ChatReadRequest(List.of(messages.get(1))));
+        var afterRead = chat.getRooms(f.owner(), new ChatRoomListRequest("ALL", null, 0, 1));
+        assertEquals(first.content().getFirst().lastMessage(), afterRead.content().getFirst().lastMessage());
+        assertEquals(3, afterRead.content().getFirst().unreadCount());
+        assertEquals(List.of(f.rooms().get(2), f.rooms().get(1)),
+                List.of(chat.getRooms(f.owner(), new ChatRoomListRequest("ALL", null, 1, 1)).content().getFirst().id(),
+                        chat.getRooms(f.owner(), new ChatRoomListRequest("ALL", null, 2, 1)).content().getFirst().id()));
+        assertEquals(1, chat.getRoom(f.owner(), f.rooms().get(1)).unreadCount());
     }
 
     @Test

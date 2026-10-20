@@ -89,15 +89,21 @@ public class ChatMysqlValidation {
         if (empty) check(j.queryForObject("select count(*) from information_schema.tables where table_schema=database()",Integer.class)==0,"Preexisting tables: refuse initialization");
         var proof = new LinkedHashMap<String,Object>(j.queryForMap("select version() version,database() db,current_user() account,@@server_uuid serverUuid,@@hostname hostname,@@port port,@@transaction_isolation isolationLevel,@@sql_mode sqlMode,@@default_storage_engine engine,@@lower_case_table_names lowerCaseTableNames"));
         proof.put("jdbcUrl",url(db)); proof.put("grants",grants); proof.put("protectedSchemaSelectDenied",true);
+        proof.put("globalSettings",j.queryForMap("select @@global.innodb_lock_wait_timeout lockWaitSeconds,@@global.max_execution_time selectTimeoutMs,@@global.lock_wait_timeout metadataLockWaitSeconds,@@global.transaction_isolation isolationLevel"));
         Files.writeString(output.resolve(db+".safety.json"), JSON.writeValueAsString(proof));
     }
     static void open(String db, boolean create) throws Exception {
+        open(db, create, false);
+    }
+    static void open(String db, boolean create, boolean readOnly) throws Exception {
         schema=db;
         try(var c=connection(db)) { safety(c,db,create); }
         var cfg=new HikariConfig(); cfg.setJdbcUrl(url(db)); cfg.setUsername(text(manifest,"username"));
         cfg.setPassword(System.getenv("KKIRI_CHAT_TEST_PASSWORD")); cfg.setMaximumPoolSize(4); cfg.setMinimumIdle(0);
+        cfg.setReadOnly(readOnly);
         cfg.setConnectionTimeout(5000); cfg.setTransactionIsolation("TRANSACTION_REPEATABLE_READ");
-        cfg.setConnectionInitSql("set session innodb_lock_wait_timeout=3, max_execution_time=3000"); pool=new HikariDataSource(cfg);
+        cfg.setConnectionInitSql("set session innodb_lock_wait_timeout=3, lock_wait_timeout=3, max_execution_time=3000"
+                + (readOnly ? ", transaction_read_only=1" : "")); pool=new HikariDataSource(cfg);
         Config.ddl=create ? "create-only" : "validate";
         context=new AnnotationConfigApplicationContext();
         context.getEnvironment().setActiveProfiles("chat-mysql-validation"); context.register(Config.class); context.refresh();
@@ -110,7 +116,7 @@ public class ChatMysqlValidation {
     public static void main(String[] args) throws Exception {
         ((ch.qos.logback.classic.Logger)org.slf4j.LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)).setLevel(ch.qos.logback.classic.Level.OFF);
         check(args.length==3 && System.getenv("KKIRI_CHAT_TEST_PASSWORD")!=null,"Use the PowerShell runner");
-        check(Set.of("Full","Regression").contains(args[2]),"Unsupported validation stage");
+        check(Set.of("Full","Regression","Inspect","QueryComparison","ExistingRegression","FinalPerformance","IndexCycle","Optimized100").contains(args[2]),"Unsupported validation stage");
         root=Path.of(args[0]); manifest=JSON.readValue(Files.readString(Path.of(args[1])).replace("\uFEFF",""),Map.class);
         check("created-retain-no-automatic-deletion".equals(text(manifest,"state")),"Unapproved/incomplete environment");
         output=root.resolve("backend/build/chat-mysql-validation/run-"+UUID.randomUUID()); Files.createDirectories(output);
@@ -118,9 +124,25 @@ public class ChatMysqlValidation {
         boolean passed=false;
         try {
             boolean initial=args[2].equals("Full");
-            open(text(manifest,"currentDb"),initial);
+            open(text(manifest,"currentDb"),initial,Set.of("Inspect","QueryComparison","Optimized100").contains(args[2]));
             test(initial?"safety-and-empty-schema-creation":"safety-and-existing-owned-schema-validation",()->{});
-            if(args[2].equals("Regression")) {
+            if (args[2].equals("Inspect")) {
+                ChatMysqlQueryComparison.inventory(); close();
+                open(text(manifest,"legacyDb"),false,true); ChatMysqlQueryComparison.inventory(); close();
+            } else if (args[2].equals("QueryComparison")) {
+                ChatMysqlQueryComparison.run(); close();
+            } else if (args[2].equals("FinalPerformance")) {
+                ChatMysqlFinalPerformance.run(); close();
+            } else if (args[2].equals("Optimized100")) {
+                ChatMysqlQueryComparison.optimizedHundred();close();
+            } else if (args[2].equals("IndexCycle")) {
+                close(); open(text(manifest,"legacyDb"),false); ChatMysqlIndexCycle.run(); close();
+            } else if (args[2].equals("ExistingRegression")) {
+                var original=ChatMysqlPreservation.capture("regression-original-before");
+                try { ChatMysqlChecks.run(); }
+                finally { test("regression-original-data-preserved",()->ChatMysqlPreservation.verify(original,"regression-original-after")); }
+                close();
+            } else if(args[2].equals("Regression")) {
                 test("lock-timeout-rollback-and-retry-corrected-harness",ChatMysqlChecks::timeout);
                 test("current-index-final-metadata",ChatMysqlPerformance::indexMetadata);close();
                 open(text(manifest,"legacyDb"),false);ChatMysqlMigrations.followUp();close();
@@ -136,8 +158,8 @@ public class ChatMysqlValidation {
             ChatMysqlMigrations.run();close();
             }
             // Final validate only against both owned schemas. No create/update/cleanup at shutdown.
-            open(text(manifest,"currentDb"),false); close();
-            open(text(manifest,"legacyDb"),false); close();
+            open(text(manifest,"currentDb"),false,true); close();
+            open(text(manifest,"legacyDb"),false,true); close();
             passed=results.stream().noneMatch(r->"FAIL".equals(r.get("result")));
         } catch(Throwable failure) { recordFailure("harness",failure); }
         finally {

@@ -34,6 +34,12 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 			 then '익명' else profile.nickname end) like :pattern escape '!')
 			""";
 
+	/**
+	 * HQL's limited scalar subquery selects one message ID per eligible room, then joins by PK.
+	 * The (chat_room_id, sent_at, message_id) index supports a backward scan with LIMIT 1.
+	 * Sorting still needs the latest timestamp of every matching room; profile/unread batches
+	 * are restricted to the resulting page by the service. No message candidates/anti-join.
+	 */
 	@Query(value = """
 			select new com.kkirikkiri.chat.repository.ChatRoomListRow(
 			r.chatRoomId, r.category, counterpart.user.userId, coalesce(sourcePost.postId, commentPost.postId),
@@ -42,9 +48,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 			 then true else false end, member.pinned, member.muted, latest.content, latest.sentAt,
 			(select count(allMembers) from ChatRoomMember allMembers where allMembers.chatRoom = r))
 			""" + ROOM_JOINS + """
-			 left join ChatMessage latest on latest.chatRoom = r and not exists (
-			   select newer.messageId from ChatMessage newer where newer.chatRoom = r
-			   and (newer.sentAt > latest.sentAt or (newer.sentAt = latest.sentAt and newer.messageId > latest.messageId)))
+			 left join ChatMessage latest on latest.messageId = (
+			   select newest.messageId from ChatMessage newest where newest.chatRoom = r
+			   order by newest.sentAt desc, newest.messageId desc limit 1)
 			""" + ROOM_FILTER + """
 			 order by member.pinned desc, case when latest.sentAt is null then 1 else 0 end,
 			 latest.sentAt desc, r.chatRoomId desc
