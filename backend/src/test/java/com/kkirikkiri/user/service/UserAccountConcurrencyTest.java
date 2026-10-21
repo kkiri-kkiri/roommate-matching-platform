@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import org.junit.jupiter.api.*;
@@ -58,7 +59,9 @@ class UserAccountConcurrencyTest {
             User admin=users.saveAndFlush(new User(encoder.encode("Admin1!pass"),UUID.randomUUID()+"@hknu.ac.kr",UserRole.ADMIN));
             User user=users.saveAndFlush(new User(encoder.encode("Old1!pass"),UUID.randomUUID()+"@hknu.ac.kr"));
             adminId=admin.getUserId(); userId=user.getUserId();
-            tokenId=tokens.saveAndFlush(new PasswordResetToken(user,hash,LocalDateTime.now().plusMinutes(5))).getPasswordResetTokenId();
+            // Match PasswordResetService's clock, independently of the runner's default timezone.
+            tokenId=tokens.saveAndFlush(new PasswordResetToken(user,hash,
+                    LocalDateTime.now(ZoneId.of("Asia/Seoul")).plusMinutes(5))).getPasswordResetTokenId();
         });
     }
     @AfterEach void cleanup() {
