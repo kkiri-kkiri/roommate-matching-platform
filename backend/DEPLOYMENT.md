@@ -1,5 +1,52 @@
 # user / auth 도메인 운영 준비
 
+## Playwright E2E 환경 (1단계)
+
+Java 21, Node와 기존 Yarn 잠금 파일, 로컬 Docker Linux 엔진이 필요하다. 저장소 루트에서
+`cd frontend`, `yarn install --frozen-lockfile`, `npm run test:e2e:install` 후
+`npm run test:e2e`를 실행한다. 브라우저 표시 실행은 `npm run test:e2e:headed`,
+실행기 안전 검사만 수행하려면 `npm run test:e2e:check`를 사용한다.
+Linux CI에서 Chromium 시스템 라이브러리가 없으면 `npx playwright install --with-deps chromium`으로 준비한다.
+기존 CI workflow를 변경하거나 운영 배포에 E2E 설정을 추가할 필요는 없다.
+
+실행기는 React `127.0.0.1:13000`, Spring Boot `127.0.0.1:18080`,
+MySQL `127.0.0.1:13316`을 전용으로 사용한다. 포트 점유 시 기존 서버를 재사용하거나
+종료하지 않고 실패한다. Docker는 로컬 엔진만 허용하며 `mysql:8.0.46-oraclelinux9`의
+새 컨테이너 하나를 생성한다. DB명 `kkiri_e2e_<실행별 12자리 hex>`, 전용 계정,
+임의 비밀번호와 JWT 키를 매 실행 생성한다. 기존 `.env`와 DB/SMTP/AI/Spring/JVM
+환경변수는 자식 프로세스에 전달하지 않는다. 개발·운영·기존 검증 DB를 지정하는 옵션은 없다.
+
+호스트·포트 고정에 더해 실제 접속 DB명, 계정, MySQL 8.0 버전, 새 컨테이너의 서버 UUID,
+호스트명, UTC 세션과 해당 스키마에만 한정된 권한을 JDBC로 확인한다. 빈 스키마인 경우에만
+별도 fixture 프로세스가 Entity 기반 DDL을 생성한다. Spring 서버는 기존 `validate`/SQL `never`를
+유지한다. 운영 마이그레이션을 자동 적용하거나 기존 안전 검사를 변경하지 않는다.
+
+`backend/src/e2e` 소스는 `prepareE2e` Gradle 태스크로만 준비하며 `bootJar`와 기존 test
+클래스패스에 들어가지 않는다. 전용 실행기가 `e2e` 프로필을 고정하고 실제 Controller·Service·
+Repository·Security/JWT/BCrypt·MySQL Auth 제한을 사용한다. 메모리 SMTP 대체 구현과 고정 AI
+대체 구현을 공급하고, 학교 크롤러는 호출을 거절한다. 스케줄 처리기·자동 시드·이미지 정리는
+생성 전에 제거/비활성화하고 시작 시 재검사한다. 배포 JAR에는 이러한 대체 구현이나 E2E 설정이 없다.
+
+Playwright는 `frontend/e2e/tests`만, 기존 Jest는 `src`만 검색한다. 기본 Chromium, worker 1개,
+병렬 실행/자동 재시도 없음, 테스트 45초, assertion 10초를 공통으로 사용한다. `fixtures.cjs`는
+각 테스트 전 전용 DB를 비우고 최소 기준정보와 BCrypt 비밀번호를 가진 일반 계정을 준비한다.
+테스트 후 전체 전용 데이터를 삭제하고 잔존 행이 없는지 확인한다. 브라우저의 외부 HTTP 요청은
+차단하며 실제 프론트·백엔드 요청은 그대로 전달한다. 로그인 테스트는 이메일 확인·비밀번호 로그인·
+화면 이동·새로고침 후 `/api/auth/me` JWT 검증과 MySQL 계정 존재까지 확인한다.
+향후 기능 테스트도 같은 fixture와 실행기를 사용하며 인증 응답을 모킹하거나 JWT를 주입하지 않는다.
+
+실행기는 서버 준비 완료 후에만 테스트를 시작하고, 정상/실패/일반 종료 신호에서 생성한 서버와
+소유 라벨을 확인한 컨테이너만 정리한다. DB 데이터는 tmpfs에만 저장되며 컨테이너와 함께 제거한다.
+강제 프로세스 종료나 호스트 장애는 finally 실행을 보장하지 않으므로 남은 `kkiri-e2e-*` 컨테이너의
+`kkiri.e2e.owner` 라벨을 확인한 뒤 해당 실행 자원만 정리한다.
+
+실패 시에만 trace·스크린샷과 `.cache/e2e`의 마스킹된 서버 진단 로그를 보존한다.
+trace에는 테스트용 인증 데이터가 포함될 수 있으므로 Git에 넣지 않는다. 결과 확인 후
+`npm run test:e2e:clean`으로 이번 E2E의 report·trace·스크린샷·진단 로그·임시 클래스패스와
+업로드 디렉터리를 삭제한다. 기존 테스트 증거와 마이그레이션은 정리 대상이 아니다.
+
+이 환경의 통과는 최초 로그인 연결 검증이며 설문·매칭·채팅의 전체 E2E나 운영 배포 검증을 의미하지 않는다.
+
 ## Admin·Report 결함 보완 (2026-10-20)
 
 신고 처리에 REPORT 단일 행의 비관적 쓰기 잠금·최신 상태 재검사를 추가한다. 상세 사유는
