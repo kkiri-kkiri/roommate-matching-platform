@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+    types: [opened, synchronize, reopened, edited]
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend tests and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      SPRING_PROFILES_ACTIVE: test
+      # Load only committed application config; never import a local .env.
+      SPRING_CONFIG_LOCATION: classpath:/application.properties
+      SPRING_CONFIG_IMPORT: ""
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      # The wrapper is tracked without its executable bit; bash works on Ubuntu.
+      # No test filters: new JUnit tests join this suite automatically.
+      - name: Run all JUnit tests and build bootJar
+        run: bash ./gradlew --no-daemon test bootJar
+
+  frontend:
+    name: Frontend tests and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      # package-lock.json is authoritative for npm CI; preserve yarn.lock for Yarn users.
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Run all Jest tests
+        run: npm test -- --watchAll=false --runInBand
+      - name: Build production frontend
+        run: npm run build
