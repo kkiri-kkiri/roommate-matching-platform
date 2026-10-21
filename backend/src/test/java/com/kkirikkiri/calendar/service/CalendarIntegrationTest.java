@@ -45,25 +45,41 @@ class CalendarIntegrationTest {
     @MockitoBean HknuAcademicCalendarCrawler crawler;
     TransactionTemplate tx;
     ExecutorService workers;
-    Long userId, otherId, adminId, schoolId, personalId;
+    Long userId, otherId, adminId, schoolId, dormitoryCategoryId, personalId;
+    final Set<Long> ownedRuns = ConcurrentHashMap.newKeySet();
     final LocalDate day = LocalDate.of(2026, 10, 16);
 
     @BeforeEach void setup() {
         tx = new TransactionTemplate(manager);
         workers = Executors.newFixedThreadPool(2);
+        doAnswer(call -> {
+            ScheduleCrawlRun saved = (ScheduleCrawlRun) mockingDetails(runs)
+                    .getMockCreationSettings().getDefaultAnswer().answer(call);
+            ownedRuns.add(saved.getCrawlRunId());
+            return saved;
+        }).when(runs).save(any(ScheduleCrawlRun.class));
         tx.executeWithoutResult(s -> {
             userId = users.saveAndFlush(new User("test-hash", UUID.randomUUID()+"@hknu.ac.kr")).getUserId();
             otherId = users.saveAndFlush(new User("test-hash", UUID.randomUUID()+"@hknu.ac.kr")).getUserId();
             adminId = users.saveAndFlush(new User("test-hash", UUID.randomUUID()+"@hknu.ac.kr", UserRole.ADMIN)).getUserId();
             schoolId = categories.saveAndFlush(new CalendarCategory("SCHOOL", "학교", null, true, true)).getCategoryId();
-            categories.saveAndFlush(new CalendarCategory("DORMITORY", "기숙사", null, true, true));
+            dormitoryCategoryId = categories.saveAndFlush(new CalendarCategory("DORMITORY", "기숙사", null, true, true)).getCategoryId();
         });
         personalId = calendar.createCategory(userId, category("personal")).id();
     }
     @AfterEach void cleanup() throws Exception {
         workers.shutdownNow(); assertTrue(workers.awaitTermination(10, TimeUnit.SECONDS));
         tx.executeWithoutResult(s -> {
-            events.deleteAllInBatch(); settings.deleteAllInBatch(); categories.deleteAllInBatch(); runs.deleteAllInBatch();
+            jdbc.update("""
+                    delete from CALENDAR_EVENT where owner_user_id in (?,?,?) or category_id in (?,?)
+                    """, userId, otherId, adminId, schoolId, dormitoryCategoryId);
+            jdbc.update("""
+                    delete from CALENDAR_CATEGORY_SETTING where user_id in (?,?,?) or category_id in (?,?)
+                    """, userId, otherId, adminId, schoolId, dormitoryCategoryId);
+            jdbc.update("""
+                    delete from CALENDAR_CATEGORY where owner_user_id in (?,?,?) or category_id in (?,?)
+                    """, userId, otherId, adminId, schoolId, dormitoryCategoryId);
+            ownedRuns.forEach(id -> jdbc.update("delete from SCHEDULE_CRAWL_RUN where crawl_run_id=?", id));
             users.deleteById(userId); users.deleteById(otherId); users.deleteById(adminId);
         });
     }
@@ -196,7 +212,8 @@ class CalendarIntegrationTest {
         var status = admins.getScheduleCrawlStatuses(adminId).getFirst();
         assertEquals(ScheduleCrawlStatus.FAILED, status.status()); assertEquals(completedAt, status.lastCompletedAt());
         assertNotNull(status.lastFailure());
-        runs.saveAndFlush(new ScheduleCrawlRun(ScheduleCrawlCategory.SCHOOL, java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Seoul")).plusSeconds(1)));
+        ownedRuns.add(runs.saveAndFlush(new ScheduleCrawlRun(ScheduleCrawlCategory.SCHOOL,
+                java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Seoul")).plusSeconds(1))).getCrawlRunId());
         assertEquals(ScheduleCrawlStatus.RUNNING, admins.getScheduleCrawlStatuses(adminId).getFirst().status());
     }
     @Test void sameUserCannotCreateDuplicateCategoriesConcurrently() throws Exception {
@@ -279,6 +296,7 @@ class CalendarIntegrationTest {
     @Test void historyRawDatetimeAndAdminPreserveTheMidnightBoundary() {
         var start = LocalDateTime.of(2026, 10, 16, 23, 59, 59);
         Long id = tx.execute(s -> runs.saveAndFlush(new ScheduleCrawlRun(ScheduleCrawlCategory.SCHOOL, start)).getCrawlRunId());
+        ownedRuns.add(id);
         assertEquals(start, jdbc.queryForObject("select started_at from schedule_crawl_run where crawl_run_id=?", LocalDateTime.class, id));
         assertNull(runs.findById(id).orElseThrow().getCompletedAt());
         tx.executeWithoutResult(s -> runs.findById(id).orElseThrow().complete(0, start.plusSeconds(1)));
