@@ -1,0 +1,1125 @@
+{
+  "verdict": "PASS_REPRODUCED_ON_MYSQL_8_0_46",
+  "gitCommit": "305a184f8a552897d21614f868fda71ac63aeb7e",
+  "scope": [
+    "community",
+    "chat",
+    "report",
+    "admin"
+  ],
+  "plan": {
+    "gitCommit": "305a184f8a552897d21614f868fda71ac63aeb7e",
+    "imageRequested": "mysql:8.0.46-oraclelinux9",
+    "originalRunnerHash": "ED34E546329AD3E583835FBB67DAA10B3C00E90C238FAC265539AE62BD739047",
+    "runtimeRunnerHash": "3E3ADF24748BC308E39DF14D038F4A9335C4856BEC63009B4DA6C88F632ED8CA",
+    "testJavaHash": "B724104AF2CA2EF6E51A842F1EF7FEAFFA8EE3D79FFA669D156A617CEF928A67",
+    "bootJarHash": "A6FEF54637F9C392FA76B46227F706A9EC70FA0CD3513360C730909E323CEF79",
+    "previousFinalOwner": "7880125a1d1a4e7eb1953c8371a43534",
+    "expectedCaseNames": [
+      "isolation-and-physical-schema",
+      "community-manual-migrations",
+      "community-post-http-crud",
+      "community-comment-reply-http-and-rollback",
+      "community-anonymous-concurrent-numbering",
+      "report-post-target-principal-and-duplicates",
+      "report-comment-target-principal-and-duplicates",
+      "report-user-target-principal-and-duplicates",
+      "report-description-utf16-and-datetime",
+      "report-invalid-target-and-enums",
+      "admin-auth-and-invalid-request",
+      "admin-comment-sanction-audit-and-dashboard",
+      "admin-parallel-complete",
+      "admin-parallel-suspend_user",
+      "admin-parallel-delete_post",
+      "admin-parallel-delete_comment",
+      "admin-predecessor-rollback-and-stale-refresh",
+      "admin-business-failure-rolls-back-sanctions",
+      "admin-lock-timeout-http409-and-recovery",
+      "admin-member-status-invalidates-existing-token",
+      "chat-http-creation-commit-rollback-settings",
+      "chat-single-jvm-bidirectional-socket-http-receipts-and-leave",
+      "chat-community-anonymous-source-http",
+      "community-report-chat-physical-constraints-and-rollback"
+    ],
+    "expectedCount": 24,
+    "expectedHttpRequests": 162,
+    "runtimeCopyChanges": [
+      "Use requested 8.0.46 tag rather than historical digest",
+      "Resolve original tool path from build copy",
+      "Record read-only new-container mount evidence"
+    ],
+    "backupBefore": {
+      "path": "C:\\docker-backup\\mysql-backup-20261021.tar.gz",
+      "sha256": "3ADDA20420AED894C4470B1FFBFC32B56A9B8CC06E09C5374F84C30C36AE410B",
+      "bytes": 5564055,
+      "lastWriteTimeUtc": "2026-10-21T10:25:56.1568115Z"
+    },
+    "existingContainersVisibleBefore": false,
+    "baselineCasesSource": "backend/build/ccra-mysql844-validation/run-7880125a1d1a4e7eb1953c8371a43534/cases.json"
+  },
+  "comparison": {
+    "baselineOwner": "7880125a1d1a4e7eb1953c8371a43534",
+    "currentOwner": "77f606a55c23442e9da4aa6ebb334063",
+    "caseNamesAndOrderMatch": true,
+    "all24PreviouslyPassedCasesPass": true,
+    "javaSourceMatches844": true,
+    "originalRunnerUnchanged": true,
+    "bootJarMatches844": true,
+    "domainMigrationAndReusableToolSourceHashesMatch": true,
+    "comparedSourceFiles": 125,
+    "httpCountMatches": true,
+    "normalizedHttpStatusDistributionMatches": true,
+    "finalRowCountsMatch": true,
+    "newFailures": [],
+    "missingCases": [],
+    "addedCases": []
+  },
+  "environment": [
+    {
+      "version": "8.0.46",
+      "db": "kkiriccra77f606a55c23",
+      "uuid": "84be4353-cd3b-11f1-bcc2-6a3c5933a786",
+      "hostname": "kkiri-ccra",
+      "isolationLevel": "REPEATABLE-READ",
+      "zone": "+00:00"
+    }
+  ],
+  "artifact": {
+    "mysqlVersion": "8.0.46",
+    "database": "kkiriccra77f606a55c23",
+    "containerOwner": "77f606a55c23442e9da4aa6ebb334063",
+    "gitCommit": "305a184f8a552897d21614f868fda71ac63aeb7e",
+    "bootJarSha256": "a6fef54637f9c392fa76b46227f706a9ec70fa0cd3513360c730909e323cef79",
+    "java": "21.0.11"
+  },
+  "container": {
+    "containerId": "d4a0dd9fb38bebb519bdfdeabb9672666c2500cf255edb58c4d76b58497d687d",
+    "owner": "77f606a55c23442e9da4aa6ebb334063",
+    "expectedVersion": "8.0.46",
+    "port": 13326,
+    "serverUuid": "84be4353-cd3b-11f1-bcc2-6a3c5933a786",
+    "container": "kkiri-ccra-mysql-20261021",
+    "image": "mysql:8.0.46-oraclelinux9",
+    "imageId": "sha256:6cd09145362dfe6831b14545de3d5fd6cc75c37cfd6ef8561429c1fc73518b39"
+  },
+  "isolation": {
+    "name": "/kkiri-ccra-mysql-20261021",
+    "owner": "77f606a55c23442e9da4aa6ebb334063",
+    "bindings": [
+      {
+        "HostIp": "127.0.0.1",
+        "HostPort": "13326"
+      }
+    ],
+    "mounts": [],
+    "imageId": "sha256:6cd09145362dfe6831b14545de3d5fd6cc75c37cfd6ef8561429c1fc73518b39",
+    "containerId": "d4a0dd9fb38bebb519bdfdeabb9672666c2500cf255edb58c4d76b58497d687d"
+  },
+  "grants": [
+    {
+      "Grants for ccra_77f606a55c23@%": "GRANT USAGE ON *.* TO `ccra_77f606a55c23`@`%`"
+    },
+    {
+      "Grants for ccra_77f606a55c23@%": "GRANT ALL PRIVILEGES ON `kkiriccra77f606a55c23`.* TO `ccra_77f606a55c23`@`%`"
+    },
+    {
+      "Grants for ccra_77f606a55c23@%": "GRANT SELECT ON `performance_schema`.`data_lock_waits` TO `ccra_77f606a55c23`@`%`"
+    }
+  ],
+  "baselineSummary": {
+    "finishedUtc": "2026-10-21T07:20:10.594178700Z",
+    "executed": 24,
+    "serverStopped": true,
+    "httpRequests": 162,
+    "passed": 24,
+    "singleJvm": true,
+    "incomplete": 0,
+    "failed": 0,
+    "skipped": 0
+  },
+  "summary": {
+    "skipped": 0,
+    "failed": 0,
+    "incomplete": 0,
+    "singleJvm": true,
+    "passed": 24,
+    "httpRequests": 162,
+    "serverStopped": true,
+    "executed": 24,
+    "finishedUtc": "2026-10-21T10:39:13.929082900Z"
+  },
+  "cases": [
+    {
+      "name": "isolation-and-physical-schema",
+      "expected": "new empty MySQL 8.0.46/RR schema, exact schema-only grants, all InnoDB",
+      "actual": [
+        {
+          "version": "8.0.46",
+          "db": "kkiriccra77f606a55c23",
+          "account": "ccra_77f606a55c23@%",
+          "uuid": "84be4353-cd3b-11f1-bcc2-6a3c5933a786",
+          "hostname": "kkiri-ccra",
+          "port": 3306,
+          "lowerCase": 0,
+          "sqlMode": "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION",
+          "zone": "+00:00"
+        }
+      ],
+      "result": "PASS",
+      "elapsedMillis": 34
+    },
+    {
+      "name": "community-manual-migrations",
+      "expected": "apply anonymous authors and image cleanup scripts to empty legacy tables; validate actual physical names and indexes",
+      "actual": {
+        "physicalTableIdentifiersAdapted": true,
+        "scripts": 2
+      },
+      "result": "PASS",
+      "elapsedMillis": 342
+    },
+    {
+      "name": "community-post-http-crud",
+      "expected": "multipart create/update/read and soft delete; author Principal and MySQL final state",
+      "actual": {
+        "post": 1
+      },
+      "result": "PASS",
+      "elapsedMillis": 1495
+    },
+    {
+      "name": "community-comment-reply-http-and-rollback",
+      "expected": "1000 UTF16 units; replies, Principal, ownership and invalid writes preserve committed thread",
+      "actual": {
+        "post": 2,
+        "comment": 1,
+        "reply": 2
+      },
+      "result": "PASS",
+      "elapsedMillis": 767
+    },
+    {
+      "name": "community-anonymous-concurrent-numbering",
+      "expected": "8 simultaneous distinct writers on one post have one mapping each and distinct positive numbers",
+      "actual": {
+        "writers": 8,
+        "mappings": [
+          {
+            "author_id": 11,
+            "anonymous_number": 1
+          },
+          {
+            "author_id": 6,
+            "anonymous_number": 2
+          },
+          {
+            "author_id": 9,
+            "anonymous_number": 3
+          },
+          {
+            "author_id": 12,
+            "anonymous_number": 4
+          },
+          {
+            "author_id": 7,
+            "anonymous_number": 5
+          },
+          {
+            "author_id": 8,
+            "anonymous_number": 6
+          },
+          {
+            "author_id": 10,
+            "anonymous_number": 7
+          },
+          {
+            "author_id": 13,
+            "anonymous_number": 8
+          }
+        ]
+      },
+      "result": "PASS",
+      "elapsedMillis": 498
+    },
+    {
+      "name": "report-post-target-principal-and-duplicates",
+      "expected": "actual target author FK, nullable references, independent reporter and duplicates after every status",
+      "actual": {
+        "report": 1,
+        "independent": 2,
+        "final": {
+          "comment_id": null,
+          "created_at": "2026-10-21T10:38:55",
+          "post_id": 4,
+          "processed_at": "2026-10-21T10:38:55",
+          "processed_by": 4,
+          "report_id": 1,
+          "reporter_id": 1,
+          "target_user_id": 14,
+          "resolution_action": "NONE",
+          "reason": "욕설·비방",
+          "description": null,
+          "report_type": "POST",
+          "status": "REJECTED"
+        }
+      },
+      "result": "PASS",
+      "elapsedMillis": 578
+    },
+    {
+      "name": "report-comment-target-principal-and-duplicates",
+      "expected": "actual target author FK, nullable references, independent reporter and duplicates after every status",
+      "actual": {
+        "report": 3,
+        "independent": 4,
+        "final": {
+          "comment_id": 12,
+          "created_at": "2026-10-21T10:38:56",
+          "post_id": null,
+          "processed_at": "2026-10-21T10:38:56",
+          "processed_by": 4,
+          "report_id": 3,
+          "reporter_id": 1,
+          "target_user_id": 15,
+          "resolution_action": "NONE",
+          "reason": "욕설·비방",
+          "description": null,
+          "report_type": "COMMENT",
+          "status": "REJECTED"
+        }
+      },
+      "result": "PASS",
+      "elapsedMillis": 555
+    },
+    {
+      "name": "report-user-target-principal-and-duplicates",
+      "expected": "actual target author FK, nullable references, independent reporter and duplicates after every status",
+      "actual": {
+        "report": 5,
+        "independent": 6,
+        "final": {
+          "comment_id": null,
+          "created_at": "2026-10-21T10:38:56",
+          "post_id": null,
+          "processed_at": "2026-10-21T10:38:57",
+          "processed_by": 4,
+          "report_id": 5,
+          "reporter_id": 1,
+          "target_user_id": 16,
+          "resolution_action": "NONE",
+          "reason": "욕설·비방",
+          "description": null,
+          "report_type": "USER",
+          "status": "REJECTED"
+        }
+      },
+      "result": "PASS",
+      "elapsedMillis": 580
+    },
+    {
+      "name": "report-description-utf16-and-datetime",
+      "expected": "499/500 ASCII, Korean and emoji persist exactly; 501/70000 reject; new/processed times have seconds precision",
+      "actual": {
+        "rejected": 6,
+        "column": [
+          {
+            "COLUMN_NAME": "created_at",
+            "COLUMN_TYPE": "datetime",
+            "DATETIME_PRECISION": 0
+          },
+          {
+            "COLUMN_NAME": "processed_at",
+            "COLUMN_TYPE": "datetime",
+            "DATETIME_PRECISION": 0
+          },
+          {
+            "COLUMN_NAME": "description",
+            "COLUMN_TYPE": "text",
+            "DATETIME_PRECISION": null
+          }
+        ],
+        "accepted": 6
+      },
+      "result": "PASS",
+      "elapsedMillis": 1423
+    },
+    {
+      "name": "report-invalid-target-and-enums",
+      "expected": "invalid and nonexistent USER/POST/COMMENT, reason and unauthenticated request return contract errors with no rows",
+      "actual": {
+        "unchanged": 12
+      },
+      "result": "PASS",
+      "elapsedMillis": 257
+    },
+    {
+      "name": "admin-auth-and-invalid-request",
+      "expected": "guest/user/DB-suspended admin denied; invalid status/action rejected without history mutation",
+      "actual": {
+        "historyPreserved": true
+      },
+      "result": "PASS",
+      "elapsedMillis": 332
+    },
+    {
+      "name": "admin-comment-sanction-audit-and-dashboard",
+      "expected": "DELETE_TARGET cascades reply status, preserves sibling, audit and content; dashboard active counts and report filters agree",
+      "actual": {
+        "comment_id": 14,
+        "created_at": "2026-10-21T10:38:59",
+        "post_id": null,
+        "processed_at": "2026-10-21T10:38:59",
+        "processed_by": 4,
+        "report_id": 14,
+        "reporter_id": 1,
+        "target_user_id": 2,
+        "resolution_action": "DELETE_TARGET",
+        "reason": "욕설·비방",
+        "description": null,
+        "report_type": "COMMENT",
+        "status": "COMPLETED"
+      },
+      "result": "PASS",
+      "elapsedMillis": 972
+    },
+    {
+      "name": "admin-parallel-complete",
+      "expected": "two real HTTP handlers wait on same MySQL REPORT lock; exactly one decision commits, loser INVALID_REQUEST",
+      "actual": {
+        "secondStatus": 200,
+        "final": {
+          "comment_id": null,
+          "created_at": "2026-10-21T10:39:00",
+          "post_id": null,
+          "processed_at": "2026-10-21T10:39:00",
+          "processed_by": 5,
+          "report_id": 15,
+          "reporter_id": 1,
+          "target_user_id": 30,
+          "resolution_action": "NONE",
+          "reason": "욕설·비방",
+          "description": null,
+          "report_type": "USER",
+          "status": "REJECTED"
+        },
+        "observedWaiters": 2,
+        "firstStatus": 400
+      },
+      "result": "PASS",
+      "elapsedMillis": 283
+    },
+    {
+      "name": "admin-parallel-suspend_user",
+      "expected": "two real HTTP handlers wait on same MySQL REPORT lock; exactly one decision commits, loser INVALID_REQUEST",
+      "actual": {
+        "secondStatus": 400,
+        "final": {
+          "comment_id": null,
+          "created_at": "2026-10-21T10:39:00",
+          "post_id": null,
+          "processed_at": "2026-10-21T10:39:00",
+          "processed_by": 4,
+          "report_id": 16,
+          "reporter_id": 1,
+          "target_user_id": 31,
+          "resolution_action": "SUSPEND_USER",
+          "reason": "욕설·비방",
+          "description": null,
+          "report_type": "USER",
+          "status": "COMPLETED"
+        },
+        "observedWaiters": 2,
+        "firstStatus": 200
+      },
+      "result": "PASS",
+      "elapsedMillis": 333
+    },
+    {
+      "name": "admin-parallel-delete_post",
+      "expected": "two real HTTP handlers wait on same MySQL REPORT lock; exactly one decision commits, loser INVALID_REQUEST",
+      "actual": {
+        "secondStatus": 400,
+        "final": {
+          "comment_id": null,
+          "created_at": "2026-10-21T10:39:01",
+          "post_id": 10,
+          "processed_at": "2026-10-21T10:39:01",
+          "processed_by": 4,
+          "report_id": 17,
+          "reporter_id": 1,
+          "target_user_id": 32,
+          "resolution_action": "DELETE_TARGET",
+          "reason": "욕설·비방",
+          "description": null,
+          "report_type": "POST",
+          "status": "COMPLETED"
+        },
+        "observedWaiters": 2,
+        "firstStatus": 200
+      },
+      "result": "PASS",
+      "elapsedMillis": 407
+    },
+    {
+      "name": "admin-parallel-delete_comment",
+      "expected": "two real HTTP handlers wait on same MySQL REPORT lock; exactly one decision commits, loser INVALID_REQUEST",
+      "actual": {
+        "secondStatus": 200,
+        "final": {
+          "comment_id": 20,
+          "created_at": "2026-10-21T10:39:01",
+          "post_id": null,
+          "processed_at": "2026-10-21T10:39:01",
+          "processed_by": 5,
+          "report_id": 18,
+          "reporter_id": 1,
+          "target_user_id": 33,
+          "resolution_action": "NONE",
+          "reason": "욕설·비방",
+          "description": null,
+          "report_type": "COMMENT",
+          "status": "REJECTED"
+        },
+        "observedWaiters": 2,
+        "firstStatus": 400
+      },
+      "result": "PASS",
+      "elapsedMillis": 314
+    },
+    {
+      "name": "admin-predecessor-rollback-and-stale-refresh",
+      "expected": "rollback wakes HTTP waiter; repository refresh replaces a previously loaded PENDING under RR; reentrant decision preserved",
+      "actual": {
+        "reentrantRollback": 21,
+        "rollbackWaiter": 19,
+        "staleRefresh": 20
+      },
+      "result": "PASS",
+      "elapsedMillis": 494
+    },
+    {
+      "name": "admin-business-failure-rolls-back-sanctions",
+      "expected": "future creation time raises IllegalArgumentException/HTTP500 after user/post/comment sanction; audit and targets all roll back",
+      "actual": {
+        "rollbackTargets": 3
+      },
+      "result": "PASS",
+      "elapsedMillis": 1323
+    },
+    {
+      "name": "admin-lock-timeout-http409-and-recovery",
+      "expected": "session 3s InnoDB wait produces 1205/HTTP409, audit unchanged, retry succeeds after release; JPA 5s hint not claimed",
+      "actual": {
+        "recovered": true,
+        "elapsedMillis": 3644,
+        "sessionLockWaitSeconds": 3
+      },
+      "result": "PASS",
+      "elapsedMillis": 3836
+    },
+    {
+      "name": "admin-member-status-invalidates-existing-token",
+      "expected": "SUSPENDED denies old JWT writes; ACTIVE restores; WITHDRAWN cannot restore",
+      "actual": {
+        "user": 41,
+        "finalStatus": "WITHDRAWN"
+      },
+      "result": "PASS",
+      "elapsedMillis": 457
+    },
+    {
+      "name": "chat-http-creation-commit-rollback-settings",
+      "expected": "real creation/reuse commits one room/two members; absent profile rolls all back; settings null/empty preserve",
+      "actual": {
+        "members": 2,
+        "failedCreationRolledBack": true,
+        "room": 1
+      },
+      "result": "PASS",
+      "elapsedMillis": 996
+    },
+    {
+      "name": "chat-single-jvm-bidirectional-socket-http-receipts-and-leave",
+      "expected": "real two WebSockets deliver both ways; polling read-only, exact-ID receipt commit; outsider and departed reader rejected",
+      "actual": {
+        "bidirectional": true,
+        "departedDeliveryBlocked": true,
+        "room": 3
+      },
+      "result": "PASS",
+      "elapsedMillis": 2388
+    },
+    {
+      "name": "chat-community-anonymous-source-http",
+      "expected": "anonymous POST/COMMENT rooms derive target, separate sources, hide counterpart IDs and preserve exact source FK",
+      "actual": {
+        "postRoom": 4,
+        "commentRoom": 5,
+        "sources": [
+          {
+            "room_key": "COMMUNITY:1:2:POST:15",
+            "source_post_id": 15,
+            "source_comment_id": null
+          },
+          {
+            "room_key": "COMMUNITY:1:2:COMMENT:27",
+            "source_post_id": null,
+            "source_comment_id": 27
+          }
+        ]
+      },
+      "result": "PASS",
+      "elapsedMillis": 430
+    },
+    {
+      "name": "community-report-chat-physical-constraints-and-rollback",
+      "expected": "actual PK/FK/UNIQUE/NOT NULL reject SQL; preceding updates rolled back; no API-only invariant misreported as UNIQUE",
+      "actual": {
+        "rejectedStatements": 8,
+        "historyPreserved": true,
+        "constraints": [
+          {
+            "TABLE_NAME": "chat_message",
+            "CONSTRAINT_NAME": "FKj52yap2xrm9u0721dct0tjor9",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "chat_message",
+            "CONSTRAINT_NAME": "FKm92rh2bmfw19xcn7nj5vrixsi",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "chat_message",
+            "CONSTRAINT_NAME": "PRIMARY",
+            "CONSTRAINT_TYPE": "PRIMARY KEY"
+          },
+          {
+            "TABLE_NAME": "chat_room",
+            "CONSTRAINT_NAME": "FK5v6whuh8fypr74ui340qm1r50",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "chat_room",
+            "CONSTRAINT_NAME": "FKqvknwt0ptufx03f8vsk7h4or8",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "chat_room",
+            "CONSTRAINT_NAME": "PRIMARY",
+            "CONSTRAINT_TYPE": "PRIMARY KEY"
+          },
+          {
+            "TABLE_NAME": "chat_room",
+            "CONSTRAINT_NAME": "UK4imf88ip3nqhruyjnth9preun",
+            "CONSTRAINT_TYPE": "UNIQUE"
+          },
+          {
+            "TABLE_NAME": "chat_room_member",
+            "CONSTRAINT_NAME": "FK8qnke6998ykuonhfmlyuff7i",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "chat_room_member",
+            "CONSTRAINT_NAME": "FKo6a9v51aal2574fjb1ldlw4di",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "chat_room_member",
+            "CONSTRAINT_NAME": "PRIMARY",
+            "CONSTRAINT_TYPE": "PRIMARY KEY"
+          },
+          {
+            "TABLE_NAME": "chat_room_member",
+            "CONSTRAINT_NAME": "UK5w48j1kpcas1d6bo377vd6vuk",
+            "CONSTRAINT_TYPE": "UNIQUE"
+          },
+          {
+            "TABLE_NAME": "community_anonymous_author",
+            "CONSTRAINT_NAME": "fk_anonymous_author",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "community_anonymous_author",
+            "CONSTRAINT_NAME": "fk_anonymous_post",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "community_anonymous_author",
+            "CONSTRAINT_NAME": "PRIMARY",
+            "CONSTRAINT_TYPE": "PRIMARY KEY"
+          },
+          {
+            "TABLE_NAME": "community_anonymous_author",
+            "CONSTRAINT_NAME": "uk_anonymous_post_author",
+            "CONSTRAINT_TYPE": "UNIQUE"
+          },
+          {
+            "TABLE_NAME": "community_anonymous_author",
+            "CONSTRAINT_NAME": "uk_anonymous_post_number",
+            "CONSTRAINT_TYPE": "UNIQUE"
+          },
+          {
+            "TABLE_NAME": "community_comment",
+            "CONSTRAINT_NAME": "FKc9uwylbfjnaqp2kjrdl5bu3na",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "community_comment",
+            "CONSTRAINT_NAME": "FKfea6idg4j3uju940v21hheqpj",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "community_comment",
+            "CONSTRAINT_NAME": "FKrve078nctpgytx54f5jp98po3",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "community_comment",
+            "CONSTRAINT_NAME": "PRIMARY",
+            "CONSTRAINT_TYPE": "PRIMARY KEY"
+          },
+          {
+            "TABLE_NAME": "community_post",
+            "CONSTRAINT_NAME": "FK3ian8urh5ex8dc0p5dn4sjh2f",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "community_post",
+            "CONSTRAINT_NAME": "FK7bgjugrkn0o4jflhtr09vik8q",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "community_post",
+            "CONSTRAINT_NAME": "PRIMARY",
+            "CONSTRAINT_TYPE": "PRIMARY KEY"
+          },
+          {
+            "TABLE_NAME": "report",
+            "CONSTRAINT_NAME": "FK6kjunt0n7tx475cdbx3tg0f3i",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "report",
+            "CONSTRAINT_NAME": "FKc78heo0dtkkfoxtrni4l49qav",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "report",
+            "CONSTRAINT_NAME": "FKd0u65s2ve6it4n725m7ogr4wp",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "report",
+            "CONSTRAINT_NAME": "FKf989rcep0ntl8n8xbs920a21e",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "report",
+            "CONSTRAINT_NAME": "FKndpjl61ubcm2tkf7ml1ynq13t",
+            "CONSTRAINT_TYPE": "FOREIGN KEY"
+          },
+          {
+            "TABLE_NAME": "report",
+            "CONSTRAINT_NAME": "PRIMARY",
+            "CONSTRAINT_TYPE": "PRIMARY KEY"
+          }
+        ]
+      },
+      "result": "PASS",
+      "elapsedMillis": 1307
+    }
+  ],
+  "migrations": [
+    {
+      "source": "20261013_community_anonymous_authors.sql",
+      "identifierAdaptation": "uppercase table tokens to observed lowercase physical names; DDL/data logic unchanged",
+      "executedSql": "\n\n\nCREATE TABLE IF NOT EXISTS community_anonymous_author (\n    anonymous_author_id BIGINT NOT NULL AUTO_INCREMENT,\n    post_id BIGINT NOT NULL,\n    author_id BIGINT NOT NULL,\n    anonymous_number BIGINT NOT NULL,\n    PRIMARY KEY (anonymous_author_id),\n    CONSTRAINT uk_anonymous_post_author UNIQUE (post_id, author_id),\n    CONSTRAINT uk_anonymous_post_number UNIQUE (post_id, anonymous_number),\n    CONSTRAINT fk_anonymous_post FOREIGN KEY (post_id) REFERENCES community_post (post_id),\n    CONSTRAINT fk_anonymous_author FOREIGN KEY (author_id) REFERENCES `user` (user_id)\n) ENGINE=InnoDB;\n",
+      "sourceSha256": "a49a8cd8573656e27ae0048998f7e5388587a4d5092fc88440990a59d6774078"
+    },
+    {
+      "source": "20261019_post_image_cleanup.sql",
+      "identifierAdaptation": "uppercase table tokens to observed lowercase physical names; DDL/data logic unchanged",
+      "executedSql": "\n\nCREATE TABLE post_image_cleanup (\n    cleanup_id BIGINT NOT NULL AUTO_INCREMENT,\n    image_url VARCHAR(500) NOT NULL,\n    attempts INT NOT NULL,\n    next_attempt_at DATETIME NOT NULL,\n    created_at DATETIME NOT NULL,\n    PRIMARY KEY (cleanup_id),\n    INDEX idx_image_cleanup_due (next_attempt_at, cleanup_id)\n) ENGINE=InnoDB;\n\n\n\nCREATE INDEX idx_post_image_url ON post_image (image_url);\n",
+      "sourceSha256": "102b6e7321bd13ab1209bb12f4f6483e791d4a888c4a67b44cb5e37ffcd3dd12"
+    }
+  ],
+  "finalState": {
+    "rowCounts": {
+      "chat_message": 3,
+      "chat_room": 4,
+      "chat_room_member": 8,
+      "community_anonymous_author": 10,
+      "community_comment": 28,
+      "community_post": 16,
+      "post_image_cleanup": 0,
+      "report": 26,
+      "user": 46
+    },
+    "reportOrphans": 0,
+    "reports": [
+      {
+        "report_id": 1,
+        "report_type": "POST",
+        "status": "REJECTED",
+        "resolution_action": "NONE",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:38:55",
+        "processed_at": "2026-10-21T10:38:55"
+      },
+      {
+        "report_id": 2,
+        "report_type": "POST",
+        "status": "COMPLETED",
+        "resolution_action": "NONE",
+        "processed_by": 5,
+        "created_at": "2026-10-21T10:38:56",
+        "processed_at": "2026-10-21T10:38:56"
+      },
+      {
+        "report_id": 3,
+        "report_type": "COMMENT",
+        "status": "REJECTED",
+        "resolution_action": "NONE",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:38:56",
+        "processed_at": "2026-10-21T10:38:56"
+      },
+      {
+        "report_id": 4,
+        "report_type": "COMMENT",
+        "status": "COMPLETED",
+        "resolution_action": "NONE",
+        "processed_by": 5,
+        "created_at": "2026-10-21T10:38:56",
+        "processed_at": "2026-10-21T10:38:56"
+      },
+      {
+        "report_id": 5,
+        "report_type": "USER",
+        "status": "REJECTED",
+        "resolution_action": "NONE",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:38:56",
+        "processed_at": "2026-10-21T10:38:57"
+      },
+      {
+        "report_id": 6,
+        "report_type": "USER",
+        "status": "COMPLETED",
+        "resolution_action": "NONE",
+        "processed_by": 5,
+        "created_at": "2026-10-21T10:38:57",
+        "processed_at": "2026-10-21T10:38:57"
+      },
+      {
+        "report_id": 7,
+        "report_type": "USER",
+        "status": "COMPLETED",
+        "resolution_action": "NONE",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:38:57",
+        "processed_at": "2026-10-21T10:38:57"
+      },
+      {
+        "report_id": 8,
+        "report_type": "USER",
+        "status": "COMPLETED",
+        "resolution_action": "NONE",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:38:57",
+        "processed_at": "2026-10-21T10:38:57"
+      },
+      {
+        "report_id": 9,
+        "report_type": "USER",
+        "status": "COMPLETED",
+        "resolution_action": "NONE",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:38:57",
+        "processed_at": "2026-10-21T10:38:57"
+      },
+      {
+        "report_id": 10,
+        "report_type": "USER",
+        "status": "COMPLETED",
+        "resolution_action": "NONE",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:38:57",
+        "processed_at": "2026-10-21T10:38:58"
+      },
+      {
+        "report_id": 11,
+        "report_type": "USER",
+        "status": "COMPLETED",
+        "resolution_action": "NONE",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:38:58",
+        "processed_at": "2026-10-21T10:38:58"
+      },
+      {
+        "report_id": 12,
+        "report_type": "USER",
+        "status": "COMPLETED",
+        "resolution_action": "NONE",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:38:58",
+        "processed_at": "2026-10-21T10:38:58"
+      },
+      {
+        "report_id": 13,
+        "report_type": "USER",
+        "status": "PENDING",
+        "resolution_action": null,
+        "processed_by": null,
+        "created_at": "2026-10-21T10:38:59",
+        "processed_at": null
+      },
+      {
+        "report_id": 14,
+        "report_type": "COMMENT",
+        "status": "COMPLETED",
+        "resolution_action": "DELETE_TARGET",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:38:59",
+        "processed_at": "2026-10-21T10:38:59"
+      },
+      {
+        "report_id": 15,
+        "report_type": "USER",
+        "status": "REJECTED",
+        "resolution_action": "NONE",
+        "processed_by": 5,
+        "created_at": "2026-10-21T10:39:00",
+        "processed_at": "2026-10-21T10:39:00"
+      },
+      {
+        "report_id": 16,
+        "report_type": "USER",
+        "status": "COMPLETED",
+        "resolution_action": "SUSPEND_USER",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:39:00",
+        "processed_at": "2026-10-21T10:39:00"
+      },
+      {
+        "report_id": 17,
+        "report_type": "POST",
+        "status": "COMPLETED",
+        "resolution_action": "DELETE_TARGET",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:39:01",
+        "processed_at": "2026-10-21T10:39:01"
+      },
+      {
+        "report_id": 18,
+        "report_type": "COMMENT",
+        "status": "REJECTED",
+        "resolution_action": "NONE",
+        "processed_by": 5,
+        "created_at": "2026-10-21T10:39:01",
+        "processed_at": "2026-10-21T10:39:01"
+      },
+      {
+        "report_id": 19,
+        "report_type": "USER",
+        "status": "REJECTED",
+        "resolution_action": "NONE",
+        "processed_by": 5,
+        "created_at": "2026-10-21T10:39:01",
+        "processed_at": "2026-10-21T10:39:01"
+      },
+      {
+        "report_id": 20,
+        "report_type": "USER",
+        "status": "COMPLETED",
+        "resolution_action": "NONE",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:39:01",
+        "processed_at": "2026-10-21T10:39:01"
+      },
+      {
+        "report_id": 21,
+        "report_type": "USER",
+        "status": "PENDING",
+        "resolution_action": null,
+        "processed_by": null,
+        "created_at": "2026-10-21T10:39:02",
+        "processed_at": null
+      },
+      {
+        "report_id": 22,
+        "report_type": "USER",
+        "status": "PENDING",
+        "resolution_action": null,
+        "processed_by": null,
+        "created_at": "2026-10-21T10:39:02",
+        "processed_at": null
+      },
+      {
+        "report_id": 23,
+        "report_type": "POST",
+        "status": "PENDING",
+        "resolution_action": null,
+        "processed_by": null,
+        "created_at": "2026-10-21T10:39:02",
+        "processed_at": null
+      },
+      {
+        "report_id": 24,
+        "report_type": "COMMENT",
+        "status": "PENDING",
+        "resolution_action": null,
+        "processed_by": null,
+        "created_at": "2026-10-21T10:39:03",
+        "processed_at": null
+      },
+      {
+        "report_id": 25,
+        "report_type": "USER",
+        "status": "COMPLETED",
+        "resolution_action": "NONE",
+        "processed_by": 4,
+        "created_at": "2026-10-21T10:39:03",
+        "processed_at": "2026-10-21T10:39:07"
+      },
+      {
+        "report_id": 26,
+        "report_type": "COMMENT",
+        "status": "PENDING",
+        "resolution_action": null,
+        "processed_by": null,
+        "created_at": "2026-10-21T10:39:11",
+        "processed_at": null
+      }
+    ],
+    "auditInvariantViolations": 0,
+    "containerRemovalOwnsAllRows": true
+  },
+  "expectedConstraintErrors": [
+    {
+      "vendorCode": 1062,
+      "sqlState": "23000"
+    },
+    {
+      "vendorCode": 1048,
+      "sqlState": "23000"
+    },
+    {
+      "vendorCode": 1452,
+      "sqlState": "23000"
+    },
+    {
+      "vendorCode": 1451,
+      "sqlState": "23000"
+    },
+    {
+      "vendorCode": 1062,
+      "sqlState": "23000"
+    },
+    {
+      "vendorCode": 1062,
+      "sqlState": "23000"
+    },
+    {
+      "vendorCode": 1452,
+      "sqlState": "23000"
+    },
+    {
+      "vendorCode": 1048,
+      "sqlState": "23000"
+    }
+  ],
+  "lockTimeoutSqlErrors": [
+    {
+      "type": "com.mysql.cj.jdbc.exceptions.MySQLTransactionRollbackException",
+      "vendorCode": 1205,
+      "sqlState": "40001"
+    }
+  ],
+  "cleanup": {
+    "existingContainersChanged": false,
+    "containerId": "d4a0dd9fb38bebb519bdfdeabb9672666c2500cf255edb58c4d76b58497d687d",
+    "removed": true,
+    "owner": "77f606a55c23442e9da4aa6ebb334063",
+    "container": "kkiri-ccra-mysql-20261021"
+  },
+  "dockerBefore": {
+    "context": "desktop-linux",
+    "containers": [],
+    "volumes": [
+      "0ca0b81454181a02bcda42c0de667cccd4528c876985d29223406d8e53e08abe",
+      "0f9ab61e8e6846aaa9121811ce33e0a19cd3f38c7dc0d4476ac028e8903e231b",
+      "2b7213b2010bd7a13c52553575ec8af13442dc30c500aa061422f35f7e4305c0",
+      "3a20deedb2688d6e741c0036804d7bc4c89d61aa433030d4aff6e4a5cd248d83",
+      "037d91f4bace50605991ea9079dbb3d92c037e88ce239355823f401986108c76",
+      "60a2e8efe851c2ab0a989dd96430b8273eb4926c9c5fcd9d7661f1e178188072",
+      "72dfa20039cb51262ac958ac07f65e54896fefb434653e2870376247f68333a2",
+      "7075ce7a837c93ce8d42612879e4f8171431d7a169ecfbda5a23d69af698e73f",
+      "a42846842dbeeef69230f71776cb6e78f08b461f8ab498a918ff431d08acf8ff",
+      "af9e588f4aa86878c17e5d02305b2922364c98467c49e147887d3f7853674ca9",
+      "buildx_buildkit_mysql846-isolated0_state",
+      "c890a498adfb7632c2ec6f81f61543f3ddeb7c6b1f014a554a9fe5e0e8608ed9"
+    ]
+  },
+  "dockerAfter": {
+    "context": "desktop-linux",
+    "containers": [],
+    "volumes": [
+      "0ca0b81454181a02bcda42c0de667cccd4528c876985d29223406d8e53e08abe",
+      "0f9ab61e8e6846aaa9121811ce33e0a19cd3f38c7dc0d4476ac028e8903e231b",
+      "2b7213b2010bd7a13c52553575ec8af13442dc30c500aa061422f35f7e4305c0",
+      "3a20deedb2688d6e741c0036804d7bc4c89d61aa433030d4aff6e4a5cd248d83",
+      "037d91f4bace50605991ea9079dbb3d92c037e88ce239355823f401986108c76",
+      "60a2e8efe851c2ab0a989dd96430b8273eb4926c9c5fcd9d7661f1e178188072",
+      "72dfa20039cb51262ac958ac07f65e54896fefb434653e2870376247f68333a2",
+      "7075ce7a837c93ce8d42612879e4f8171431d7a169ecfbda5a23d69af698e73f",
+      "a42846842dbeeef69230f71776cb6e78f08b461f8ab498a918ff431d08acf8ff",
+      "af9e588f4aa86878c17e5d02305b2922364c98467c49e147887d3f7853674ca9",
+      "buildx_buildkit_mysql846-isolated0_state",
+      "c890a498adfb7632c2ec6f81f61543f3ddeb7c6b1f014a554a9fe5e0e8608ed9"
+    ]
+  },
+  "preservation": {
+    "volumesUnchanged": true,
+    "legacyVolumeStillListed": true,
+    "backupUnchanged": true,
+    "backupBefore": {
+      "path": "C:\\docker-backup\\mysql-backup-20261021.tar.gz",
+      "sha256": "3ADDA20420AED894C4470B1FFBFC32B56A9B8CC06E09C5374F84C30C36AE410B",
+      "bytes": 5564055,
+      "lastWriteTimeUtc": "2026-10-21T10:25:56.1568115Z"
+    },
+    "backupAfter": {
+      "path": "C:\\docker-backup\\mysql-backup-20261021.tar.gz",
+      "sha256": "3ADDA20420AED894C4470B1FFBFC32B56A9B8CC06E09C5374F84C30C36AE410B",
+      "bytes": 5564055,
+      "lastWriteTimeUtc": "2026-10-21T10:25:56.1568115Z"
+    },
+    "oldContainersNotVisibleBeforeAndAfter": true
+  },
+  "boundaries": {
+    "productionCodeChanged": false,
+    "testExpectationsChanged": false,
+    "originalRunnerChanged": false,
+    "playwrightExecuted": false,
+    "h2Substituted": false,
+    "dockerSettingsChanged": false,
+    "oldVolumesMounted": false,
+    "developmentOrProductionDbAccessed": false
+  },
+  "rawArtifactHashes": {
+    "artifact.json": "a911f530332f6da577e84e6229e76667960188670f24bef70eefe628ea96aebd",
+    "cases.json": "56e31a343545e4647429cdc52412acc7b199ff0bf0abef28e5471242582b9b75",
+    "constraints.json": "efcf096200b72a470870d5eae95df673cccf0cd98a4c0978b210a426a483e31a",
+    "environment.json": "78a6ccd087641faea82eed91357830478fe8a7f6988e13405c063a2ff41abf1c",
+    "final-state.json": "77ce13cba1099a44d3b67e5d2c96cb7b4626f8f82a7d5b8bc5b630218629abc9",
+    "grants.json": "c72514482f4c58db9a2df5f85a82ca75037694133b6e8682fbee128c0842819a",
+    "migrations.json": "22cccf117eac2ce389fa7f807c8e3e55b68d70b4e40764215aa24b3b08e33fd7",
+    "requests.json": "bfc6fab32d6294df8310d2c23498cda0cae8e7356b39d0822a27fae1893d5829",
+    "schema.json": "84029107948f158d7e8dc9cf68445c11b82308f3121fb3e0ef0e9466940b70d8",
+    "servers.json": "a095cb1dab7b9835f3d3f843a7ae35e4750eee29bf46b0aeba2d1d3d5b821747",
+    "source-hashes.json": "eef268a8eebc41a744d852409754c5d0485d2af8f917e9eaea70b1b11720bfb7",
+    "summary.json": "1256b134be2d53649dcea1693056ab559c6709ea39a860736c75fbaa808a52e7"
+  },
+  "executionLogSha256": "c3f710696306fa09a3591cf7e442b40d905a3bbe0380ec15f6b26f5317046961"
+}

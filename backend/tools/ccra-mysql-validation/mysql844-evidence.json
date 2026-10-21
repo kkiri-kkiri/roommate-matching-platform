@@ -1,0 +1,2006 @@
+﻿{
+    "verdict":  "PASS_FINAL_ON_MYSQL_8_0_44",
+    "gitCommit":  "305a184f8a552897d21614f868fda71ac63aeb7e",
+    "scope":  [
+                  "community",
+                  "chat",
+                  "report",
+                  "admin"
+              ],
+    "distinctFinalCases":  24,
+    "allAttemptCases":  48,
+    "allAttemptPassed":  46,
+    "allAttemptFailed":  2,
+    "allAttemptSkipped":  0,
+    "allHttpRequests":  322,
+    "initialFailureClassification":  "Verifier GET route and nested dashboard stats path errors; original records preserved",
+    "sourceHashesRecordedAfterRun":  [
+                                         {
+                                             "sha256":  "ED34E546329AD3E583835FBB67DAA10B3C00E90C238FAC265539AE62BD739047",
+                                             "file":  "backend/tools/ccra-mysql-validation/run.ps1"
+                                         },
+                                         {
+                                             "sha256":  "B724104AF2CA2EF6E51A842F1EF7FEAFFA8EE3D79FFA669D156A617CEF928A67",
+                                             "file":  "backend/tools/ccra-mysql-validation/CcraMysqlValidation.java"
+                                         },
+                                         {
+                                             "sha256":  "DD410B4123B7A860D6D26A99960331DAE4E45A95B0A20E22D47FAA02BD66B238",
+                                             "file":  "backend/build/ccra-mysql844-validation/generated/MatchingMultiSupport.java"
+                                         },
+                                         {
+                                             "sha256":  "0DF0871F92CB18A97D90160C49762DCEC0B75191D7B3F480D3F8EE372C6034F3",
+                                             "file":  "backend/build/ccra-mysql844-validation/generated/MatchingMultiServer.java"
+                                         },
+                                         {
+                                             "sha256":  "61AF330CAC4F06F62D1F0CD25AB5FC38D4641935BB80065AFCBB3ED40EF11A40",
+                                             "file":  "frontend/e2e/run.cjs"
+                                         },
+                                         {
+                                             "sha256":  "4D1F1B95FD20A7ABA82E1060B28ABFABEEF4CA1BEA3CD6CB681755FC299493C7",
+                                             "file":  "backend/build.gradle"
+                                         }
+                                     ],
+    "productionCodeChanged":  false,
+    "existingRunnerDefaultsChanged":  false,
+    "dockerDesktopRestarted":  false,
+    "systemSettingsChanged":  false,
+    "developmentOrProductionDbAccessed":  false,
+    "preservedContainerIds":  [
+                                  "42528a4bbec4e8c00efbe1e12bcd0e7eacd019d91b816d08d9d4f529558ae89c",
+                                  "3acf9c77ee5687cdbcc1d994ab49a6eed1ec3bb86741994367dd2c9f394c30f3"
+                              ],
+    "preservedExistingVolume":  "a42846842dbeeef69230f71776cb6e78f08b461f8ab498a918ff431d08acf8ff",
+    "runs":  [
+                 {
+                     "owner":  "d76678f05e644f4a9c5ed234372da900",
+                     "artifact":  {
+                                      "java":  "21.0.11",
+                                      "bootJarSha256":  "a6fef54637f9c392fa76b46227f706a9ec70fa0cd3513360c730909e323cef79",
+                                      "gitCommit":  "305a184f8a552897d21614f868fda71ac63aeb7e",
+                                      "containerOwner":  "d76678f05e644f4a9c5ed234372da900",
+                                      "database":  "kkiriccrad76678f05e64",
+                                      "mysqlVersion":  "8.0.44"
+                                  },
+                     "container":  {
+                                       "containerId":  "1b5fbb3c61f5730d5178307548c2067162828dc087d0a3df9ffce884692d225b",
+                                       "owner":  "d76678f05e644f4a9c5ed234372da900",
+                                       "expectedVersion":  "8.0.44",
+                                       "port":  13326,
+                                       "serverUuid":  "72c8fbf7-cd1f-11f1-a4c4-5e9493c358db",
+                                       "container":  "kkiri-ccra-mysql844-20261021",
+                                       "image":  "mysql:8.0.44",
+                                       "imageId":  "sha256:9c3380eac945af0736031b200027f581925927c81e010056214a4bd6b6693714"
+                                   },
+                     "environment":  {
+                                         "value":  [
+                                                       {
+                                                           "version":  "8.0.44",
+                                                           "db":  "kkiriccrad76678f05e64",
+                                                           "uuid":  "72c8fbf7-cd1f-11f1-a4c4-5e9493c358db",
+                                                           "hostname":  "kkiri-ccra",
+                                                           "isolationLevel":  "REPEATABLE-READ",
+                                                           "zone":  "+00:00"
+                                                       }
+                                                   ],
+                                         "Count":  1
+                                     },
+                     "grants":  {
+                                    "value":  [
+                                                  {
+                                                      "Grants for ccra_d76678f05e64@%":  "GRANT USAGE ON *.* TO `ccra_d76678f05e64`@`%`"
+                                                  },
+                                                  {
+                                                      "Grants for ccra_d76678f05e64@%":  "GRANT ALL PRIVILEGES ON `kkiriccrad76678f05e64`.* TO `ccra_d76678f05e64`@`%`"
+                                                  },
+                                                  {
+                                                      "Grants for ccra_d76678f05e64@%":  "GRANT SELECT ON `performance_schema`.`data_lock_waits` TO `ccra_d76678f05e64`@`%`"
+                                                  }
+                                              ],
+                                    "Count":  3
+                                },
+                     "summary":  {
+                                     "skipped":  0,
+                                     "failed":  2,
+                                     "incomplete":  0,
+                                     "singleJvm":  true,
+                                     "passed":  22,
+                                     "httpRequests":  160,
+                                     "serverStopped":  true,
+                                     "executed":  24,
+                                     "finishedUtc":  "2026-10-21T07:18:05.934907700Z"
+                                 },
+                     "cases":  {
+                                   "value":  [
+                                                 {
+                                                     "name":  "isolation-and-physical-schema",
+                                                     "expected":  "new empty MySQL 8.0.44/RR schema, exact schema-only grants, all InnoDB",
+                                                     "actual":  [
+                                                                    {
+                                                                        "version":  "8.0.44",
+                                                                        "db":  "kkiriccrad76678f05e64",
+                                                                        "account":  "ccra_d76678f05e64@%",
+                                                                        "uuid":  "72c8fbf7-cd1f-11f1-a4c4-5e9493c358db",
+                                                                        "hostname":  "kkiri-ccra",
+                                                                        "port":  3306,
+                                                                        "lowerCase":  0,
+                                                                        "sqlMode":  "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION",
+                                                                        "zone":  "+00:00"
+                                                                    }
+                                                                ],
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  23
+                                                 },
+                                                 {
+                                                     "name":  "community-manual-migrations",
+                                                     "expected":  "apply anonymous authors and image cleanup scripts to empty legacy tables; validate actual physical names and indexes",
+                                                     "actual":  {
+                                                                    "physicalTableIdentifiersAdapted":  true,
+                                                                    "scripts":  2
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  229
+                                                 },
+                                                 {
+                                                     "name":  "community-post-http-crud",
+                                                     "expected":  "multipart create/update/read and soft delete; author Principal and MySQL final state",
+                                                     "actual":  {
+                                                                    "post":  1
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  1193
+                                                 },
+                                                 {
+                                                     "name":  "community-comment-reply-http-and-rollback",
+                                                     "expected":  "1000 UTF16 units; replies, Principal, ownership and invalid writes preserve committed thread",
+                                                     "actual":  {
+                                                                    "post":  2,
+                                                                    "comment":  1,
+                                                                    "reply":  2
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  583
+                                                 },
+                                                 {
+                                                     "name":  "community-anonymous-concurrent-numbering",
+                                                     "expected":  "8 simultaneous distinct writers on one post have one mapping each and distinct positive numbers",
+                                                     "result":  "FAIL",
+                                                     "error":  {
+                                                                   "causes":  [
+                                                                                  {
+                                                                                      "class":  "java.lang.AssertionError",
+                                                                                      "assertion":  "Expected 200/, received 401/UNAUTHORIZED",
+                                                                                      "frames":  [
+                                                                                                     "kmi.MatchingMultiSupport.check(MatchingMultiSupport.java:22)",
+                                                                                                     "kmi.MatchingMultiInstance.expect(MatchingMultiInstance.java:113)",
+                                                                                                     "kmi.CcraMysqlValidation.lambda$community$11(CcraMysqlValidation.java:145)",
+                                                                                                     "kmi.MatchingMultiInstance.test(MatchingMultiInstance.java:126)",
+                                                                                                     "kmi.CcraMysqlValidation.community(CcraMysqlValidation.java:142)",
+                                                                                                     "kmi.CcraMysqlValidation.main(CcraMysqlValidation.java:61)"
+                                                                                                 ]
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                     "elapsedMillis":  419
+                                                 },
+                                                 {
+                                                     "name":  "report-post-target-principal-and-duplicates",
+                                                     "expected":  "actual target author FK, nullable references, independent reporter and duplicates after every status",
+                                                     "actual":  {
+                                                                    "report":  1,
+                                                                    "independent":  2,
+                                                                    "final":  {
+                                                                                  "comment_id":  null,
+                                                                                  "created_at":  "2026-10-21T07:17:51",
+                                                                                  "post_id":  4,
+                                                                                  "processed_at":  "2026-10-21T07:17:51",
+                                                                                  "processed_by":  4,
+                                                                                  "report_id":  1,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  14,
+                                                                                  "resolution_action":  "NONE",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "POST",
+                                                                                  "status":  "REJECTED"
+                                                                              }
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  464
+                                                 },
+                                                 {
+                                                     "name":  "report-comment-target-principal-and-duplicates",
+                                                     "expected":  "actual target author FK, nullable references, independent reporter and duplicates after every status",
+                                                     "actual":  {
+                                                                    "report":  3,
+                                                                    "independent":  4,
+                                                                    "final":  {
+                                                                                  "comment_id":  12,
+                                                                                  "created_at":  "2026-10-21T07:17:51",
+                                                                                  "post_id":  null,
+                                                                                  "processed_at":  "2026-10-21T07:17:52",
+                                                                                  "processed_by":  4,
+                                                                                  "report_id":  3,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  15,
+                                                                                  "resolution_action":  "NONE",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "COMMENT",
+                                                                                  "status":  "REJECTED"
+                                                                              }
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  440
+                                                 },
+                                                 {
+                                                     "name":  "report-user-target-principal-and-duplicates",
+                                                     "expected":  "actual target author FK, nullable references, independent reporter and duplicates after every status",
+                                                     "actual":  {
+                                                                    "report":  5,
+                                                                    "independent":  6,
+                                                                    "final":  {
+                                                                                  "comment_id":  null,
+                                                                                  "created_at":  "2026-10-21T07:17:52",
+                                                                                  "post_id":  null,
+                                                                                  "processed_at":  "2026-10-21T07:17:52",
+                                                                                  "processed_by":  4,
+                                                                                  "report_id":  5,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  16,
+                                                                                  "resolution_action":  "NONE",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "USER",
+                                                                                  "status":  "REJECTED"
+                                                                              }
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  426
+                                                 },
+                                                 {
+                                                     "name":  "report-description-utf16-and-datetime",
+                                                     "expected":  "499/500 ASCII, Korean and emoji persist exactly; 501/70000 reject; new/processed times have seconds precision",
+                                                     "actual":  {
+                                                                    "column":  [
+                                                                                   {
+                                                                                       "COLUMN_NAME":  "created_at",
+                                                                                       "COLUMN_TYPE":  "datetime",
+                                                                                       "DATETIME_PRECISION":  0
+                                                                                   },
+                                                                                   {
+                                                                                       "COLUMN_NAME":  "description",
+                                                                                       "COLUMN_TYPE":  "text",
+                                                                                       "DATETIME_PRECISION":  null
+                                                                                   },
+                                                                                   {
+                                                                                       "COLUMN_NAME":  "processed_at",
+                                                                                       "COLUMN_TYPE":  "datetime",
+                                                                                       "DATETIME_PRECISION":  0
+                                                                                   }
+                                                                               ],
+                                                                    "accepted":  6,
+                                                                    "rejected":  6
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  1187
+                                                 },
+                                                 {
+                                                     "name":  "report-invalid-target-and-enums",
+                                                     "expected":  "invalid and nonexistent USER/POST/COMMENT, reason and unauthenticated request return contract errors with no rows",
+                                                     "actual":  {
+                                                                    "unchanged":  12
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  277
+                                                 },
+                                                 {
+                                                     "name":  "admin-auth-and-invalid-request",
+                                                     "expected":  "guest/user/DB-suspended admin denied; invalid status/action rejected without history mutation",
+                                                     "actual":  {
+                                                                    "historyPreserved":  true
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  226
+                                                 },
+                                                 {
+                                                     "name":  "admin-comment-sanction-audit-and-dashboard",
+                                                     "expected":  "DELETE_TARGET cascades reply status, preserves sibling, audit and content; dashboard active counts and report filters agree",
+                                                     "result":  "FAIL",
+                                                     "error":  {
+                                                                   "causes":  [
+                                                                                  {
+                                                                                      "class":  "java.lang.AssertionError",
+                                                                                      "assertion":  "Dashboard comments",
+                                                                                      "frames":  [
+                                                                                                     "kmi.MatchingMultiSupport.check(MatchingMultiSupport.java:22)",
+                                                                                                     "kmi.CcraMysqlValidation.lambda$administration$16(CcraMysqlValidation.java:189)",
+                                                                                                     "kmi.MatchingMultiInstance.test(MatchingMultiInstance.java:126)",
+                                                                                                     "kmi.CcraMysqlValidation.administration(CcraMysqlValidation.java:184)",
+                                                                                                     "kmi.CcraMysqlValidation.main(CcraMysqlValidation.java:61)"
+                                                                                                 ]
+                                                                                  }
+                                                                              ]
+                                                               },
+                                                     "elapsedMillis":  619
+                                                 },
+                                                 {
+                                                     "name":  "admin-parallel-complete",
+                                                     "expected":  "two real HTTP handlers wait on same MySQL REPORT lock; exactly one decision commits, loser INVALID_REQUEST",
+                                                     "actual":  {
+                                                                    "secondStatus":  400,
+                                                                    "final":  {
+                                                                                  "comment_id":  null,
+                                                                                  "created_at":  "2026-10-21T07:17:55",
+                                                                                  "post_id":  null,
+                                                                                  "processed_at":  "2026-10-21T07:17:55",
+                                                                                  "processed_by":  4,
+                                                                                  "report_id":  15,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  30,
+                                                                                  "resolution_action":  "NONE",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "USER",
+                                                                                  "status":  "COMPLETED"
+                                                                              },
+                                                                    "observedWaiters":  2,
+                                                                    "firstStatus":  200
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  276
+                                                 },
+                                                 {
+                                                     "name":  "admin-parallel-suspend_user",
+                                                     "expected":  "two real HTTP handlers wait on same MySQL REPORT lock; exactly one decision commits, loser INVALID_REQUEST",
+                                                     "actual":  {
+                                                                    "secondStatus":  400,
+                                                                    "final":  {
+                                                                                  "comment_id":  null,
+                                                                                  "created_at":  "2026-10-21T07:17:55",
+                                                                                  "post_id":  null,
+                                                                                  "processed_at":  "2026-10-21T07:17:55",
+                                                                                  "processed_by":  4,
+                                                                                  "report_id":  16,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  31,
+                                                                                  "resolution_action":  "SUSPEND_USER",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "USER",
+                                                                                  "status":  "COMPLETED"
+                                                                              },
+                                                                    "observedWaiters":  2,
+                                                                    "firstStatus":  200
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  231
+                                                 },
+                                                 {
+                                                     "name":  "admin-parallel-delete_post",
+                                                     "expected":  "two real HTTP handlers wait on same MySQL REPORT lock; exactly one decision commits, loser INVALID_REQUEST",
+                                                     "actual":  {
+                                                                    "secondStatus":  400,
+                                                                    "final":  {
+                                                                                  "comment_id":  null,
+                                                                                  "created_at":  "2026-10-21T07:17:55",
+                                                                                  "post_id":  10,
+                                                                                  "processed_at":  "2026-10-21T07:17:55",
+                                                                                  "processed_by":  4,
+                                                                                  "report_id":  17,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  32,
+                                                                                  "resolution_action":  "DELETE_TARGET",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "POST",
+                                                                                  "status":  "COMPLETED"
+                                                                              },
+                                                                    "observedWaiters":  2,
+                                                                    "firstStatus":  200
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  313
+                                                 },
+                                                 {
+                                                     "name":  "admin-parallel-delete_comment",
+                                                     "expected":  "two real HTTP handlers wait on same MySQL REPORT lock; exactly one decision commits, loser INVALID_REQUEST",
+                                                     "actual":  {
+                                                                    "secondStatus":  400,
+                                                                    "final":  {
+                                                                                  "comment_id":  20,
+                                                                                  "created_at":  "2026-10-21T07:17:56",
+                                                                                  "post_id":  null,
+                                                                                  "processed_at":  "2026-10-21T07:17:56",
+                                                                                  "processed_by":  4,
+                                                                                  "report_id":  18,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  33,
+                                                                                  "resolution_action":  "DELETE_TARGET",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "COMMENT",
+                                                                                  "status":  "COMPLETED"
+                                                                              },
+                                                                    "observedWaiters":  2,
+                                                                    "firstStatus":  200
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  387
+                                                 },
+                                                 {
+                                                     "name":  "admin-predecessor-rollback-and-stale-refresh",
+                                                     "expected":  "rollback wakes HTTP waiter; repository refresh replaces a previously loaded PENDING under RR; reentrant decision preserved",
+                                                     "actual":  {
+                                                                    "rollbackWaiter":  19,
+                                                                    "staleRefresh":  20,
+                                                                    "reentrantRollback":  21
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  410
+                                                 },
+                                                 {
+                                                     "name":  "admin-business-failure-rolls-back-sanctions",
+                                                     "expected":  "future creation time raises IllegalArgumentException/HTTP500 after user/post/comment sanction; audit and targets all roll back",
+                                                     "actual":  {
+                                                                    "rollbackTargets":  3
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  1276
+                                                 },
+                                                 {
+                                                     "name":  "admin-lock-timeout-http409-and-recovery",
+                                                     "expected":  "session 3s InnoDB wait produces 1205/HTTP409, audit unchanged, retry succeeds after release; JPA 5s hint not claimed",
+                                                     "actual":  {
+                                                                    "recovered":  true,
+                                                                    "elapsedMillis":  3535,
+                                                                    "sessionLockWaitSeconds":  3
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  3668
+                                                 },
+                                                 {
+                                                     "name":  "admin-member-status-invalidates-existing-token",
+                                                     "expected":  "SUSPENDED denies old JWT writes; ACTIVE restores; WITHDRAWN cannot restore",
+                                                     "actual":  {
+                                                                    "user":  41,
+                                                                    "finalStatus":  "WITHDRAWN"
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  202
+                                                 },
+                                                 {
+                                                     "name":  "chat-http-creation-commit-rollback-settings",
+                                                     "expected":  "real creation/reuse commits one room/two members; absent profile rolls all back; settings null/empty preserve",
+                                                     "actual":  {
+                                                                    "failedCreationRolledBack":  true,
+                                                                    "room":  1,
+                                                                    "members":  2
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  522
+                                                 },
+                                                 {
+                                                     "name":  "chat-single-jvm-bidirectional-socket-http-receipts-and-leave",
+                                                     "expected":  "real two WebSockets deliver both ways; polling read-only, exact-ID receipt commit; outsider and departed reader rejected",
+                                                     "actual":  {
+                                                                    "departedDeliveryBlocked":  true,
+                                                                    "room":  3,
+                                                                    "bidirectional":  true
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  1610
+                                                 },
+                                                 {
+                                                     "name":  "chat-community-anonymous-source-http",
+                                                     "expected":  "anonymous POST/COMMENT rooms derive target, separate sources, hide counterpart IDs and preserve exact source FK",
+                                                     "actual":  {
+                                                                    "postRoom":  4,
+                                                                    "commentRoom":  5,
+                                                                    "sources":  [
+                                                                                    {
+                                                                                        "room_key":  "COMMUNITY:1:2:POST:15",
+                                                                                        "source_post_id":  15,
+                                                                                        "source_comment_id":  null
+                                                                                    },
+                                                                                    {
+                                                                                        "room_key":  "COMMUNITY:1:2:COMMENT:27",
+                                                                                        "source_post_id":  null,
+                                                                                        "source_comment_id":  27
+                                                                                    }
+                                                                                ]
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  229
+                                                 },
+                                                 {
+                                                     "name":  "community-report-chat-physical-constraints-and-rollback",
+                                                     "expected":  "actual PK/FK/UNIQUE/NOT NULL reject SQL; preceding updates rolled back; no API-only invariant misreported as UNIQUE",
+                                                     "actual":  {
+                                                                    "rejectedStatements":  8,
+                                                                    "historyPreserved":  true,
+                                                                    "constraints":  [
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_message",
+                                                                                            "CONSTRAINT_NAME":  "FKj52yap2xrm9u0721dct0tjor9",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_message",
+                                                                                            "CONSTRAINT_NAME":  "FKm92rh2bmfw19xcn7nj5vrixsi",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_message",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room",
+                                                                                            "CONSTRAINT_NAME":  "FK5v6whuh8fypr74ui340qm1r50",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room",
+                                                                                            "CONSTRAINT_NAME":  "FKqvknwt0ptufx03f8vsk7h4or8",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room",
+                                                                                            "CONSTRAINT_NAME":  "UK4imf88ip3nqhruyjnth9preun",
+                                                                                            "CONSTRAINT_TYPE":  "UNIQUE"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room_member",
+                                                                                            "CONSTRAINT_NAME":  "FK8qnke6998ykuonhfmlyuff7i",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room_member",
+                                                                                            "CONSTRAINT_NAME":  "FKo6a9v51aal2574fjb1ldlw4di",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room_member",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room_member",
+                                                                                            "CONSTRAINT_NAME":  "UK5w48j1kpcas1d6bo377vd6vuk",
+                                                                                            "CONSTRAINT_TYPE":  "UNIQUE"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_anonymous_author",
+                                                                                            "CONSTRAINT_NAME":  "fk_anonymous_author",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_anonymous_author",
+                                                                                            "CONSTRAINT_NAME":  "fk_anonymous_post",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_anonymous_author",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_anonymous_author",
+                                                                                            "CONSTRAINT_NAME":  "uk_anonymous_post_author",
+                                                                                            "CONSTRAINT_TYPE":  "UNIQUE"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_anonymous_author",
+                                                                                            "CONSTRAINT_NAME":  "uk_anonymous_post_number",
+                                                                                            "CONSTRAINT_TYPE":  "UNIQUE"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_comment",
+                                                                                            "CONSTRAINT_NAME":  "FKc9uwylbfjnaqp2kjrdl5bu3na",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_comment",
+                                                                                            "CONSTRAINT_NAME":  "FKfea6idg4j3uju940v21hheqpj",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_comment",
+                                                                                            "CONSTRAINT_NAME":  "FKrve078nctpgytx54f5jp98po3",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_comment",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_post",
+                                                                                            "CONSTRAINT_NAME":  "FK3ian8urh5ex8dc0p5dn4sjh2f",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_post",
+                                                                                            "CONSTRAINT_NAME":  "FK7bgjugrkn0o4jflhtr09vik8q",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_post",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "report",
+                                                                                            "CONSTRAINT_NAME":  "FK6kjunt0n7tx475cdbx3tg0f3i",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "report",
+                                                                                            "CONSTRAINT_NAME":  "FKc78heo0dtkkfoxtrni4l49qav",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "report",
+                                                                                            "CONSTRAINT_NAME":  "FKd0u65s2ve6it4n725m7ogr4wp",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "report",
+                                                                                            "CONSTRAINT_NAME":  "FKf989rcep0ntl8n8xbs920a21e",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "report",
+                                                                                            "CONSTRAINT_NAME":  "FKndpjl61ubcm2tkf7ml1ynq13t",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "report",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        }
+                                                                                    ]
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  930
+                                                 }
+                                             ],
+                                   "Count":  24
+                               },
+                     "finalState":  {
+                                        "rowCounts":  {
+                                                          "chat_message":  3,
+                                                          "chat_room":  4,
+                                                          "chat_room_member":  8,
+                                                          "community_anonymous_author":  10,
+                                                          "community_comment":  28,
+                                                          "community_post":  16,
+                                                          "post_image_cleanup":  0,
+                                                          "report":  26,
+                                                          "user":  46
+                                                      },
+                                        "reportOrphans":  0,
+                                        "reports":  [
+                                                        {
+                                                            "report_id":  1,
+                                                            "report_type":  "POST",
+                                                            "status":  "REJECTED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:51",
+                                                            "processed_at":  "2026-10-21T07:17:51"
+                                                        },
+                                                        {
+                                                            "report_id":  2,
+                                                            "report_type":  "POST",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  5,
+                                                            "created_at":  "2026-10-21T07:17:51",
+                                                            "processed_at":  "2026-10-21T07:17:51"
+                                                        },
+                                                        {
+                                                            "report_id":  3,
+                                                            "report_type":  "COMMENT",
+                                                            "status":  "REJECTED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:51",
+                                                            "processed_at":  "2026-10-21T07:17:52"
+                                                        },
+                                                        {
+                                                            "report_id":  4,
+                                                            "report_type":  "COMMENT",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  5,
+                                                            "created_at":  "2026-10-21T07:17:52",
+                                                            "processed_at":  "2026-10-21T07:17:52"
+                                                        },
+                                                        {
+                                                            "report_id":  5,
+                                                            "report_type":  "USER",
+                                                            "status":  "REJECTED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:52",
+                                                            "processed_at":  "2026-10-21T07:17:52"
+                                                        },
+                                                        {
+                                                            "report_id":  6,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  5,
+                                                            "created_at":  "2026-10-21T07:17:52",
+                                                            "processed_at":  "2026-10-21T07:17:52"
+                                                        },
+                                                        {
+                                                            "report_id":  7,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:52",
+                                                            "processed_at":  "2026-10-21T07:17:52"
+                                                        },
+                                                        {
+                                                            "report_id":  8,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:52",
+                                                            "processed_at":  "2026-10-21T07:17:52"
+                                                        },
+                                                        {
+                                                            "report_id":  9,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:53",
+                                                            "processed_at":  "2026-10-21T07:17:53"
+                                                        },
+                                                        {
+                                                            "report_id":  10,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:53",
+                                                            "processed_at":  "2026-10-21T07:17:53"
+                                                        },
+                                                        {
+                                                            "report_id":  11,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:53",
+                                                            "processed_at":  "2026-10-21T07:17:53"
+                                                        },
+                                                        {
+                                                            "report_id":  12,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:53",
+                                                            "processed_at":  "2026-10-21T07:17:53"
+                                                        },
+                                                        {
+                                                            "report_id":  13,
+                                                            "report_type":  "USER",
+                                                            "status":  "PENDING",
+                                                            "resolution_action":  null,
+                                                            "processed_by":  null,
+                                                            "created_at":  "2026-10-21T07:17:54",
+                                                            "processed_at":  null
+                                                        },
+                                                        {
+                                                            "report_id":  14,
+                                                            "report_type":  "COMMENT",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "DELETE_TARGET",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:54",
+                                                            "processed_at":  "2026-10-21T07:17:54"
+                                                        },
+                                                        {
+                                                            "report_id":  15,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:55",
+                                                            "processed_at":  "2026-10-21T07:17:55"
+                                                        },
+                                                        {
+                                                            "report_id":  16,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "SUSPEND_USER",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:55",
+                                                            "processed_at":  "2026-10-21T07:17:55"
+                                                        },
+                                                        {
+                                                            "report_id":  17,
+                                                            "report_type":  "POST",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "DELETE_TARGET",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:55",
+                                                            "processed_at":  "2026-10-21T07:17:55"
+                                                        },
+                                                        {
+                                                            "report_id":  18,
+                                                            "report_type":  "COMMENT",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "DELETE_TARGET",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:56",
+                                                            "processed_at":  "2026-10-21T07:17:56"
+                                                        },
+                                                        {
+                                                            "report_id":  19,
+                                                            "report_type":  "USER",
+                                                            "status":  "REJECTED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  5,
+                                                            "created_at":  "2026-10-21T07:17:56",
+                                                            "processed_at":  "2026-10-21T07:17:56"
+                                                        },
+                                                        {
+                                                            "report_id":  20,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:56",
+                                                            "processed_at":  "2026-10-21T07:17:56"
+                                                        },
+                                                        {
+                                                            "report_id":  21,
+                                                            "report_type":  "USER",
+                                                            "status":  "PENDING",
+                                                            "resolution_action":  null,
+                                                            "processed_by":  null,
+                                                            "created_at":  "2026-10-21T07:17:56",
+                                                            "processed_at":  null
+                                                        },
+                                                        {
+                                                            "report_id":  22,
+                                                            "report_type":  "USER",
+                                                            "status":  "PENDING",
+                                                            "resolution_action":  null,
+                                                            "processed_by":  null,
+                                                            "created_at":  "2026-10-21T07:17:56",
+                                                            "processed_at":  null
+                                                        },
+                                                        {
+                                                            "report_id":  23,
+                                                            "report_type":  "POST",
+                                                            "status":  "PENDING",
+                                                            "resolution_action":  null,
+                                                            "processed_by":  null,
+                                                            "created_at":  "2026-10-21T07:17:57",
+                                                            "processed_at":  null
+                                                        },
+                                                        {
+                                                            "report_id":  24,
+                                                            "report_type":  "COMMENT",
+                                                            "status":  "PENDING",
+                                                            "resolution_action":  null,
+                                                            "processed_by":  null,
+                                                            "created_at":  "2026-10-21T07:17:57",
+                                                            "processed_at":  null
+                                                        },
+                                                        {
+                                                            "report_id":  25,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:17:58",
+                                                            "processed_at":  "2026-10-21T07:18:01"
+                                                        },
+                                                        {
+                                                            "report_id":  26,
+                                                            "report_type":  "COMMENT",
+                                                            "status":  "PENDING",
+                                                            "resolution_action":  null,
+                                                            "processed_by":  null,
+                                                            "created_at":  "2026-10-21T07:18:04",
+                                                            "processed_at":  null
+                                                        }
+                                                    ],
+                                        "auditInvariantViolations":  0,
+                                        "containerRemovalOwnsAllRows":  true
+                                    },
+                     "physicalConstraintErrors":  [
+                                                      {
+                                                          "vendorCode":  1062,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1048,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1452,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1451,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1062,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1062,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1452,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1048,
+                                                          "sqlState":  "23000"
+                                                      }
+                                                  ],
+                     "cleanup":  {
+                                     "existingContainersChanged":  false,
+                                     "containerId":  "1b5fbb3c61f5730d5178307548c2067162828dc087d0a3df9ffce884692d225b",
+                                     "removed":  true,
+                                     "owner":  "d76678f05e644f4a9c5ed234372da900",
+                                     "container":  "kkiri-ccra-mysql844-20261021"
+                                 },
+                     "artifactHashes":  [
+                                            {
+                                                "file":  "artifact.json",
+                                                "Hash":  "6CA2CBB522FD320FF1E119CA5C116EB02A0C75571803701FCE66D07402BA7207"
+                                            },
+                                            {
+                                                "file":  "cases.json",
+                                                "Hash":  "6561AD2ADEB6AE0B225DCE0DE9926053E992E535A577125D2B9448B4A2BA4CA0"
+                                            },
+                                            {
+                                                "file":  "constraints.json",
+                                                "Hash":  "EFCF096200B72A470870D5EAE95DF673CCCF0CD98A4C0978B210A426A483E31A"
+                                            },
+                                            {
+                                                "file":  "environment.json",
+                                                "Hash":  "8324211EA03F5AB4E6515F506B7C20245731929C4EBF2EAC9039AEA2AF8F1826"
+                                            },
+                                            {
+                                                "file":  "final-state.json",
+                                                "Hash":  "56CC473877F2FBE6722CAB360817F21F66C6E2CBAC45489D5D5E4DE459261F68"
+                                            },
+                                            {
+                                                "file":  "grants.json",
+                                                "Hash":  "9A4B5D35827653A023C0FA840185CC178465A82F5FFFFE06C45BAF97964FB00D"
+                                            },
+                                            {
+                                                "file":  "migrations.json",
+                                                "Hash":  "679E83C7FB8876D27B8A6805C12B1D5E9CCE547D5B5E5C977A1B9BEDE82419F5"
+                                            },
+                                            {
+                                                "file":  "requests.json",
+                                                "Hash":  "413B4BDDCB8D1600B309312F2A377C561CCBC291CE26D6A9D92E577BC4AF174B"
+                                            },
+                                            {
+                                                "file":  "schema.json",
+                                                "Hash":  "84029107948F158D7E8DC9CF68445C11B82308F3121FB3E0EF0E9466940B70D8"
+                                            },
+                                            {
+                                                "file":  "servers.json",
+                                                "Hash":  "EF5E8A9C8404E540E4F8350D58FA0786B9B11307379A019032DAF26E3546DC01"
+                                            },
+                                            {
+                                                "file":  "source-hashes.json",
+                                                "Hash":  "EEF268A8EEBC41A744D852409754C5D0485D2AF8F917E9EAEA70B1B11720BFB7"
+                                            },
+                                            {
+                                                "file":  "summary.json",
+                                                "Hash":  "029E1FEB207DC81CFCBCA1B87576E7A2540E48E0330D28476CE1140FA1D8FDA5"
+                                            }
+                                        ]
+                 },
+                 {
+                     "owner":  "7880125a1d1a4e7eb1953c8371a43534",
+                     "artifact":  {
+                                      "bootJarSha256":  "a6fef54637f9c392fa76b46227f706a9ec70fa0cd3513360c730909e323cef79",
+                                      "gitCommit":  "305a184f8a552897d21614f868fda71ac63aeb7e",
+                                      "containerOwner":  "7880125a1d1a4e7eb1953c8371a43534",
+                                      "database":  "kkiriccra7880125a1d1a",
+                                      "mysqlVersion":  "8.0.44",
+                                      "java":  "21.0.11"
+                                  },
+                     "container":  {
+                                       "containerId":  "4302a7f91c6dea8a91ca289356fbc3b52f8deeaa9093bddb15185d95706f1f0e",
+                                       "owner":  "7880125a1d1a4e7eb1953c8371a43534",
+                                       "expectedVersion":  "8.0.44",
+                                       "port":  13326,
+                                       "serverUuid":  "c020278e-cd1f-11f1-b380-3e9ee0069495",
+                                       "container":  "kkiri-ccra-mysql844-20261021",
+                                       "image":  "mysql:8.0.44",
+                                       "imageId":  "sha256:9c3380eac945af0736031b200027f581925927c81e010056214a4bd6b6693714"
+                                   },
+                     "environment":  {
+                                         "value":  [
+                                                       {
+                                                           "version":  "8.0.44",
+                                                           "db":  "kkiriccra7880125a1d1a",
+                                                           "uuid":  "c020278e-cd1f-11f1-b380-3e9ee0069495",
+                                                           "hostname":  "kkiri-ccra",
+                                                           "isolationLevel":  "REPEATABLE-READ",
+                                                           "zone":  "+00:00"
+                                                       }
+                                                   ],
+                                         "Count":  1
+                                     },
+                     "grants":  {
+                                    "value":  [
+                                                  {
+                                                      "Grants for ccra_7880125a1d1a@%":  "GRANT USAGE ON *.* TO `ccra_7880125a1d1a`@`%`"
+                                                  },
+                                                  {
+                                                      "Grants for ccra_7880125a1d1a@%":  "GRANT ALL PRIVILEGES ON `kkiriccra7880125a1d1a`.* TO `ccra_7880125a1d1a`@`%`"
+                                                  },
+                                                  {
+                                                      "Grants for ccra_7880125a1d1a@%":  "GRANT SELECT ON `performance_schema`.`data_lock_waits` TO `ccra_7880125a1d1a`@`%`"
+                                                  }
+                                              ],
+                                    "Count":  3
+                                },
+                     "summary":  {
+                                     "finishedUtc":  "2026-10-21T07:20:10.594178700Z",
+                                     "executed":  24,
+                                     "serverStopped":  true,
+                                     "httpRequests":  162,
+                                     "passed":  24,
+                                     "singleJvm":  true,
+                                     "incomplete":  0,
+                                     "failed":  0,
+                                     "skipped":  0
+                                 },
+                     "cases":  {
+                                   "value":  [
+                                                 {
+                                                     "name":  "isolation-and-physical-schema",
+                                                     "expected":  "new empty MySQL 8.0.44/RR schema, exact schema-only grants, all InnoDB",
+                                                     "actual":  [
+                                                                    {
+                                                                        "version":  "8.0.44",
+                                                                        "db":  "kkiriccra7880125a1d1a",
+                                                                        "account":  "ccra_7880125a1d1a@%",
+                                                                        "uuid":  "c020278e-cd1f-11f1-b380-3e9ee0069495",
+                                                                        "hostname":  "kkiri-ccra",
+                                                                        "port":  3306,
+                                                                        "lowerCase":  0,
+                                                                        "sqlMode":  "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION",
+                                                                        "zone":  "+00:00"
+                                                                    }
+                                                                ],
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  21
+                                                 },
+                                                 {
+                                                     "name":  "community-manual-migrations",
+                                                     "expected":  "apply anonymous authors and image cleanup scripts to empty legacy tables; validate actual physical names and indexes",
+                                                     "actual":  {
+                                                                    "scripts":  2,
+                                                                    "physicalTableIdentifiersAdapted":  true
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  198
+                                                 },
+                                                 {
+                                                     "name":  "community-post-http-crud",
+                                                     "expected":  "multipart create/update/read and soft delete; author Principal and MySQL final state",
+                                                     "actual":  {
+                                                                    "post":  1
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  1209
+                                                 },
+                                                 {
+                                                     "name":  "community-comment-reply-http-and-rollback",
+                                                     "expected":  "1000 UTF16 units; replies, Principal, ownership and invalid writes preserve committed thread",
+                                                     "actual":  {
+                                                                    "reply":  2,
+                                                                    "comment":  1,
+                                                                    "post":  2
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  595
+                                                 },
+                                                 {
+                                                     "name":  "community-anonymous-concurrent-numbering",
+                                                     "expected":  "8 simultaneous distinct writers on one post have one mapping each and distinct positive numbers",
+                                                     "actual":  {
+                                                                    "writers":  8,
+                                                                    "mappings":  [
+                                                                                     {
+                                                                                         "author_id":  7,
+                                                                                         "anonymous_number":  1
+                                                                                     },
+                                                                                     {
+                                                                                         "author_id":  11,
+                                                                                         "anonymous_number":  2
+                                                                                     },
+                                                                                     {
+                                                                                         "author_id":  6,
+                                                                                         "anonymous_number":  3
+                                                                                     },
+                                                                                     {
+                                                                                         "author_id":  10,
+                                                                                         "anonymous_number":  4
+                                                                                     },
+                                                                                     {
+                                                                                         "author_id":  9,
+                                                                                         "anonymous_number":  5
+                                                                                     },
+                                                                                     {
+                                                                                         "author_id":  13,
+                                                                                         "anonymous_number":  6
+                                                                                     },
+                                                                                     {
+                                                                                         "author_id":  8,
+                                                                                         "anonymous_number":  7
+                                                                                     },
+                                                                                     {
+                                                                                         "author_id":  12,
+                                                                                         "anonymous_number":  8
+                                                                                     }
+                                                                                 ]
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  509
+                                                 },
+                                                 {
+                                                     "name":  "report-post-target-principal-and-duplicates",
+                                                     "expected":  "actual target author FK, nullable references, independent reporter and duplicates after every status",
+                                                     "actual":  {
+                                                                    "final":  {
+                                                                                  "comment_id":  null,
+                                                                                  "created_at":  "2026-10-21T07:19:57",
+                                                                                  "post_id":  4,
+                                                                                  "processed_at":  "2026-10-21T07:19:57",
+                                                                                  "processed_by":  4,
+                                                                                  "report_id":  1,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  14,
+                                                                                  "resolution_action":  "NONE",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "POST",
+                                                                                  "status":  "REJECTED"
+                                                                              },
+                                                                    "independent":  2,
+                                                                    "report":  1
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  590
+                                                 },
+                                                 {
+                                                     "name":  "report-comment-target-principal-and-duplicates",
+                                                     "expected":  "actual target author FK, nullable references, independent reporter and duplicates after every status",
+                                                     "actual":  {
+                                                                    "final":  {
+                                                                                  "comment_id":  12,
+                                                                                  "created_at":  "2026-10-21T07:19:58",
+                                                                                  "post_id":  null,
+                                                                                  "processed_at":  "2026-10-21T07:19:58",
+                                                                                  "processed_by":  4,
+                                                                                  "report_id":  3,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  15,
+                                                                                  "resolution_action":  "NONE",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "COMMENT",
+                                                                                  "status":  "REJECTED"
+                                                                              },
+                                                                    "independent":  4,
+                                                                    "report":  3
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  435
+                                                 },
+                                                 {
+                                                     "name":  "report-user-target-principal-and-duplicates",
+                                                     "expected":  "actual target author FK, nullable references, independent reporter and duplicates after every status",
+                                                     "actual":  {
+                                                                    "final":  {
+                                                                                  "comment_id":  null,
+                                                                                  "created_at":  "2026-10-21T07:19:58",
+                                                                                  "post_id":  null,
+                                                                                  "processed_at":  "2026-10-21T07:19:58",
+                                                                                  "processed_by":  4,
+                                                                                  "report_id":  5,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  16,
+                                                                                  "resolution_action":  "NONE",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "USER",
+                                                                                  "status":  "REJECTED"
+                                                                              },
+                                                                    "independent":  6,
+                                                                    "report":  5
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  421
+                                                 },
+                                                 {
+                                                     "name":  "report-description-utf16-and-datetime",
+                                                     "expected":  "499/500 ASCII, Korean and emoji persist exactly; 501/70000 reject; new/processed times have seconds precision",
+                                                     "actual":  {
+                                                                    "accepted":  6,
+                                                                    "column":  [
+                                                                                   {
+                                                                                       "COLUMN_NAME":  "created_at",
+                                                                                       "COLUMN_TYPE":  "datetime",
+                                                                                       "DATETIME_PRECISION":  0
+                                                                                   },
+                                                                                   {
+                                                                                       "COLUMN_NAME":  "processed_at",
+                                                                                       "COLUMN_TYPE":  "datetime",
+                                                                                       "DATETIME_PRECISION":  0
+                                                                                   },
+                                                                                   {
+                                                                                       "COLUMN_NAME":  "description",
+                                                                                       "COLUMN_TYPE":  "text",
+                                                                                       "DATETIME_PRECISION":  null
+                                                                                   }
+                                                                               ],
+                                                                    "rejected":  6
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  1368
+                                                 },
+                                                 {
+                                                     "name":  "report-invalid-target-and-enums",
+                                                     "expected":  "invalid and nonexistent USER/POST/COMMENT, reason and unauthenticated request return contract errors with no rows",
+                                                     "actual":  {
+                                                                    "unchanged":  12
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  187
+                                                 },
+                                                 {
+                                                     "name":  "admin-auth-and-invalid-request",
+                                                     "expected":  "guest/user/DB-suspended admin denied; invalid status/action rejected without history mutation",
+                                                     "actual":  {
+                                                                    "historyPreserved":  true
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  206
+                                                 },
+                                                 {
+                                                     "name":  "admin-comment-sanction-audit-and-dashboard",
+                                                     "expected":  "DELETE_TARGET cascades reply status, preserves sibling, audit and content; dashboard active counts and report filters agree",
+                                                     "actual":  {
+                                                                    "comment_id":  14,
+                                                                    "created_at":  "2026-10-21T07:20:00",
+                                                                    "post_id":  null,
+                                                                    "processed_at":  "2026-10-21T07:20:00",
+                                                                    "processed_by":  4,
+                                                                    "report_id":  14,
+                                                                    "reporter_id":  1,
+                                                                    "target_user_id":  2,
+                                                                    "resolution_action":  "DELETE_TARGET",
+                                                                    "reason":  "욕설·비방",
+                                                                    "description":  null,
+                                                                    "report_type":  "COMMENT",
+                                                                    "status":  "COMPLETED"
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  697
+                                                 },
+                                                 {
+                                                     "name":  "admin-parallel-complete",
+                                                     "expected":  "two real HTTP handlers wait on same MySQL REPORT lock; exactly one decision commits, loser INVALID_REQUEST",
+                                                     "actual":  {
+                                                                    "firstStatus":  200,
+                                                                    "observedWaiters":  2,
+                                                                    "final":  {
+                                                                                  "comment_id":  null,
+                                                                                  "created_at":  "2026-10-21T07:20:01",
+                                                                                  "post_id":  null,
+                                                                                  "processed_at":  "2026-10-21T07:20:01",
+                                                                                  "processed_by":  4,
+                                                                                  "report_id":  15,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  30,
+                                                                                  "resolution_action":  "NONE",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "USER",
+                                                                                  "status":  "COMPLETED"
+                                                                              },
+                                                                    "secondStatus":  400
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  208
+                                                 },
+                                                 {
+                                                     "name":  "admin-parallel-suspend_user",
+                                                     "expected":  "two real HTTP handlers wait on same MySQL REPORT lock; exactly one decision commits, loser INVALID_REQUEST",
+                                                     "actual":  {
+                                                                    "firstStatus":  200,
+                                                                    "observedWaiters":  2,
+                                                                    "final":  {
+                                                                                  "comment_id":  null,
+                                                                                  "created_at":  "2026-10-21T07:20:01",
+                                                                                  "post_id":  null,
+                                                                                  "processed_at":  "2026-10-21T07:20:01",
+                                                                                  "processed_by":  4,
+                                                                                  "report_id":  16,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  31,
+                                                                                  "resolution_action":  "SUSPEND_USER",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "USER",
+                                                                                  "status":  "COMPLETED"
+                                                                              },
+                                                                    "secondStatus":  400
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  214
+                                                 },
+                                                 {
+                                                     "name":  "admin-parallel-delete_post",
+                                                     "expected":  "two real HTTP handlers wait on same MySQL REPORT lock; exactly one decision commits, loser INVALID_REQUEST",
+                                                     "actual":  {
+                                                                    "firstStatus":  400,
+                                                                    "observedWaiters":  2,
+                                                                    "final":  {
+                                                                                  "comment_id":  null,
+                                                                                  "created_at":  "2026-10-21T07:20:01",
+                                                                                  "post_id":  10,
+                                                                                  "processed_at":  "2026-10-21T07:20:01",
+                                                                                  "processed_by":  5,
+                                                                                  "report_id":  17,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  32,
+                                                                                  "resolution_action":  "NONE",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "POST",
+                                                                                  "status":  "REJECTED"
+                                                                              },
+                                                                    "secondStatus":  200
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  213
+                                                 },
+                                                 {
+                                                     "name":  "admin-parallel-delete_comment",
+                                                     "expected":  "two real HTTP handlers wait on same MySQL REPORT lock; exactly one decision commits, loser INVALID_REQUEST",
+                                                     "actual":  {
+                                                                    "firstStatus":  400,
+                                                                    "observedWaiters":  2,
+                                                                    "final":  {
+                                                                                  "comment_id":  20,
+                                                                                  "created_at":  "2026-10-21T07:20:01",
+                                                                                  "post_id":  null,
+                                                                                  "processed_at":  "2026-10-21T07:20:02",
+                                                                                  "processed_by":  5,
+                                                                                  "report_id":  18,
+                                                                                  "reporter_id":  1,
+                                                                                  "target_user_id":  33,
+                                                                                  "resolution_action":  "NONE",
+                                                                                  "reason":  "욕설·비방",
+                                                                                  "description":  null,
+                                                                                  "report_type":  "COMMENT",
+                                                                                  "status":  "REJECTED"
+                                                                              },
+                                                                    "secondStatus":  200
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  231
+                                                 },
+                                                 {
+                                                     "name":  "admin-predecessor-rollback-and-stale-refresh",
+                                                     "expected":  "rollback wakes HTTP waiter; repository refresh replaces a previously loaded PENDING under RR; reentrant decision preserved",
+                                                     "actual":  {
+                                                                    "staleRefresh":  20,
+                                                                    "rollbackWaiter":  19,
+                                                                    "reentrantRollback":  21
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  360
+                                                 },
+                                                 {
+                                                     "name":  "admin-business-failure-rolls-back-sanctions",
+                                                     "expected":  "future creation time raises IllegalArgumentException/HTTP500 after user/post/comment sanction; audit and targets all roll back",
+                                                     "actual":  {
+                                                                    "rollbackTargets":  3
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  817
+                                                 },
+                                                 {
+                                                     "name":  "admin-lock-timeout-http409-and-recovery",
+                                                     "expected":  "session 3s InnoDB wait produces 1205/HTTP409, audit unchanged, retry succeeds after release; JPA 5s hint not claimed",
+                                                     "actual":  {
+                                                                    "sessionLockWaitSeconds":  3,
+                                                                    "elapsedMillis":  3484,
+                                                                    "recovered":  true
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  3582
+                                                 },
+                                                 {
+                                                     "name":  "admin-member-status-invalidates-existing-token",
+                                                     "expected":  "SUSPENDED denies old JWT writes; ACTIVE restores; WITHDRAWN cannot restore",
+                                                     "actual":  {
+                                                                    "finalStatus":  "WITHDRAWN",
+                                                                    "user":  41
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  184
+                                                 },
+                                                 {
+                                                     "name":  "chat-http-creation-commit-rollback-settings",
+                                                     "expected":  "real creation/reuse commits one room/two members; absent profile rolls all back; settings null/empty preserve",
+                                                     "actual":  {
+                                                                    "room":  1,
+                                                                    "failedCreationRolledBack":  true,
+                                                                    "members":  2
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  441
+                                                 },
+                                                 {
+                                                     "name":  "chat-single-jvm-bidirectional-socket-http-receipts-and-leave",
+                                                     "expected":  "real two WebSockets deliver both ways; polling read-only, exact-ID receipt commit; outsider and departed reader rejected",
+                                                     "actual":  {
+                                                                    "room":  3,
+                                                                    "departedDeliveryBlocked":  true,
+                                                                    "bidirectional":  true
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  1558
+                                                 },
+                                                 {
+                                                     "name":  "chat-community-anonymous-source-http",
+                                                     "expected":  "anonymous POST/COMMENT rooms derive target, separate sources, hide counterpart IDs and preserve exact source FK",
+                                                     "actual":  {
+                                                                    "sources":  [
+                                                                                    {
+                                                                                        "room_key":  "COMMUNITY:1:2:POST:15",
+                                                                                        "source_post_id":  15,
+                                                                                        "source_comment_id":  null
+                                                                                    },
+                                                                                    {
+                                                                                        "room_key":  "COMMUNITY:1:2:COMMENT:27",
+                                                                                        "source_post_id":  null,
+                                                                                        "source_comment_id":  27
+                                                                                    }
+                                                                                ],
+                                                                    "commentRoom":  5,
+                                                                    "postRoom":  4
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  196
+                                                 },
+                                                 {
+                                                     "name":  "community-report-chat-physical-constraints-and-rollback",
+                                                     "expected":  "actual PK/FK/UNIQUE/NOT NULL reject SQL; preceding updates rolled back; no API-only invariant misreported as UNIQUE",
+                                                     "actual":  {
+                                                                    "constraints":  [
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_message",
+                                                                                            "CONSTRAINT_NAME":  "FKj52yap2xrm9u0721dct0tjor9",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_message",
+                                                                                            "CONSTRAINT_NAME":  "FKm92rh2bmfw19xcn7nj5vrixsi",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_message",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room",
+                                                                                            "CONSTRAINT_NAME":  "FK5v6whuh8fypr74ui340qm1r50",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room",
+                                                                                            "CONSTRAINT_NAME":  "FKqvknwt0ptufx03f8vsk7h4or8",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room",
+                                                                                            "CONSTRAINT_NAME":  "UK4imf88ip3nqhruyjnth9preun",
+                                                                                            "CONSTRAINT_TYPE":  "UNIQUE"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room_member",
+                                                                                            "CONSTRAINT_NAME":  "FK8qnke6998ykuonhfmlyuff7i",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room_member",
+                                                                                            "CONSTRAINT_NAME":  "FKo6a9v51aal2574fjb1ldlw4di",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room_member",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "chat_room_member",
+                                                                                            "CONSTRAINT_NAME":  "UK5w48j1kpcas1d6bo377vd6vuk",
+                                                                                            "CONSTRAINT_TYPE":  "UNIQUE"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_anonymous_author",
+                                                                                            "CONSTRAINT_NAME":  "fk_anonymous_author",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_anonymous_author",
+                                                                                            "CONSTRAINT_NAME":  "fk_anonymous_post",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_anonymous_author",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_anonymous_author",
+                                                                                            "CONSTRAINT_NAME":  "uk_anonymous_post_author",
+                                                                                            "CONSTRAINT_TYPE":  "UNIQUE"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_anonymous_author",
+                                                                                            "CONSTRAINT_NAME":  "uk_anonymous_post_number",
+                                                                                            "CONSTRAINT_TYPE":  "UNIQUE"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_comment",
+                                                                                            "CONSTRAINT_NAME":  "FKc9uwylbfjnaqp2kjrdl5bu3na",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_comment",
+                                                                                            "CONSTRAINT_NAME":  "FKfea6idg4j3uju940v21hheqpj",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_comment",
+                                                                                            "CONSTRAINT_NAME":  "FKrve078nctpgytx54f5jp98po3",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_comment",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_post",
+                                                                                            "CONSTRAINT_NAME":  "FK3ian8urh5ex8dc0p5dn4sjh2f",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_post",
+                                                                                            "CONSTRAINT_NAME":  "FK7bgjugrkn0o4jflhtr09vik8q",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "community_post",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "report",
+                                                                                            "CONSTRAINT_NAME":  "FK6kjunt0n7tx475cdbx3tg0f3i",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "report",
+                                                                                            "CONSTRAINT_NAME":  "FKc78heo0dtkkfoxtrni4l49qav",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "report",
+                                                                                            "CONSTRAINT_NAME":  "FKd0u65s2ve6it4n725m7ogr4wp",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "report",
+                                                                                            "CONSTRAINT_NAME":  "FKf989rcep0ntl8n8xbs920a21e",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "report",
+                                                                                            "CONSTRAINT_NAME":  "FKndpjl61ubcm2tkf7ml1ynq13t",
+                                                                                            "CONSTRAINT_TYPE":  "FOREIGN KEY"
+                                                                                        },
+                                                                                        {
+                                                                                            "TABLE_NAME":  "report",
+                                                                                            "CONSTRAINT_NAME":  "PRIMARY",
+                                                                                            "CONSTRAINT_TYPE":  "PRIMARY KEY"
+                                                                                        }
+                                                                                    ],
+                                                                    "historyPreserved":  true,
+                                                                    "rejectedStatements":  8
+                                                                },
+                                                     "result":  "PASS",
+                                                     "elapsedMillis":  737
+                                                 }
+                                             ],
+                                   "Count":  24
+                               },
+                     "finalState":  {
+                                        "containerRemovalOwnsAllRows":  true,
+                                        "auditInvariantViolations":  0,
+                                        "reports":  [
+                                                        {
+                                                            "report_id":  1,
+                                                            "report_type":  "POST",
+                                                            "status":  "REJECTED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:19:57",
+                                                            "processed_at":  "2026-10-21T07:19:57"
+                                                        },
+                                                        {
+                                                            "report_id":  2,
+                                                            "report_type":  "POST",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  5,
+                                                            "created_at":  "2026-10-21T07:19:57",
+                                                            "processed_at":  "2026-10-21T07:19:57"
+                                                        },
+                                                        {
+                                                            "report_id":  3,
+                                                            "report_type":  "COMMENT",
+                                                            "status":  "REJECTED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:19:58",
+                                                            "processed_at":  "2026-10-21T07:19:58"
+                                                        },
+                                                        {
+                                                            "report_id":  4,
+                                                            "report_type":  "COMMENT",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  5,
+                                                            "created_at":  "2026-10-21T07:19:58",
+                                                            "processed_at":  "2026-10-21T07:19:58"
+                                                        },
+                                                        {
+                                                            "report_id":  5,
+                                                            "report_type":  "USER",
+                                                            "status":  "REJECTED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:19:58",
+                                                            "processed_at":  "2026-10-21T07:19:58"
+                                                        },
+                                                        {
+                                                            "report_id":  6,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  5,
+                                                            "created_at":  "2026-10-21T07:19:58",
+                                                            "processed_at":  "2026-10-21T07:19:58"
+                                                        },
+                                                        {
+                                                            "report_id":  7,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:19:58",
+                                                            "processed_at":  "2026-10-21T07:19:58"
+                                                        },
+                                                        {
+                                                            "report_id":  8,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:19:58",
+                                                            "processed_at":  "2026-10-21T07:19:58"
+                                                        },
+                                                        {
+                                                            "report_id":  9,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:19:59",
+                                                            "processed_at":  "2026-10-21T07:19:59"
+                                                        },
+                                                        {
+                                                            "report_id":  10,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:19:59",
+                                                            "processed_at":  "2026-10-21T07:19:59"
+                                                        },
+                                                        {
+                                                            "report_id":  11,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:19:59",
+                                                            "processed_at":  "2026-10-21T07:19:59"
+                                                        },
+                                                        {
+                                                            "report_id":  12,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:19:59",
+                                                            "processed_at":  "2026-10-21T07:19:59"
+                                                        },
+                                                        {
+                                                            "report_id":  13,
+                                                            "report_type":  "USER",
+                                                            "status":  "PENDING",
+                                                            "resolution_action":  null,
+                                                            "processed_by":  null,
+                                                            "created_at":  "2026-10-21T07:20:00",
+                                                            "processed_at":  null
+                                                        },
+                                                        {
+                                                            "report_id":  14,
+                                                            "report_type":  "COMMENT",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "DELETE_TARGET",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:20:00",
+                                                            "processed_at":  "2026-10-21T07:20:00"
+                                                        },
+                                                        {
+                                                            "report_id":  15,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:20:01",
+                                                            "processed_at":  "2026-10-21T07:20:01"
+                                                        },
+                                                        {
+                                                            "report_id":  16,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "SUSPEND_USER",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:20:01",
+                                                            "processed_at":  "2026-10-21T07:20:01"
+                                                        },
+                                                        {
+                                                            "report_id":  17,
+                                                            "report_type":  "POST",
+                                                            "status":  "REJECTED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  5,
+                                                            "created_at":  "2026-10-21T07:20:01",
+                                                            "processed_at":  "2026-10-21T07:20:01"
+                                                        },
+                                                        {
+                                                            "report_id":  18,
+                                                            "report_type":  "COMMENT",
+                                                            "status":  "REJECTED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  5,
+                                                            "created_at":  "2026-10-21T07:20:01",
+                                                            "processed_at":  "2026-10-21T07:20:02"
+                                                        },
+                                                        {
+                                                            "report_id":  19,
+                                                            "report_type":  "USER",
+                                                            "status":  "REJECTED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  5,
+                                                            "created_at":  "2026-10-21T07:20:02",
+                                                            "processed_at":  "2026-10-21T07:20:02"
+                                                        },
+                                                        {
+                                                            "report_id":  20,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:20:02",
+                                                            "processed_at":  "2026-10-21T07:20:02"
+                                                        },
+                                                        {
+                                                            "report_id":  21,
+                                                            "report_type":  "USER",
+                                                            "status":  "PENDING",
+                                                            "resolution_action":  null,
+                                                            "processed_by":  null,
+                                                            "created_at":  "2026-10-21T07:20:02",
+                                                            "processed_at":  null
+                                                        },
+                                                        {
+                                                            "report_id":  22,
+                                                            "report_type":  "USER",
+                                                            "status":  "PENDING",
+                                                            "resolution_action":  null,
+                                                            "processed_by":  null,
+                                                            "created_at":  "2026-10-21T07:20:02",
+                                                            "processed_at":  null
+                                                        },
+                                                        {
+                                                            "report_id":  23,
+                                                            "report_type":  "POST",
+                                                            "status":  "PENDING",
+                                                            "resolution_action":  null,
+                                                            "processed_by":  null,
+                                                            "created_at":  "2026-10-21T07:20:02",
+                                                            "processed_at":  null
+                                                        },
+                                                        {
+                                                            "report_id":  24,
+                                                            "report_type":  "COMMENT",
+                                                            "status":  "PENDING",
+                                                            "resolution_action":  null,
+                                                            "processed_by":  null,
+                                                            "created_at":  "2026-10-21T07:20:03",
+                                                            "processed_at":  null
+                                                        },
+                                                        {
+                                                            "report_id":  25,
+                                                            "report_type":  "USER",
+                                                            "status":  "COMPLETED",
+                                                            "resolution_action":  "NONE",
+                                                            "processed_by":  4,
+                                                            "created_at":  "2026-10-21T07:20:03",
+                                                            "processed_at":  "2026-10-21T07:20:06"
+                                                        },
+                                                        {
+                                                            "report_id":  26,
+                                                            "report_type":  "COMMENT",
+                                                            "status":  "PENDING",
+                                                            "resolution_action":  null,
+                                                            "processed_by":  null,
+                                                            "created_at":  "2026-10-21T07:20:09",
+                                                            "processed_at":  null
+                                                        }
+                                                    ],
+                                        "reportOrphans":  0,
+                                        "rowCounts":  {
+                                                          "chat_message":  3,
+                                                          "chat_room":  4,
+                                                          "chat_room_member":  8,
+                                                          "community_anonymous_author":  10,
+                                                          "community_comment":  28,
+                                                          "community_post":  16,
+                                                          "post_image_cleanup":  0,
+                                                          "report":  26,
+                                                          "user":  46
+                                                      }
+                                    },
+                     "physicalConstraintErrors":  [
+                                                      {
+                                                          "vendorCode":  1062,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1048,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1452,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1451,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1062,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1062,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1452,
+                                                          "sqlState":  "23000"
+                                                      },
+                                                      {
+                                                          "vendorCode":  1048,
+                                                          "sqlState":  "23000"
+                                                      }
+                                                  ],
+                     "cleanup":  {
+                                     "existingContainersChanged":  false,
+                                     "containerId":  "4302a7f91c6dea8a91ca289356fbc3b52f8deeaa9093bddb15185d95706f1f0e",
+                                     "removed":  true,
+                                     "owner":  "7880125a1d1a4e7eb1953c8371a43534",
+                                     "container":  "kkiri-ccra-mysql844-20261021"
+                                 },
+                     "artifactHashes":  [
+                                            {
+                                                "file":  "artifact.json",
+                                                "Hash":  "F79B872B1CC032B73EF9B72F543C68C4D5D2460E5AED61ABC2DBCB7438154D2C"
+                                            },
+                                            {
+                                                "file":  "cases.json",
+                                                "Hash":  "D95E49AEB8A9A87AB2545CB99882707E08E98ECDE1D418B47004EB719BDC96B8"
+                                            },
+                                            {
+                                                "file":  "constraints.json",
+                                                "Hash":  "EFCF096200B72A470870D5EAE95DF673CCCF0CD98A4C0978B210A426A483E31A"
+                                            },
+                                            {
+                                                "file":  "environment.json",
+                                                "Hash":  "98E057193A70229925B32B993B053ACF647B50FCBB19205D331A40F4C999F090"
+                                            },
+                                            {
+                                                "file":  "final-state.json",
+                                                "Hash":  "F0B0DB78654ACA9300E39CBA94ECBB5061D7CBB0FD0A2E2544EF5E4952801036"
+                                            },
+                                            {
+                                                "file":  "grants.json",
+                                                "Hash":  "73CEF310EAD096CFD81ED90FE36ED5B21DE3CF9BF9AC8545E5C035ADA61232DC"
+                                            },
+                                            {
+                                                "file":  "migrations.json",
+                                                "Hash":  "41944C550F1127BC6F01EA1E2B204306DCCDAAF1DB505E877CF1049E2C155110"
+                                            },
+                                            {
+                                                "file":  "requests.json",
+                                                "Hash":  "BAED5D3CD504C370464106B3207B6B04218C7011B0E5379EA662D3364A098668"
+                                            },
+                                            {
+                                                "file":  "schema.json",
+                                                "Hash":  "84029107948F158D7E8DC9CF68445C11B82308F3121FB3E0EF0E9466940B70D8"
+                                            },
+                                            {
+                                                "file":  "servers.json",
+                                                "Hash":  "4A704E232549F9168738099018293EB7DD763411CAE94FE54225179BFF6F067E"
+                                            },
+                                            {
+                                                "file":  "source-hashes.json",
+                                                "Hash":  "EEF268A8EEBC41A744D852409754C5D0485D2AF8F917E9EAEA70B1B11720BFB7"
+                                            },
+                                            {
+                                                "file":  "summary.json",
+                                                "Hash":  "9805BDA5988B7687249011A811290C1D28F4D266264FA7D8D9D41311473B8918"
+                                            }
+                                        ]
+                 }
+             ]
+}
