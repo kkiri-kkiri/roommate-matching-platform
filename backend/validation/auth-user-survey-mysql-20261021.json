@@ -1,0 +1,1181 @@
+{
+  "recordedAt": "2026-10-21T12:58:07.589Z",
+  "git": "305a184f8a552897d21614f868fda71ac63aeb7e",
+  "workingTreeToolsUncommitted": true,
+  "environment": {
+    "image": "mysql:8.0.46-oraclelinux9",
+    "container": "kkiri-aus-mysql-20261021",
+    "createdAt": "2026-10-21T06:50:35.2186426Z",
+    "hostname": "kkiri-aus-mysql-20261021",
+    "version": "8.0.46",
+    "status": "created-retain-no-automatic-deletion",
+    "git": "305a184f8a552897d21614f868fda71ac63aeb7e",
+    "targets": [
+      {
+        "db": "kkiriausauth20261021",
+        "user": "ausauth20261021"
+      },
+      {
+        "db": "kkiriaususer20261021",
+        "user": "aususer20261021"
+      },
+      {
+        "db": "kkiriaussurvey20261021",
+        "user": "aussurvey20261021"
+      },
+      {
+        "db": "kkiri_auth_mi_a51021202601",
+        "user": "kkiri_mi_a51021202601"
+      },
+      {
+        "db": "kkiri_user_mi_a51021202602",
+        "user": "kkiri_umi_a51021202602"
+      }
+    ],
+    "port": 13326,
+    "uuid": "8faf7a66-cd1b-11f1-868c-2665e0263516",
+    "volume": "kkiri-aus-mysql-data-20261021"
+  },
+  "artifact": {
+    "jarSha256": "A6FEF54637F9C392FA76B46227F706A9EC70FA0CD3513360C730909E323CEF79",
+    "comparedClasses": 292,
+    "classMismatches": 0,
+    "productionFilesUnchanged": 265
+  },
+  "domains": {
+    "auth": {
+      "executed": 63,
+      "passed": 63,
+      "failed": 0,
+      "skipped": 0
+    },
+    "user": {
+      "executed": 62,
+      "passed": 62,
+      "failed": 0,
+      "skipped": 0
+    },
+    "survey": {
+      "executed": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "total": {
+    "executed": 143,
+    "passed": 143,
+    "failed": 0,
+    "skipped": 0
+  },
+  "http": {
+    "transport": "real TCP HTTP to loopback Spring Boot servers; no MockMvc",
+    "requests": 1502,
+    "runs": {
+      "authHttp": {
+        "requests": 1233,
+        "mockMailMessages": 99,
+        "allProcessesStopped": true
+      },
+      "userHttp": {
+        "requests": 243,
+        "mockMailMessages": 8,
+        "allProcessesStopped": true
+      },
+      "userSecurity": {
+        "requests": 26,
+        "mockMailMessages": 0,
+        "allProcessesStopped": true
+      }
+    }
+  },
+  "groups": [
+    {
+      "id": "authService",
+      "domain": "auth",
+      "realHttp": false,
+      "evidence": "backend/tools/auth-mysql-concurrency/results/2026-10-21-am9ea0cb66bdf7",
+      "summarySha256": "E6759D363C6F02D2D59D812A96A425B5065F33EAC1FCF5415F48ACC84DF256E7",
+      "cases": [
+        {
+          "name": "valid-code-concurrent-service",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "invalid-code-concurrent-service",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "login-failure-concurrent-service",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "reset-request-and-token-use-service",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "first-bucket-insert-race",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "sorted-multiple-row-locks",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "email-case-request-quota",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "shared-ip-failure-and-denied-row-rollback",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "shared-ip-request-quota",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "reset-shared-ip-quota",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "untrusted-forwarded-ip-and-ipv6",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "business-rollback-independent-failure",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "smtp-mock-failure-rollback",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "row-lock-wait-release",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "row-lock-timeout-rollback-and-http-mapping",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "forced-deadlock-victim-rollback-and-http-mapping",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "callback-exception-atomic-rollback",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "pool-exhaustion-timeout-recovery",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "mixed-transaction-stress-no-pool-leak",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "collation-alias-account-login-limit",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "collation-alias-reset-cooldown",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "unrelated-verification-row-lock-isolation",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "preregistration-send-alias-cooldown",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "preregistration-verify-unicode-alias-limit",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "different-account-quota-independence",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "unknown-account-alias-privacy-and-cooldown",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "alias-window-recovery",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "same-verification-token-consumption",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "unrelated-token-consumption-lock-isolation",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "different-email-simultaneous-verification",
+          "status": "PASS",
+          "domain": "auth"
+        }
+      ]
+    },
+    {
+      "id": "userService",
+      "domain": "user",
+      "realHttp": false,
+      "evidence": "backend/tools/user-mysql-concurrency/results/2026-10-21-um97e00db206",
+      "summarySha256": "364092226C7EAD2EEAC4A4A08BABBABDB19485DAE00B60C63922BD3A993C15CC",
+      "cases": [
+        {
+          "name": "full-schema-unique-fk-null-constraints",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "password-suspended-password-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "password-suspended-status-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "password-withdrawn-password-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "password-withdrawn-status-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "reset-suspended-password-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "reset-suspended-status-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "reset-withdrawn-password-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "reset-withdrawn-status-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "stale-managed-user-status-refresh",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "same-current-password-concurrent-change",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "same-reset-token-consumed-once",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "nickname-unique-race-loser-full-rollback",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "nickname-case-equivalent-unique-race",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "profile-outer-transaction-rollback-no-event",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "profile-invalid-reference-atomic-rollback",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "faculty-major-null-and-membership",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "same-user-partial-updates-no-lost-change",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "suspension-first-rejects-profile-update",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "matching-refresh-waits-for-profile-commit",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "profile-update-waits-for-matching-lock",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "matching-opposite-directions-sorted-locks",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "matching-profile-rollback-retains-score",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "user-row-lock-wait-and-unrelated-user",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "profile-lock-timeout-full-rollback-409",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "reset-token-lock-timeout-full-rollback-409",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "forced-user-deadlock-victim-full-rollback-409",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "pool-exhaustion-borrow-timeout-recovery",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "mixed-service-stress-resource-return",
+          "status": "PASS",
+          "domain": "user"
+        }
+      ]
+    },
+    {
+      "id": "userAdditional",
+      "domain": "user",
+      "realHttp": false,
+      "evidence": "backend/tools/user-mysql-concurrency/results/2026-10-21-um63739faae5",
+      "summarySha256": "A732A3EF77C5405399936E43E425F856BFD94D07BED328E557EC0D00C868D0DC",
+      "cases": [
+        {
+          "name": "password-reentrant-lock-retains-pending-account-and-other-entity",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "password-reentrant-lock-full-rollback",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "stale-managed-lock-current-read-sql",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "password-fresh-lock-first-db-read-is-locking",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "password-independent-users-overlap-and-commit",
+          "status": "PASS",
+          "domain": "user"
+        }
+      ]
+    },
+    {
+      "id": "authHttp",
+      "domain": "auth",
+      "realHttp": true,
+      "evidence": "backend/tools/auth-mysql-multi-instance/results/2026-10-21-f8b5c7920ad2",
+      "summarySha256": "CDC407B18EB7CE68BB31A46A8472B96D865C74B1DA4CEC5675401CB77DCBEE4A",
+      "cases": [
+        {
+          "name": "two-real-boot-jvms-and-shared-jwt",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "login-failure-and-alias-limit-shared",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "email-send-alias-cooldown-shared",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "email-verification-alias-failure-limit-shared",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "same-code-concurrent-verification-on-two-servers",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "signup-verification-token-consumed-once-across-servers",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "reset-alias-cooldown-and-single-token-use",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "first-identity-and-bucket-race",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "email-request-quota-shared",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "login-ip-failure-quota-shared",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "login-check-ip-request-quota-shared",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "verification-ip-failure-quota-shared",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "verification-ip-request-quota-shared",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "verification-send-ip-quota-shared",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "same-email-first-send-64-requests",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "different-email-first-send-independent-24",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "existing-identity-cooldown-does-not-wait-on-business-mutex",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "reset-ip-send-quota-shared",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "distinct-account-limit-independence",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "unknown-account-alias-response-privacy",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "cross-email-row-lock-isolation",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "cross-server-row-lock-wait-and-release",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "http-lock-timeout-and-transaction-consistency",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "forced-deadlock-involving-real-http-transaction",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "mock-mail-failure-and-business-rollback",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "limiter-1205-new-transaction-retry-recovers",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "limiter-1213-new-transaction-retry-recovers",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "pool-exhaustion-error-chain-and-recovery-http",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "repeat-original-132-contention-three-rounds",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "server-stop-restart-preserves-shared-limits",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "mail-global-quota-shared-http",
+          "status": "PASS",
+          "domain": "auth"
+        },
+        {
+          "name": "repeated-http-load-pool-return",
+          "status": "PASS",
+          "domain": "auth"
+        }
+      ]
+    },
+    {
+      "id": "userHttp",
+      "domain": "user",
+      "realHttp": true,
+      "evidence": "backend/tools/user-mysql-multi-instance/results/2026-10-21-c3074f61e998",
+      "summarySha256": "D685776208D8A56E6851A2765E379387CB053C3BBECD3567D98329FD6297C7FA",
+      "cases": [
+        {
+          "name": "two-real-jvms-shared-db-and-jwt",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "password-suspended-password-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "password-suspended-status-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "password-withdrawn-password-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "password-withdrawn-status-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "reset-suspended-password-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "reset-suspended-status-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "reset-withdrawn-password-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "reset-withdrawn-status-first",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "inactive-suspended-jwt-login-reset",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "inactive-withdrawn-jwt-login-reset",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "principal-ownership-admin-and-invalid-jwt",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "same-user-profile-partial-updates-across-servers",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "nickname-unique-conflict-and-full-rollback",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "faculty-major-null-and-invalid-request-rollback",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "physical-unique-fk-not-null",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "matching-after-profile-commit-and-cross-instance-update",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "matching-failure-keeps-profile-and-http-read-repairs",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "bulk-matching-batches-lock-wait-latency-and-recovery",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "row-lock-wait-and-independent-user-http",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "profile-lock-timeout-http409-full-rollback",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "reset-token-lock-timeout-http409-full-rollback",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "forced-deadlock-with-real-http-transaction",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "same-user-password-multiple-http-requests",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "pool-exhaustion-and-recovery",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "server-stop-restart-and-cross-server-jwt",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "repeated-profile-http-and-pool-return",
+          "status": "PASS",
+          "domain": "user"
+        },
+        {
+          "name": "survey-http-profile-roundtrip-owner-and-introduction",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "survey-http-preference-roundtrip-options-and-weights",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "survey-http-profile-invalid-input-preserves-all-rows",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "survey-http-preference-invalid-input-preserves-all-rows",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "survey-http-missing-and-inactive-authentication",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "survey-mysql-physical-pk-fk-unique-notnull-and-rollback",
+          "status": "PASS",
+          "domain": "survey"
+        }
+      ]
+    },
+    {
+      "id": "userSecurity",
+      "domain": "user",
+      "realHttp": true,
+      "evidence": "backend/tools/user-mysql-multi-instance/results/2026-10-21-13e4eb2af21b",
+      "summarySha256": "9338459150F378FF068207C95E95C997FCD363B46A16F9E16FAAB08D9323DEE7",
+      "cases": [
+        {
+          "name": "jwt-infrastructure-security-regression",
+          "status": "PASS",
+          "domain": "user"
+        }
+      ]
+    },
+    {
+      "id": "surveyService",
+      "domain": "survey",
+      "realHttp": false,
+      "evidence": "backend/build/auth-user-survey-mysql/survey-service/run-d13dd0f5-25a9-4bc9-89e4-3d9a6717bfbc",
+      "evidenceSha256": "DBB078160A430114BF0D6A823233D4ACD66EE3CFFB7AB2C66F36F7784E0B2028",
+      "cases": [
+        {
+          "name": "profile-concurrent-first-create",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "profile-rollback-after-flush",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "profile-SUSPENDED-status-first-stale-context",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "profile-SUSPENDED-survey-first",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "profile-WITHDRAWN-status-first-stale-context",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "profile-WITHDRAWN-survey-first",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "preference-concurrent-first-create",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "preference-rollback-after-flush",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "preference-SUSPENDED-status-first-stale-context",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "preference-SUSPENDED-survey-first",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "preference-WITHDRAWN-status-first-stale-context",
+          "status": "PASS",
+          "domain": "survey"
+        },
+        {
+          "name": "preference-WITHDRAWN-survey-first",
+          "status": "PASS",
+          "domain": "survey"
+        }
+      ],
+      "excludedCleanupRecords": 1
+    },
+    {
+      "id": "authConstraints",
+      "domain": "auth",
+      "realHttp": false,
+      "evidence": "backend/build/auth-user-survey-mysql/auth-constraints.json",
+      "evidenceSha256": "DFB825B3475C16E39987B466B30B90B4C8B3C6566626C67235E619CE05FA1FBA",
+      "cases": [
+        {
+          "name": "physical-auth-constraints-and-transaction-rollback",
+          "status": "PASS",
+          "domain": "auth"
+        }
+      ],
+      "constraintRejections": 8
+    }
+  ],
+  "manualMigrations": {
+    "verdict": "PASS",
+    "files": [
+      "backend/migrations/20261014_auth_limits.sql",
+      "backend/migrations/20261015_auth_email_identity_indexes.sql"
+    ],
+    "evidence": "backend/tools/auth-mysql-concurrency/results/index-migration-2026-10-21-1ca2c360-c562-4a1f-88ea-484000917c2a/migration.json",
+    "evidenceSha256": "8690CEB2CCDB418ECF28833A90AD39A0E5535C08160F4BB5BA4055CA3C271F8E",
+    "excludedFromFunctionalCaseTotals": true
+  },
+  "finalDatabaseAudit": [
+    {
+      "rows": {
+        "auth_email_identity": 0,
+        "auth_limit_bucket": 0,
+        "dormitory": 0,
+        "email_verification": 0,
+        "faculty": 0,
+        "major": 0,
+        "password_reset_token": 0,
+        "user": 0,
+        "user_profile": 0
+      },
+      "database": "kkiriausauth20261021",
+      "allEmpty": true,
+      "grants": [
+        {
+          "Grants for ausauth20261021@%": "GRANT USAGE ON *.* TO `ausauth20261021`@`%`"
+        },
+        {
+          "Grants for ausauth20261021@%": "GRANT ALL PRIVILEGES ON `kkiriausauth20261021`.* TO `ausauth20261021`@`%`"
+        }
+      ]
+    },
+    {
+      "rows": {
+        "auth_email_identity": 0,
+        "auth_limit_bucket": 0,
+        "calendar_category": 0,
+        "calendar_category_setting": 0,
+        "calendar_event": 0,
+        "chat_message": 0,
+        "chat_room": 0,
+        "chat_room_member": 0,
+        "comment_like": 0,
+        "community_anonymous_author": 0,
+        "community_comment": 0,
+        "community_post": 0,
+        "dormitory": 0,
+        "email_verification": 0,
+        "faculty": 0,
+        "major": 0,
+        "password_reset_token": 0,
+        "post_image": 0,
+        "post_image_cleanup": 0,
+        "post_like": 0,
+        "preference_criterion": 0,
+        "profile_like": 0,
+        "profile_survey": 0,
+        "profile_survey_option": 0,
+        "report": 0,
+        "roommate_match": 0,
+        "roommate_preference": 0,
+        "roommate_preference_option": 0,
+        "schedule_crawl_run": 0,
+        "user": 0,
+        "user_profile": 0
+      },
+      "database": "kkiriaususer20261021",
+      "allEmpty": true,
+      "grants": [
+        {
+          "Grants for aususer20261021@%": "GRANT USAGE ON *.* TO `aususer20261021`@`%`"
+        },
+        {
+          "Grants for aususer20261021@%": "GRANT ALL PRIVILEGES ON `kkiriaususer20261021`.* TO `aususer20261021`@`%`"
+        }
+      ]
+    },
+    {
+      "rows": {
+        "AUTH_EMAIL_IDENTITY": 0,
+        "AUTH_LIMIT_BUCKET": 0,
+        "CALENDAR_CATEGORY": 0,
+        "CALENDAR_CATEGORY_SETTING": 0,
+        "CALENDAR_EVENT": 0,
+        "CHAT_MESSAGE": 0,
+        "CHAT_ROOM": 0,
+        "CHAT_ROOM_MEMBER": 0,
+        "COMMENT_LIKE": 0,
+        "COMMUNITY_ANONYMOUS_AUTHOR": 0,
+        "COMMUNITY_COMMENT": 0,
+        "COMMUNITY_POST": 0,
+        "DORMITORY": 0,
+        "EMAIL_VERIFICATION": 0,
+        "FACULTY": 0,
+        "MAJOR": 0,
+        "PASSWORD_RESET_TOKEN": 0,
+        "POST_IMAGE": 0,
+        "POST_IMAGE_CLEANUP": 0,
+        "POST_LIKE": 0,
+        "PREFERENCE_CRITERION": 0,
+        "PROFILE_LIKE": 0,
+        "PROFILE_SURVEY": 0,
+        "PROFILE_SURVEY_OPTION": 0,
+        "REPORT": 0,
+        "ROOMMATE_MATCH": 0,
+        "ROOMMATE_PREFERENCE": 0,
+        "ROOMMATE_PREFERENCE_OPTION": 0,
+        "SCHEDULE_CRAWL_RUN": 0,
+        "USER": 0,
+        "USER_PROFILE": 0
+      },
+      "database": "kkiriaussurvey20261021",
+      "allEmpty": true,
+      "grants": [
+        {
+          "Grants for aussurvey20261021@%": "GRANT USAGE ON *.* TO `aussurvey20261021`@`%`"
+        },
+        {
+          "Grants for aussurvey20261021@%": "GRANT ALL PRIVILEGES ON `kkiriaussurvey20261021`.* TO `aussurvey20261021`@`%`"
+        }
+      ]
+    },
+    {
+      "rows": {
+        "auth_email_identity": 0,
+        "auth_limit_bucket": 0,
+        "calendar_category": 0,
+        "calendar_category_setting": 0,
+        "calendar_event": 0,
+        "chat_message": 0,
+        "chat_room": 0,
+        "chat_room_member": 0,
+        "comment_like": 0,
+        "community_anonymous_author": 0,
+        "community_comment": 0,
+        "community_post": 0,
+        "dormitory": 0,
+        "email_verification": 0,
+        "faculty": 0,
+        "major": 0,
+        "password_reset_token": 0,
+        "post_image": 0,
+        "post_image_cleanup": 0,
+        "post_like": 0,
+        "preference_criterion": 0,
+        "profile_like": 0,
+        "profile_survey": 0,
+        "profile_survey_option": 0,
+        "report": 0,
+        "roommate_match": 0,
+        "roommate_preference": 0,
+        "roommate_preference_option": 0,
+        "schedule_crawl_run": 0,
+        "user": 0,
+        "user_profile": 0
+      },
+      "database": "kkiri_auth_mi_a51021202601",
+      "allEmpty": true,
+      "grants": [
+        {
+          "Grants for kkiri_mi_a51021202601@%": "GRANT USAGE ON *.* TO `kkiri_mi_a51021202601`@`%`"
+        },
+        {
+          "Grants for kkiri_mi_a51021202601@%": "GRANT ALL PRIVILEGES ON `kkiri\\_auth\\_mi\\_a51021202601`.* TO `kkiri_mi_a51021202601`@`%`"
+        }
+      ]
+    },
+    {
+      "rows": {
+        "auth_email_identity": 0,
+        "auth_limit_bucket": 0,
+        "calendar_category": 0,
+        "calendar_category_setting": 0,
+        "calendar_event": 0,
+        "chat_message": 0,
+        "chat_room": 0,
+        "chat_room_member": 0,
+        "comment_like": 0,
+        "community_anonymous_author": 0,
+        "community_comment": 0,
+        "community_post": 0,
+        "dormitory": 0,
+        "email_verification": 0,
+        "faculty": 0,
+        "major": 0,
+        "password_reset_token": 0,
+        "post_image": 0,
+        "post_image_cleanup": 0,
+        "post_like": 0,
+        "preference_criterion": 0,
+        "profile_like": 0,
+        "profile_survey": 0,
+        "profile_survey_option": 0,
+        "report": 0,
+        "roommate_match": 0,
+        "roommate_preference": 0,
+        "roommate_preference_option": 0,
+        "schedule_crawl_run": 0,
+        "user": 0,
+        "user_profile": 0
+      },
+      "database": "kkiri_user_mi_a51021202602",
+      "allEmpty": true,
+      "grants": [
+        {
+          "Grants for kkiri_umi_a51021202602@%": "GRANT USAGE ON *.* TO `kkiri_umi_a51021202602`@`%`"
+        },
+        {
+          "Grants for kkiri_umi_a51021202602@%": "GRANT ALL PRIVILEGES ON `kkiri\\_user\\_mi\\_a51021202602`.* TO `kkiri_umi_a51021202602`@`%`"
+        }
+      ]
+    }
+  ],
+  "finalDatabaseAuditSha256": "F072C73F492D138EE9E93A9D50DB749D1291FE0FB9F6EEA45C999F23659391B7",
+  "metadataCorrections": [
+    {
+      "runs": [
+        "authHttp",
+        "userHttp"
+      ],
+      "rawBootJarSha256": "Verify",
+      "reason": "Wrapper supplied mode text instead of the JAR hash argument; raw results retained unchanged.",
+      "independentEvidence": "backend/build/auth-user-survey-mysql/artifact-fingerprints.json",
+      "verifiedJarSha256": "A6FEF54637F9C392FA76B46227F706A9EC70FA0CD3513360C730909E323CEF79",
+      "fixedRun": "userSecurity"
+    }
+  ],
+  "preFinalFailures": [
+    {
+      "kind": "harness",
+      "evidence": "backend/tools/user-mysql-concurrency/results/2026-10-21-um34701bd552",
+      "cause": "Old verifier required 30 tables; current mapped schema has 31 including post_image_cleanup. Failed before business cases; reran Verify on the same preserved schema."
+    },
+    {
+      "kind": "preparation",
+      "cause": "Windows PowerShell promoted javac informational stderr to a terminating error; wrappers now retain diagnostics and check compiler exit code."
+    },
+    {
+      "kind": "environment",
+      "cause": "Initial MySQL readiness/SQL stdin checks and later stopped Docker engine; recovered only the approved container without DB reset."
+    },
+    {
+      "kind": "audit",
+      "cause": "Identifier guard rejected uppercase generated Survey table names; corrected case handling and reran read-only audit."
+    }
+  ],
+  "limits": [
+    "Real SMTP and AI Gateway delivery not exercised; test doubles/excluded components used.",
+    "Only two Auth SQL migrations applied; other domain migration chains and production database upgrade not verified.",
+    "Bounded contention/load and process restart tested; abrupt kill, response loss and long soak not verified.",
+    "No full Gradle H2 suite/build rerun for tools/docs-only changes; existing built artifact checked against all 292 main classes."
+  ],
+  "resourcesRetained": true,
+  "resourceRetention": {
+    "retained": true,
+    "checkedAt": "2026-10-21T12:55:26.9877400Z",
+    "containers": [
+      {
+        "state": "running",
+        "ports": "127.0.0.1:13326->3306/tcp",
+        "name": "kkiri-aus-mysql-20261021",
+        "id": "03690750f899",
+        "image": "mysql:8.0.46-oraclelinux9"
+      },
+      {
+        "state": "exited",
+        "ports": "",
+        "name": "kkiri-user-mysql-test",
+        "id": "cbede7f4b30d",
+        "image": "mysql:8.0.46-oraclelinux9"
+      },
+      {
+        "state": "exited",
+        "ports": "33060/tcp, 0.0.0.0:3307->3306/tcp",
+        "name": "kkiri-auth-mysql-test",
+        "id": "e15a46faca0b",
+        "image": "mysql:8.0.46-oraclelinux9"
+      },
+      {
+        "state": "exited",
+        "ports": "0.0.0.0:3306->3306/tcp, 33060/tcp",
+        "name": "linecup-mysql",
+        "id": "95a405772964",
+        "image": "mysql:8.4"
+      },
+      {
+        "state": "exited",
+        "ports": "",
+        "name": "musing_lumiere",
+        "id": "57d4fbcca8c7",
+        "image": "hello-world"
+      }
+    ],
+    "httpTestListeners": 0,
+    "ownedVolume": "kkiri-aus-mysql-data-20261021"
+  }
+}

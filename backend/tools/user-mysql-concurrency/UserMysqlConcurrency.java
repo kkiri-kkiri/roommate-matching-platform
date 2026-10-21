@@ -85,12 +85,13 @@ public class UserMysqlConcurrency {
             } else { pool=newPool(16,10000,2); guarded=new Guarded(pool); }
             tables=jdbcStrings(claim,"SELECT table_name FROM information_schema.tables WHERE table_schema=DATABASE() ORDER BY table_name");
             write("discovered-tables.json",tables);
-            check(tables.size()==30,"Expected full current 30-Entity schema, actual="+tables.size());
+            // POST_IMAGE_CLEANUP was added after this verifier's original 30-table baseline.
+            check(tables.size()==31,"Expected full current 31-Entity schema, actual="+tables.size());
             for(String t:tables)check(number(claim,"SELECT COUNT(*) FROM `"+t+"`")==0,"User schema contains preexisting data");
             ddlBefore=ddl(claim); write("schema-before.json",ddlBefore);
             write("environment.json",Map.ofEntries(Map.entry("endpoint","127.0.0.1:3308/kkiriusertest"),Map.entry("account","kkiri_user_test"),Map.entry("containerId",System.getenv("KKIRI_USER_TEST_CONTAINER_ID")),Map.entry("identity",queryRow(claim,"SELECT DATABASE() db,CURRENT_USER() account,VERSION() version,@@server_uuid serverUuid,@@hostname hostname,@@port port,@@session.time_zone timeZone,@@transaction_isolation isolationLevel,@@collation_database collation,@@session.innodb_lock_wait_timeout lockWaitSeconds")),Map.entry("mode","single JVM, actual Spring services/repositories/transaction proxies, full Entity schema; no web server"),Map.entry("poolMaximum",16),Map.entry("poolBorrowTimeoutMs",10000),Map.entry("poolSessionLockWaitSeconds",2),Map.entry("tables",tables),Map.entry("externalServiceCapableBeans",0)));
             ctx=new AnnotationConfigApplicationContext(Config.class);
-            check(ctx.getBean(EntityManagerFactory.class).getMetamodel().getEntities().size()==30,"Full Entity metamodel missing");
+            check(ctx.getBean(EntityManagerFactory.class).getMetamodel().getEntities().size()==31,"Full Entity metamodel missing");
             tm=ctx.getBean(PlatformTransactionManager.class); jdbc=ctx.getBean(JdbcTemplate.class);
             users=ctx.getBean(UserRepository.class); profiles=ctx.getBean(UserProfileRepository.class);
             userService=ctx.getBean(UserService.class); admins=ctx.getBean(AdminService.class);
@@ -173,6 +174,7 @@ public class UserMysqlConcurrency {
         com.kkirikkiri.community.repository.AdminCommentQueryRepository.class,
         com.kkirikkiri.report.repository.AdminReportQueryRepository.class,
         com.kkirikkiri.calendar.repository.AdminCrawledScheduleQueryRepository.class,
+        com.kkirikkiri.community.comment.service.CommunityCommentWriteService.class,
         com.kkirikkiri.community.post.repository.CommunityPostReadRepository.class})
     static class Config {
         @Bean DataSource dataSource(){return guarded;}
@@ -250,7 +252,7 @@ public class UserMysqlConcurrency {
         Throwable duplicate=capture(()->jdbc.update("UPDATE user_profile SET nickname=? WHERE user_id=?",n,b));check(sqlCode(duplicate)==1062,"MySQL UNIQUE must reject duplicate");
         Throwable nullRequired=capture(()->jdbc.update("UPDATE user_profile SET faculty_id=NULL WHERE user_id=?",b));check(sqlCode(nullRequired)==1048,"Faculty must be NOT NULL");
         Throwable orphan=capture(()->jdbc.update("UPDATE user_profile SET major_id=9223372036854775807 WHERE user_id=?",b));check(sqlCode(orphan)==1452,"Major FK must reject orphan");
-        return Map.of("tables",30,"foreignKeys",fk,"nicknameUniqueIndexes",unique,"duplicateCode",1062,"notNullCode",1048,"orphanCode",1452);
+        return Map.of("tables",tables.size(),"foreignKeys",fk,"nicknameUniqueIndexes",unique,"duplicateCode",1062,"notNullCode",1048,"orphanCode",1452);
     }
     static Map<String,Object> passwordStatus(boolean reset,String state,boolean statusFirst)throws Exception {
         Long id=member();Token t=token(id);var locked=new CountDownLatch(1);var release=new CountDownLatch(1);var started=new CountDownLatch(1);var ex=Executors.newFixedThreadPool(2);

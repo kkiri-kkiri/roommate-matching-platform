@@ -22,8 +22,15 @@ $classpath = (Join-Path $backendRoot 'build/classes/java/main') + ';' + (Join-Pa
 $sources = @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.java' | Select-Object -ExpandProperty FullName)
 $sources += (Join-Path $PSScriptRoot '../auth-mysql-concurrency/AuthMysqlConcurrency.java')
 $sources += (Join-Path $PSScriptRoot '../auth-mysql-concurrency/AuthMysqlMigration.java')
-& javac -encoding UTF-8 -cp $classpath -d $classRoot $sources
-if ($LASTEXITCODE -ne 0) { throw 'Harness compilation failed; no DB connection was made.' }
+# Windows PowerShell can promote javac's informational stderr notes to terminating errors.
+# Retain diagnostics and determine success from javac's exit code.
+$compilePreference = $ErrorActionPreference
+try {
+    $ErrorActionPreference = 'Continue'
+    & javac -encoding UTF-8 -cp $classpath -d $classRoot $sources
+    $compileExit = $LASTEXITCODE
+} finally { $ErrorActionPreference = $compilePreference }
+if ($compileExit -ne 0) { throw 'Harness compilation failed; no DB connection was made.' }
 if ($PrepareOnly) { Write-Output 'Harness compiled; no DB connection was made.'; return }
 
 # Never print inspect JSON or its environment: credentials remain in memory.

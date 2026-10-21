@@ -30,8 +30,15 @@ try {
     }
 } finally { $archive.Dispose() }
 $classpath = (Join-Path $repoRoot 'backend/build/classes/java/main') + ';' + $libRoot + '/*'
-& javac -encoding UTF-8 -cp $classpath -d $classRoot (Join-Path $PSScriptRoot 'SurveyMysqlConcurrency.java') (Join-Path $PSScriptRoot 'MatchingMysqlChecks.java') (Join-Path $repoRoot 'backend/src/test/java/com/kkirikkiri/survey/SurveyTestData.java')
-if ($LASTEXITCODE -ne 0) { throw 'Survey harness compilation failed; no database accessed.' }
+# Windows PowerShell can promote javac's informational stderr notes to terminating errors.
+# Judge compilation by the compiler exit code, retaining all diagnostics.
+$compilePreference = $ErrorActionPreference
+try {
+    $ErrorActionPreference = 'Continue'
+    & javac -encoding UTF-8 -cp $classpath -d $classRoot (Join-Path $PSScriptRoot 'SurveyMysqlConcurrency.java') (Join-Path $PSScriptRoot 'MatchingMysqlChecks.java') (Join-Path $repoRoot 'backend/src/test/java/com/kkirikkiri/survey/SurveyTestData.java')
+    $compileExit = $LASTEXITCODE
+} finally { $ErrorActionPreference = $compilePreference }
+if ($compileExit -ne 0) { throw 'Survey harness compilation failed; no database accessed.' }
 if ($PrepareOnly) { Write-Output 'Survey harness compiled; no database accessed.'; return }
 # No configurable URL and no .env loading: only the separately labelled Survey container is accepted.
 $inspection = & docker inspect $containerName
