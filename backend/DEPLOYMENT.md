@@ -358,6 +358,7 @@ DB/SMTP 장애 및 응답 유실, connection pool 포화, ingress IP 체인은 �
 
 ## 테스트와 실제 운영 검증
 
+- 공통 MockMvc 통합 테스트 작성, 데이터 격리와 `integrationTest` 선택 실행 방법은 [INTEGRATION_TEST_GUIDE.md](INTEGRATION_TEST_GUIDE.md)를 따른다. `test`와 `build`의 기존 전체 테스트 포함 범위 및 별도 Playwright E2E 환경은 유지한다.
 - `gradlew.bat test bootJar`는 test 프로필·H2 메모리 URL·SQL/시드/수집 비활성을 강제한다. 기존 DB 환경변수는 실제 연결 설정으로 사용하지 않는다. prod 요청은 테스트 JVM 실행 전에 거절한다.
 - IDE 직접 테스트도 test 프로필을 사용한다. 실제 연결 설정이 H2 메모리가 아니거나 초기화가 켜져 있으면 ApplicationContextInitializer가 빈 생성 전에 거절한다.
 - `node tools/sync-contract-docs.cjs --check`는 문서에 연결된 REST 선언·record DTO 필드/타입·Entity 컬럼 선언 및 ErrorCode 표를 읽기 전용으로 대조한다. 클래스 DTO의 동작, DB의 물리 제약과 서비스 검증 전체를 대체하지 않는다.

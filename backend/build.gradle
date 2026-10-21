@@ -42,7 +42,18 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
-tasks.named('test') {
+// Reuse the test source set and dependencies; test continues to run every existing test.
+tasks.register('integrationTest', Test) {
+    description = 'Runs all *IntegrationTest classes against the isolated H2 test database.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    include '**/*IntegrationTest.class'
+    shouldRunAfter tasks.named('test')
+}
+
+// Apply the same safety settings to both test and integrationTest.
+tasks.withType(Test).configureEach {
 	useJUnitPlatform()
     // JVM properties override inherited environment values. No .env is imported by test.
     systemProperty 'spring.profiles.active', 'test'
