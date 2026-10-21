@@ -80,13 +80,19 @@ test("filters and searches on the server, resets page, and uses server totals", 
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "검색어" } });
   fireEvent.click(screen.getByRole("button", { name: "검색", exact: true }));
   await waitFor(() => expect(api.getAdminMembers).toHaveBeenLastCalledWith({ page: 0, size: 6, q: "검색어", status: "SUSPENDED", dormitory: "나래" }));
-  expect(await screen.findByRole("button", { name: member.schoolEmail })).toBeInTheDocument();
+  const memberTable = await screen.findByRole("table");
+  const memberRow = within(memberTable).getByRole("row", { name: /서버 회원/ });
+  expect(within(memberRow).getByText(member.nickname)).toBeInTheDocument();
+  expect(within(memberRow).getByRole("button", { name: member.schoolEmail })).toBeInTheDocument();
 });
 
 test.each([["이용 정지", "SUSPENDED"], ["회원 탈퇴 처리", "WITHDRAWN"]])("changes member status via %s and refetches detail/list", async (button, status) => {
   render(<AdminPage />);
   fireEvent.click(await screen.findByRole("button", { name: member.schoolEmail }));
   await dialog().findByText("입학 연도");
+  expect(api.getAdminMember).toHaveBeenCalledWith(member.id);
+  expect(dialog().getByRole("heading", { name: member.nickname, level: 3 })).toBeInTheDocument();
+  expect(dialog().getByText(member.schoolEmail)).toBeInTheDocument();
   api.getAdminMember.mockResolvedValue({ ...memberDetail, status });
   await confirm(button);
   await waitFor(() => expect(api.updateAdminMemberStatus).toHaveBeenCalledWith(1, status));
@@ -100,6 +106,7 @@ test("shows server status-transition errors without refetching failed changes", 
   render(<AdminPage />);
   fireEvent.click(await screen.findByRole("button", { name: member.schoolEmail }));
   await dialog().findByText("입학 연도");
+  expect(api.getAdminMember).toHaveBeenCalledWith(member.id);
   await confirm("이용 정지 해제");
   expect(api.updateAdminMemberStatus).toHaveBeenCalledWith(1, "ACTIVE");
   expect(await dialog().findByRole("alert")).toHaveTextContent("다른 변경 요청을 처리 중입니다.");
@@ -185,7 +192,10 @@ test("renders request failure without mock fallback and allows retry", async () 
   expect(await screen.findByRole("alert")).toHaveTextContent("관리자 권한이 없습니다.");
   expect(screen.queryByRole("table")).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
-  await screen.findByRole("button", { name: member.schoolEmail });
+  expect(await screen.findByRole("button", { name: member.schoolEmail })).toBeInTheDocument();
+  expect(screen.getByText(member.nickname)).toBeInTheDocument();
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(api.getAdminMembers).toHaveBeenCalledTimes(2);
 });
 
 test("ignores late list results after navigation, including returning to dashboard", async () => {
@@ -198,6 +208,7 @@ test("ignores late list results after navigation, including returning to dashboa
   await act(async () => resolve(page([member])));
   expect(screen.getByText("101")).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: member.schoolEmail })).not.toBeInTheDocument();
+  expect(screen.queryByRole("table")).not.toBeInTheDocument();
 });
 
 test("sends post sorting, category and reported filters without filtering returned rows locally", async () => {
