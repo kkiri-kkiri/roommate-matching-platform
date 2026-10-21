@@ -30,7 +30,12 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "test:e2e": "node e2e/run.cjs",
+    "test:e2e:headed": "node e2e/run.cjs --headed",
+    "test:e2e:install": "playwright install chromium",
+    "test:e2e:check": "node --test e2e/runner.test.cjs",
+    "test:e2e:clean": "node e2e/clean.cjs"
   },
   "eslintConfig": {
     "extends": [
@@ -54,5 +59,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
   }
 }

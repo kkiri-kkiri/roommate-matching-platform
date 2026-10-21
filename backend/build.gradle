@@ -76,3 +76,23 @@ tasks.named('test') {
         }
     }
 }
+
+// E2E infrastructure is never packaged in bootJar or included in unit tests.
+sourceSets {
+    e2e {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+configurations {
+    e2eImplementation.extendsFrom implementation
+    e2eRuntimeOnly.extendsFrom runtimeOnly
+}
+tasks.register('prepareE2e') {
+    dependsOn tasks.named('e2eClasses')
+    doLast {
+        def target = layout.buildDirectory.file('e2e/classpath.txt').get().asFile
+        target.parentFile.mkdirs()
+        target.text = sourceSets.e2e.runtimeClasspath.asPath
+    }
+}
