@@ -1,5 +1,5 @@
 const { spawnSync } = require('node:child_process');
-const { readFileSync, mkdirSync, writeFileSync } = require('node:fs');
+const { readFileSync, mkdirSync, writeFileSync, appendFileSync } = require('node:fs');
 const path = require('node:path');
 
 function database(operation) {
@@ -25,5 +25,20 @@ function database(operation) {
   if (!result.stdout.includes(`E2E_DATABASE_${operation.toUpperCase()}_OK`)) {
     throw new Error(`E2E database ${operation} did not confirm completion.`);
   }
+  if (operation === 'snapshot') {
+    const line = result.stdout.split(/\r?\n/).find(line => line.startsWith('E2E_SNAPSHOT '));
+    if (!line) throw new Error('Missing read-only business-data snapshot');
+    const snapshot = JSON.parse(line.slice('E2E_SNAPSHOT '.length));
+    record({ operation, snapshot });
+    return snapshot;
+  }
+  record({ operation, completed: true, allTablesEmpty: operation === 'clean' });
+}
+function record(data) {
+  const directory = process.env.E2E_EVIDENCE_DIR;
+  const expected = path.resolve(__dirname, '../../../backend/build/full-service-e2e');
+  if (!directory || path.dirname(directory) !== expected || !/^[a-f0-9]{12}$/.test(path.basename(directory))) throw new Error('Unsafe E2E evidence path');
+  const id = (process.env.E2E_CURRENT_TEST_ID || 'runner').replace(/[^a-z0-9-]/gi, '_');
+  appendFileSync(path.join(directory, `database-${id}.jsonl`), JSON.stringify({ time: new Date().toISOString(), ...data }) + '\n');
 }
 module.exports = { database };

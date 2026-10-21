@@ -20,6 +20,8 @@ import tools.jackson.databind.ObjectMapper;
 public final class E2eServer {
     public static void main(String[] args) throws Exception {
         try (var ignored = E2eDatabase.guardedConnection()) { /* before Spring can touch the DB */ }
+        String ttl = Objects.requireNonNullElse(System.getenv("E2E_ACCESS_TTL"), "3600");
+        E2eDatabase.check(Set.of("8", "3600").contains(ttl), "Unsafe E2E token lifetime");
         Map<String, String> settings = new HashMap<>(Map.ofEntries(
             Map.entry("spring.config.location", "classpath:/application.properties"),
             Map.entry("spring.config.import", ""), Map.entry("spring.profiles.active", "e2e"),
@@ -34,12 +36,15 @@ public final class E2eServer {
             Map.entry("app.community.image-directory", E2eDatabase.required("E2E_IMAGE_DIRECTORY")),
             Map.entry("app.cors.allowed-origins", "http://127.0.0.1:13000"),
             Map.entry("jwt.secret", E2eDatabase.required("E2E_JWT_SECRET")),
+            Map.entry("jwt.access-token-expiration-seconds", ttl),
             Map.entry("ai.api-key", "e2e-only"), Map.entry("ai.base-url", "http://127.0.0.1:1"),
             Map.entry("ai.model", "e2e-only"), Map.entry("spring.mail.host", "127.0.0.1"),
             Map.entry("spring.mail.port", "1"), Map.entry("spring.mail.username", ""),
             Map.entry("spring.mail.password", ""), Map.entry("spring.mail.test-connection", "false"),
             Map.entry("auth.email-verification.mail-from", "e2e@example.invalid"),
-            Map.entry("logging.level.root", "WARN"), Map.entry("spring.main.banner-mode", "off")));
+            Map.entry("logging.level.root", "WARN"),
+            Map.entry("logging.level.org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration", "OFF"),
+            Map.entry("spring.main.banner-mode", "off")));
         settings.forEach(System::setProperty);
         var app = new SpringApplication(BackendApplication.class, Infrastructure.class);
         try (var context = app.run()) {
@@ -53,7 +58,15 @@ public final class E2eServer {
             System.out.println("E2E_BACKEND_READY"); System.out.flush();
             // EOF also closes Spring when the owning Node process disappears.
             try (var reader = new BufferedReader(new InputStreamReader(System.in))) {
-                while (reader.readLine() != null) { /* runner closes stdin to stop */ }
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split(" ", 3);
+                    if (parts.length == 3 && parts[0].equals("MAIL") && parts[1].matches("[a-f0-9]{24}")) {
+                        String code = ((MemoryMail)context.getBean(JavaMailSender.class)).codes.getOrDefault(parts[2], "");
+                        // Private parent-process pipe; the runner consumes these lines without writing logs.
+                        System.out.println("E2E_PRIVATE " + parts[1] + " " + code); System.out.flush();
+                    }
+                }
             }
         }
     }
@@ -79,7 +92,13 @@ public final class E2eServer {
         @Bean com.kkirikkiri.calendar.crawler.HknuAcademicCalendarCrawler disabledCrawler() { return new DisabledCrawler(); }
     }
     static final class MemoryMail extends JavaMailSenderImpl {
-        @Override public void send(SimpleMailMessage... messages) { /* no network, no sensitive logs */ }
+        final Map<String,String> codes = new java.util.concurrent.ConcurrentHashMap<>();
+        @Override public void send(SimpleMailMessage... messages) {
+            for (var message : messages) {
+                var matcher = java.util.regex.Pattern.compile("인증번호: (\\d{6})").matcher(Objects.requireNonNullElse(message.getText(), ""));
+                if (matcher.find() && message.getTo() != null) for (String recipient : message.getTo()) codes.put(recipient, matcher.group(1));
+            }
+        }
         @Override public void send(MimeMessage... messages) { /* no network, no sensitive logs */ }
     }
     static final class FixedAi extends AiGatewayClient {

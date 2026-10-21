@@ -172,7 +172,7 @@ public class CalendarMysqlValidation {
         @Bean CalendarCrawlingService crawling(ControlledCrawler c,CalendarCategoryRepository cats,CalendarEventRepository e,ScheduleCrawlRunRepository r,PlatformTransactionManager m){return new CalendarCrawlingService(c,cats,e,r,m);}
         @Bean AdminCrawledScheduleQueryRepository scheduleQuery(EntityManagerFactory f){return new AdminCrawledScheduleQueryRepository(SharedEntityManagerCreator.createSharedEntityManager(f));}
         // Only the Calendar admin read methods are exposed by this standalone verifier.
-        @Bean AdminService admin(UserRepository u,AdminCrawledScheduleQueryRepository q,ScheduleCrawlRunRepository r,Validator v){return new AdminService(u,null,null,null,null,null,q,r,null,null,v);}
+        @Bean AdminService admin(UserRepository u,AdminCrawledScheduleQueryRepository q,ScheduleCrawlRunRepository r,Validator v){return new AdminService(u,null,null,null,null,null,null,null,null,q,r,null,null,null,v);}
     }
     static LocalContainerEntityManagerFactoryBean emf(DataSource ds,String ddl){
         var f=new LocalContainerEntityManagerFactoryBean();f.setDataSource(ds);f.setManagedTypes(PersistenceManagedTypes.of(ENTITIES.stream().map(Class::getName).toArray(String[]::new)));

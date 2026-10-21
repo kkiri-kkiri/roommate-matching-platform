@@ -17,7 +17,18 @@ final class CalendarMultiSupport {
     static Connection open()throws SQLException{Connection c=DriverManager.getConnection(url(),account(),System.getenv("CM_PASSWORD"));try{guard(c);return c;}catch(Throwable t){c.close();throw t;}}
     static void guard(Connection c)throws SQLException{
         var r=rows(c,"SELECT DATABASE() db,CURRENT_USER() account,VERSION() version,@@server_uuid uuid,@@hostname host,@@session.time_zone zone").getFirst();
-        check(db().equals(r.get("db"))&&(account()+"@%").equals(r.get("account"))&&"8.0.46".equals(r.get("version"))&&"53ab727e-c847-11f1-9aaf-bad504fada53".equals(r.get("uuid"))&&"e15a46faca0b".equals(r.get("host")),"Unexpected database identity");
+        String owner=System.getenv("CM_MANAGED_OWNER");
+        boolean identity;
+        if(owner==null) {
+            identity="53ab727e-c847-11f1-9aaf-bad504fada53".equals(r.get("uuid"))&&"e15a46faca0b".equals(r.get("host"));
+        } else {
+            // Fresh-container runner verifies Docker ownership/image/loopback binding before supplying this identity.
+            String uuid=System.getenv("CM_MANAGED_UUID");
+            check(owner.matches("[0-9a-f]{12}")&&db().equals("calendarmulti"+owner)
+                    &&uuid!=null&&uuid.matches("[0-9a-f-]{36}"),"Invalid disposable Calendar identity");
+            identity=uuid.equals(r.get("uuid"))&&"kkiri-calendar-managed".equals(r.get("host"));
+        }
+        check(db().equals(r.get("db"))&&(account()+"@%").equals(r.get("account"))&&"8.0.46".equals(r.get("version"))&&identity,"Unexpected database identity");
         check((zone().equals("UTC")?Set.of("UTC","+00:00"):Set.of("Asia/Seoul","+09:00")).contains(r.get("zone")),"Unexpected JDBC session zone");
         check(c.getMetaData().getURL().startsWith("jdbc:mysql://127.0.0.1:3307/"+db()+"?"),"Unexpected JDBC URL");
     }

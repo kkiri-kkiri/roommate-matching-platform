@@ -97,7 +97,7 @@ public final class E2eDatabase {
     }
     public static void main(String[] args) throws Exception {
         String mode = args.length == 1 ? args[0] : "";
-        check(Set.of("prepare", "reset", "clean", "verify").contains(mode), "Unknown E2E fixture operation");
+        check(Set.of("prepare", "reset", "clean", "verify", "snapshot").contains(mode), "Unknown E2E fixture operation");
         try (var c = guardedConnection()) {
             if (mode.equals("prepare")) check(tables(c).isEmpty(), "Refusing to initialize an existing schema");
         }
@@ -113,7 +113,14 @@ public final class E2eDatabase {
                     var user = new User(new BCryptPasswordEncoder().encode(required("E2E_LOGIN_PASSWORD")), required("E2E_LOGIN_EMAIL"));
                     user.verifyEmail();
                     em.persist(dorm); em.persist(faculty); em.persist(user);
+                    em.persist(new Dormitory("NARAE", "나래", true));
+                    em.persist(new Faculty("HK자율전공학부", true));
                     em.persist(new UserProfile(user, "E2E사용자", "남자", dorm, faculty, null, (short)2000, "20", "1학년", "INTJ"));
+                    var peer = new User(new BCryptPasswordEncoder().encode(required("E2E_LOGIN_PASSWORD")), required("E2E_SECOND_EMAIL"));
+                    var admin = new User(new BCryptPasswordEncoder().encode(required("E2E_LOGIN_PASSWORD")), required("E2E_ADMIN_EMAIL"), UserRole.ADMIN);
+                    peer.verifyEmail(); admin.verifyEmail(); em.persist(peer); em.persist(admin);
+                    em.persist(new UserProfile(peer, "E2E상대", "남자", dorm, faculty, null, (short)2000, "20", "1학년", "INTJ"));
+                    em.persist(new UserProfile(admin, "E2E관리자", "남자", dorm, faculty, null, (short)2000, "20", "1학년", "INTJ"));
                     tx.commit();
                 } catch (Throwable failure) { if (tx.isActive()) tx.rollback(); throw failure; }
             } finally { f.destroy(); }
@@ -124,6 +131,45 @@ public final class E2eDatabase {
                 s.setString(1, required("E2E_LOGIN_EMAIL"));
                 try (var r = s.executeQuery()) { check(r.next() && r.getInt(1) == 1, "E2E login account missing from MySQL"); }
             }
+        }
+        if (mode.equals("snapshot")) {
+            var snapshot = new LinkedHashMap<String,Object>();
+            // Fixed, read-only business-data projection; never selects credentials or verification codes.
+            Map<String,String> queries = new LinkedHashMap<>();
+            queries.put("profiles", "SELECT user_id,nickname,introduction FROM user_profile ORDER BY user_id");
+            queries.put("surveys", "SELECT user_id,sleep_time,wake_time FROM profile_survey ORDER BY user_id");
+            queries.put("preferences", "SELECT user_id FROM roommate_preference ORDER BY user_id");
+            queries.put("matches", "SELECT requester_user_id,target_user_id,match_score FROM roommate_match ORDER BY requester_user_id,target_user_id");
+            queries.put("likes", "SELECT user_id,target_user_id FROM profile_like ORDER BY user_id,target_user_id");
+            queries.put("events", "SELECT event_id,owner_user_id,title,CAST(start_date AS CHAR) start_date,CAST(start_time AS CHAR) start_time FROM calendar_event ORDER BY event_id");
+            queries.put("categories", "SELECT category_id,owner_user_id,default_name FROM calendar_category WHERE is_system=FALSE ORDER BY category_id");
+            queries.put("users", "SELECT user_id,role,status,email_verified FROM user ORDER BY user_id");
+            queries.put("posts", "SELECT post_id,author_id,title,content,status,anonymous FROM community_post ORDER BY post_id");
+            queries.put("images", "SELECT post_image_id,post_id,image_url,original_name FROM post_image ORDER BY post_image_id");
+            queries.put("comments", "SELECT comment_id,post_id,author_id,parent_comment_id,content,status FROM community_comment ORDER BY comment_id");
+            queries.put("postLikes", "SELECT post_id,user_id FROM post_like ORDER BY post_id,user_id");
+            queries.put("commentLikes", "SELECT comment_id,user_id FROM comment_like ORDER BY comment_id,user_id");
+            queries.put("rooms", "SELECT chat_room_id,category,source_post_id,source_comment_id,status FROM chat_room ORDER BY chat_room_id");
+            queries.put("members", "SELECT chat_room_id,user_id,is_left,is_pinned,is_muted FROM chat_room_member ORDER BY chat_room_id,user_id");
+            queries.put("messages", "SELECT message_id,chat_room_id,sender_id,content,is_read FROM chat_message ORDER BY message_id");
+            queries.put("reports", "SELECT report_id,reporter_id,target_user_id,report_type,post_id,comment_id,reason,description,status,resolution_action,processed_by FROM report ORDER BY report_id");
+            try (var c = guardedConnection()) {
+                for (var query : queries.entrySet()) {
+                    var rows = new ArrayList<Map<String,Object>>();
+                    try (var s = c.createStatement(); var r = s.executeQuery(query.getValue())) {
+                        while (r.next()) {
+                            var row = new LinkedHashMap<String,Object>();
+                            for (int i=1;i<=r.getMetaData().getColumnCount();i++) row.put(r.getMetaData().getColumnLabel(i),r.getObject(i));
+                            rows.add(row);
+                        }
+                    }
+                    snapshot.put(query.getKey(), rows);
+                }
+            }
+            // Node decodes this IPC as UTF-8; Windows redirected System.out can otherwise use MS949.
+            String projection = tools.jackson.databind.json.JsonMapper.builder().build().writeValueAsString(snapshot);
+            System.out.write(("E2E_SNAPSHOT " + projection + "\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            System.out.flush();
         }
         System.out.println("E2E_DATABASE_" + mode.toUpperCase() + "_OK");
     }
