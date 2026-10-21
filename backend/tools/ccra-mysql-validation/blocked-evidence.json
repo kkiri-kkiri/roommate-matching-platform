@@ -1,0 +1,170 @@
+﻿{
+    "gitCommit":  "305a184f8a552897d21614f868fda71ac63aeb7e",
+    "verdict":  "BLOCKED_BEFORE_MYSQL_START",
+    "userDecision":  "Docker Desktop restart deferred; report blocker and prepared tools",
+    "container":  "kkiri-ccra-mysql-20261021",
+    "endpoint":  "127.0.0.1:13326",
+    "imageTag":  "mysql:8.0.46-oraclelinux9",
+    "amd64Manifest":  "sha256:62fb722c78b24245ddff1796a0fcee4a49cc5b87e0aaaf20c92d1da9e0a2497b",
+    "imageAndEngineArchitecture":  "linux/amd64; linux/x86_64",
+    "mysqlServerVersionVerified":  false,
+    "jdbcConnected":  false,
+    "databaseOrAccountCreated":  false,
+    "httpRequests":  0,
+    "businessTests":  {
+                          "passed":  0,
+                          "preparedButNotRun":  24,
+                          "skipped":  0,
+                          "failed":  0,
+                          "executed":  0
+                      },
+    "environment":  {
+                        "startupFailures":  5,
+                        "fileDiagnosticAttempts":  1,
+                        "startupAttempts":  5,
+                        "removedContainers":  6,
+                        "copiedBashBytes":  0,
+                        "createdContainers":  6
+                    },
+    "cleanupRecords":  [
+                           {
+                               "existingContainersChanged":  false,
+                               "containerId":  "9ab24858cd95a783a4891a6d29536f3072c74106f4d09407d14af88a8f7f8911",
+                               "removed":  true,
+                               "owner":  "1cef7c643d914bda89d188bc64a5cbbd",
+                               "container":  "kkiri-ccra-mysql-20261021"
+                           },
+                           {
+                               "existingContainersChanged":  false,
+                               "containerId":  "9a11e81c9c3d870862591d3805fb011ce889ea3796ac355f072d4bbab7a4b716",
+                               "removed":  true,
+                               "owner":  "501decabc02749a7bc33b079d4ab74bd",
+                               "container":  "kkiri-ccra-mysql-20261021"
+                           },
+                           {
+                               "existingContainersChanged":  false,
+                               "containerId":  "5e8d02c34283ed5f9236e32bf190c57b4d7c236d89b1ae0d123df5facdb00023",
+                               "removed":  true,
+                               "owner":  "6e2851829db241ef84792e1c6cab44ca",
+                               "container":  "kkiri-ccra-mysql-20261021"
+                           },
+                           {
+                               "existingContainersChanged":  false,
+                               "containerId":  "1578e3ef563a7e75740caa32d3ca279f385ffc29ce313010a2450b10501d7bf2",
+                               "removed":  true,
+                               "owner":  "8a36ba3bdeed464299ced841d7e440da",
+                               "container":  "kkiri-ccra-mysql-20261021"
+                           },
+                           {
+                               "existingContainersChanged":  false,
+                               "containerId":  "14b8119c81b340241fab42a5bad3804cba73a1bb191894bfa1042aa7d518c32d",
+                               "removed":  true,
+                               "owner":  "9db97bdd22f6477fb097204e75c71544",
+                               "container":  "kkiri-ccra-mysql-20261021"
+                           },
+                           {
+                               "existingContainersChanged":  false,
+                               "containerId":  "f3cba5a3b2ee281b21a093615fa87de1e4e2f4d31df06b73d0ae834fbaee0f5a",
+                               "removed":  true,
+                               "owner":  "a744bdae1b434ba4a495364429ba7a8f",
+                               "container":  "kkiri-ccra-mysql-20261021"
+                           }
+                       ],
+    "startupRecords":  [
+                           {
+                               "state":  {
+                                             "Status":  "exited",
+                                             "Running":  false,
+                                             "Paused":  false,
+                                             "Restarting":  false,
+                                             "OOMKilled":  false,
+                                             "Dead":  false,
+                                             "Pid":  0,
+                                             "ExitCode":  255,
+                                             "Error":  "",
+                                             "StartedAt":  "2026-10-21T07:02:08.130240855Z",
+                                             "FinishedAt":  "2026-10-21T07:02:08.264880279Z"
+                                         },
+                               "file":  "startup-1cef7c643d914bda89d188bc64a5cbbd.json"
+                           },
+                           {
+                               "state":  {
+                                             "Status":  "exited",
+                                             "Running":  false,
+                                             "Paused":  false,
+                                             "Restarting":  false,
+                                             "OOMKilled":  false,
+                                             "Dead":  false,
+                                             "Pid":  0,
+                                             "ExitCode":  255,
+                                             "Error":  "",
+                                             "StartedAt":  "2026-10-21T07:01:10.811336962Z",
+                                             "FinishedAt":  "2026-10-21T07:01:11.014548546Z"
+                                         },
+                               "file":  "startup-501decabc02749a7bc33b079d4ab74bd.json"
+                           },
+                           {
+                               "state":  {
+                                             "Status":  "exited",
+                                             "Running":  false,
+                                             "Paused":  false,
+                                             "Restarting":  false,
+                                             "OOMKilled":  false,
+                                             "Dead":  false,
+                                             "Pid":  0,
+                                             "ExitCode":  255,
+                                             "Error":  "",
+                                             "StartedAt":  "2026-10-21T06:59:26.300361845Z",
+                                             "FinishedAt":  "2026-10-21T06:59:26.43923994Z"
+                                         },
+                               "file":  "startup-8a36ba3bdeed464299ced841d7e440da.json"
+                           },
+                           {
+                               "state":  {
+                                             "Status":  "exited",
+                                             "Running":  false,
+                                             "Paused":  false,
+                                             "Restarting":  false,
+                                             "OOMKilled":  false,
+                                             "Dead":  false,
+                                             "Pid":  0,
+                                             "ExitCode":  255,
+                                             "Error":  "",
+                                             "StartedAt":  "2026-10-21T07:04:35.021467058Z",
+                                             "FinishedAt":  "2026-10-21T07:04:35.151126905Z"
+                                         },
+                               "file":  "startup-9db97bdd22f6477fb097204e75c71544.json"
+                           }
+                       ],
+    "failureLogs":  [
+                        {
+                            "file":  "startup-1cef7c643d914bda89d188bc64a5cbbd.log",
+                            "diagnostic":  "exec /bin/bash: exec format error"
+                        },
+                        {
+                            "file":  "startup-501decabc02749a7bc33b079d4ab74bd.log",
+                            "diagnostic":  "exec /usr/local/bin/docker-entrypoint.sh: exec format error"
+                        },
+                        {
+                            "file":  "startup-9db97bdd22f6477fb097204e75c71544.log",
+                            "diagnostic":  "exec /usr/local/bin/docker-entrypoint.sh: exec format error"
+                        }
+                    ],
+    "preservedContainers":  [
+                                {
+                                    "running":  false,
+                                    "name":  "kkiri-auth-mysql-test",
+                                    "id":  "42528a4bbec4",
+                                    "image":  "mysql:8.0.44"
+                                },
+                                {
+                                    "running":  false,
+                                    "name":  "kkiri-auth-mysql-backup",
+                                    "id":  "3acf9c77ee56",
+                                    "image":  "mysql:8.0.46-oraclelinux9"
+                                }
+                            ],
+    "dockerDesktopRestarted":  false,
+    "productionSourcesChanged":  false,
+    "commonTestSettingsChanged":  false
+}
