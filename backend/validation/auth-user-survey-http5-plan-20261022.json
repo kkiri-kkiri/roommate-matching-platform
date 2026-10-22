@@ -1,0 +1,619 @@
+{
+  "reviewedAt": "2026-10-22T07:18:33.520Z",
+  "status": "AWAITING RESOURCE APPROVAL",
+  "priorEvidence": {
+    "summary": "backend/validation/auth-user-survey-mysql-20261021.json",
+    "summarySha256": "93596c42b3bbb486c827b0b51edfa13900c68c0a852df4b993d163ba1dc998b2",
+    "httpRequests": 1502,
+    "groups": [
+      {
+        "id": "authHttp",
+        "evidence": "backend/tools/auth-mysql-multi-instance/results/2026-10-21-f8b5c7920ad2",
+        "summarySha256": "CDC407B18EB7CE68BB31A46A8472B96D865C74B1DA4CEC5675401CB77DCBEE4A",
+        "requests": 1233,
+        "cases": [
+          "two-real-boot-jvms-and-shared-jwt",
+          "login-failure-and-alias-limit-shared",
+          "email-send-alias-cooldown-shared",
+          "email-verification-alias-failure-limit-shared",
+          "same-code-concurrent-verification-on-two-servers",
+          "signup-verification-token-consumed-once-across-servers",
+          "reset-alias-cooldown-and-single-token-use",
+          "first-identity-and-bucket-race",
+          "email-request-quota-shared",
+          "login-ip-failure-quota-shared",
+          "login-check-ip-request-quota-shared",
+          "verification-ip-failure-quota-shared",
+          "verification-ip-request-quota-shared",
+          "verification-send-ip-quota-shared",
+          "same-email-first-send-64-requests",
+          "different-email-first-send-independent-24",
+          "existing-identity-cooldown-does-not-wait-on-business-mutex",
+          "reset-ip-send-quota-shared",
+          "distinct-account-limit-independence",
+          "unknown-account-alias-response-privacy",
+          "cross-email-row-lock-isolation",
+          "cross-server-row-lock-wait-and-release",
+          "http-lock-timeout-and-transaction-consistency",
+          "forced-deadlock-involving-real-http-transaction",
+          "mock-mail-failure-and-business-rollback",
+          "limiter-1205-new-transaction-retry-recovers",
+          "limiter-1213-new-transaction-retry-recovers",
+          "pool-exhaustion-error-chain-and-recovery-http",
+          "repeat-original-132-contention-three-rounds",
+          "server-stop-restart-preserves-shared-limits",
+          "mail-global-quota-shared-http",
+          "repeated-http-load-pool-return"
+        ]
+      },
+      {
+        "id": "userHttp",
+        "evidence": "backend/tools/user-mysql-multi-instance/results/2026-10-21-c3074f61e998",
+        "summarySha256": "D685776208D8A56E6851A2765E379387CB053C3BBECD3567D98329FD6297C7FA",
+        "requests": 243,
+        "cases": [
+          "two-real-jvms-shared-db-and-jwt",
+          "password-suspended-password-first",
+          "password-suspended-status-first",
+          "password-withdrawn-password-first",
+          "password-withdrawn-status-first",
+          "reset-suspended-password-first",
+          "reset-suspended-status-first",
+          "reset-withdrawn-password-first",
+          "reset-withdrawn-status-first",
+          "inactive-suspended-jwt-login-reset",
+          "inactive-withdrawn-jwt-login-reset",
+          "principal-ownership-admin-and-invalid-jwt",
+          "same-user-profile-partial-updates-across-servers",
+          "nickname-unique-conflict-and-full-rollback",
+          "faculty-major-null-and-invalid-request-rollback",
+          "physical-unique-fk-not-null",
+          "matching-after-profile-commit-and-cross-instance-update",
+          "matching-failure-keeps-profile-and-http-read-repairs",
+          "bulk-matching-batches-lock-wait-latency-and-recovery",
+          "row-lock-wait-and-independent-user-http",
+          "profile-lock-timeout-http409-full-rollback",
+          "reset-token-lock-timeout-http409-full-rollback",
+          "forced-deadlock-with-real-http-transaction",
+          "same-user-password-multiple-http-requests",
+          "pool-exhaustion-and-recovery",
+          "server-stop-restart-and-cross-server-jwt",
+          "repeated-profile-http-and-pool-return",
+          "survey-http-profile-roundtrip-owner-and-introduction",
+          "survey-http-preference-roundtrip-options-and-weights",
+          "survey-http-profile-invalid-input-preserves-all-rows",
+          "survey-http-preference-invalid-input-preserves-all-rows",
+          "survey-http-missing-and-inactive-authentication",
+          "survey-mysql-physical-pk-fk-unique-notnull-and-rollback"
+        ]
+      },
+      {
+        "id": "userSecurity",
+        "evidence": "backend/tools/user-mysql-multi-instance/results/2026-10-21-13e4eb2af21b",
+        "summarySha256": "9338459150F378FF068207C95E95C997FCD363B46A16F9E16FAAB08D9323DEE7",
+        "requests": 26,
+        "cases": [
+          "jwt-infrastructure-security-regression"
+        ]
+      }
+    ],
+    "controllerCoverage": [
+      {
+        "endpoint": "POST /api/auth/login",
+        "recordedRequests": 173
+      },
+      {
+        "endpoint": "POST /api/auth/login/email-check",
+        "recordedRequests": 748
+      },
+      {
+        "endpoint": "GET /api/auth/me",
+        "recordedRequests": 1
+      },
+      {
+        "endpoint": "POST /api/auth/signup",
+        "recordedRequests": 2
+      },
+      {
+        "endpoint": "GET /api/auth/signup/availability",
+        "recordedRequests": 0
+      },
+      {
+        "endpoint": "POST /api/auth/password-reset/request",
+        "recordedRequests": 65
+      },
+      {
+        "endpoint": "POST /api/auth/password-reset/confirm",
+        "recordedRequests": 15
+      },
+      {
+        "endpoint": "POST /api/auth/email-verifications/send",
+        "recordedRequests": 176
+      },
+      {
+        "endpoint": "POST /api/auth/email-verifications/verify",
+        "recordedRequests": 141
+      },
+      {
+        "endpoint": "GET /api/users/me",
+        "recordedRequests": 28
+      },
+      {
+        "endpoint": "PATCH /api/users/me",
+        "recordedRequests": 74
+      },
+      {
+        "endpoint": "PATCH /api/users/me/password",
+        "recordedRequests": 17
+      },
+      {
+        "endpoint": "GET /api/users/me/profile-survey",
+        "recordedRequests": 7
+      },
+      {
+        "endpoint": "PUT /api/users/me/profile-survey",
+        "recordedRequests": 12
+      },
+      {
+        "endpoint": "GET /api/users/me/roommate-preferences",
+        "recordedRequests": 6
+      },
+      {
+        "endpoint": "PUT /api/users/me/roommate-preferences",
+        "recordedRequests": 9
+      }
+    ],
+    "methodInference": "Original Auth requests omit method; GET me / POST auth routes inferred from original Java helpers. User evidence records method."
+  },
+  "proposedEnvironment": {
+    "container": "kkiri-aus-http5-mysql-20261022",
+    "volume": "kkiri-aus-http5-data-20261022",
+    "image": "mysql:8.0.46-oraclelinux9",
+    "expectedImageId": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+    "expectedMysqlVersion": "8.0.46",
+    "mysqlEndpoint": "127.0.0.1:13327",
+    "httpEndpoint": "http://127.0.0.1:18093",
+    "db": "kkiriaus5http20261022",
+    "account": "aus5http20261022",
+    "uuid": null,
+    "created": false,
+    "cleanup": "DELETE fixture rows in NEW schema only after owned HTTP process stops; retain container/volume/schema/account/DDL; no DROP/TRUNCATE"
+  },
+  "localPreparation": {
+    "jarClassesCompared": 292,
+    "jarSha256": "19F69E2A0533B5FBC022E940B0FFEA51ACD1E37E076DC4C886125DD315168077",
+    "preparedAt": "2026-10-22T07:18:33.3305693Z"
+  },
+  "newExecution": {
+    "httpRequests": 0,
+    "passed": 0,
+    "failed": 0,
+    "notRun": 59,
+    "p0": 13,
+    "p1": 46
+  },
+  "scenarios": [
+    {
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "status": "NOT RUN",
+      "name": "availability-no-params"
+    },
+    {
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "status": "NOT RUN",
+      "name": "availability-empty"
+    },
+    {
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "status": "NOT RUN",
+      "name": "availability-email-only"
+    },
+    {
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "status": "NOT RUN",
+      "name": "availability-korean-only"
+    },
+    {
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "status": "NOT RUN",
+      "name": "availability-both-free"
+    },
+    {
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "status": "NOT RUN",
+      "name": "availability-both-used"
+    },
+    {
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "status": "NOT RUN",
+      "name": "availability-mixed"
+    },
+    {
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "status": "NOT RUN",
+      "name": "availability-format-unvalidated"
+    },
+    {
+      "priority": "P0",
+      "expected": "400 EMAIL_VERIFICATION_EXPIRED; no verification token issued",
+      "status": "NOT RUN",
+      "name": "verification-expired-code-no-token"
+    },
+    {
+      "priority": "P0",
+      "expected": "400 EMAIL_VERIFICATION_TOKEN_INVALID; no user/profile; token unchanged",
+      "status": "NOT RUN",
+      "name": "signup-expired-token-no-member"
+    },
+    {
+      "priority": "P0",
+      "expected": "400 EMAIL_VERIFICATION_TOKEN_INVALID; no user/profile; source token unchanged",
+      "status": "NOT RUN",
+      "name": "signup-other-email-token-no-member"
+    },
+    {
+      "priority": "P0",
+      "expected": "400 PASSWORD_RESET_TOKEN_INVALID; password unchanged",
+      "status": "NOT RUN",
+      "name": "reset-unregistered-token-keeps-password"
+    },
+    {
+      "priority": "P0",
+      "expected": "400 PASSWORD_RESET_TOKEN_EXPIRED; password/token unchanged",
+      "status": "NOT RUN",
+      "name": "reset-expired-token-keeps-password"
+    },
+    {
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "status": "NOT RUN",
+      "name": "password-signup-ascii-72"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-signup-ascii-73"
+    },
+    {
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "status": "NOT RUN",
+      "name": "password-signup-utf8-72"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-signup-utf8-73"
+    },
+    {
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "status": "NOT RUN",
+      "name": "password-login-ascii-72"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-login-ascii-73"
+    },
+    {
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "status": "NOT RUN",
+      "name": "password-login-utf8-72"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-login-utf8-73"
+    },
+    {
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "status": "NOT RUN",
+      "name": "password-change-ascii-72"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-change-ascii-73"
+    },
+    {
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "status": "NOT RUN",
+      "name": "password-change-utf8-72"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-change-utf8-73"
+    },
+    {
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "status": "NOT RUN",
+      "name": "password-reset-ascii-72"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-reset-ascii-73"
+    },
+    {
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "status": "NOT RUN",
+      "name": "password-reset-utf8-72"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-reset-utf8-73"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-signup-mismatch"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-signup-confirm-overlong"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-change-mismatch"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-change-confirm-overlong"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-reset-mismatch"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "status": "NOT RUN",
+      "name": "password-reset-confirm-overlong"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 INVALID_REQUEST; password unchanged",
+      "status": "NOT RUN",
+      "name": "password-change-current-wrong"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; password unchanged",
+      "status": "NOT RUN",
+      "name": "password-change-current-overlong"
+    },
+    {
+      "priority": "P1",
+      "expected": "200; all 18 weights saved as 1",
+      "status": "NOT RUN",
+      "name": "preference-weight-one"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-weight-zero"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-weight-six"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-weight-null-value"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-weight-missing-key"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-weight-extra-key"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-weight-empty"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-weight-null-map"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-weight-missing-map"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-option-empty"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-option-null-list"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-option-null-element"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-option-blank"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-option-duplicate"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-option-unknown"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-option-too-long"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-option-scalar-unknown"
+    },
+    {
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "status": "NOT RUN",
+      "name": "preference-option-scalar-too-long"
+    },
+    {
+      "priority": "P1",
+      "expected": "200; option roundtrip",
+      "status": "NOT RUN",
+      "name": "preference-option-no-preference-alone"
+    },
+    {
+      "priority": "P1",
+      "expected": "200 completed=false; answers/introduction retained; repeated GET never writes",
+      "status": "NOT RUN",
+      "name": "profile-incomplete-flag-false"
+    },
+    {
+      "priority": "P1",
+      "expected": "200 completed=false; answers/introduction retained; repeated GET never writes",
+      "status": "NOT RUN",
+      "name": "profile-incomplete-invalid-scalar"
+    },
+    {
+      "priority": "P1",
+      "expected": "200 completed=false; answers/introduction retained; repeated GET never writes",
+      "status": "NOT RUN",
+      "name": "profile-incomplete-missing-options"
+    }
+  ],
+  "blocked": [
+    {
+      "scope": "real SMTP",
+      "status": "BLOCKED",
+      "reason": "No approved deployment mail transport"
+    },
+    {
+      "scope": "HTTPS",
+      "status": "BLOCKED",
+      "reason": "No approved TLS deployment endpoint"
+    },
+    {
+      "scope": "ingress",
+      "status": "BLOCKED",
+      "reason": "No approved ingress deployment endpoint"
+    }
+  ],
+  "excludedDuplicates": [
+    {
+      "scope": "Auth existing HTTP suite",
+      "evidence": "authHttp",
+      "reason": "32 PASS cases: auth flows, token single-use, shared limiter/cooldown/aliases, privacy, rollback/SQL conflicts/recovery"
+    },
+    {
+      "scope": "User existing HTTP suite",
+      "evidence": "userHttp",
+      "reason": "27 PASS cases: principal/admin/JWT/status, partial profile, password/status races, MySQL integrity/locks/recovery"
+    },
+    {
+      "scope": "JWT infrastructure regression",
+      "evidence": "userSecurity",
+      "reason": "1 PASS case; 26 HTTP requests"
+    },
+    {
+      "scope": "Survey roundtrip/owner/introduction/auth/physical constraints",
+      "evidence": "userHttp",
+      "reason": "Existing 6 cases include 5 HTTP functional groups and 1 SQL-only group; not rerun"
+    },
+    {
+      "scope": "Preference weights=2 and =5 roundtrip",
+      "evidence": "survey-http-preference-roundtrip-options-and-weights",
+      "reason": "Upper valid bound 5 is already HTTP-covered"
+    },
+    {
+      "scope": "Preference unsupported key replacing meal at same 18-key count",
+      "evidence": "survey-http-preference-invalid-input-preserves-all-rows",
+      "reason": "Already covered; new 17/19-key counts are separate"
+    },
+    {
+      "scope": "Preference age contains 상관없음 with 동갑",
+      "evidence": "survey-http-preference-invalid-input-preserves-all-rows",
+      "reason": "Already covered; new single no-preference/duplicate/empty/unknown/null cases are separate"
+    },
+    {
+      "scope": "No profile survey: completed=false, answers=null",
+      "evidence": "survey-http-profile-roundtrip-owner-and-introduction",
+      "reason": "Already covered; new cases use an existing incomplete legacy row"
+    },
+    {
+      "scope": "Existing unit/H2/service MySQL validations",
+      "evidence": "backend/AUTH_USER_SURVEY_MYSQL_VALIDATION.md",
+      "reason": "Not rerun or counted as new TCP HTTP; fixture login/send/verify/PUT may repeat to arrange new boundary cases"
+    }
+  ],
+  "defects": {
+    "confirmed": [],
+    "note": "Static review/preparation does not establish runtime PASS or absence of defects. Service changes require a separate defect report before editing."
+  }
+}

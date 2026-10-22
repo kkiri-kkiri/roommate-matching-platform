@@ -182,6 +182,7 @@ layer-prompts.md
 !AGENTS.md
 !backend/src/main/resources/application-local.properties
 !backend/migrations/README.md
+!backend/tools/auth-user-survey-http5/README.md
 backend/local-data/
 
 # Validation results are local, disposable outputs. Keep code and reports versioned.

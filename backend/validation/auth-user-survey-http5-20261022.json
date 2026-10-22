@@ -1,0 +1,4406 @@
+{
+  "recordedAt": "2026-10-22T08:37:27.234Z",
+  "date": "2026-10-22",
+  "timezone": "Asia/Seoul",
+  "status": "PASS",
+  "approval": {
+    "source": "User approved the presented 59-scenario plan and new resource scope in this conversation",
+    "schemaRecreationOrResourceDeletionApproved": false,
+    "p0ReviewedBeforeP1": true
+  },
+  "environment": {
+    "db": "kkiriaus5http20261022",
+    "containerId": "5c9d0a527a056c25ba44105caf281a845bacfe800498ab3b4cc5c627cc0a6bcc",
+    "createdAt": "2026-10-22T07:33:14.5953410Z",
+    "volume": "kkiri-aus-http5-data-20261022",
+    "status": "retain-no-resource-deletion",
+    "user": "aus5http20261022",
+    "port": 13327,
+    "version": "8.0.46",
+    "container": "kkiri-aus-http5-mysql-20261022",
+    "uuid": "cae1bfa1-cdea-11f1-a074-76682699272e",
+    "hostname": "kkiri-aus-http5-mysql-20261022",
+    "image": "mysql:8.0.46-oraclelinux9",
+    "imageId": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+    "jarSha256": "19F69E2A0533B5FBC022E940B0FFEA51ACD1E37E076DC4C886125DD315168077"
+  },
+  "artifact": {
+    "jarSha256": "19F69E2A0533B5FBC022E940B0FFEA51ACD1E37E076DC4C886125DD315168077",
+    "mainClassesCompared": 292,
+    "productionFilesComparedAcrossRuns": 265,
+    "productionFilesChanged": 0,
+    "jarRebuilt": false
+  },
+  "logicalResults": {
+    "scenarios": 59,
+    "executed": 59,
+    "P0": {
+      "PASS": 13,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT RUN": 0
+    },
+    "P1": {
+      "PASS": 46,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT RUN": 0
+    },
+    "passed": 59,
+    "failed": 0,
+    "blocked": 0,
+    "notRun": 0
+  },
+  "attempts": {
+    "scenarioAttempts": 61,
+    "validScenarioExecutions": 59,
+    "invalidFixtureAttempts": 2,
+    "p0ReviewTransportErrors": 1,
+    "runs": [
+      {
+        "id": "2026-10-22-82bee9f0fc29",
+        "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-82bee9f0fc29",
+        "summarySha256": "e97776e57d69cb1a5e1ea987f6ee8f7fef07438bc719a131b9effcc864e26739",
+        "casesSha256": "f0dbf58e104276866514e476a46069298a7ae53adc64709d689c56fadc88f028",
+        "requestsSha256": "98d0804f4008a704e9222ce09e020ddbc3bde156c672b5d34014604f92161d58",
+        "serversSha256": "b8f05b4088616e4284fcd4d59c1ccd1e8a0335ad0a08460042c931d6f5005dac",
+        "cleanupSha256": "b6abbd89ad1201620ab73d452c766249e8b0eb9968441b28cc84a8fb795e8f2d",
+        "verdict": "INCOMPLETE",
+        "httpRequests": 11,
+        "serverObservedHttpRequests": 11,
+        "executedScenarioAttempts": 9,
+        "passedThisRun": 8,
+        "failedAttempts": [
+          {
+            "name": "verification-expired-code-no-token",
+            "status": "HARNESS / INVALID FIXTURE",
+            "assertion": "Unexpected HTTP result 200/ expected 400/EMAIL_VERIFICATION_EXPIRED"
+          }
+        ],
+        "infrastructureErrors": [],
+        "allProcessesStopped": true,
+        "all31TablesEmpty": true,
+        "ddlUnchanged": true,
+        "sourceAdaptationsAvailable": false
+      },
+      {
+        "id": "2026-10-22-32da878213d5",
+        "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-32da878213d5",
+        "summarySha256": "4407eb8a5dbdb11741b3a60f5e86ae341aa78a3adf97b4e9bff2b6e3fdc42eb5",
+        "casesSha256": "7049821b522c2d72695a04267c2d1c2a65085b67350fce002a9c87a5f4d074c3",
+        "requestsSha256": "8c8b939d31c4a7bac5eefc49bb9429e54b31af89e1625c0ee531301b5f33caed",
+        "serversSha256": "5dfc5ad308f84ecf90b356c34d202121837ab12d0bc73a26d0a46f3a81edf6c6",
+        "cleanupSha256": "5485985877f68ccc9270d66a54fa61504dd97cecabb6e296ac491550c21100f2",
+        "verdict": "INCOMPLETE",
+        "httpRequests": 2,
+        "serverObservedHttpRequests": 2,
+        "executedScenarioAttempts": 1,
+        "passedThisRun": 0,
+        "failedAttempts": [
+          {
+            "name": "verification-expired-code-no-token",
+            "status": "HARNESS / INVALID FIXTURE",
+            "assertion": "Fixture is not expired under Hibernate's application mapping"
+          }
+        ],
+        "infrastructureErrors": [],
+        "allProcessesStopped": true,
+        "all31TablesEmpty": true,
+        "ddlUnchanged": true,
+        "sourceAdaptationsAvailable": false
+      },
+      {
+        "id": "2026-10-22-a0115b20ea32",
+        "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-a0115b20ea32",
+        "summarySha256": "0c41d4c149ea36e2fc34b5faae36f591c69382a55594151dfd18bc57d8887395",
+        "casesSha256": "f5e9ca227b8dfac48a7ea9f9d2f9edd021aa0dacda0b84f5f4af5c2e38593a49",
+        "requestsSha256": "e62292056176fdc2a58d553db2fe109d29b4eaccfaf22519e3efe41a0e15d3d3",
+        "serversSha256": "90b85345f0d2296b988390fbf488cef90a3d38c0c44ae2fc2875bb4d7d68a7b9",
+        "cleanupSha256": "8a0ab385e1482a9865c30f672a22444ad6355c4c526f7b6820a850ffa37a0edd",
+        "verdict": "INCOMPLETE",
+        "httpRequests": 16,
+        "serverObservedHttpRequests": 16,
+        "executedScenarioAttempts": 5,
+        "passedThisRun": 5,
+        "failedAttempts": [],
+        "infrastructureErrors": [
+          {
+            "name": "harness",
+            "status": "INCOMPLETE",
+            "errorClasses": [
+              "tools.jackson.core.exc.StreamReadException"
+            ]
+          }
+        ],
+        "allProcessesStopped": true,
+        "all31TablesEmpty": true,
+        "ddlUnchanged": true,
+        "sourceAdaptationsAvailable": false
+      },
+      {
+        "id": "2026-10-22-9a38b19aadb1",
+        "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1",
+        "summarySha256": "cecd33b3b7b7929ab0b6999273bbac056b7422d5050054df0c10793b75accf6e",
+        "casesSha256": "7307d2f34abf3ba993a463844470f9fab0b41343c82704740b4919b786ddff0f",
+        "requestsSha256": "d93070619cf48d658f7c021d339aad870548d6c1c14db2bf411e4840e6c87796",
+        "serversSha256": "54a053b7231591cb5a516740f0e7ea3f50ba9f310e09fe27badaba1a29ac7639",
+        "cleanupSha256": "b6abbd89ad1201620ab73d452c766249e8b0eb9968441b28cc84a8fb795e8f2d",
+        "verdict": "PASS",
+        "httpRequests": 154,
+        "serverObservedHttpRequests": 154,
+        "executedScenarioAttempts": 46,
+        "passedThisRun": 46,
+        "failedAttempts": [],
+        "infrastructureErrors": [],
+        "allProcessesStopped": true,
+        "all31TablesEmpty": true,
+        "ddlUnchanged": true,
+        "sourceAdaptationsAvailable": false
+      }
+    ]
+  },
+  "http": {
+    "transport": "Real TCP HTTP -> loopback Spring Boot security/controller/service -> isolated MySQL; no MockMvc",
+    "requests": 183,
+    "serverObservedRequests": 183,
+    "includes": "All fixture setup, assertion requests, two invalid-fixture attempts and repeated Boot startup login fixtures",
+    "responseDistribution": {
+      "200:SUCCESS": 145,
+      "400:EMAIL_VERIFICATION_EXPIRED": 1,
+      "400:EMAIL_VERIFICATION_TOKEN_INVALID": 2,
+      "400:PASSWORD_RESET_TOKEN_INVALID": 1,
+      "400:PASSWORD_RESET_TOKEN_EXPIRED": 1,
+      "400:VALIDATION_ERROR": 32,
+      "400:INVALID_REQUEST": 1
+    },
+    "prior1502RequestsRerun": false
+  },
+  "phaseGate": {
+    "checkpoint": "backend/build/auth-user-survey-http5/runs/2026-10-22-a0115b20ea32/p0-checkpoint.json",
+    "review": "backend/build/auth-user-survey-http5/runs/2026-10-22-a0115b20ea32/p0-reviewed.json",
+    "reviewSha256": "fc0d0924502196640e78e4c85ff02619ba361b5b398b1ff7425b56329e65db4c",
+    "P0": 13,
+    "p1NotStartedAtReview": true,
+    "carriedReviewedP0IntoFinalRun": true
+  },
+  "expiration": {
+    "fixtureAdjusted": {
+      "status": "PASS",
+      "cases": 3,
+      "evidence": [
+        {
+          "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-a0115b20ea32/reset-expired-token-keeps-password-expiration.json",
+          "sha256": "9ec35571ce8d45f96005ebf3b72b5d1e77b13d51a70aa43a4cc967f7b2b10acf",
+          "case": "reset-expired-token-keeps-password",
+          "table": "password_reset_token",
+          "requestedApplicationTime": "2000-01-01T00:00",
+          "effectiveApplicationTime": "2000-01-01T00:00",
+          "expiredBeforeHttp": true,
+          "storedDatabaseLiteral": "1999-12-31 15:00:00",
+          "rowsChanged": 1,
+          "method": "adjusted fixture timestamp; not real TTL elapsed",
+          "column": "expires_at"
+        },
+        {
+          "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-a0115b20ea32/signup-expired-token-no-member-expiration.json",
+          "sha256": "47d9933004c19a97cadf0566e0adca37109375ed9a9df06268eb361c6825896e",
+          "case": "signup-expired-token-no-member",
+          "table": "email_verification",
+          "requestedApplicationTime": "2000-01-01T00:00",
+          "effectiveApplicationTime": "2000-01-01T00:00",
+          "expiredBeforeHttp": true,
+          "storedDatabaseLiteral": "1999-12-31 15:00:00",
+          "rowsChanged": 1,
+          "method": "adjusted fixture timestamp; not real TTL elapsed",
+          "column": "verification_token_expires_at"
+        },
+        {
+          "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-a0115b20ea32/verification-expired-code-no-token-expiration.json",
+          "sha256": "2b656ac9b9c844920475e6cf94d8e740674767c5ae5620f33143c9ac700dcb23",
+          "case": "verification-expired-code-no-token",
+          "table": "email_verification",
+          "requestedApplicationTime": "2000-01-01T00:00",
+          "effectiveApplicationTime": "2000-01-01T00:00",
+          "expiredBeforeHttp": true,
+          "storedDatabaseLiteral": "1999-12-31 15:00:00",
+          "rowsChanged": 1,
+          "method": "adjusted fixture timestamp; not real TTL elapsed",
+          "column": "expires_at"
+        }
+      ]
+    },
+    "realTtlElapsed": {
+      "status": "NOT RUN",
+      "reason": "No real TTL wait was performed; fixture-expiry results do not validate actual elapsed TTL or deployment clock synchronization"
+    }
+  },
+  "excludedDuplicates": [
+    {
+      "scope": "Auth existing HTTP suite",
+      "evidence": "authHttp",
+      "reason": "32 PASS cases: auth flows, token single-use, shared limiter/cooldown/aliases, privacy, rollback/SQL conflicts/recovery"
+    },
+    {
+      "scope": "User existing HTTP suite",
+      "evidence": "userHttp",
+      "reason": "27 PASS cases: principal/admin/JWT/status, partial profile, password/status races, MySQL integrity/locks/recovery"
+    },
+    {
+      "scope": "JWT infrastructure regression",
+      "evidence": "userSecurity",
+      "reason": "1 PASS case; 26 HTTP requests"
+    },
+    {
+      "scope": "Survey roundtrip/owner/introduction/auth/physical constraints",
+      "evidence": "userHttp",
+      "reason": "Existing 6 cases include 5 HTTP functional groups and 1 SQL-only group; not rerun"
+    },
+    {
+      "scope": "Preference weights=2 and =5 roundtrip",
+      "evidence": "survey-http-preference-roundtrip-options-and-weights",
+      "reason": "Upper valid bound 5 is already HTTP-covered"
+    },
+    {
+      "scope": "Preference unsupported key replacing meal at same 18-key count",
+      "evidence": "survey-http-preference-invalid-input-preserves-all-rows",
+      "reason": "Already covered; new 17/19-key counts are separate"
+    },
+    {
+      "scope": "Preference age contains 상관없음 with 동갑",
+      "evidence": "survey-http-preference-invalid-input-preserves-all-rows",
+      "reason": "Already covered; new single no-preference/duplicate/empty/unknown/null cases are separate"
+    },
+    {
+      "scope": "No profile survey: completed=false, answers=null",
+      "evidence": "survey-http-profile-roundtrip-owner-and-introduction",
+      "reason": "Already covered; new cases use an existing incomplete legacy row"
+    },
+    {
+      "scope": "Existing unit/H2/service MySQL validations",
+      "evidence": "backend/AUTH_USER_SURVEY_MYSQL_VALIDATION.md",
+      "reason": "Not rerun or counted as new TCP HTTP; fixture login/send/verify/PUT may repeat to arrange new boundary cases"
+    }
+  ],
+  "defects": {
+    "confirmedServiceDefects": [],
+    "serviceCodeChanged": false,
+    "harnessFindings": [
+      {
+        "id": "fixture-localdatetime-mapping",
+        "run": "2026-10-22-82bee9f0fc29",
+        "impact": "Expired-code fixture remained effectively future-dated; verification returned 200; invalid fixture excluded from service-failure verdict",
+        "reproduction": "On the guarded UTC JDBC connection, bind 2000-01-02T03:04:05 with setObject(LocalDateTime); read via getTimestamp and Hibernate LocalDateTimeJavaType.wrap: 2000-01-02T12:04:05",
+        "evidence": "backend/build/auth-user-survey-http5/audit-20261022074359.json",
+        "resolution": "Explicit setTimestamp at a fixed past second; read effective application timestamp and require it to be in the past before HTTP"
+      },
+      {
+        "id": "fixture-expiration-precheck",
+        "run": "2026-10-22-32da878213d5",
+        "impact": "Overly strict target-time assertion stopped before verification HTTP; no service-failure evidence",
+        "reproduction": "Initial Timestamp correction required effective timestamp <= an unrounded target as well as expiration; assertion failed. Exact original timestamp was not retained, so the detailed rounding cause remains unproven",
+        "resolution": "Fixed past whole second; persist diagnostic before checking the actual required condition effective timestamp < application now"
+      },
+      {
+        "id": "p0-review-json-bom",
+        "run": "2026-10-22-a0115b20ea32",
+        "impact": "PowerShell UTF-8 BOM in the review JSON caused StreamReadException; P0 13 PASS remained valid and P1 had not started",
+        "reproduction": "Read a PowerShell Set-Content -Encoding UTF8 JSON through Files.readString then Jackson readTree(String)",
+        "resolution": "Read JSON bytes so Jackson recognizes the UTF-8 BOM; reuse recorded P0 approval and execute P1 only"
+      }
+    ]
+  },
+  "cleanup": {
+    "audit": "backend/build/auth-user-survey-http5/audit-20261022075736.json",
+    "auditSha256": "4a5120d955918cce4a6a9b34b54eb4384c34d1266a1e586b8e81ee8b9fd42116",
+    "tableCount": 31,
+    "rows": {
+      "auth_email_identity": 0,
+      "auth_limit_bucket": 0,
+      "calendar_category": 0,
+      "calendar_category_setting": 0,
+      "calendar_event": 0,
+      "chat_message": 0,
+      "chat_room": 0,
+      "chat_room_member": 0,
+      "comment_like": 0,
+      "community_anonymous_author": 0,
+      "community_comment": 0,
+      "community_post": 0,
+      "dormitory": 0,
+      "email_verification": 0,
+      "faculty": 0,
+      "major": 0,
+      "password_reset_token": 0,
+      "post_image": 0,
+      "post_image_cleanup": 0,
+      "post_like": 0,
+      "preference_criterion": 0,
+      "profile_like": 0,
+      "profile_survey": 0,
+      "profile_survey_option": 0,
+      "report": 0,
+      "roommate_match": 0,
+      "roommate_preference": 0,
+      "roommate_preference_option": 0,
+      "schedule_crawl_run": 0,
+      "user": 0,
+      "user_profile": 0
+    },
+    "allTablesEmpty": true,
+    "ddlPreserved": true,
+    "allHttpProcessesStopped": true,
+    "httpListeners": 0,
+    "resourceRetention": {
+      "containerId": "5c9d0a527a056c25ba44105caf281a845bacfe800498ab3b4cc5c627cc0a6bcc",
+      "validationLabel": "auth-user-survey-http5-20261022",
+      "volume": "kkiri-aus-http5-data-20261022",
+      "state": "running",
+      "schemaAndAccountRetained": true,
+      "recordedAt": "2026-10-22T08:30:06.7130225Z",
+      "httpListeners": 0,
+      "volumeRetained": true,
+      "resourceDeletionPerformed": false,
+      "container": "kkiri-aus-http5-mysql-20261022",
+      "mysqlBinding": "127.0.0.1:13327",
+      "hostname": "kkiri-aus-http5-mysql-20261022",
+      "imageId": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b"
+    }
+  },
+  "externalChecks": [
+    {
+      "scope": "real SMTP",
+      "status": "BLOCKED",
+      "connections": 0
+    },
+    {
+      "scope": "HTTPS",
+      "status": "BLOCKED",
+      "connections": 0
+    },
+    {
+      "scope": "ingress",
+      "status": "BLOCKED",
+      "connections": 0
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "availability-no-params",
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {},
+      "observedHttp": {
+        "18093:200:": 1
+      },
+      "durationMs": 552,
+      "carriedForward": true,
+      "evidenceRun": "2026-10-22-82bee9f0fc29",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-82bee9f0fc29/cases.json"
+    },
+    {
+      "name": "availability-empty",
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {},
+      "observedHttp": {
+        "18093:200:": 1
+      },
+      "durationMs": 423,
+      "carriedForward": true,
+      "evidenceRun": "2026-10-22-82bee9f0fc29",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-82bee9f0fc29/cases.json"
+    },
+    {
+      "name": "availability-email-only",
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {},
+      "observedHttp": {
+        "18093:200:": 1
+      },
+      "durationMs": 525,
+      "carriedForward": true,
+      "evidenceRun": "2026-10-22-82bee9f0fc29",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-82bee9f0fc29/cases.json"
+    },
+    {
+      "name": "availability-korean-only",
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {},
+      "observedHttp": {
+        "18093:200:": 1
+      },
+      "durationMs": 539,
+      "carriedForward": true,
+      "evidenceRun": "2026-10-22-82bee9f0fc29",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-82bee9f0fc29/cases.json"
+    },
+    {
+      "name": "availability-both-free",
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {},
+      "observedHttp": {
+        "18093:200:": 1
+      },
+      "durationMs": 513,
+      "carriedForward": true,
+      "evidenceRun": "2026-10-22-82bee9f0fc29",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-82bee9f0fc29/cases.json"
+    },
+    {
+      "name": "availability-both-used",
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {},
+      "observedHttp": {
+        "18093:200:": 1
+      },
+      "durationMs": 412,
+      "carriedForward": true,
+      "evidenceRun": "2026-10-22-82bee9f0fc29",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-82bee9f0fc29/cases.json"
+    },
+    {
+      "name": "availability-mixed",
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {},
+      "observedHttp": {
+        "18093:200:": 1
+      },
+      "durationMs": 541,
+      "carriedForward": true,
+      "evidenceRun": "2026-10-22-82bee9f0fc29",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-82bee9f0fc29/cases.json"
+    },
+    {
+      "name": "availability-format-unvalidated",
+      "priority": "P0",
+      "expected": "200 boolean availability fields; no rows created",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {},
+      "observedHttp": {
+        "18093:200:": 1
+      },
+      "durationMs": 684,
+      "carriedForward": true,
+      "evidenceRun": "2026-10-22-82bee9f0fc29",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-82bee9f0fc29/cases.json"
+    },
+    {
+      "name": "verification-expired-code-no-token",
+      "priority": "P0",
+      "expected": "400 EMAIL_VERIFICATION_EXPIRED; no verification token issued",
+      "result": {
+        "separateJdbcAssertions": true,
+        "realTcpHttp": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "2c163b7fa8df1c2d07eef6a8bd8e66123a81121c33699367874686501bfe1513": {
+          "bucket_key": "2c163b7fa8df1c2d07eef6a8bd8e66123a81121c33699367874686501bfe1513",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655641571,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "3baa75012ddfd199411ab4b49f8fdc1671aca3142fa470746f856e569dc2e3b3": {
+          "bucket_key": "3baa75012ddfd199411ab4b49f8fdc1671aca3142fa470746f856e569dc2e3b3",
+          "request_count": 0,
+          "failure_count": 1,
+          "in_flight": 0,
+          "window_started_at": 1792655642119,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "3e3a09d218452d4df7e15424427e32e416d7a9f968b939df280fff0a91efc77f": {
+          "bucket_key": "3e3a09d218452d4df7e15424427e32e416d7a9f968b939df280fff0a91efc77f",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655641571,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "492c390b2e69c7fb62787e0a28447566a8f66cc58005a36355ca1e70f4d588b7": {
+          "bucket_key": "492c390b2e69c7fb62787e0a28447566a8f66cc58005a36355ca1e70f4d588b7",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655642119,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "5c704d4e794712869056e0636a3c89182f0b4a3b366e1249ac715f98a0078c0b": {
+          "bucket_key": "5c704d4e794712869056e0636a3c89182f0b4a3b366e1249ac715f98a0078c0b",
+          "request_count": 0,
+          "failure_count": 1,
+          "in_flight": 0,
+          "window_started_at": 1792655642119,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b867aac78ee047af4eae91da9127d57d827b79eb497c64838b97d781d18dce3b": {
+          "bucket_key": "b867aac78ee047af4eae91da9127d57d827b79eb497c64838b97d781d18dce3b",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655641571,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655641643,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "efbcef4fd4ffb5482856219c6497a32011492e1c2b0ab24b2cbe22cac1ae38e7": {
+          "bucket_key": "efbcef4fd4ffb5482856219c6497a32011492e1c2b0ab24b2cbe22cac1ae38e7",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655642119,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 1,
+        "18093:400:EMAIL_VERIFICATION_EXPIRED": 1
+      },
+      "durationMs": 928,
+      "expirationMethod": "fixture timestamp moved into past; no real TTL wait",
+      "carriedForward": true,
+      "evidenceRun": "2026-10-22-a0115b20ea32",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-a0115b20ea32/cases.json"
+    },
+    {
+      "name": "signup-expired-token-no-member",
+      "priority": "P0",
+      "expected": "400 EMAIL_VERIFICATION_TOKEN_INVALID; no user/profile; token unchanged",
+      "result": {
+        "separateJdbcAssertions": true,
+        "realTcpHttp": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "0ebc271e2190f3edeb532715a43785770dc2c376e808d274ee463ddde22c2f3c": {
+          "bucket_key": "0ebc271e2190f3edeb532715a43785770dc2c376e808d274ee463ddde22c2f3c",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655642499,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "379bbcfa226c22753c0dab32ba818d2e61da7a9e78ec5de363979a3594f69830": {
+          "bucket_key": "379bbcfa226c22753c0dab32ba818d2e61da7a9e78ec5de363979a3594f69830",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655642499,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "43fbb4d72b6df907c062603e59378b0373a2ff3530149a727dbbdb4c8b8a2c39": {
+          "bucket_key": "43fbb4d72b6df907c062603e59378b0373a2ff3530149a727dbbdb4c8b8a2c39",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655642789,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "68cf15b8ba0a40cf1a622bc9a92db462e3127e8cce0c13e45cc03794c6334c05": {
+          "bucket_key": "68cf15b8ba0a40cf1a622bc9a92db462e3127e8cce0c13e45cc03794c6334c05",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655642789,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "70f230aa1e63b997bd39750e5af8f558c99fe669755e19295a6d5bbc723a4625": {
+          "bucket_key": "70f230aa1e63b997bd39750e5af8f558c99fe669755e19295a6d5bbc723a4625",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655642789,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "ab906086de79e42ece0d5c1d3caa53e33fee3958bbdecc022ff87b7ff5f13784": {
+          "bucket_key": "ab906086de79e42ece0d5c1d3caa53e33fee3958bbdecc022ff87b7ff5f13784",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655642789,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655641643,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d7d5bee5b6c0df7491789f048dd994ef9f99e3f35f987f80d0d4bb7f6e85fc32": {
+          "bucket_key": "d7d5bee5b6c0df7491789f048dd994ef9f99e3f35f987f80d0d4bb7f6e85fc32",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655642499,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:EMAIL_VERIFICATION_TOKEN_INVALID": 1
+      },
+      "durationMs": 1059,
+      "expirationMethod": "fixture timestamp moved into past; no real TTL wait",
+      "carriedForward": true,
+      "evidenceRun": "2026-10-22-a0115b20ea32",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-a0115b20ea32/cases.json"
+    },
+    {
+      "name": "signup-other-email-token-no-member",
+      "priority": "P0",
+      "expected": "400 EMAIL_VERIFICATION_TOKEN_INVALID; no user/profile; source token unchanged",
+      "result": {
+        "separateJdbcAssertions": true,
+        "realTcpHttp": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "0f9f38fa6667e075d16ee7bdd845f96b4118f8264199273db6b6f919350e411a": {
+          "bucket_key": "0f9f38fa6667e075d16ee7bdd845f96b4118f8264199273db6b6f919350e411a",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655643866,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "49895a2b6ff625188cd26c06bbdceb0b56de9a93612ca34debfdd5be51799676": {
+          "bucket_key": "49895a2b6ff625188cd26c06bbdceb0b56de9a93612ca34debfdd5be51799676",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655643571,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "a30afb9d634b5723b2c655ae7ee999748c14569168e19e7c9f83f9e1784dbc08": {
+          "bucket_key": "a30afb9d634b5723b2c655ae7ee999748c14569168e19e7c9f83f9e1784dbc08",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655643571,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 3,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655641643,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "ba9dcfa3471744e8a70fbdf2f768a52a4635285cc59831587431d5084b2e9f3c": {
+          "bucket_key": "ba9dcfa3471744e8a70fbdf2f768a52a4635285cc59831587431d5084b2e9f3c",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655643571,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d1f2f0e994e7ee111120cf89a70269dc9ee04ac875668a3acff6fc81fd8bc028": {
+          "bucket_key": "d1f2f0e994e7ee111120cf89a70269dc9ee04ac875668a3acff6fc81fd8bc028",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655643866,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "e4bf54b4014beeadce46f50870159afd35d85a32f3ef1e2951e534aa3ccd68c1": {
+          "bucket_key": "e4bf54b4014beeadce46f50870159afd35d85a32f3ef1e2951e534aa3ccd68c1",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655643866,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f4a72fbbe2d3127283fc13f5f873905eee29ae2df669ac0a6a6d6dee9291b83c": {
+          "bucket_key": "f4a72fbbe2d3127283fc13f5f873905eee29ae2df669ac0a6a6d6dee9291b83c",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655643866,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:EMAIL_VERIFICATION_TOKEN_INVALID": 1
+      },
+      "durationMs": 1163,
+      "carriedForward": true,
+      "evidenceRun": "2026-10-22-a0115b20ea32",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-a0115b20ea32/cases.json"
+    },
+    {
+      "name": "reset-unregistered-token-keeps-password",
+      "priority": "P0",
+      "expected": "400 PASSWORD_RESET_TOKEN_INVALID; password unchanged",
+      "result": {
+        "separateJdbcAssertions": true,
+        "realTcpHttp": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "36296efbcd8fa3a80502a391c37376383401b2ef926caee7ee98b40a15f6ef6f": {
+          "bucket_key": "36296efbcd8fa3a80502a391c37376383401b2ef926caee7ee98b40a15f6ef6f",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655645259,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "6b7d59babbbab0811743cd0c9ddb29f1ade642b38ef238e477a2e2def6cefb2f": {
+          "bucket_key": "6b7d59babbbab0811743cd0c9ddb29f1ade642b38ef238e477a2e2def6cefb2f",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655644801,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "84900cf745d71a9353369e967009268b50ac5833354a6697e49056ad398400f8": {
+          "bucket_key": "84900cf745d71a9353369e967009268b50ac5833354a6697e49056ad398400f8",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655645259,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "aa355936c525701a701c1dbe5d2c377f0e87278337fd88d3719ec4d5a427231f": {
+          "bucket_key": "aa355936c525701a701c1dbe5d2c377f0e87278337fd88d3719ec4d5a427231f",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655644801,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b2b97085430ac5e0e46c6f3a174193894ed2fe466938430c5a0159a3fd1511ee": {
+          "bucket_key": "b2b97085430ac5e0e46c6f3a174193894ed2fe466938430c5a0159a3fd1511ee",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655644801,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "da271759f16c3fdf2b08b21825584e96246e1c166714e71763deb439844c249e": {
+          "bucket_key": "da271759f16c3fdf2b08b21825584e96246e1c166714e71763deb439844c249e",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655644801,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:PASSWORD_RESET_TOKEN_INVALID": 1
+      },
+      "durationMs": 823,
+      "carriedForward": true,
+      "evidenceRun": "2026-10-22-a0115b20ea32",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-a0115b20ea32/cases.json"
+    },
+    {
+      "name": "reset-expired-token-keeps-password",
+      "priority": "P0",
+      "expected": "400 PASSWORD_RESET_TOKEN_EXPIRED; password/token unchanged",
+      "result": {
+        "separateJdbcAssertions": true,
+        "realTcpHttp": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "17e5465b2be0dce30a7583f823057ee6d621f443316d81caa0aec4e8fde80116": {
+          "bucket_key": "17e5465b2be0dce30a7583f823057ee6d621f443316d81caa0aec4e8fde80116",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655646257,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "1f0a1d996f5e0b74e9ec36e0f0dbfad70895f78a7b8340a4e1a098b22b6457ec": {
+          "bucket_key": "1f0a1d996f5e0b74e9ec36e0f0dbfad70895f78a7b8340a4e1a098b22b6457ec",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655645608,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "3b524b8a5fbf643735f905c88ee9f5ff41da75c49b76a9dfd874914863f1463a": {
+          "bucket_key": "3b524b8a5fbf643735f905c88ee9f5ff41da75c49b76a9dfd874914863f1463a",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655645608,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "8053961fe38150ddc8f786a7466a23ebef4198500ce53939ec23d2260971539f": {
+          "bucket_key": "8053961fe38150ddc8f786a7466a23ebef4198500ce53939ec23d2260971539f",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655646257,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "a88dd71733ff136b265e958b6449952ccc6ead948e18def387cea6ee9a05967a": {
+          "bucket_key": "a88dd71733ff136b265e958b6449952ccc6ead948e18def387cea6ee9a05967a",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655645838,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "ada218245bd6e089576f1170c37863db0b8b9fec6812375abfbd591fb9162c4b": {
+          "bucket_key": "ada218245bd6e089576f1170c37863db0b8b9fec6812375abfbd591fb9162c4b",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655645608,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 4,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655641643,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c0d000376a325a206dcbbce33019fec967804f06e83352ad199072ae29ad0c7c": {
+          "bucket_key": "c0d000376a325a206dcbbce33019fec967804f06e83352ad199072ae29ad0c7c",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655645838,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d58c25c5671de510e07623299d0d127f0bd7936f6c5edcda7761ba2f267f65d8": {
+          "bucket_key": "d58c25c5671de510e07623299d0d127f0bd7936f6c5edcda7761ba2f267f65d8",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655645838,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "ecce9c8cfc6ae30722003250388627195f1dffd5e1572e2fa6351d7b83693c9d": {
+          "bucket_key": "ecce9c8cfc6ae30722003250388627195f1dffd5e1572e2fa6351d7b83693c9d",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655645608,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 3,
+        "18093:400:PASSWORD_RESET_TOKEN_EXPIRED": 1
+      },
+      "durationMs": 1005,
+      "expirationMethod": "fixture timestamp moved into past; no real TTL wait",
+      "carriedForward": true,
+      "evidenceRun": "2026-10-22-a0115b20ea32",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-a0115b20ea32/cases.json"
+    },
+    {
+      "name": "password-signup-ascii-72",
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "result": {
+        "accepted": true,
+        "multibyte": false,
+        "utf8Bytes": 72
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "5c704d4e794712869056e0636a3c89182f0b4a3b366e1249ac715f98a0078c0b": {
+          "bucket_key": "5c704d4e794712869056e0636a3c89182f0b4a3b366e1249ac715f98a0078c0b",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655791165,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "6d101a1833c6773ca0ac4994a25fd45a89632a9154f1457c765cca4c28ae655d": {
+          "bucket_key": "6d101a1833c6773ca0ac4994a25fd45a89632a9154f1457c765cca4c28ae655d",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655791771,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "871841ce721d147b65022abe9e9f57ab33e833c771a767cf76acd8ffc10058bb": {
+          "bucket_key": "871841ce721d147b65022abe9e9f57ab33e833c771a767cf76acd8ffc10058bb",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655791165,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "a44375f217033b6d0e1f8c04db53daffb454e07fd1f32f9be93ce93aeacb3527": {
+          "bucket_key": "a44375f217033b6d0e1f8c04db53daffb454e07fd1f32f9be93ce93aeacb3527",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655791771,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b109895526f2bac49ff463a445e43a3ce505924e380ccfaaf7c8851f41268581": {
+          "bucket_key": "b109895526f2bac49ff463a445e43a3ce505924e380ccfaaf7c8851f41268581",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655791771,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b599afa12c920ba1afc8040d112a1047bda4ecc99ff6a94479030ae4c0ea7e6e": {
+          "bucket_key": "b599afa12c920ba1afc8040d112a1047bda4ecc99ff6a94479030ae4c0ea7e6e",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790767,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b867aac78ee047af4eae91da9127d57d827b79eb497c64838b97d781d18dce3b": {
+          "bucket_key": "b867aac78ee047af4eae91da9127d57d827b79eb497c64838b97d781d18dce3b",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790767,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790842,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b992c38867d11dc57c01b342f055cb5c554b53e7f1219e5a9677a3fc231ad1fe": {
+          "bucket_key": "b992c38867d11dc57c01b342f055cb5c554b53e7f1219e5a9677a3fc231ad1fe",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655791771,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "bcece0c0f25a53db9928d14e05c7c0786913b9e763c560f2a8f2b94375d5e40b": {
+          "bucket_key": "bcece0c0f25a53db9928d14e05c7c0786913b9e763c560f2a8f2b94375d5e40b",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790767,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "efbcef4fd4ffb5482856219c6497a32011492e1c2b0ab24b2cbe22cac1ae38e7": {
+          "bucket_key": "efbcef4fd4ffb5482856219c6497a32011492e1c2b0ab24b2cbe22cac1ae38e7",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655791165,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f807d8facc537ba9b20cb7a8f2be48480218fd662b89870da81a83450987982d": {
+          "bucket_key": "f807d8facc537ba9b20cb7a8f2be48480218fd662b89870da81a83450987982d",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655791165,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 4
+      },
+      "durationMs": 1332,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-signup-ascii-73",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "accepted": false,
+        "multibyte": false,
+        "utf8Bytes": 73
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "27f6bf2b2830038b0c8b02daaba88d0fd0f49b4ff57ed987082facb58f5a8012": {
+          "bucket_key": "27f6bf2b2830038b0c8b02daaba88d0fd0f49b4ff57ed987082facb58f5a8012",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655792342,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "43dd47971cd107b42fae6554c70f5a1bda208cd1e17dc675d64bde7744c6a4ee": {
+          "bucket_key": "43dd47971cd107b42fae6554c70f5a1bda208cd1e17dc675d64bde7744c6a4ee",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655792080,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "7aa2832e74f738ec0108c410932e06e75e94683f1b6dbc55733828ffa4a16dac": {
+          "bucket_key": "7aa2832e74f738ec0108c410932e06e75e94683f1b6dbc55733828ffa4a16dac",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655792342,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "a0654def5069df51d17a3d0757979a87ac8296e4acbb1417a4690680376271ad": {
+          "bucket_key": "a0654def5069df51d17a3d0757979a87ac8296e4acbb1417a4690680376271ad",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655792342,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790842,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "bd4f48f4edc76ce604ff3a38c66497bdbf7f3fd78085f022acfb43e42276ed18": {
+          "bucket_key": "bd4f48f4edc76ce604ff3a38c66497bdbf7f3fd78085f022acfb43e42276ed18",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655792342,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "bf2c7674923d2119ec92996dae1efb28c4110f34081ac60ceaa7dfc99cd79564": {
+          "bucket_key": "bf2c7674923d2119ec92996dae1efb28c4110f34081ac60ceaa7dfc99cd79564",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655792080,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f0f94862347d630fa98fbec7576f11787049d4f785ee81a89375529af6a4a8f6": {
+          "bucket_key": "f0f94862347d630fa98fbec7576f11787049d4f785ee81a89375529af6a4a8f6",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655792080,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 1102,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-signup-utf8-72",
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "result": {
+        "accepted": true,
+        "multibyte": true,
+        "utf8Bytes": 72
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "6b7d59babbbab0811743cd0c9ddb29f1ade642b38ef238e477a2e2def6cefb2f": {
+          "bucket_key": "6b7d59babbbab0811743cd0c9ddb29f1ade642b38ef238e477a2e2def6cefb2f",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655793862,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "71663160c2b57247b991346c61176665bf4a7b2ae48e806ca1ce296164953f8d": {
+          "bucket_key": "71663160c2b57247b991346c61176665bf4a7b2ae48e806ca1ce296164953f8d",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655793188,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "7598b328648658e37e1a6e3bafa54796cc82ee8f99d8d87e50f186222a03bf69": {
+          "bucket_key": "7598b328648658e37e1a6e3bafa54796cc82ee8f99d8d87e50f186222a03bf69",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655793188,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "7c6b43db9062772f2cabb40318b3d20c93a358dcfdceea3de54fc16f22da9403": {
+          "bucket_key": "7c6b43db9062772f2cabb40318b3d20c93a358dcfdceea3de54fc16f22da9403",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655793412,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "7ef9bcbb52e15428b11456c7b23d5a140808ebf51072cf8427131bd3bab37375": {
+          "bucket_key": "7ef9bcbb52e15428b11456c7b23d5a140808ebf51072cf8427131bd3bab37375",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655793862,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "8d93cfa761407115af99b75200c0163aff16a6f7e60b311416b4c1a441f566fb": {
+          "bucket_key": "8d93cfa761407115af99b75200c0163aff16a6f7e60b311416b4c1a441f566fb",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655793188,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b0a0ac5a5e57b40a00ec4acac6c3d8d2dda1c51748ae63f610129543cd1785f1": {
+          "bucket_key": "b0a0ac5a5e57b40a00ec4acac6c3d8d2dda1c51748ae63f610129543cd1785f1",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655793412,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 3,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790842,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d03b766832940b3c09d9bc9e5d31a1ef33783884b7fbcb97b48821702bac073f": {
+          "bucket_key": "d03b766832940b3c09d9bc9e5d31a1ef33783884b7fbcb97b48821702bac073f",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655793412,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "da271759f16c3fdf2b08b21825584e96246e1c166714e71763deb439844c249e": {
+          "bucket_key": "da271759f16c3fdf2b08b21825584e96246e1c166714e71763deb439844c249e",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655793862,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "e376b2d4b5c2802338b994b5455fb44fdf734a04ca3aa499e21cfac366c29874": {
+          "bucket_key": "e376b2d4b5c2802338b994b5455fb44fdf734a04ca3aa499e21cfac366c29874",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655793862,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "ffe6a7d14f9fa93ac957f1f580ea3f88deb39d0821df6cc1ff7ae9ff0fe4085f": {
+          "bucket_key": "ffe6a7d14f9fa93ac957f1f580ea3f88deb39d0821df6cc1ff7ae9ff0fe4085f",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655793412,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 4
+      },
+      "durationMs": 1022,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-signup-utf8-73",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "accepted": false,
+        "multibyte": true,
+        "utf8Bytes": 73
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "1eb78d26c1cb907cd736f7ad50522adda7321bd2e4965480eb2c2b284d0b8f31": {
+          "bucket_key": "1eb78d26c1cb907cd736f7ad50522adda7321bd2e4965480eb2c2b284d0b8f31",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655794325,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "2918da04469c3263a35ee2270b4bd1a8523cd05ac9d36b4facf3c221400f6da0": {
+          "bucket_key": "2918da04469c3263a35ee2270b4bd1a8523cd05ac9d36b4facf3c221400f6da0",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655794589,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "2a9d058d1cc4af1291d4b57f8c2cd4b7f2189eeb4ab55cffbc719870d3e4a1c3": {
+          "bucket_key": "2a9d058d1cc4af1291d4b57f8c2cd4b7f2189eeb4ab55cffbc719870d3e4a1c3",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655794589,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "44ed534d518844f6450de7a69d4cd8a295c31b9aadb4b3de881279edcc573802": {
+          "bucket_key": "44ed534d518844f6450de7a69d4cd8a295c31b9aadb4b3de881279edcc573802",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655794589,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "7547a11ed9b7b86a0948b083f5a057935351984f3575c4010bd64d7e90b65276": {
+          "bucket_key": "7547a11ed9b7b86a0948b083f5a057935351984f3575c4010bd64d7e90b65276",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655794325,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 4,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790842,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c819540fbf5fa702f39e3fb51191b175036b5745832f54865c2de1e599575faa": {
+          "bucket_key": "c819540fbf5fa702f39e3fb51191b175036b5745832f54865c2de1e599575faa",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655794589,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d08f16b62c3029bdbd13b9fa629061e9147a20e8846a612ad581e412d7d0dda9": {
+          "bucket_key": "d08f16b62c3029bdbd13b9fa629061e9147a20e8846a612ad581e412d7d0dda9",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655794325,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 817,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-login-ascii-72",
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "result": {
+        "accepted": true,
+        "multibyte": false,
+        "utf8Bytes": 72
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "17e5465b2be0dce30a7583f823057ee6d621f443316d81caa0aec4e8fde80116": {
+          "bucket_key": "17e5465b2be0dce30a7583f823057ee6d621f443316d81caa0aec4e8fde80116",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655795131,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "7567da8a26bb45c94acb33b873060c913bb48e8e16e8f9400cdae3875b84d868": {
+          "bucket_key": "7567da8a26bb45c94acb33b873060c913bb48e8e16e8f9400cdae3875b84d868",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655795131,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "8053961fe38150ddc8f786a7466a23ebef4198500ce53939ec23d2260971539f": {
+          "bucket_key": "8053961fe38150ddc8f786a7466a23ebef4198500ce53939ec23d2260971539f",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655795131,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "aee5a7cbe3f3fa5a8490afed73bc402ebdc229f95dc56aa0d59370634970f49c": {
+          "bucket_key": "aee5a7cbe3f3fa5a8490afed73bc402ebdc229f95dc56aa0d59370634970f49c",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655795519,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c4141510b5eb2de4cbe9dea4f6173f49031bd57367dec2a124c01f50aa9da285": {
+          "bucket_key": "c4141510b5eb2de4cbe9dea4f6173f49031bd57367dec2a124c01f50aa9da285",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655795519,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f27c38ecd7cfb144d0f08e3da7a9b6606824cb3122dcd7698a611e1152f0b4ad": {
+          "bucket_key": "f27c38ecd7cfb144d0f08e3da7a9b6606824cb3122dcd7698a611e1152f0b4ad",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655795131,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2
+      },
+      "durationMs": 831,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-login-ascii-73",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "accepted": false,
+        "multibyte": false,
+        "utf8Bytes": 73
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "a5d8f7b1fb5090cc171dedfa802885c54faca1d7c19220f5cc8f472a5238e7e6": {
+          "bucket_key": "a5d8f7b1fb5090cc171dedfa802885c54faca1d7c19220f5cc8f472a5238e7e6",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655796383,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "ab77ac7f8ef3a72c005fdfb5d6ae39519b4fccae41b6a8f5acab9657b67c79e0": {
+          "bucket_key": "ab77ac7f8ef3a72c005fdfb5d6ae39519b4fccae41b6a8f5acab9657b67c79e0",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655795959,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b0ec4ac2cd0645161fc89c2d03e66a527ad3894aa63c9a8c6529bc6a27b1f9ef": {
+          "bucket_key": "b0ec4ac2cd0645161fc89c2d03e66a527ad3894aa63c9a8c6529bc6a27b1f9ef",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655795959,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c06d1264045d9decb29fbcea4f198d57c39c3370cd430a6c2dccfd1d6dbdedab": {
+          "bucket_key": "c06d1264045d9decb29fbcea4f198d57c39c3370cd430a6c2dccfd1d6dbdedab",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655795959,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d0a7f04efd4f310e900b2d20e29c1fb71bd82ab0f08d5a1a9fc0efde86c3c0d7": {
+          "bucket_key": "d0a7f04efd4f310e900b2d20e29c1fb71bd82ab0f08d5a1a9fc0efde86c3c0d7",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655796383,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d2c2d0cc943eb468cdfb83a8852cdcee4dfbe24af1d100fd274c3333aca69c95": {
+          "bucket_key": "d2c2d0cc943eb468cdfb83a8852cdcee4dfbe24af1d100fd274c3333aca69c95",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655795959,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 775,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-login-utf8-72",
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "result": {
+        "accepted": true,
+        "multibyte": true,
+        "utf8Bytes": 72
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "3ec2eb38242b1f7326809674178ddaf5f458d33d53af9d4d6e912a5eba1b0a2b": {
+          "bucket_key": "3ec2eb38242b1f7326809674178ddaf5f458d33d53af9d4d6e912a5eba1b0a2b",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655797071,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "7cdaf77dec5677aaaaf48216ba02b996a52629538b4ad25bf7668db1e8bedc13": {
+          "bucket_key": "7cdaf77dec5677aaaaf48216ba02b996a52629538b4ad25bf7668db1e8bedc13",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655796710,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "9ecbdbae2d0b36e0d4a050d4af265bc66dd2965ed048a6a52afd8debe814c06e": {
+          "bucket_key": "9ecbdbae2d0b36e0d4a050d4af265bc66dd2965ed048a6a52afd8debe814c06e",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655797071,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "a43da59347db04be05911875419950f6e073fb670ecc3279aef1aa7785381a8b": {
+          "bucket_key": "a43da59347db04be05911875419950f6e073fb670ecc3279aef1aa7785381a8b",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655796710,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "aac8d8d56ee00ae792889638ed6a27477083398407027ec6e28ba7f7c133baad": {
+          "bucket_key": "aac8d8d56ee00ae792889638ed6a27477083398407027ec6e28ba7f7c133baad",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655796710,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f0def6c1b10d69f3fa199439f747ccee56cbbd274c4172396028695f7c0d0a71": {
+          "bucket_key": "f0def6c1b10d69f3fa199439f747ccee56cbbd274c4172396028695f7c0d0a71",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655796710,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2
+      },
+      "durationMs": 676,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-login-utf8-73",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "accepted": false,
+        "multibyte": true,
+        "utf8Bytes": 73
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "3d01ddd414e4b3ca0267dfa855827424e46000ab36cc9bfb7b055cc6e5b2e6dd": {
+          "bucket_key": "3d01ddd414e4b3ca0267dfa855827424e46000ab36cc9bfb7b055cc6e5b2e6dd",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655797392,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "52b08c1f61deace947d8105dcce75131dfd72a9a0e5b42e3964857c422de52e1": {
+          "bucket_key": "52b08c1f61deace947d8105dcce75131dfd72a9a0e5b42e3964857c422de52e1",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655797392,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "844291046390d11fb943a27b114ec0545beca2671d4954ad4c2b39f9258aabd3": {
+          "bucket_key": "844291046390d11fb943a27b114ec0545beca2671d4954ad4c2b39f9258aabd3",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655797392,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "90453201ea0ef93cb3a49d4f120a3049099e0af0963fd3692696e4c0a1c9e436": {
+          "bucket_key": "90453201ea0ef93cb3a49d4f120a3049099e0af0963fd3692696e4c0a1c9e436",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655797751,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b41c704cae5e5b7145bed1a0dc1c3e350b92f22d007b7a41117c364d61edb352": {
+          "bucket_key": "b41c704cae5e5b7145bed1a0dc1c3e350b92f22d007b7a41117c364d61edb352",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655797751,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c11258298c2f9d327a8961d53428f8d5b60f2092ae436ea13267e4eb5cf861f7": {
+          "bucket_key": "c11258298c2f9d327a8961d53428f8d5b60f2092ae436ea13267e4eb5cf861f7",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655797392,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 653,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-change-ascii-72",
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "result": {
+        "accepted": true,
+        "multibyte": false,
+        "utf8Bytes": 72
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "2992c0c364f64efee51259c2d21d0662547ac95f3e832eb2d27e5459a38fba9a": {
+          "bucket_key": "2992c0c364f64efee51259c2d21d0662547ac95f3e832eb2d27e5459a38fba9a",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655798062,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "351c033e2d6d280f1eea5c134fa06268f40823fce5c47b983ee1dc52c4e711f5": {
+          "bucket_key": "351c033e2d6d280f1eea5c134fa06268f40823fce5c47b983ee1dc52c4e711f5",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655798062,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "47b6cf0c54313cffd2e989b4ac725a9c415e0abf18da921fb176a5c64eb4a9b4": {
+          "bucket_key": "47b6cf0c54313cffd2e989b4ac725a9c415e0abf18da921fb176a5c64eb4a9b4",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655798062,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "56260af3accf2b4ce768aee147fce9c3273e9414dea26cea9df7a627fd7766f8": {
+          "bucket_key": "56260af3accf2b4ce768aee147fce9c3273e9414dea26cea9df7a627fd7766f8",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655798556,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "8b60f27c51ae85aa84871428ce7dd7c0f61623acb4f61f2ed15292edbde8b66b": {
+          "bucket_key": "8b60f27c51ae85aa84871428ce7dd7c0f61623acb4f61f2ed15292edbde8b66b",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655798556,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "9a3fdd3c15b7657fb45107b8f5de5522a65f45173932aad1be0ccb2592be0233": {
+          "bucket_key": "9a3fdd3c15b7657fb45107b8f5de5522a65f45173932aad1be0ccb2592be0233",
+          "request_count": 3,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655798062,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "ab66b6bf18c0a0b2253b6b9fef5981e118971023172d2df052518f3c3a951334": {
+          "bucket_key": "ab66b6bf18c0a0b2253b6b9fef5981e118971023172d2df052518f3c3a951334",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655798949,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c8d9f116d4cf8a980c0796edc296f3102f5d0406c29e3e06f620a9c34c9a1537": {
+          "bucket_key": "c8d9f116d4cf8a980c0796edc296f3102f5d0406c29e3e06f620a9c34c9a1537",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655798949,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 5
+      },
+      "durationMs": 1191,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-change-ascii-73",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "accepted": false,
+        "multibyte": false,
+        "utf8Bytes": 73
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "05c0f412efdab1ee25a318a0024a413c57cf465301f4d2b0d1f21a45485570e8": {
+          "bucket_key": "05c0f412efdab1ee25a318a0024a413c57cf465301f4d2b0d1f21a45485570e8",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655799252,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "1d593e35545fda3aee78ff78ce96a4e7d8e1588a05b997e64b976ad179a2c11b": {
+          "bucket_key": "1d593e35545fda3aee78ff78ce96a4e7d8e1588a05b997e64b976ad179a2c11b",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655799252,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "4878eeb5bff85997f3fad74d0b667d79774e5bfdcf393a0b0a2cdc2ff2ce0afb": {
+          "bucket_key": "4878eeb5bff85997f3fad74d0b667d79774e5bfdcf393a0b0a2cdc2ff2ce0afb",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655799711,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "50f2ee2e0f0f0f1c961e2d1157a05c0d98501399c1585b90308822c70bad6701": {
+          "bucket_key": "50f2ee2e0f0f0f1c961e2d1157a05c0d98501399c1585b90308822c70bad6701",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655799252,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "6af93c4f0c21149aee8431916c071b4708916d32dba2cdab8ae2af929318d0b7": {
+          "bucket_key": "6af93c4f0c21149aee8431916c071b4708916d32dba2cdab8ae2af929318d0b7",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655799711,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "bade83d7419674ab5a7a1b9a4bdebd8a8085d0ec09da602f8dea721fbaa2b1b4": {
+          "bucket_key": "bade83d7419674ab5a7a1b9a4bdebd8a8085d0ec09da602f8dea721fbaa2b1b4",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655799252,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 804,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-change-utf8-72",
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "result": {
+        "accepted": true,
+        "multibyte": true,
+        "utf8Bytes": 72
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "17bb691031203b312f731e4a1b463560c89ed0c57372a9405364d84a3e652ff4": {
+          "bucket_key": "17bb691031203b312f731e4a1b463560c89ed0c57372a9405364d84a3e652ff4",
+          "request_count": 3,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655800109,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "521a943ee9199e7e83fff9e1dbb3fa5585d7345d21a6d793938577a5015c0684": {
+          "bucket_key": "521a943ee9199e7e83fff9e1dbb3fa5585d7345d21a6d793938577a5015c0684",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655800597,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b8316b832f65ba9dba187cf0648872839b266f66806eb25922c64663848e92f0": {
+          "bucket_key": "b8316b832f65ba9dba187cf0648872839b266f66806eb25922c64663848e92f0",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655800109,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "cd9afc26b0fcb52122f1655272279f2e29a24a6449b540e7c05cb2a48cd861e5": {
+          "bucket_key": "cd9afc26b0fcb52122f1655272279f2e29a24a6449b540e7c05cb2a48cd861e5",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655800109,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d4d572686449d6b67fd39fd87b9cf5e5c41071bf22801efdd8d2e0c9344bd508": {
+          "bucket_key": "d4d572686449d6b67fd39fd87b9cf5e5c41071bf22801efdd8d2e0c9344bd508",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655801046,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d6a89bf828f26d444e4689f47e59c817eb6c7530b6b84ebf35619161de0554b5": {
+          "bucket_key": "d6a89bf828f26d444e4689f47e59c817eb6c7530b6b84ebf35619161de0554b5",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655801046,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "e11305261c3ace9dd3e4386b43198279ef96bf3ec226511c844c9ae6ba458471": {
+          "bucket_key": "e11305261c3ace9dd3e4386b43198279ef96bf3ec226511c844c9ae6ba458471",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655800109,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f2f4125cdc1e389a7d4d10d8d2bdf6ebd8659cec8791c9bd06a68a5b436080a1": {
+          "bucket_key": "f2f4125cdc1e389a7d4d10d8d2bdf6ebd8659cec8791c9bd06a68a5b436080a1",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655800597,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 5
+      },
+      "durationMs": 1299,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-change-utf8-73",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "accepted": false,
+        "multibyte": true,
+        "utf8Bytes": 73
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "02af4d1a09d332b56b3c4509084d11fb71c7724a08098e42b1ad62e8345df100": {
+          "bucket_key": "02af4d1a09d332b56b3c4509084d11fb71c7724a08098e42b1ad62e8345df100",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655801380,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "0a2300a19201958dc442fe55d7a3d487bb9be811e3e4d50434b80334f0c73da5": {
+          "bucket_key": "0a2300a19201958dc442fe55d7a3d487bb9be811e3e4d50434b80334f0c73da5",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655801380,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "12e748cb87aed4d121bfcbe1702efe14c16f062ce894e91cb1ccfdfaa5688f99": {
+          "bucket_key": "12e748cb87aed4d121bfcbe1702efe14c16f062ce894e91cb1ccfdfaa5688f99",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655801380,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "385a40daaf0a804102da28456701128ed01910c3f4dc703c8eeb6b693fdeac7a": {
+          "bucket_key": "385a40daaf0a804102da28456701128ed01910c3f4dc703c8eeb6b693fdeac7a",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655801380,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "6a155b5c5f77aecf713a6dfd4097adb409844a925c99f0319362c842ade3b4e7": {
+          "bucket_key": "6a155b5c5f77aecf713a6dfd4097adb409844a925c99f0319362c842ade3b4e7",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655801810,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "af242eb220617400c2ed1a15102b125e74c173ad3c2b997f4c99cda80a135c5e": {
+          "bucket_key": "af242eb220617400c2ed1a15102b125e74c173ad3c2b997f4c99cda80a135c5e",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655801810,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 744,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-reset-ascii-72",
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "result": {
+        "accepted": true,
+        "multibyte": false,
+        "utf8Bytes": 72
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "41caabd48082342d23bc13ebae56253de3182befab58e9ecfc9b490583f89a93": {
+          "bucket_key": "41caabd48082342d23bc13ebae56253de3182befab58e9ecfc9b490583f89a93",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655802588,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "6baeb377c10231f49ef254ff460a73d22249b01f6b604c5a071b865938005bd7": {
+          "bucket_key": "6baeb377c10231f49ef254ff460a73d22249b01f6b604c5a071b865938005bd7",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655802588,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "7486b0367314e3227491b9e430cdfaf2bdd0dea175679445c43b48ba51248d07": {
+          "bucket_key": "7486b0367314e3227491b9e430cdfaf2bdd0dea175679445c43b48ba51248d07",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655802329,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "79693344127b4778798efb7c0b6a441819e6a66c25374c7efcd7b9cca083b6c0": {
+          "bucket_key": "79693344127b4778798efb7c0b6a441819e6a66c25374c7efcd7b9cca083b6c0",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655802132,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "81c44d04ac006ac513157079cb127898903b437c756742b1deac56307bc90819": {
+          "bucket_key": "81c44d04ac006ac513157079cb127898903b437c756742b1deac56307bc90819",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655802132,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "9031a87a52f74492e60ef40f5897ab10fb57c7aa7710fb517f7c2c935770d579": {
+          "bucket_key": "9031a87a52f74492e60ef40f5897ab10fb57c7aa7710fb517f7c2c935770d579",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655802329,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "add1440e531f2fc6cc217e64d53772a300c3ccb929081ae5407cb1261641afc4": {
+          "bucket_key": "add1440e531f2fc6cc217e64d53772a300c3ccb929081ae5407cb1261641afc4",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655802132,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b81bb16f4f1d2b3f2309a3bb05fc615e1633c983c48b14b20cb607e7181e7a44": {
+          "bucket_key": "b81bb16f4f1d2b3f2309a3bb05fc615e1633c983c48b14b20cb607e7181e7a44",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655802132,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 5,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790842,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c3a587d183c1f1b7b636e12b0415d10465112f5f12377806cf434a1aa3eeb5ca": {
+          "bucket_key": "c3a587d183c1f1b7b636e12b0415d10465112f5f12377806cf434a1aa3eeb5ca",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655802329,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 4
+      },
+      "durationMs": 748,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-reset-ascii-73",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "accepted": false,
+        "multibyte": false,
+        "utf8Bytes": 73
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "0d8ecc7fa880ab73a41a57e3b1337fbe0c7517b6aca76499a05a6fe9cd34459b": {
+          "bucket_key": "0d8ecc7fa880ab73a41a57e3b1337fbe0c7517b6aca76499a05a6fe9cd34459b",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655802870,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "10013b3ffd24794bb76a33305388930a7dd9e2670c58b7774d0eb1c19f3b592b": {
+          "bucket_key": "10013b3ffd24794bb76a33305388930a7dd9e2670c58b7774d0eb1c19f3b592b",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655803329,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "29ca3f62b27048a95ff283b2783296b167c2c2409553896d9088ee9f653c3c9e": {
+          "bucket_key": "29ca3f62b27048a95ff283b2783296b167c2c2409553896d9088ee9f653c3c9e",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655802870,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "4ede05c0cd51dd9f8e8e21714343d7ee44c3cc106b236dde7d513653b46dd58a": {
+          "bucket_key": "4ede05c0cd51dd9f8e8e21714343d7ee44c3cc106b236dde7d513653b46dd58a",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655802870,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "5d70143fa69da2855fe47062c4a57a5e8dd4da80a51cb1417736b0976741cfa0": {
+          "bucket_key": "5d70143fa69da2855fe47062c4a57a5e8dd4da80a51cb1417736b0976741cfa0",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655803329,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "95e2e48cce9db0d7c754c7c1b02fa94c4b26209afcbebc678e90c1e03f06b661": {
+          "bucket_key": "95e2e48cce9db0d7c754c7c1b02fa94c4b26209afcbebc678e90c1e03f06b661",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655803047,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "96cfcbb0367f2aeaef07de29ad8da321b131c8ee0fd1bc3a70fdd0d070cdb41c": {
+          "bucket_key": "96cfcbb0367f2aeaef07de29ad8da321b131c8ee0fd1bc3a70fdd0d070cdb41c",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655803047,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b1adf0b2e771679a0ed1005106763ba6798b5d7c0a203ee99efe1d28713221fe": {
+          "bucket_key": "b1adf0b2e771679a0ed1005106763ba6798b5d7c0a203ee99efe1d28713221fe",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655803047,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 6,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790842,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "fe6a1a9fc06b4b2d06567ae7dbda9d4efe974041525eaa5f3a06d3ed87de7531": {
+          "bucket_key": "fe6a1a9fc06b4b2d06567ae7dbda9d4efe974041525eaa5f3a06d3ed87de7531",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655802870,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 3,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 750,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-reset-utf8-72",
+      "priority": "P1",
+      "expected": "200; full password accepted",
+      "result": {
+        "accepted": true,
+        "multibyte": true,
+        "utf8Bytes": 72
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "2600b144242ad0e8c9bf5487f52a179533a0f0b2f15ef5c5aed9982bd6af282b": {
+          "bucket_key": "2600b144242ad0e8c9bf5487f52a179533a0f0b2f15ef5c5aed9982bd6af282b",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655804174,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "2690a127002ff5c95df7bbdcde7dab0f01b28cdf9f4be18ab0139c227a9c8d2e": {
+          "bucket_key": "2690a127002ff5c95df7bbdcde7dab0f01b28cdf9f4be18ab0139c227a9c8d2e",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655803847,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "3840e9f96ca09a168468ca5cef490a823d7883cbc0a1877394c1aa800928e697": {
+          "bucket_key": "3840e9f96ca09a168468ca5cef490a823d7883cbc0a1877394c1aa800928e697",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655803847,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "39f0bd5fe7b659ab791d47e1073b90f46f0ee02801cdf61706f62794646e168d": {
+          "bucket_key": "39f0bd5fe7b659ab791d47e1073b90f46f0ee02801cdf61706f62794646e168d",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655804174,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "48dae9acac4199b255aab086542da8ad7c944dff0ee4732afab84df26ce45be7": {
+          "bucket_key": "48dae9acac4199b255aab086542da8ad7c944dff0ee4732afab84df26ce45be7",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655803638,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "796df912d1db7bb7bd29b4e6cdf9cbeb5b0cb05732d5626c943c9397545384a7": {
+          "bucket_key": "796df912d1db7bb7bd29b4e6cdf9cbeb5b0cb05732d5626c943c9397545384a7",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655803638,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "82cf62adf4890a2d14171ec95f28e3c5ebfc24a1ed76b423145ffb7344e05ba6": {
+          "bucket_key": "82cf62adf4890a2d14171ec95f28e3c5ebfc24a1ed76b423145ffb7344e05ba6",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655803847,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 7,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790842,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d2adba7e8b5233309da5fd6c3e0d2e036362ebbd1d574c67964c04978147dbd9": {
+          "bucket_key": "d2adba7e8b5233309da5fd6c3e0d2e036362ebbd1d574c67964c04978147dbd9",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655803638,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "daadc5d4417dbc98f71b1afc673c8f65c964e860da6fbd02feec2de7dbe77b1c": {
+          "bucket_key": "daadc5d4417dbc98f71b1afc673c8f65c964e860da6fbd02feec2de7dbe77b1c",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655803638,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 4
+      },
+      "durationMs": 879,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-reset-utf8-73",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "accepted": false,
+        "multibyte": true,
+        "utf8Bytes": 73
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "2fb4d7516e676f29a1618e3d2faa8fc49727f2db4534af9834681a9873164d6c": {
+          "bucket_key": "2fb4d7516e676f29a1618e3d2faa8fc49727f2db4534af9834681a9873164d6c",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655805057,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "6553479d462a63f8f308a5ef4698326330b6389c72f4e35f46f38b40ddecebbc": {
+          "bucket_key": "6553479d462a63f8f308a5ef4698326330b6389c72f4e35f46f38b40ddecebbc",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655804696,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "85306ee795586eb984f2eec90200fda308a052b88063e6b47dcfc19383efc8a4": {
+          "bucket_key": "85306ee795586eb984f2eec90200fda308a052b88063e6b47dcfc19383efc8a4",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655804520,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "9fb6c3253f1df3e92943df1620077443fca6e7b77767d29deb0b2643ccef654a": {
+          "bucket_key": "9fb6c3253f1df3e92943df1620077443fca6e7b77767d29deb0b2643ccef654a",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655804696,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 8,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790842,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d7530720031c5f94ac4ea809c5bcaa736557280f006304911f1d96cebf8c3d6c": {
+          "bucket_key": "d7530720031c5f94ac4ea809c5bcaa736557280f006304911f1d96cebf8c3d6c",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655804520,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "e0bbbbdc81bc5225ee37673fe3f74137fd009f00bbf63f980647258370622672": {
+          "bucket_key": "e0bbbbdc81bc5225ee37673fe3f74137fd009f00bbf63f980647258370622672",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655804520,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "e16bbf89e4cfda10c74a95b0689765d019d70c6a243d572c57b1229842e95215": {
+          "bucket_key": "e16bbf89e4cfda10c74a95b0689765d019d70c6a243d572c57b1229842e95215",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655805057,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "ebd1718ebf442393527f594f53255e6505594d795d5f00394dfd729e6eaa9557": {
+          "bucket_key": "ebd1718ebf442393527f594f53255e6505594d795d5f00394dfd729e6eaa9557",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655804696,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "fad7d273d6509f82894f5922f77b781ce128e1da74d328e9e4606ae011e60e67": {
+          "bucket_key": "fad7d273d6509f82894f5922f77b781ce128e1da74d328e9e4606ae011e60e67",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655804520,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 3,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 965,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-signup-mismatch",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "0e947283ff851dc611559d9e03f36cf67742ac628fada43e90924e9a9c89ff03": {
+          "bucket_key": "0e947283ff851dc611559d9e03f36cf67742ac628fada43e90924e9a9c89ff03",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655805708,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "2b193410669a5ed5a20491f9d6638bf40c9bea84a75f5f5f5a9516cc6074c58b": {
+          "bucket_key": "2b193410669a5ed5a20491f9d6638bf40c9bea84a75f5f5f5a9516cc6074c58b",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655805478,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "6fdfab2b091a890cc36c82f24a678b66387b4f39956533f1d0de095961c44b8e": {
+          "bucket_key": "6fdfab2b091a890cc36c82f24a678b66387b4f39956533f1d0de095961c44b8e",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655805478,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "78cc650defdb65290bdb83f8de27bccdd120d93750d88cb9c8c6169306cb18f6": {
+          "bucket_key": "78cc650defdb65290bdb83f8de27bccdd120d93750d88cb9c8c6169306cb18f6",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655805708,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "900d9a3d268bfdf8122f4b7668a6dc39e56c602714a7af8b430deda295c79950": {
+          "bucket_key": "900d9a3d268bfdf8122f4b7668a6dc39e56c602714a7af8b430deda295c79950",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655805478,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "97196d4e300c522bc5e1ce06069617c60dc43a5af2111c95994cae516c95a387": {
+          "bucket_key": "97196d4e300c522bc5e1ce06069617c60dc43a5af2111c95994cae516c95a387",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655805708,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b3b3833de567391d2840f45e8643a5cacd2f1bd8fe1150a4379b0ea0d9da980b": {
+          "bucket_key": "b3b3833de567391d2840f45e8643a5cacd2f1bd8fe1150a4379b0ea0d9da980b",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655805708,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 9,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790842,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 646,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-signup-confirm-overlong",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "168c80fd3f86983f465f6f5a4f55ebd0fdc091f332ba14241ee8f75dceb049fb": {
+          "bucket_key": "168c80fd3f86983f465f6f5a4f55ebd0fdc091f332ba14241ee8f75dceb049fb",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655806364,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "31dac8ea02494c0d967f953a3c44cbce7e60e830668b217e125d3c63879ad802": {
+          "bucket_key": "31dac8ea02494c0d967f953a3c44cbce7e60e830668b217e125d3c63879ad802",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655806364,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "5749de08cbeacb4ea405acf352bce068790f8481d8b2f4c2a3d751ae15c10a7b": {
+          "bucket_key": "5749de08cbeacb4ea405acf352bce068790f8481d8b2f4c2a3d751ae15c10a7b",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655806364,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "75c121c873e30ea31b90a1c38a5216616201ac1093b8f37328c4641f7b91f726": {
+          "bucket_key": "75c121c873e30ea31b90a1c38a5216616201ac1093b8f37328c4641f7b91f726",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655806130,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 10,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790842,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c29ea53d21786679dac7f7ec53095e2a52f80131e6e88cbdcbe0b851321cf3db": {
+          "bucket_key": "c29ea53d21786679dac7f7ec53095e2a52f80131e6e88cbdcbe0b851321cf3db",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655806364,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "e4e6105fbb4cdaadac80761226dfbe2234a9c5c819dbdc8ae68109046cd8eca7": {
+          "bucket_key": "e4e6105fbb4cdaadac80761226dfbe2234a9c5c819dbdc8ae68109046cd8eca7",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655806130,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f7fe5451d1cdee2566227600af798ba0a73be5e151e5e38c04eafa74ac4a3a54": {
+          "bucket_key": "f7fe5451d1cdee2566227600af798ba0a73be5e151e5e38c04eafa74ac4a3a54",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655806130,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 625,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-change-mismatch",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "3255d6eb46bdbde6d5e7991958f8de4ee800ecc57c445f256edf158cb410715d": {
+          "bucket_key": "3255d6eb46bdbde6d5e7991958f8de4ee800ecc57c445f256edf158cb410715d",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655806797,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "79409a6b47b35599defccb5647d7b0a50d8890e120b5a889a99e306906f8368e": {
+          "bucket_key": "79409a6b47b35599defccb5647d7b0a50d8890e120b5a889a99e306906f8368e",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655807217,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "bca0eb8082b1f1dbf29ec55acab20d0187609b82c3948f9414e406dc1c908072": {
+          "bucket_key": "bca0eb8082b1f1dbf29ec55acab20d0187609b82c3948f9414e406dc1c908072",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655806797,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "bcdcbcf66d4494e9952d69645062fe6b2c50e5095915697d4ba0c465ae0ea45f": {
+          "bucket_key": "bcdcbcf66d4494e9952d69645062fe6b2c50e5095915697d4ba0c465ae0ea45f",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655806797,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c5e7a0a96417726a676b582a08dbc6d91abe9b9ff7b05074f9bb8ce455107173": {
+          "bucket_key": "c5e7a0a96417726a676b582a08dbc6d91abe9b9ff7b05074f9bb8ce455107173",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655806797,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "cdfc691342b760302a3819add4b1c18c9b21e4e3a7dd299096f418eaecb04b4e": {
+          "bucket_key": "cdfc691342b760302a3819add4b1c18c9b21e4e3a7dd299096f418eaecb04b4e",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655807217,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 762,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-change-confirm-overlong",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "4691b0f6b364d2c32a27d2b0c82a8eba34c00f677f332008ed70c9ecea399fc5": {
+          "bucket_key": "4691b0f6b364d2c32a27d2b0c82a8eba34c00f677f332008ed70c9ecea399fc5",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655807962,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "6679fea799d17e7e51f776c4957852061a84f729427ac6e857f477c417b2fbbc": {
+          "bucket_key": "6679fea799d17e7e51f776c4957852061a84f729427ac6e857f477c417b2fbbc",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655807565,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "8f1b767819b7d2315f44b79514f45ec314a4f97c4ab1afd35f0d3ba140c5f0f6": {
+          "bucket_key": "8f1b767819b7d2315f44b79514f45ec314a4f97c4ab1afd35f0d3ba140c5f0f6",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655807565,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b32ea3765f14e8538f2a1dbdad7bc45618bda5ae1c322c072a791adb48e38446": {
+          "bucket_key": "b32ea3765f14e8538f2a1dbdad7bc45618bda5ae1c322c072a791adb48e38446",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655807565,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "e9faa9ca695c6b2117106065d895c04b32d7a003c75ea1495a8b6935ceabb1dc": {
+          "bucket_key": "e9faa9ca695c6b2117106065d895c04b32d7a003c75ea1495a8b6935ceabb1dc",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655807565,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f5fc42c49fca3b35541215993bf0a270ad92d901ecc03b15e2413f5f6e353e65": {
+          "bucket_key": "f5fc42c49fca3b35541215993bf0a270ad92d901ecc03b15e2413f5f6e353e65",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655807962,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 685,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-reset-mismatch",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "0962b29ec084686bf354048e4d42e7c0f457cba3e70c6dd8bfd92bea677d8e99": {
+          "bucket_key": "0962b29ec084686bf354048e4d42e7c0f457cba3e70c6dd8bfd92bea677d8e99",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655808253,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "0e1a2564a364ca9bb02e46027267c5fae66c8bce06fdcea3743ab2f9625ae2eb": {
+          "bucket_key": "0e1a2564a364ca9bb02e46027267c5fae66c8bce06fdcea3743ab2f9625ae2eb",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655808744,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "2552be7ba8e157fca145b2712735457eecc116d5cd9a717edd8726c005dc673a": {
+          "bucket_key": "2552be7ba8e157fca145b2712735457eecc116d5cd9a717edd8726c005dc673a",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655808441,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "577eda9a756e0cf521600f0c19beed163d378cbd42b0ab2cf702164d8bd29d1e": {
+          "bucket_key": "577eda9a756e0cf521600f0c19beed163d378cbd42b0ab2cf702164d8bd29d1e",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655808253,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "707f9f85b4b0fc6a85930a01a64cf9077365391d66d58df2dfe36861a73d0e5a": {
+          "bucket_key": "707f9f85b4b0fc6a85930a01a64cf9077365391d66d58df2dfe36861a73d0e5a",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655808441,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "8d2812b5eb13ce57ab1aaed684719623fe2f7ada259722835ea1d668b96e8742": {
+          "bucket_key": "8d2812b5eb13ce57ab1aaed684719623fe2f7ada259722835ea1d668b96e8742",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655808744,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "93af7ee14567e2e99cc1af2dcec4d1f12cbd3ca52f6dfac7ed1478a2b53cd1eb": {
+          "bucket_key": "93af7ee14567e2e99cc1af2dcec4d1f12cbd3ca52f6dfac7ed1478a2b53cd1eb",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655808441,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "9871fd57244bec1edb90abb1e3d8ae49c23bda03e3eca088c9bceb81154f3546": {
+          "bucket_key": "9871fd57244bec1edb90abb1e3d8ae49c23bda03e3eca088c9bceb81154f3546",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655808253,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 11,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790842,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f72e7a248510af087164df9a9768891a105e7687fe17ed5de9bb6b55003b861a": {
+          "bucket_key": "f72e7a248510af087164df9a9768891a105e7687fe17ed5de9bb6b55003b861a",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655808253,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 3,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 788,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-reset-confirm-overlong",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; no account/token mutation",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "19d1a3b9783cf6b05bcf9ecc201b56388784802527059a6e5a032e5723aac991": {
+          "bucket_key": "19d1a3b9783cf6b05bcf9ecc201b56388784802527059a6e5a032e5723aac991",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655809238,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "75ee3b6a99387dffdf633c0a3709b3216c497be54a6ab72dcd32a9258bfe63fd": {
+          "bucket_key": "75ee3b6a99387dffdf633c0a3709b3216c497be54a6ab72dcd32a9258bfe63fd",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655809238,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "97d76454a7c74da4e66ae93952e81c261c00f5be7c3191be7d763a3824c809f3": {
+          "bucket_key": "97d76454a7c74da4e66ae93952e81c261c00f5be7c3191be7d763a3824c809f3",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655809238,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "a61ac33b34a9082cc72f7ce4b3341fcac1c659f835a19e783ce799b446de7085": {
+          "bucket_key": "a61ac33b34a9082cc72f7ce4b3341fcac1c659f835a19e783ce799b446de7085",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655809530,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b709a1385071e23d0fc77df134430e08eee05bf350231474f66b0f7defb4125d": {
+          "bucket_key": "b709a1385071e23d0fc77df134430e08eee05bf350231474f66b0f7defb4125d",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655809052,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d": {
+          "bucket_key": "b86bac2a02ed7713fde72b946f30e64b57c79b6fee6ffc8e5fde5ab89293f54d",
+          "request_count": 12,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655790842,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c227620790426c30e63b4f90c3f0a19f73e877d736c0a6f4e8cf4e1f1d4c5086": {
+          "bucket_key": "c227620790426c30e63b4f90c3f0a19f73e877d736c0a6f4e8cf4e1f1d4c5086",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655809530,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c4aa36eee9fa49bf7efdd38077057bee5517ce3bea6dc9325deeb287a70fc0e8": {
+          "bucket_key": "c4aa36eee9fa49bf7efdd38077057bee5517ce3bea6dc9325deeb287a70fc0e8",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655809052,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "ef01ccdfcbf6fa4aa3e8815f3f1178fd0088a8eee15d744e3042feca2a570e2a": {
+          "bucket_key": "ef01ccdfcbf6fa4aa3e8815f3f1178fd0088a8eee15d744e3042feca2a570e2a",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655809052,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "fedef9277594dc9b233a53267e2ff414d5f4b73065c0ddc689ba5d9ca883f898": {
+          "bucket_key": "fedef9277594dc9b233a53267e2ff414d5f4b73065c0ddc689ba5d9ca883f898",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655809052,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 3,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 788,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-change-current-wrong",
+      "priority": "P1",
+      "expected": "400 INVALID_REQUEST; password unchanged",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "0aef442c9d9094cbc8a85b135d7b42e340bc84967acd215047e1bc48f7ad6038": {
+          "bucket_key": "0aef442c9d9094cbc8a85b135d7b42e340bc84967acd215047e1bc48f7ad6038",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655809887,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "4af1c4e778eee5c065edeea903de7bfefc34b187db3d963d5d9fe6de650f5028": {
+          "bucket_key": "4af1c4e778eee5c065edeea903de7bfefc34b187db3d963d5d9fe6de650f5028",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655809887,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "5404f86e3b6dec38f1a5cfb5560e2f96b97b142444d2272bd4a6c018bfb8227b": {
+          "bucket_key": "5404f86e3b6dec38f1a5cfb5560e2f96b97b142444d2272bd4a6c018bfb8227b",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655809887,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "9aa4c7543d419ace4f2e09e2e2151a1ac69265ac497f907dee4d3351aa13138d": {
+          "bucket_key": "9aa4c7543d419ace4f2e09e2e2151a1ac69265ac497f907dee4d3351aa13138d",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655810392,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f65d5d219a4ea2df5eb20d2570eed65a15d2217d0c7199960ce3960a9251ebc9": {
+          "bucket_key": "f65d5d219a4ea2df5eb20d2570eed65a15d2217d0c7199960ce3960a9251ebc9",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655809887,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f7aa2f9224fa504ef3e57a6da3a21e4d0716101a8300ea09e177675df8fb59e0": {
+          "bucket_key": "f7aa2f9224fa504ef3e57a6da3a21e4d0716101a8300ea09e177675df8fb59e0",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655810392,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:INVALID_REQUEST": 1
+      },
+      "durationMs": 832,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "password-change-current-overlong",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; password unchanged",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "1568a0ad681272346cba0496d4d3a66d5fa675c6c8c606ee17ef1890064e5f49": {
+          "bucket_key": "1568a0ad681272346cba0496d4d3a66d5fa675c6c8c606ee17ef1890064e5f49",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655810690,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "4871faf58cac2be20475e7cf94fafe75294b9d8b1700589b82744629d23f6427": {
+          "bucket_key": "4871faf58cac2be20475e7cf94fafe75294b9d8b1700589b82744629d23f6427",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655811097,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "529b6598cdaa3a5c89c550b94a8dc2f7a13de7dcbd14c478ad82d12b50d94fe9": {
+          "bucket_key": "529b6598cdaa3a5c89c550b94a8dc2f7a13de7dcbd14c478ad82d12b50d94fe9",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655810690,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "55a80bd5fb7fef602a6d262dcd5cde6c4da73b626d195ab5cf5f9501ef213e5f": {
+          "bucket_key": "55a80bd5fb7fef602a6d262dcd5cde6c4da73b626d195ab5cf5f9501ef213e5f",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655810690,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "ce5eaba5922edf4f8e14a725138926dda6529516ba5daf8110b7cef1f44bd59d": {
+          "bucket_key": "ce5eaba5922edf4f8e14a725138926dda6529516ba5daf8110b7cef1f44bd59d",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655811097,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d60303cb4d51b430aef6d0bc42c10042d53454a790c87798e23e2c350fb7ce0f": {
+          "bucket_key": "d60303cb4d51b430aef6d0bc42c10042d53454a790c87798e23e2c350fb7ce0f",
+          "request_count": 2,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655810690,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 710,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-weight-one",
+      "priority": "P1",
+      "expected": "200; all 18 weights saved as 1",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "0086895dcae07956b8041c010cfe810ef456bf7fdb4dc7d9d0ebd1241a4dc2b6": {
+          "bucket_key": "0086895dcae07956b8041c010cfe810ef456bf7fdb4dc7d9d0ebd1241a4dc2b6",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655811410,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "10947559265b49e7f58c34bc01ab109dde4a928f8ff253d42826fb31f1be7dcf": {
+          "bucket_key": "10947559265b49e7f58c34bc01ab109dde4a928f8ff253d42826fb31f1be7dcf",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655811410,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "67ae24bfb0338c8146a2190b2404572dfaeb3a5f21f5039c48d8434f60f84710": {
+          "bucket_key": "67ae24bfb0338c8146a2190b2404572dfaeb3a5f21f5039c48d8434f60f84710",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655811410,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "8b352cc6a0746dbcf58229f77098d4de8338034dd974e4cabd0200c5c25eba9b": {
+          "bucket_key": "8b352cc6a0746dbcf58229f77098d4de8338034dd974e4cabd0200c5c25eba9b",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655811410,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 4
+      },
+      "durationMs": 1124,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-weight-zero",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "39e59e395f830352f075b9442ab71dc7a60e1528c834004f30a91b3218d716ff": {
+          "bucket_key": "39e59e395f830352f075b9442ab71dc7a60e1528c834004f30a91b3218d716ff",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655812543,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "96f92c9819b0352eef1f29659027e8bdc868a5599821561e5748fe142d4a6167": {
+          "bucket_key": "96f92c9819b0352eef1f29659027e8bdc868a5599821561e5748fe142d4a6167",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655812543,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "9b1be3ee31bc7d5647f5d9f980b1ee42ac4f0856cc943ce41f2508b3d4d65901": {
+          "bucket_key": "9b1be3ee31bc7d5647f5d9f980b1ee42ac4f0856cc943ce41f2508b3d4d65901",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655812543,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f8c2d8672fd4ed9aab83f0d71f9c356bf543ecbf38c3135514d59424db107711": {
+          "bucket_key": "f8c2d8672fd4ed9aab83f0d71f9c356bf543ecbf38c3135514d59424db107711",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655812543,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 582,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-weight-six",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "0e2701f62d513486ef6eeb9fee6f25e456f0371c91c3275cf75895182802b639": {
+          "bucket_key": "0e2701f62d513486ef6eeb9fee6f25e456f0371c91c3275cf75895182802b639",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655813135,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "3575a5c5c295b6aba3e1ffadec62b39f87cfff1337be20485ea038af0253fc3d": {
+          "bucket_key": "3575a5c5c295b6aba3e1ffadec62b39f87cfff1337be20485ea038af0253fc3d",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655813135,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "7fed93108b9e067b831000a9f2e8685dcf084428057407cc4a9083d57e956ce3": {
+          "bucket_key": "7fed93108b9e067b831000a9f2e8685dcf084428057407cc4a9083d57e956ce3",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655813135,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f04c0e6a355edff51ed791b8e2eedeaa939090b989e3de0f55520e0afc4cbab4": {
+          "bucket_key": "f04c0e6a355edff51ed791b8e2eedeaa939090b989e3de0f55520e0afc4cbab4",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655813135,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 569,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-weight-null-value",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "3bfb88237f7d34a7d0c1376ebc95582c6d36b35b2c6c86f9852a3cc59414d635": {
+          "bucket_key": "3bfb88237f7d34a7d0c1376ebc95582c6d36b35b2c6c86f9852a3cc59414d635",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655813717,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "70f3350ae9116155c053a8b8a04c3652891051845abbbc5ca8a932182340dfa6": {
+          "bucket_key": "70f3350ae9116155c053a8b8a04c3652891051845abbbc5ca8a932182340dfa6",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655813717,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "866e12d70a1e64eced5e6958354ebd8a5ce4dd451ebd885326872fc9cde052c8": {
+          "bucket_key": "866e12d70a1e64eced5e6958354ebd8a5ce4dd451ebd885326872fc9cde052c8",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655813717,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c1928846adccebad1761a036fc8e9541eae712aeb55b76f6f420c7043a427447": {
+          "bucket_key": "c1928846adccebad1761a036fc8e9541eae712aeb55b76f6f420c7043a427447",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655813717,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 639,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-weight-missing-key",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "33232cac4444f8b6d105c3c26bc5c2d0b9e3c7ec5275a4ad045870af368c7298": {
+          "bucket_key": "33232cac4444f8b6d105c3c26bc5c2d0b9e3c7ec5275a4ad045870af368c7298",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655814398,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "ab5e3d4f343a2f7ed7daf2eaa57966a6dda79db8471928bcc83470778dce472b": {
+          "bucket_key": "ab5e3d4f343a2f7ed7daf2eaa57966a6dda79db8471928bcc83470778dce472b",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655814398,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "ad132ad7716cce6f5b377750d55012a0038cc73199a77378da24a335f6a3ac68": {
+          "bucket_key": "ad132ad7716cce6f5b377750d55012a0038cc73199a77378da24a335f6a3ac68",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655814398,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c50fe33c608970358efff34c5ac23500d2fb15dce1fd14c87903c8e863de5c98": {
+          "bucket_key": "c50fe33c608970358efff34c5ac23500d2fb15dce1fd14c87903c8e863de5c98",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655814398,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 684,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-weight-extra-key",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "9312e3a39fbbcc7a5d56e7c99d36b0348977d754922b4a599e31fbb686a852c2": {
+          "bucket_key": "9312e3a39fbbcc7a5d56e7c99d36b0348977d754922b4a599e31fbb686a852c2",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655815078,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "a07cf1dede98ff410373f734e24afaa25ed5708fb76fe04aa1995e3f75654619": {
+          "bucket_key": "a07cf1dede98ff410373f734e24afaa25ed5708fb76fe04aa1995e3f75654619",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655815078,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "a543d59c401121215ff8341786847e6660f0a7fcbb1b74fae803ac0b978fec8b": {
+          "bucket_key": "a543d59c401121215ff8341786847e6660f0a7fcbb1b74fae803ac0b978fec8b",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655815078,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "da350095c0058ab8edc48f073a8909e6dc33d639114198af7cdb97921f655e0a": {
+          "bucket_key": "da350095c0058ab8edc48f073a8909e6dc33d639114198af7cdb97921f655e0a",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655815078,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 595,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-weight-empty",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "226f5612b980de4218281e0f84d7ea8a807e8dd524413ca808479c67d84aa2df": {
+          "bucket_key": "226f5612b980de4218281e0f84d7ea8a807e8dd524413ca808479c67d84aa2df",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655815663,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "2a191946798e12d1b879ff891f5f555e9b9f0d7971ab57f0111bc7ca6d9648a6": {
+          "bucket_key": "2a191946798e12d1b879ff891f5f555e9b9f0d7971ab57f0111bc7ca6d9648a6",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655815663,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "2d581cffab89573ed00d8a94231bd08ad2c81e4d691f23fa0e9bd73f498c19dc": {
+          "bucket_key": "2d581cffab89573ed00d8a94231bd08ad2c81e4d691f23fa0e9bd73f498c19dc",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655815663,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "980bd38b94f5a2b885e8743ca47d54f1657ec2330d2fc81e29fd804bcd2d381f": {
+          "bucket_key": "980bd38b94f5a2b885e8743ca47d54f1657ec2330d2fc81e29fd804bcd2d381f",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655815663,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 596,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-weight-null-map",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "66730d7fad7ee8eaec8248e21280ea719a7edd12766950b1ac776c070b5885d1": {
+          "bucket_key": "66730d7fad7ee8eaec8248e21280ea719a7edd12766950b1ac776c070b5885d1",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655816267,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "813a261504a1d74ed368e3bc9fbc19180f0c2fd405ccf6365fae4e059b877aec": {
+          "bucket_key": "813a261504a1d74ed368e3bc9fbc19180f0c2fd405ccf6365fae4e059b877aec",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655816267,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "862c381f08ef63b8d58bfa8ac7eccb64858e6a84a7c43b9b52b6348eefd1bf90": {
+          "bucket_key": "862c381f08ef63b8d58bfa8ac7eccb64858e6a84a7c43b9b52b6348eefd1bf90",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655816267,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "fa068835191af7c16a4b5a784cea1ff08254e14001b5674290ec96e58abd2ea2": {
+          "bucket_key": "fa068835191af7c16a4b5a784cea1ff08254e14001b5674290ec96e58abd2ea2",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655816267,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 660,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-weight-missing-map",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "1a4063ddc814cb0638ec7cbdfbedb741d78d70d7c56284dcf920f26b93f5c75e": {
+          "bucket_key": "1a4063ddc814cb0638ec7cbdfbedb741d78d70d7c56284dcf920f26b93f5c75e",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655816980,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "2a6fee48e7bc2e05b6f215459ac9b81662279a811398047eb9af14f2338bf552": {
+          "bucket_key": "2a6fee48e7bc2e05b6f215459ac9b81662279a811398047eb9af14f2338bf552",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655816980,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "77095b62add80f96ba8d9dcb8424330d3e736aca22c7e58ecca4f20001c56b19": {
+          "bucket_key": "77095b62add80f96ba8d9dcb8424330d3e736aca22c7e58ecca4f20001c56b19",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655816980,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "8789bb89c55b86842ba0aea721f267bb9a47812a53d9563700567bb9bbacb41e": {
+          "bucket_key": "8789bb89c55b86842ba0aea721f267bb9a47812a53d9563700567bb9bbacb41e",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655816980,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 696,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-option-empty",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "70eee4e7471608751b26ff38f0207a00dc40d018b26b8718b9b5739452651b87": {
+          "bucket_key": "70eee4e7471608751b26ff38f0207a00dc40d018b26b8718b9b5739452651b87",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655817653,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "9500972869624d89efafd0d8710881b39caa649a924e260bcaa63b3f636608f5": {
+          "bucket_key": "9500972869624d89efafd0d8710881b39caa649a924e260bcaa63b3f636608f5",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655817653,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "be9afc4c152f44be7a21ea141bcc5851a8086fde15f1315d1f02fe2b5ddfe3fd": {
+          "bucket_key": "be9afc4c152f44be7a21ea141bcc5851a8086fde15f1315d1f02fe2b5ddfe3fd",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655817653,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d20b3a92e202e5d46dfb3ca562a17a0c5329f8c8998c64d954ec2a9c3d33ebcb": {
+          "bucket_key": "d20b3a92e202e5d46dfb3ca562a17a0c5329f8c8998c64d954ec2a9c3d33ebcb",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655817653,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 686,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-option-null-list",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "26d0e73ef25123c614843abdb32072bc77830c0179dcf5b7e4ca38e12d9f9e56": {
+          "bucket_key": "26d0e73ef25123c614843abdb32072bc77830c0179dcf5b7e4ca38e12d9f9e56",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655818347,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "74f0878a788246ee27a707a0b69c3c8ee91aab03243e07132ca63bab8e32a56e": {
+          "bucket_key": "74f0878a788246ee27a707a0b69c3c8ee91aab03243e07132ca63bab8e32a56e",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655818347,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "85609ae186a8fa163003ecdd312999f7975800ab8530c37e2fe9a3da3138d825": {
+          "bucket_key": "85609ae186a8fa163003ecdd312999f7975800ab8530c37e2fe9a3da3138d825",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655818347,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d5507e57081172a56335c2e55fa59e5faacdd4db6a8fa2c8b45ec8879352b2ee": {
+          "bucket_key": "d5507e57081172a56335c2e55fa59e5faacdd4db6a8fa2c8b45ec8879352b2ee",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655818347,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 619,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-option-null-element",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "1bb60637ef38330bf6cad1712b5461ad6e1d4c2ffbe90391f6ca962cc664a1d5": {
+          "bucket_key": "1bb60637ef38330bf6cad1712b5461ad6e1d4c2ffbe90391f6ca962cc664a1d5",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655818976,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "6a9602bb575df33dba7d9a42b158b73d7a2c2d3336afc8ef50c50802fea05a45": {
+          "bucket_key": "6a9602bb575df33dba7d9a42b158b73d7a2c2d3336afc8ef50c50802fea05a45",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655818976,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "9a18c33ee6f9e1bcee6800f137bbb5073e5ecc831e5bd1bd59aa09130be3df41": {
+          "bucket_key": "9a18c33ee6f9e1bcee6800f137bbb5073e5ecc831e5bd1bd59aa09130be3df41",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655818976,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b84132bf056a779124f33e1c2c62e8872abc8d90bf2f55591a2cfdc9dc5b084d": {
+          "bucket_key": "b84132bf056a779124f33e1c2c62e8872abc8d90bf2f55591a2cfdc9dc5b084d",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655818976,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 627,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-option-blank",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "3e2c9892952076f93b0e2a7cb0d35b2cc7e3c95c3ae06ad4d7cf1a6084e35452": {
+          "bucket_key": "3e2c9892952076f93b0e2a7cb0d35b2cc7e3c95c3ae06ad4d7cf1a6084e35452",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655819615,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "7341ab550333cb2e25a6b239438f7e8c9f2302e4f9adc50a12a13257e1218abe": {
+          "bucket_key": "7341ab550333cb2e25a6b239438f7e8c9f2302e4f9adc50a12a13257e1218abe",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655819615,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "93fa895adb2441f9f20d9590f0a577145ddfb4a47af0e45ed84c50e776fbcfa3": {
+          "bucket_key": "93fa895adb2441f9f20d9590f0a577145ddfb4a47af0e45ed84c50e776fbcfa3",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655819615,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "9aa146640a5fb02ba8e3788962252ecb1164651ea40c869dddbdfb42326fd341": {
+          "bucket_key": "9aa146640a5fb02ba8e3788962252ecb1164651ea40c869dddbdfb42326fd341",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655819615,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 620,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-option-duplicate",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "01cd338d0a4d41809f957d4e04d64f206836fede83644b8172f63b6a75443b72": {
+          "bucket_key": "01cd338d0a4d41809f957d4e04d64f206836fede83644b8172f63b6a75443b72",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655820241,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "0545c61027803e8698971f986e4d9d0334ff14e0ea1fe7ce9d8df59e5c9e3ac4": {
+          "bucket_key": "0545c61027803e8698971f986e4d9d0334ff14e0ea1fe7ce9d8df59e5c9e3ac4",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655820241,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "130f69c58081b8356cf873dca8098dc011440b58055c446f1adbfcd7e8207564": {
+          "bucket_key": "130f69c58081b8356cf873dca8098dc011440b58055c446f1adbfcd7e8207564",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655820241,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f18c9758df7f7db6ad33c091c6b5b91277343e8ef410666cf5ceb2936ba559f7": {
+          "bucket_key": "f18c9758df7f7db6ad33c091c6b5b91277343e8ef410666cf5ceb2936ba559f7",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655820241,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 561,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-option-unknown",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "178d917199b569771a23d172132ce3af9a555066b0cc653a58728372fd5b44f7": {
+          "bucket_key": "178d917199b569771a23d172132ce3af9a555066b0cc653a58728372fd5b44f7",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655820806,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "5a7012bd02f83060402501d1bc9e38d845d752f79b34785efe40fbbd2e37b538": {
+          "bucket_key": "5a7012bd02f83060402501d1bc9e38d845d752f79b34785efe40fbbd2e37b538",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655820806,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "d276bae734d58f21def80f1b656c34538fb6f8152129b4b6194d52786e4048c1": {
+          "bucket_key": "d276bae734d58f21def80f1b656c34538fb6f8152129b4b6194d52786e4048c1",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655820806,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "de81174b048b791eff77f0fea4a3a90231726b98d9f789d892fcdc9c4f3e2d7f": {
+          "bucket_key": "de81174b048b791eff77f0fea4a3a90231726b98d9f789d892fcdc9c4f3e2d7f",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655820806,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 596,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-option-too-long",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "3747e4112cfb02bcd085e60d20f630cb111ffc405ea41b484c69327227133818": {
+          "bucket_key": "3747e4112cfb02bcd085e60d20f630cb111ffc405ea41b484c69327227133818",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655821416,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "67e21dfaae1d0a1630304594cbdec2aae8f1b7531faa93c5519c82f14fc8d532": {
+          "bucket_key": "67e21dfaae1d0a1630304594cbdec2aae8f1b7531faa93c5519c82f14fc8d532",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655821416,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b8e591cc681647ebaa58a93236000c9d8c45bbaec02d3f03c9c4929acd559847": {
+          "bucket_key": "b8e591cc681647ebaa58a93236000c9d8c45bbaec02d3f03c9c4929acd559847",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655821416,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "e83a3138db749858d52495bed1a42ba52c2cf3c63d8da3a92954f7b4c9c08bef": {
+          "bucket_key": "e83a3138db749858d52495bed1a42ba52c2cf3c63d8da3a92954f7b4c9c08bef",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655821416,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 619,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-option-scalar-unknown",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "39dac2a29a130fff02c981d116dd399ebf2ffb7aa79070c0e11af85bf83220d6": {
+          "bucket_key": "39dac2a29a130fff02c981d116dd399ebf2ffb7aa79070c0e11af85bf83220d6",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655822049,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "42aaf038137b15476632724d6bb415867876333380ef88bfa9bc4c2ad3074775": {
+          "bucket_key": "42aaf038137b15476632724d6bb415867876333380ef88bfa9bc4c2ad3074775",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655822049,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "e3349e42c8bc40cdc4180d27bb86620e05266c83a552b224183977ec64e49a8b": {
+          "bucket_key": "e3349e42c8bc40cdc4180d27bb86620e05266c83a552b224183977ec64e49a8b",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655822049,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "e4df532b4197b6efabf98033630265e2a9326ace15eb386b256cb221c333de6e": {
+          "bucket_key": "e4df532b4197b6efabf98033630265e2a9326ace15eb386b256cb221c333de6e",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655822049,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 594,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-option-scalar-too-long",
+      "priority": "P1",
+      "expected": "400 VALIDATION_ERROR; prior survey preserved",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "59b5bf261098f289a022111307b155b6d8150816191c4fcfcb4becb2748b0959": {
+          "bucket_key": "59b5bf261098f289a022111307b155b6d8150816191c4fcfcb4becb2748b0959",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655822660,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "62f5a6cbfc98e1ddc60f9f02919c669b0faa885558224ce9a81eb616e4d77765": {
+          "bucket_key": "62f5a6cbfc98e1ddc60f9f02919c669b0faa885558224ce9a81eb616e4d77765",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655822660,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "88614a9f657fb1bbe6581d77e0318c9fd4e0e3e89dbb6729082bc93dfaba851f": {
+          "bucket_key": "88614a9f657fb1bbe6581d77e0318c9fd4e0e3e89dbb6729082bc93dfaba851f",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655822660,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "f35a53431218b378287b02424ce8c7639f13f34296ea7f51dd5c6aa6cac511d5": {
+          "bucket_key": "f35a53431218b378287b02424ce8c7639f13f34296ea7f51dd5c6aa6cac511d5",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655822660,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 2,
+        "18093:400:VALIDATION_ERROR": 1
+      },
+      "durationMs": 647,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "preference-option-no-preference-alone",
+      "priority": "P1",
+      "expected": "200; option roundtrip",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "0b3aca18349743274130b4d997410efe6022a13bb390979e1801f732ae15593e": {
+          "bucket_key": "0b3aca18349743274130b4d997410efe6022a13bb390979e1801f732ae15593e",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655823303,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "0e5aa9fce77476e6d85fb2b5362a5ec870020283704e75dba3b5a29d18d93cd0": {
+          "bucket_key": "0e5aa9fce77476e6d85fb2b5362a5ec870020283704e75dba3b5a29d18d93cd0",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655823303,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "343aa79069545240c265163fcde38c4c9ce85fe582bb88bba5eeb2aceeba5264": {
+          "bucket_key": "343aa79069545240c265163fcde38c4c9ce85fe582bb88bba5eeb2aceeba5264",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655823303,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "dc0e9f3fb96b8c37b3a8aca7f0b8c8b28e87c18d1c33d7eef112289bfad69fc2": {
+          "bucket_key": "dc0e9f3fb96b8c37b3a8aca7f0b8c8b28e87c18d1c33d7eef112289bfad69fc2",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655823303,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 4
+      },
+      "durationMs": 806,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "profile-incomplete-flag-false",
+      "priority": "P1",
+      "expected": "200 completed=false; answers/introduction retained; repeated GET never writes",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "1da6b165f8971f4f4dc5104d6edb5705202eb32a791ece0d418231beb92ce0da": {
+          "bucket_key": "1da6b165f8971f4f4dc5104d6edb5705202eb32a791ece0d418231beb92ce0da",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655824187,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "87dedd30a38bfa222eb94ae20383491fff51a857c492b60431a541208153e83e": {
+          "bucket_key": "87dedd30a38bfa222eb94ae20383491fff51a857c492b60431a541208153e83e",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655824187,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "914445ce686b853c87c1688a397eb175a70cf876bdc6aee928b3fda5ce724921": {
+          "bucket_key": "914445ce686b853c87c1688a397eb175a70cf876bdc6aee928b3fda5ce724921",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655824187,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c74932ddd5aff55329a67b8f34c1e433d9d3046c74792c5385ab9ba559a696c6": {
+          "bucket_key": "c74932ddd5aff55329a67b8f34c1e433d9d3046c74792c5385ab9ba559a696c6",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655824187,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 4
+      },
+      "durationMs": 1186,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "profile-incomplete-invalid-scalar",
+      "priority": "P1",
+      "expected": "200 completed=false; answers/introduction retained; repeated GET never writes",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "4a5c8f4e8ca49b42455982bb4ee2d9294d5b72cf0534216a22920b57dfc13a39": {
+          "bucket_key": "4a5c8f4e8ca49b42455982bb4ee2d9294d5b72cf0534216a22920b57dfc13a39",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655825331,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "b43fd0b7bb605872eb7995962e43c87bfa9614de18ed8dde335e5fb0b3cce8e7": {
+          "bucket_key": "b43fd0b7bb605872eb7995962e43c87bfa9614de18ed8dde335e5fb0b3cce8e7",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655825331,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "c681112ff11de991c000a30852067b09a9ab497c42227217b12450062f5b75dd": {
+          "bucket_key": "c681112ff11de991c000a30852067b09a9ab497c42227217b12450062f5b75dd",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655825331,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "da8c7b3219bb32ec8c80fedcf82d871cccd00121603a3bd269b4949f3d640b46": {
+          "bucket_key": "da8c7b3219bb32ec8c80fedcf82d871cccd00121603a3bd269b4949f3d640b46",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655825331,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 4
+      },
+      "durationMs": 837,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    },
+    {
+      "name": "profile-incomplete-missing-options",
+      "priority": "P1",
+      "expected": "200 completed=false; answers/introduction retained; repeated GET never writes",
+      "result": {
+        "realTcpHttp": true,
+        "separateJdbcAssertions": true
+      },
+      "status": "PASS",
+      "dbBucketChanges": {
+        "406663c768bf9fbc9191c98db77b48f897bccf2317cd880967692a1d6b62f472": {
+          "bucket_key": "406663c768bf9fbc9191c98db77b48f897bccf2317cd880967692a1d6b62f472",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655826170,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "851a08e474e112a5c1771e17ea59fe542d1204da6231100ca74d7f72a462ae9d": {
+          "bucket_key": "851a08e474e112a5c1771e17ea59fe542d1204da6231100ca74d7f72a462ae9d",
+          "request_count": 0,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655826170,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "9972840899b10e2fb3f988e171f5a408cc52944c47a66ec3ab5794ee2a9f3748": {
+          "bucket_key": "9972840899b10e2fb3f988e171f5a408cc52944c47a66ec3ab5794ee2a9f3748",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655826170,
+          "generation": 1,
+          "blocked_until": 0
+        },
+        "e6edfe0956078ed29a985c54221fc7eb1898bf90a74c0c5fe3c1f35a8392de79": {
+          "bucket_key": "e6edfe0956078ed29a985c54221fc7eb1898bf90a74c0c5fe3c1f35a8392de79",
+          "request_count": 1,
+          "failure_count": 0,
+          "in_flight": 0,
+          "window_started_at": 1792655826170,
+          "generation": 1,
+          "blocked_until": 0
+        }
+      },
+      "observedHttp": {
+        "18093:200:": 4
+      },
+      "durationMs": 948,
+      "evidenceRun": "2026-10-22-9a38b19aadb1",
+      "evidence": "backend/build/auth-user-survey-http5/runs/2026-10-22-9a38b19aadb1/cases.json"
+    }
+  ],
+  "commitCandidates": [
+    ".gitignore",
+    "backend/tools/auth-user-survey-http5/AusHttp5.java",
+    "backend/tools/auth-user-survey-http5/AusHttp5Audit.java",
+    "backend/tools/auth-user-survey-http5/prepare.cjs",
+    "backend/tools/auth-user-survey-http5/provision.ps1",
+    "backend/tools/auth-user-survey-http5/run.ps1",
+    "backend/tools/auth-user-survey-http5/review.cjs",
+    "backend/tools/auth-user-survey-http5/report.cjs",
+    "backend/tools/auth-user-survey-http5/README.md",
+    "backend/AUTH_USER_SURVEY_HTTP5_VALIDATION.md",
+    "backend/validation/auth-user-survey-http5-plan-20261022.json",
+    "backend/validation/auth-user-survey-http5-20261022.json"
+  ]
+}
