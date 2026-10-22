@@ -1,6 +1,7 @@
 package com.kkirikkiri.community.post.entity;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -31,8 +32,13 @@ public class PostImageCleanup {
 
     public PostImageCleanup(String imageUrl) {
         this.imageUrl = java.util.Objects.requireNonNull(imageUrl);
-        this.createdAt = LocalDateTime.now();
+        // MySQL DATETIME has second precision. Do not round a new, immediately due job into the future.
+        this.createdAt = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         this.nextAttemptAt = createdAt;
+    }
+
+    public boolean isDue(LocalDateTime now) {
+        return !nextAttemptAt.isAfter(now);
     }
 
     public void retryLater() {

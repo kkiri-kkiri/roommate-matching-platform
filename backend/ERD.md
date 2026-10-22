@@ -2519,7 +2519,9 @@ CALENDAR_CATEGORY.created_at도 같은 정책을 사용한다. 기존 데이터�
 복합 UNIQUE: 명시 선언 없음. FK 없음. 비고유 인덱스 `idx_image_cleanup_due(next_attempt_at,cleanup_id)`.
 개별 이미지 연결 제거와 같은 트랜잭션에 기록한다. 성공/다른 보존 참조가 있으면 작업 행을 제거하고,
 파일 오류는 attempts 증가 및 1분 뒤 기한으로 보존한다. 작업 행 잠금과 독립 READ COMMITTED 트랜잭션을
-사용하며 게시글/계정 잠금은 추가하지 않는다. 신규 파일은 CREATE_NEW UUID이며 기존 URL 연결 API는 없다.
+사용하며 잠금 획득 후 최신 next_attempt_at을 재검사한다. 미도래 시 행·시도 횟수·시각·파일을 변경하지 않는다.
+신규 created_at과 초기 next_attempt_at은 DATETIME 초 정밀도에 맞춰 생성한다. 기존 행 변환은 없다.
+게시글/계정 잠금은 추가하지 않는다. 신규 파일은 CREATE_NEW UUID이며 기존 URL 연결 API는 없다.
 작업 완료 DB 커밋 전에 프로세스가 종료되면 없는 파일 정리를 재시도한다. 과거 파일 일괄 스캔은 없다.
 [수동 DDL·배포 조건](migrations/20261019_post_image_cleanup.md)을 따른다.
 

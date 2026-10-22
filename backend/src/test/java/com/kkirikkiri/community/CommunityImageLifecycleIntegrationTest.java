@@ -11,6 +11,7 @@ import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
@@ -18,6 +19,8 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
@@ -246,6 +249,75 @@ class CommunityImageLifecycleIntegrationTest {
         new PostImageCleanupService(jobs, freshWorker).retryPending();
         assertFalse(Files.exists(path(failure.url()))); assertEquals(0, jobs.count()); hidden(failure.url());
         visible(rows(post).getFirst().getImageUrl());
+    }
+
+    @Test void workerPreservesFutureRetryRowAndRepairedFileUntilDeadline() throws Exception {
+        var failure = failCleanup();
+        // Repair the filesystem without moving the committed retry deadline into the past.
+        Files.delete(path(failure.url()).resolve("blocker")); Files.delete(path(failure.url()));
+        Files.write(path(failure.url()), failure.bytes());
+        var before = jdbc.queryForMap("select * from post_image_cleanup where cleanup_id=?", failure.job());
+        assertTrue(jobs.findById(failure.job()).orElseThrow().getNextAttemptAt().isAfter(LocalDateTime.now()));
+
+        worker.process(failure.job());
+
+        assertEquals(before, jdbc.queryForMap("select * from post_image_cleanup where cleanup_id=?", failure.job()));
+        assertArrayEquals(failure.bytes(), Files.readAllBytes(path(failure.url())));
+    }
+
+    @Test void waitingWorkerRechecksDeadlineCommittedByFailedPredecessor() throws Exception {
+        var failure = failCleanup();
+        jdbc.update("update post_image_cleanup set attempts=0, next_attempt_at=? where cleanup_id=?",
+                LocalDateTime.now().minusMinutes(2), failure.job());
+        byte[] blocker = Files.readAllBytes(path(failure.url()).resolve("blocker"));
+        CountDownLatch firstDeleting = new CountDownLatch(1), releaseFirst = new CountDownLatch(1);
+        CountDownLatch secondAcquired = new CountDownLatch(1);
+        AtomicReference<Map<String, Object>> firstCommitted = new AtomicReference<>();
+        var gatedStorage = new PostImageStorage(directory.toString()) {
+            @Override public void delete(String filename) throws IOException {
+                firstDeleting.countDown();
+                try { assertTrue(releaseFirst.await(15, TimeUnit.SECONDS)); }
+                catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new AssertionError(e); }
+                super.delete(filename); // The real nonregular target still causes IOException.
+            }
+        };
+        var firstWorker = new PostImageCleanupWorker(jobs, images, gatedStorage, manager);
+        // Observe the real repository's return after its database lock wait; do not mock the row read.
+        var factory = new ProxyFactory();
+        factory.setInterfaces(PostImageCleanupRepository.class); factory.setTarget(jobs);
+        factory.addAdvice((MethodInterceptor) invocation -> {
+            Object result = invocation.proceed();
+            if (invocation.getMethod().getName().equals("findForUpdate")) {
+                firstCommitted.set(jdbc.queryForMap("select * from post_image_cleanup where cleanup_id=?", failure.job()));
+                secondAcquired.countDown();
+            }
+            return result;
+        });
+        var secondWorker = new PostImageCleanupWorker((PostImageCleanupRepository) factory.getProxy(), images, storage, manager);
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var first = executor.submit(() -> firstWorker.process(failure.job()));
+            Future<?> second = null;
+            try {
+                assertTrue(firstDeleting.await(5, TimeUnit.SECONDS));
+                second = executor.submit(() -> secondWorker.process(failure.job()));
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+                while (jdbc.queryForObject("select count(*) from information_schema.sessions where blocker_id is not null", Integer.class) == 0) {
+                    if (second.isDone()) { second.get(); fail("Expected a real H2 row-lock wait"); }
+                    assertTrue(System.nanoTime() < deadline, "No H2 row-lock wait observed");
+                    Thread.yield();
+                }
+                assertFalse(second.isDone());
+            } finally { releaseFirst.countDown(); }
+            first.get(10, TimeUnit.SECONDS);
+            if (second != null) second.get(10, TimeUnit.SECONDS);
+            assertTrue(secondAcquired.await(1, TimeUnit.SECONDS), "Waiter must actually acquire the lock, not time out");
+        }
+        assertNotNull(firstCommitted.get());
+        assertEquals(1, ((Number) firstCommitted.get().get("ATTEMPTS")).intValue());
+        assertEquals(firstCommitted.get(), jdbc.queryForMap("select * from post_image_cleanup where cleanup_id=?", failure.job()));
+        assertEquals(1, jobs.findById(failure.job()).orElseThrow().getAttempts());
+        assertTrue(Files.isDirectory(path(failure.url())));
+        assertArrayEquals(blocker, Files.readAllBytes(path(failure.url()).resolve("blocker")));
     }
 
     private static final class SimulatedProcessExit extends Error { }
