@@ -1,0 +1,523 @@
+{
+  "date": "2026-10-22",
+  "timezone": "Asia/Seoul",
+  "finalUniqueCases": 19,
+  "passed": 19,
+  "failed": 0,
+  "blocked": [
+    {
+      "name": "deployment-wss-tls-origin-reconnect",
+      "result": "BLOCKED",
+      "reason": "No deployment environment supplied"
+    }
+  ],
+  "httpRequests": 240,
+  "contractPathRequests": 238,
+  "initialInvalidToolPathRequests": 2,
+  "httpDistribution": [
+    {
+      "httpStatus": 200,
+      "errorCode": "",
+      "count": 181
+    },
+    {
+      "httpStatus": 404,
+      "errorCode": "",
+      "count": 9
+    },
+    {
+      "httpStatus": 400,
+      "errorCode": "VALIDATION_ERROR",
+      "count": 22
+    },
+    {
+      "httpStatus": 413,
+      "errorCode": "INVALID_REQUEST",
+      "count": 1
+    },
+    {
+      "httpStatus": 400,
+      "errorCode": "INVALID_REQUEST",
+      "count": 10
+    },
+    {
+      "httpStatus": 403,
+      "errorCode": "FORBIDDEN",
+      "count": 12
+    },
+    {
+      "httpStatus": 401,
+      "errorCode": "UNAUTHORIZED",
+      "count": 5
+    }
+  ],
+  "singleJvm": true,
+  "jarSha256": "19f69e2a0533b5fbc022e940b0ffea51acd1e37e076dc4c886125dd315168077",
+  "sourceHashes": {
+    "backend/tools/ccra-stage5-http/Stage5Http.java": "9d57dc664147a3e8e0a02c1db7fa2fe9a07a15cf31921910a12ec43359041f2d",
+    "backend/tools/ccra-stage5-http/run.ps1": "2a87fb0899c63a8001d8efed166dc4c57f91be496f15787da187d5fabb56720c"
+  },
+  "runs": [
+    {
+      "id": "run-9099e664a657468d9a40766501667590",
+      "summary": {
+        "executed": 19,
+        "passed": 15,
+        "failed": 4,
+        "blocked": 1,
+        "httpRequests": 188,
+        "singleJvm": true,
+        "oldCcraCasesExecuted": 0,
+        "worker13SuiteExecuted": 0,
+        "serversStopped": true,
+        "finishedUtc": "2026-10-22T08:46:13.068950400Z"
+      },
+      "environment": [
+        {
+          "version": "8.0.46",
+          "db": "kkiriccra59099e664a657",
+          "uuid": "e534ea34-cdf4-11f1-bc45-0e4c4e6a2206",
+          "hostname": "kkiri-ccra5",
+          "isolationLevel": "REPEATABLE-READ",
+          "zone": "+00:00"
+        }
+      ]
+    },
+    {
+      "id": "run-9099e664a657468d9a40766501667590-retry1",
+      "summary": {
+        "executed": 4,
+        "passed": 4,
+        "failed": 0,
+        "blocked": 1,
+        "httpRequests": 52,
+        "singleJvm": true,
+        "oldCcraCasesExecuted": 0,
+        "worker13SuiteExecuted": 0,
+        "serversStopped": true,
+        "finishedUtc": "2026-10-22T08:51:09.585228400Z"
+      },
+      "environment": [
+        {
+          "version": "8.0.46",
+          "db": "kkiriccra59099e664a657",
+          "uuid": "9fff1f78-cdf5-11f1-9681-2e53d446981c",
+          "hostname": "kkiri-ccra5",
+          "isolationLevel": "REPEATABLE-READ",
+          "zone": "+00:00"
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "name": "image-multipart-create-get-update-order",
+      "expected": "real PNG bytes; keep ID permutation preserves existing order; new files append",
+      "actual": {
+        "orderPolicy": "existing order retained; requested ID order is not a reorder API",
+        "original": [
+          {
+            "post_image_id": 1,
+            "image_url": "/api/post-images/2fa4a3c6-9f5e-4187-abe1-d4be53e22cab.png",
+            "sort_order": 0
+          },
+          {
+            "post_image_id": 2,
+            "image_url": "/api/post-images/846fdec7-39f5-43d4-8411-23e663938b0c.png",
+            "sort_order": 1
+          }
+        ],
+        "post": 1,
+        "after": [
+          {
+            "post_image_id": 2,
+            "image_url": "/api/post-images/846fdec7-39f5-43d4-8411-23e663938b0c.png",
+            "sort_order": 0
+          },
+          {
+            "post_image_id": 3,
+            "image_url": "/api/post-images/c060987f-6c2a-49f3-b10d-0643685f7b50.png",
+            "sort_order": 1
+          }
+        ]
+      },
+      "result": "PASS",
+      "elapsedMillis": 2296,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "image-remove-omitted",
+      "expected": "omitted/null/[] all remove links; old URL 404; committed unreferenced file deleted",
+      "actual": {
+        "unrelatedFileRetained": true,
+        "fileExists": false,
+        "post": 2,
+        "url": "/api/post-images/118f33f7-2e02-47dc-a1d3-c0057a07a4b6.png"
+      },
+      "result": "PASS",
+      "elapsedMillis": 475,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "image-remove-null",
+      "expected": "omitted/null/[] all remove links; old URL 404; committed unreferenced file deleted",
+      "actual": {
+        "unrelatedFileRetained": true,
+        "fileExists": false,
+        "post": 3,
+        "url": "/api/post-images/487bd01c-af22-4fa0-96d5-19ae3dd4673f.png"
+      },
+      "result": "PASS",
+      "elapsedMillis": 502,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "image-remove-empty",
+      "expected": "omitted/null/[] all remove links; old URL 404; committed unreferenced file deleted",
+      "actual": {
+        "unrelatedFileRetained": true,
+        "fileExists": false,
+        "post": 4,
+        "url": "/api/post-images/c2f118a2-2d36-4558-b519-b7cc3a60da15.png"
+      },
+      "result": "PASS",
+      "elapsedMillis": 463,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "image-count-and-byte-limits",
+      "expected": "5 files and exact 5MiB accepted; 6/5MiB+1/zero/disallowed MIME rejected without rows/files",
+      "actual": {
+        "fiveImagePost": 5,
+        "exact5MiBPost": 6,
+        "invalidCreateRequests": 4,
+        "invalidCombinedUpdate": 1
+      },
+      "result": "PASS",
+      "elapsedMillis": 1441,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "image-foreign-and-duplicate-ids-atomic",
+      "expected": "foreign post image and duplicate IDs reject INVALID_REQUEST with all text/links/files preserved",
+      "actual": {
+        "preserved": [
+          {
+            "post_image_id": 13,
+            "image_url": "/api/post-images/191a46df-b22d-4a63-80b4-13b87fb99548.png",
+            "sort_order": 0
+          }
+        ],
+        "foreignPost": 8,
+        "post": 7
+      },
+      "result": "PASS",
+      "elapsedMillis": 881,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "anonymity-change-atomic-false",
+      "expected": "opposite anonymous value rejects whole multipart; omitted/null/same retain state",
+      "actual": {
+        "post": 9,
+        "rejectedRequestPreserved": true,
+        "originalAnonymous": false
+      },
+      "result": "PASS",
+      "elapsedMillis": 1249,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "anonymity-change-atomic-true",
+      "expected": "opposite anonymous value rejects whole multipart; omitted/null/same retain state",
+      "actual": {
+        "post": 10,
+        "rejectedRequestPreserved": true,
+        "originalAnonymous": true
+      },
+      "result": "PASS",
+      "elapsedMillis": 1177,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "chat-room-list-detail-filter-sort-page",
+      "expected": "category/search/literal wildcards/counts/pinned then message time then room ID; paged union exact",
+      "actual": {
+        "orderedRooms": [
+          1,
+          2,
+          3
+        ],
+        "viewer": 5,
+        "counts": {
+          "all": 3,
+          "roommate": 2,
+          "community": 1,
+          "pinned": 1
+        }
+      },
+      "result": "PASS",
+      "elapsedMillis": 2119,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "chat-before-after-cursors-no-loss-duplicate",
+      "expected": "actual STOMP fixtures; before DESC and after ASC unions equal independently queried committed rows",
+      "actual": {
+        "beforeIds": [
+          9,
+          8,
+          7,
+          6,
+          5,
+          4,
+          3,
+          2
+        ],
+        "insertedDuringPagination": 10,
+        "afterIds": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "room": 4
+      },
+      "result": "PASS",
+      "elapsedMillis": 2589,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "chat-read-status-readonly-permissions",
+      "expected": "deduplicated receipt-only response; GET/receipt do not mark read; outsider/admin/foreign IDs denied atomically",
+      "actual": {
+        "message": 1,
+        "queryPreservedState": true,
+        "receiptAfterRead": [
+          {
+            "id": 1,
+            "read": true
+          }
+        ],
+        "room": 1
+      },
+      "result": "PASS",
+      "elapsedMillis": 2534,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590-retry1"
+    },
+    {
+      "name": "anonymous-post-chat-list-detail-search-messages",
+      "expected": "post author masked, counterpart masked across creation/list/detail; real nickname cannot search; senderId null",
+      "actual": {
+        "post": 12,
+        "message": 14,
+        "anonymousAfterSourceDelete": true,
+        "room": 8
+      },
+      "result": "PASS",
+      "elapsedMillis": 1054,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "admin-direct-post-delete-image-public-denial",
+      "expected": "direct DELETE; guest/user denied; descendants deleted; links/files retained; public detail denied; no invented report audit",
+      "actual": {
+        "retainedImageLinks": [
+          {
+            "post_image_id": 18,
+            "image_url": "/api/post-images/ca91e1d2-b77b-468a-911f-613acf8f0fe0.png",
+            "sort_order": 0
+          }
+        ],
+        "post": 13,
+        "auditLimitation": "Direct deletion has no actor/deletedAt/reason audit record in existing schema; report audit unchanged",
+        "retainedContent": [
+          {
+            "post_id": 13,
+            "author_id": 3,
+            "title": "stage5 5a98110c-8eb8-4936-a256-b3b78b2413c2",
+            "content": "stage5 body",
+            "status": "DELETED",
+            "created_at": "2026-10-22T08:46:03",
+            "updated_at": "2026-10-22T08:46:03"
+          }
+        ]
+      },
+      "result": "PASS",
+      "elapsedMillis": 703,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "admin-direct-comment-delete-public-thread",
+      "expected": "direct comment DELETE cascades replies, preserves sibling/post/image; content retained without report audit",
+      "actual": {
+        "retained": [
+          {
+            "comment_id": 3,
+            "content": "direct target",
+            "status": "DELETED"
+          },
+          {
+            "comment_id": 4,
+            "content": "reply",
+            "status": "DELETED"
+          },
+          {
+            "comment_id": 5,
+            "content": "surviving sibling",
+            "status": "ACTIVE"
+          }
+        ],
+        "removedComment": 3,
+        "removedReply": 4,
+        "auditLimitation": "No separate direct-delete actor/time/reason audit",
+        "post": 14
+      },
+      "result": "PASS",
+      "elapsedMillis": 607,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "post-and-my-activity-list-contract",
+      "expected": "page shape/filter/latest/views/likes and own posts/comments; mine and image indicators",
+      "actual": {
+        "post": 1,
+        "comments": [
+          1,
+          2
+        ]
+      },
+      "result": "PASS",
+      "elapsedMillis": 1887,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590-retry1"
+    },
+    {
+      "name": "post-unlike-and-comment-like-state",
+      "expected": "cancel post like and add/cancel comment like; detail/list follow committed rows",
+      "actual": {
+        "comment": 3,
+        "post": 4,
+        "postLikeRows": 0,
+        "commentLikeRows": 0
+      },
+      "result": "PASS",
+      "elapsedMillis": 717,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590-retry1"
+    },
+    {
+      "name": "report-other-reason-boundaries",
+      "expected": "기타 null/empty/blank/501 rejected; nonblank/500 UTF16 accepted exactly; no invalid rows",
+      "actual": {
+        "accepted": 4,
+        "rejected": 5
+      },
+      "result": "PASS",
+      "elapsedMillis": 938,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "user-report-delete-target-action-rollback",
+      "expected": "USER report DELETE_TARGET invalid; report/audit/user unchanged and admin detail still pending",
+      "actual": {
+        "comment_id": null,
+        "created_at": "2026-10-22T08:46:07",
+        "post_id": null,
+        "processed_at": null,
+        "processed_by": null,
+        "report_id": 5,
+        "reporter_id": 1,
+        "target_user_id": 26,
+        "resolution_action": null,
+        "reason": "욕설·비방",
+        "description": null,
+        "report_type": "USER",
+        "status": "PENDING"
+      },
+      "result": "PASS",
+      "elapsedMillis": 254,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590"
+    },
+    {
+      "name": "chat-stomp-text-boundaries",
+      "expected": "2000 Unicode codepoints ASCII/emoji accepted intact; null/blank/2001 complete real handler without DB row; frame behavior recorded",
+      "actual": {
+        "validMessages": 2,
+        "storedLengths": [
+          {
+            "codePoints": 2000
+          },
+          {
+            "codePoints": 2000
+          },
+          {
+            "codePoints": 20
+          },
+          {
+            "codePoints": 20
+          },
+          {
+            "codePoints": 20
+          },
+          {
+            "codePoints": 20
+          },
+          {
+            "codePoints": 20
+          }
+        ],
+        "room": 3,
+        "invalidMessages": 5
+      },
+      "result": "PASS",
+      "elapsedMillis": 2947,
+      "evidenceRun": "run-9099e664a657468d9a40766501667590-retry1"
+    }
+  ],
+  "toolCorrections": [
+    "JDBC BOOLEAN must not be cast to Number",
+    "Removed nonexistent /api/users/me/liked-posts calls; actual contract is own posts/comments and public detail/list",
+    "No guaranteed STOMP ERROR frame: observed actual handler completion, zero invalid rows, and valid continuation",
+    "PowerShell Attempt/readiness-loop case-insensitive variable collision; zero HTTP/JDBC and owned container removed"
+  ],
+  "cleanup": [
+    {
+      "protectedResourcesChanged": false,
+      "containerId": "f795e93e1f5cca22ec05a2dedeb0a99657c734d2e3f3a906e080cc635eb62473",
+      "removed": true,
+      "owner": "9099e664a657468d9a40766501667590",
+      "imagesAndEvidenceRetained": true
+    },
+    {
+      "protectedResourcesChanged": false,
+      "containerId": "8acf2b71bc78e4c486c5359c7980ab7c62359585a6647aefa747b936eac7dbe7",
+      "removed": true,
+      "owner": "9099e664a657468d9a40766501667590",
+      "imagesAndEvidenceRetained": true
+    },
+    {
+      "protectedResourcesChanged": false,
+      "containerId": "d99c31002c85a00eec83eb684f419979fa3c6b112498e86f4a031433eb00296f",
+      "removed": true,
+      "owner": "9099e664a657468d9a40766501667590",
+      "imagesAndEvidenceRetained": true
+    }
+  ],
+  "notRun": [
+    "Existing CCRA 24 cases / 162 HTTP replay",
+    "Image Worker MySQL 13-case suite replay",
+    "Existing basic bidirectional WebSocket suite",
+    "Full H2 tests and unrelated domains"
+  ],
+  "limitations": [
+    "Direct admin deletion has no separate actor/time/reason audit; retained content/status checked",
+    "Invalid STOMP input: NO_ERROR_FRAME; no new error-frame contract inferred",
+    "Cursor validation is not a multi-request snapshot or all delayed-commit cases",
+    "Raw evidence retained under ignored backend/build/ccra-stage5-http"
+  ],
+  "productionCodeChanged": false,
+  "protectedResourcesChanged": false
+}
