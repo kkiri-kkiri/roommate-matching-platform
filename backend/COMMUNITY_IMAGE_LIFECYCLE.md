@@ -14,6 +14,8 @@
 
 개별 제거는 기존 계정 → 게시글 → 이미지 행 잠금을 유지하며, 연결 제거와 정리 작업을 함께 커밋한다.
 그 뒤 별도 READ COMMITTED 트랜잭션에서 작업 행만 잠그고 모든 POST_IMAGE 참조를 확인한다.
+작업 행 잠금 획득 후 최신 nextAttemptAt을 다시 확인한다. 아직 기한 전이면 attempts·시각·작업 행·파일을
+변경하지 않고 종료한다. 배치가 조회한 ID는 잠금 대기 중 다른 Worker에 의해 연기될 수 있다.
 DELETED 부모의 참조도 보존 대상으로 취급한다. 참조가 있으면 파일은 보존하고 작업만 종료한다.
 공개 API는 기존 URL을 새 게시글에 연결할 수 없고 신규 업로드는 UUID + CREATE_NEW를 사용한다.
 다른 파일을 덮어쓰거나 파일명 충돌 실패 후 기존 파일을 삭제하지 않는다.
@@ -139,3 +141,38 @@ Gradle이 H2 메모리 DB, test 프로필, 임시 이미지 기본 루트와 스
 과거 고아 파일/업로드 중 강제 종료 잔존 파일의 보존·정리 대상은 별도 검토 사항이며 자동 삭제하지 않는다.
 기존 캐시의 사본은 소급 회수하지 못하므로 CDN 무효화와 구버전 공개 경로 제거가 배포 전 필수다.
 운영/공유 DB에 DDL이나 정리 배치를 실행하지 않았으며 브랜치 변경·커밋·푸시·PR 생성도 하지 않았다.
+
+## 2026-10-22 재시도 기한 동시성 보완
+
+앞선 독립 MySQL 8.0.46 실행 `run-f071fc2e5b404cf6a72acc2540fc54eb`은 13개 중
+12 PASS / 1 FINDING / 0 FAIL이었다. `deferred-deadline-after-lock`에서 두 Worker가 같은
+기한 도래 ID를 선택하고 실제 InnoDB 잠금을 대기한 뒤 attempts가 0→2로 증가했다.
+원본 결과는 `build/image-cleanup-mysql-validation/`의 해당 run에 보존한다.
+이 결과를 수정 후 통과 결과로 바꾸지 않는다.
+
+Worker는 REQUIRES_NEW/READ_COMMITTED를 유지하며 `findForUpdate`가 반환한 최신 Entity에 대해
+`nextAttemptAt <= LocalDateTime.now()`를 검사한다. 현재 시각은 잠금 획득 후 평가하며,
+미도래 작업은 참조 조회나 파일 삭제를 시작하기 전에 변경 없이 반환한다.
+Repository의 배치 선택·행 잠금과 Service의 실제 afterCommit 호출은 유지한다.
+
+생성·배치 조회·실패 재예약과 같은 JVM 로컬 시간 영역에서 비교한다. UTC JDBC/DB 세션의
+원시 DATETIME을 애플리케이션 벽시계나 DB NOW()와 직접 비교하거나 시간대 정책을 바꾸지 않는다.
+새 작업의 createdAt/초기 nextAttemptAt만 MySQL DATETIME(0)에 맞춰 초 단위로 절삭하여
+소수 초 반올림으로 즉시 처리할 작업이 미래로 밀리는 것을 피한다.
+기존 행의 기한과 실패 시 1분 뒤 재예약은 보존한다. 읽은 기한에 허용 오차를 주지 않으며,
+동일 시각은 처리 가능하고 1ns라도 이르면 처리하지 않는다. DB/API 스키마와 마이그레이션은 변경하지 않는다.
+
+회귀는 기존 H2 수명주기 테스트에 추가했다. 미래 기한의 작업·복구된 파일이 그대로 남는지,
+첫 Worker의 실제 파일 삭제 실패와 두 번째 Worker의 실제 H2 잠금 대기를 거친 뒤 attempts가
+1회만 증가하고 선행 커밋 행·파일 상태가 유지되는지 확인한다.
+잠금 timeout을 조기 종료 성공으로 오인하지 않도록 후행 Repository의 실제 잠금 획득도 관찰한다.
+Entity 단위 테스트는 새 작업의 초 정밀도와 정확한 기한/1ns 경계를 확인한다.
+
+수정 전 새 통합 테스트 2개 모두 실패했고, 수정 후 관련 69개(수명주기 48, HTTP 5,
+Storage 14, Entity 2)가 통과했다. H2 근거는
+`build/image-cleanup-deadline-regression/before-fix.xml`, `after-fix.xml`에 보존한다.
+최종 `gradlew.bat test bootJar`도 성공했다. JUnit XML 기준 83개 suite / 1,436개 테스트,
+실패·오류·스킵 0이며 계약 검사(73 endpoints / 75 record DTOs / 30 entities)도 통과했다.
+새 JAR로 MySQL 도구 `-PrepareOnly`의 컴파일·정의 검사만 수행했고 JDBC 접속/실제 시나리오는 0건이다.
+새 JAR SHA-256은 `19F69E2A0533B5FBC022E940B0FFEA51ACD1E37E076DC4C886125DD315168077`이다.
+이 변경에서 실제 MySQL 시나리오는 재실행하지 않았으며, 실제 InnoDB 수정 후 통과는 아직 미검증이다.

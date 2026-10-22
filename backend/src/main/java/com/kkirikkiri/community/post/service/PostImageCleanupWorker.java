@@ -1,6 +1,7 @@
 package com.kkirikkiri.community.post.service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -28,6 +29,9 @@ public class PostImageCleanupWorker {
     public void process(Long id) {
         try {
             transaction.executeWithoutResult(status -> jobs.findForUpdate(id).ifPresent(job -> {
+                // A batch may have selected this ID before another worker postponed it.
+                // Compare the latest locked value in the same application time domain as enqueue/retryPending.
+                if (!job.isDue(LocalDateTime.now())) return;
                 // Includes references retained by DELETED posts. Never lock account/post rows here.
                 // Public write paths cannot attach an existing URL; new uploads use CREATE_NEW UUIDs.
                 if (images.existsByImageUrl(job.getImageUrl())) {
