@@ -1,0 +1,412 @@
+{
+  "date": "2026-10-22",
+  "timezone": "Asia/Seoul",
+  "status": "AWAITING_RESOURCE_APPROVAL",
+  "actual": {
+    "tcpHttpRequests": 0,
+    "jdbcConnections": 0,
+    "passed": 0,
+    "failed": 0,
+    "notRun": 29,
+    "p0": 17,
+    "p1": 12
+  },
+  "priorCalendar31": {
+    "status": "INSUFFICIENT_EVIDENCE",
+    "source": "backend/tools/calendar-mysql-multi-instance/CalendarMultiInstance.java",
+    "sourceSha256": "74544b0aaa17a8a1038954e44c04d89de77643147f666899a422523b4f08060f",
+    "sourceScenarioCount": 31,
+    "originalNames": [
+      "http-authentication-admin-permissions",
+      "http-cross-server-crud",
+      "http-private-ownership",
+      "http-system-category-protection",
+      "http-invalid-requests-and-batch-rollback",
+      "http-nullable-times-midnight-and-period",
+      "http-same-name-cross-instance-category",
+      "http-first-settings-cross-instance",
+      "http-rename-before-create-recheck",
+      "http-settings-before-create-recheck",
+      "http-rename-settings-contention",
+      "http-event-before-category-delete",
+      "http-category-delete-before-event",
+      "http-different-user-parallel-progress",
+      "http-collation-versus-java-name-policy",
+      "http-lock-timeout-1205-rollback-retry",
+      "http-forced-reverse-order-deadlock-1213",
+      "http-pool-exhaustion-401-versus-500-recovery",
+      "scheduler-both-jvms-dedup-public-http",
+      "scheduler-uncommitted-events-history-invisible",
+      "scheduler-storage-failure-rollback-history-retry",
+      "scheduler-local-http-503-failure-history",
+      "scheduler-local-http-production-30s-timeout",
+      "scheduler-older-failure-newer-success-admin-http",
+      "scheduler-school-lock-timeout-history-retry",
+      "http-raw-datetime-admin-cross-zones",
+      "http-server-stop-restart-shared-persistence",
+      "http-post-commit-response-loss-client-retry",
+      "http-owned-jdbc-disconnect-before-commit",
+      "scheduler-forced-jvm-stop-running-manual-review",
+      "http-repeated-requests-resource-return"
+    ],
+    "passEvidenceFound": false,
+    "passBasedExclusions": [],
+    "note": "An executable and prior H2 reports do not establish actual TCP/MySQL PASS. No prior DB accessed."
+  },
+  "priorMatching": {
+    "status": "INSUFFICIENT_EVIDENCE",
+    "report": "backend/MATCHING_VALIDATION.md",
+    "reportSha256": "6b7e993372e9587153aa9184512697ecbc537b84f11a91d17de6966db27a2ef7",
+    "passEvidenceFound": false
+  },
+  "evidenceSearch": {
+    "roots": [
+      "backend/build",
+      "backend/tools",
+      "tmp"
+    ],
+    "names": [
+      "summary.json",
+      "cases.json",
+      "requests.json",
+      "evidence.json"
+    ],
+    "matchingCalendarCandidates": [],
+    "excludedDirectories": [
+      ".git",
+      "node_modules",
+      ".gradle",
+      "bin",
+      "classes",
+      "reports",
+      "test-results",
+      "resources",
+      "static",
+      "lib",
+      "main",
+      "generated"
+    ],
+    "limitations": "Local workspace only; no remote machines, removed files or existing databases searched."
+  },
+  "resources": {
+    "created": false,
+    "approvalRequired": true,
+    "container": "kkiri-mc-http5-mysql-20261022",
+    "volume": "kkiri-mc-http5-data-20261022",
+    "database": "kkirimc5http20261022",
+    "account": "mc5http20261022@%",
+    "mysql": "127.0.0.1:13348",
+    "http": [
+      "127.0.0.1:18095",
+      "127.0.0.1:18096"
+    ],
+    "image": "mysql:8.0.46-oraclelinux9",
+    "expectedImageId": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+    "collisionChecks": "PENDING: Docker engine unavailable; must succeed immediately before creation",
+    "cleanup": "After owned JVM termination only DELETE synthetic rows in NEW schema; retain container/volume/DB/account/tables. No DROP/TRUNCATE/resource deletion."
+  },
+  "preflight": {
+    "stage": "engine",
+    "reason": "Docker read-only query unavailable; no engine startup or resource mutation attempted",
+    "readOnly": true,
+    "dbConnections": 0,
+    "status": "BLOCKED",
+    "checkedAtUtc": "2026-10-22T13:57:49.3585561Z",
+    "httpRequests": 0,
+    "endpoint": "npipe:////./pipe/dockerDesktopLinuxEngine"
+  },
+  "preparation": {
+    "jarSha256": "19F69E2A0533B5FBC022E940B0FFEA51ACD1E37E076DC4C886125DD315168077",
+    "matching": [
+      "recommended-59-60-order-page",
+      "recommended-compound-filter",
+      "rank-nine-no-backfill",
+      "filtered-pagination",
+      "weights-refresh-recommend-detail",
+      "ai-local-score-consistency",
+      "ai-local-malformed-recovery",
+      "ai-local-upstream-error",
+      "query-repeated-comma",
+      "query-blank-too-long",
+      "unsupported-sort",
+      "no-preference-score-null",
+      "all-indifferent-score-null",
+      "rounding-boundaries"
+    ],
+    "compiledAtUtc": "2026-10-22T13:58:22.7521659Z",
+    "calendar": [
+      "http-cross-server-crud",
+      "http-private-ownership",
+      "http-system-category-protection",
+      "category-read-patch-delete",
+      "foreign-category-mutations",
+      "collected-event-protection",
+      "public-private-visibility",
+      "period-overlap-category-filter",
+      "local-crawl-public-admin-link",
+      "create-date-time-boundaries",
+      "patch-null-merge",
+      "patch-merged-range-rollback",
+      "patch-description-empty",
+      "category-null-merge",
+      "query-date-boundaries"
+    ],
+    "httpRequests": 0,
+    "dbConnections": 0
+  },
+  "blocked": [
+    {
+      "id": "infrastructure",
+      "status": "BLOCKED",
+      "reason": "Local Docker Linux engine pipe unavailable; no fresh MySQL target and no resource creation approval yet."
+    },
+    {
+      "id": "external-ai-gateway",
+      "status": "BLOCKED",
+      "reason": "No approved test endpoint, credentials or cost scope supplied. Loopback client contract cases are separate."
+    },
+    {
+      "id": "real-school-crawl",
+      "status": "BLOCKED",
+      "reason": "No approved external school crawl environment supplied. Calendar fixture uses repository HTML served only on 127.0.0.1."
+    }
+  ],
+  "exclusions": [
+    {
+      "scope": "Existing general roommate listing, profile-like races and basic calendar creation",
+      "reason": "Explicit user scope exclusion; fixtures can create calendars, but creation is not counted as a new scenario. No unsupported prior PASS claim."
+    },
+    {
+      "scope": "Remaining original Calendar scenarios",
+      "reason": "Execute only the three reused functional contracts and new missing cases; do not rerun all 31 concurrency, restart, timeout and forced process/connection failure cases."
+    },
+    {
+      "scope": "Auth/Survey expiry and input boundaries; other-domain full suites",
+      "reason": "Explicit user scope exclusion. Valid survey PUTs arrange scoring fixtures only."
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "recommended-59-60-order-page",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "recommended-compound-filter",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "rank-nine-no-backfill",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "filtered-pagination",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "weights-refresh-recommend-detail",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "ai-local-score-consistency",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "ai-local-malformed-recovery",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "ai-local-upstream-error",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "query-repeated-comma",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "query-blank-too-long",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "unsupported-sort",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "no-preference-score-null",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "all-indifferent-score-null",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "rounding-boundaries",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "http-cross-server-crud",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "http-private-ownership",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "http-system-category-protection",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "category-read-patch-delete",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "foreign-category-mutations",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "collected-event-protection",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "public-private-visibility",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "period-overlap-category-filter",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "local-crawl-public-admin-link",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "create-date-time-boundaries",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "patch-null-merge",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "patch-merged-range-rollback",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "patch-description-empty",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "category-null-merge",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "query-date-boundaries",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "NOT RUN"
+    }
+  ],
+  "confirmedServiceDefects": [],
+  "serviceDefectConclusion": "NOT ASSESSED by runtime; static preparation cannot establish absence of defects.",
+  "sources": [
+    {
+      "path": "backend/tools/matching-calendar-http5/CalendarHttp5.java",
+      "sha256": "bdce566487933b5413e86a528febdb1fe5aaa749f1b1d6df9d99096913ce8184"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/MatchingHttp5.java",
+      "sha256": "4ee89518d0f9416e83eb9e43c14fa1c03b6a3316a4feb0b273ee6ff6de7891e5"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/RUNBOOK.md",
+      "sha256": "5f3103969c8594a9e52c1f8692d9fae6367665dc4f5e96298e18a41dd292b55d"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/preflight.ps1",
+      "sha256": "32344bcde20f1a8762d568db1873d1847b0792fb5ca8dd298c494078452051c4"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/prepare.cjs",
+      "sha256": "5509d879fff26a7c7a07517250b8bf224bff8c77a518a84ff87396a303b30dc1"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/provision.ps1",
+      "sha256": "a92de22a81dd6fb9ec428b51fff4435cb05d72596a3eff03c633100e91780068"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/review.cjs",
+      "sha256": "695c1a1e0239df2f7ef6923db63e66171a59aa47995dc0883343e9a611e46f91"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/run.ps1",
+      "sha256": "36a14634944c9d53df5e0a865e0404d1a9a80b0dfca620f1153e7b0f91b5f669"
+    }
+  ],
+  "commitFiles": [
+    "backend/tools/matching-calendar-http5/CalendarHttp5.java",
+    "backend/tools/matching-calendar-http5/MatchingHttp5.java",
+    "backend/tools/matching-calendar-http5/RUNBOOK.md",
+    "backend/tools/matching-calendar-http5/preflight.ps1",
+    "backend/tools/matching-calendar-http5/prepare.cjs",
+    "backend/tools/matching-calendar-http5/provision.ps1",
+    "backend/tools/matching-calendar-http5/review.cjs",
+    "backend/tools/matching-calendar-http5/run.ps1",
+    "backend/MATCHING_CALENDAR_HTTP5_VALIDATION.md",
+    "backend/validation/matching-calendar-http5-plan-20261022.json"
+  ]
+}
