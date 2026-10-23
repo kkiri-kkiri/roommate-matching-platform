@@ -1,0 +1,413 @@
+{
+  "scope": "Auth/User/Survey P1 B10-B15 only",
+  "baseCommit": "f5186d7",
+  "qualification": "First run was interrupted before reporter onEnd. Sixteen cases retain final body assertions/notes and successful fixture cleanup, but have no native Playwright status. They are never rewritten as native PASS. Logical PASS uses those recovered assertions and subsequent native results.",
+  "scenarios": [
+    {
+      "id": "B10",
+      "status": "PASS",
+      "tests": 4,
+      "nativePass": 2,
+      "recoveredAssertionsCompleted": 2
+    },
+    {
+      "id": "B11",
+      "status": "PASS",
+      "tests": 5,
+      "nativePass": 0,
+      "recoveredAssertionsCompleted": 5
+    },
+    {
+      "id": "B12",
+      "status": "PASS",
+      "tests": 4,
+      "nativePass": 0,
+      "recoveredAssertionsCompleted": 4
+    },
+    {
+      "id": "B13",
+      "status": "PASS",
+      "tests": 2,
+      "nativePass": 1,
+      "recoveredAssertionsCompleted": 1
+    },
+    {
+      "id": "B14",
+      "status": "PASS",
+      "tests": 6,
+      "nativePass": 2,
+      "recoveredAssertionsCompleted": 4
+    },
+    {
+      "id": "B15",
+      "status": "PASS",
+      "tests": 2,
+      "nativePass": 2,
+      "recoveredAssertionsCompleted": 0
+    }
+  ],
+  "tests": [
+    {
+      "id": "B10-code-expiry-cooldown",
+      "evidenceStatus": "NATIVE_PASS",
+      "nativeReporterStatus": "passed",
+      "source": "9f5147ba9e76"
+    },
+    {
+      "id": "B10-duplicates",
+      "evidenceStatus": "NATIVE_PASS",
+      "nativeReporterStatus": "passed",
+      "source": "9f5147ba9e76"
+    },
+    {
+      "id": "B10-mysql-limit",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-d39c1dd94dd1e75f093e.json"
+    },
+    {
+      "id": "B10-wrong-code",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-4a0f0b9d552be837d844.json"
+    },
+    {
+      "id": "B11-change-password",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-d480a94e39c14586f726.json"
+    },
+    {
+      "id": "B11-introduction",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-10eb1c931401822fbf55.json"
+    },
+    {
+      "id": "B11-required",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-268e312fe2bc2181a2c3.json"
+    },
+    {
+      "id": "B11-reset-password",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-0cf3f61dc0796ff72d9d.json"
+    },
+    {
+      "id": "B11-signup-passwords",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-68deeec804402ec55afa.json"
+    },
+    {
+      "id": "B12-account-response-loss",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-200ad009c8c6481d8d26.json"
+    },
+    {
+      "id": "B12-mail-delay-failure",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-69a341798b0e071b268e.json"
+    },
+    {
+      "id": "B12-preference-save",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-1bc96bfaaa8f3dc674c5.json"
+    },
+    {
+      "id": "B12-profile-save",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-c7f997201ad05455ad40.json"
+    },
+    {
+      "id": "B13-preference-query",
+      "evidenceStatus": "NATIVE_PASS",
+      "nativeReporterStatus": "passed",
+      "source": "9f5147ba9e76"
+    },
+    {
+      "id": "B13-profile-query",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-54540b566a909d355972.json"
+    },
+    {
+      "id": "B14-late-get-401",
+      "evidenceStatus": "NATIVE_PASS",
+      "nativeReporterStatus": "passed",
+      "source": "9f5147ba9e76"
+    },
+    {
+      "id": "B14-late-get-success",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-7c510e0845e344a33bdf.json"
+    },
+    {
+      "id": "B14-late-patch-success",
+      "evidenceStatus": "NATIVE_PASS",
+      "nativeReporterStatus": "passed",
+      "source": "9f5147ba9e76"
+    },
+    {
+      "id": "B14-remember-email",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-a8689505ec6440fb62a9.json"
+    },
+    {
+      "id": "B14-tab-return",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-7b64ad67f1aaa35f617b.json"
+    },
+    {
+      "id": "B14-two-tabs-logout",
+      "evidenceStatus": "ASSERTIONS_COMPLETED",
+      "nativeReporterStatus": null,
+      "source": "9ce742e1e7dc",
+      "browserFile": "browser-23ef065edba452c455a1-01631e4e4c21df697bc5.json"
+    },
+    {
+      "id": "B15-invalid-expired-recovery",
+      "evidenceStatus": "NATIVE_PASS",
+      "nativeReporterStatus": "passed",
+      "source": "9f5147ba9e76"
+    },
+    {
+      "id": "B15-nonmember-inactive",
+      "evidenceStatus": "NATIVE_PASS",
+      "nativeReporterStatus": "passed",
+      "source": "9f5147ba9e76"
+    }
+  ],
+  "runs": [
+    {
+      "id": "9ce742e1e7dc",
+      "testsStartedByFixture": 20,
+      "browserTeardowns": 19,
+      "browserRequestStartsRecorded": 324,
+      "browserResponsesRecorded": 279,
+      "browserFailedRequestsRecorded": 34,
+      "serverHTTPObservations": 293,
+      "serverOptions": 0,
+      "browserTestTeardownsComplete": false,
+      "containerRemoved": true,
+      "fixtureTablesEmpty": true,
+      "ownedProcessesStopped": true,
+      "sha256": {
+        "browser-23ef065edba452c455a1-01631e4e4c21df697bc5.json": "d6167665acac70bc2c4f27cfa65928da36160c4c31a31f4f312cd846cc13d2a6",
+        "browser-23ef065edba452c455a1-0cf3f61dc0796ff72d9d.json": "1b5f3a96b1db304eed18bf991e2f8bec3d3475493521580a3d214ea09dbde485",
+        "browser-23ef065edba452c455a1-10eb1c931401822fbf55.json": "6287d4d319ace77b9bf9cf5617f1a04c6d787c12e82e8cc35bad3d9dcec3716b",
+        "browser-23ef065edba452c455a1-1bc96bfaaa8f3dc674c5.json": "b2f3b57e2caf41012f766b54beb684e17b36ce5a86a39cbda14b0bba4e535cf7",
+        "browser-23ef065edba452c455a1-200ad009c8c6481d8d26.json": "762e299e3c05f964bd0548f44cffa2d684df93b91403c37b88ea90b01235faa3",
+        "browser-23ef065edba452c455a1-268e312fe2bc2181a2c3.json": "9a09710cdfd04c16deac72b14c8de0086a3e387ce7d5cc147a0e15c9198c17e4",
+        "browser-23ef065edba452c455a1-49cddb2865532b9ec5d7.json": "0e7b143e9e33a6cd061f17813baca2ef7055ea517627d377f2c89c94e9460eca",
+        "browser-23ef065edba452c455a1-4a0f0b9d552be837d844.json": "fce93bf66e414663c435829da9b3554e21621e2ce36dfdd8a9539595b4a81b19",
+        "browser-23ef065edba452c455a1-54540b566a909d355972.json": "826d36460ed86843e76b1ed8600e50196173920612bfc196008959c227d90853",
+        "browser-23ef065edba452c455a1-554dc6be879b1cd99a24.json": "5b051f34fdb0efd8e4ea242452145780de9525c7c3b170496023d678db98b850",
+        "browser-23ef065edba452c455a1-68deeec804402ec55afa.json": "70c052565441c39bb2359a41cdea48455db0d9bb679337e9e2059303741e42c5",
+        "browser-23ef065edba452c455a1-69a341798b0e071b268e.json": "12149bb1e548faa95e9e24ebeef9804573630680f00bc3de243a7150b2dc67e9",
+        "browser-23ef065edba452c455a1-7b64ad67f1aaa35f617b.json": "ad2a84afffaa7bee2155173d26f6a7c99dd9b2bff47bf6e3a7c758095fd5c716",
+        "browser-23ef065edba452c455a1-7c510e0845e344a33bdf.json": "32fad1c793d121964dba7a784b1988f4eaec576d157f89d2adbbab27438796c1",
+        "browser-23ef065edba452c455a1-a8689505ec6440fb62a9.json": "64a7bb2813c2521a4dd65cfd92d5e24b59c30d5ce864c894b8d7bad807061ea5",
+        "browser-23ef065edba452c455a1-acc0879593922343f8cd.json": "8bd4238b8701bc481afaf68bc3d4ee62c58ed86ec2025c622333e5f01d60dc6a",
+        "browser-23ef065edba452c455a1-c7f997201ad05455ad40.json": "57edcf147d3f78b490b46795652e18d75a990e4700d3bee9e3c5194d8cd4e138",
+        "browser-23ef065edba452c455a1-d39c1dd94dd1e75f093e.json": "7b86be62acb45f693b4553bea027e5fbb9921745c81566544cef5be38b39da6f",
+        "browser-23ef065edba452c455a1-d480a94e39c14586f726.json": "f71b5b5a6b848ff714c8a497bf5e0457b97d2771f13cccb168252308787f9fa9",
+        "database-23ef065edba452c455a1-01631e4e4c21df697bc5.jsonl": "4270057dc153539d750d7db3e33e79102710d3ae15a569e09ef411ab6af9d3ae",
+        "database-23ef065edba452c455a1-0cf3f61dc0796ff72d9d.jsonl": "feb925dc189b5fbc605fd8b17cadb585418861e7e8419db33bf78e22a813262f",
+        "database-23ef065edba452c455a1-10eb1c931401822fbf55.jsonl": "a19086cd623fc0b2d56736ee1ef8d818a570bbf13b15e4d06210313f26daa7c9",
+        "database-23ef065edba452c455a1-1bc96bfaaa8f3dc674c5.jsonl": "76c9b0197d3ccadd304331867f88c957e7feeefc5ee05a426dbf25367c0fb35a",
+        "database-23ef065edba452c455a1-200ad009c8c6481d8d26.jsonl": "4163bfc9e49964e72e1c874d9a973602f551417fb44ba10d02d1fd8c3fbfb332",
+        "database-23ef065edba452c455a1-268e312fe2bc2181a2c3.jsonl": "44d9a60c799c4f4404dc1c13e156c74f27c33a3122901c7d95db6a95cf1c7de5",
+        "database-23ef065edba452c455a1-49cddb2865532b9ec5d7.jsonl": "f4a81da8fd03d870c383b6bd9805dad353ead903d7465e46182cec967b237116",
+        "database-23ef065edba452c455a1-4a0f0b9d552be837d844.jsonl": "d0222f595be75de23e1b45b4c7191c0606ccfb4e93588f01f627d0328d885d0d",
+        "database-23ef065edba452c455a1-54540b566a909d355972.jsonl": "905bc6ce0126a9ef2f081878b2859c56e5c759792b797ce11281717d5c662d4b",
+        "database-23ef065edba452c455a1-554dc6be879b1cd99a24.jsonl": "fbf28dd1fe686d61d324ccdeadbedee6a890a05c2f26b87d8be4dba6ad65f8df",
+        "database-23ef065edba452c455a1-5ad683bdd8c88d50b079.jsonl": "be5873fe60b2f2bbee11f42f986523e49cfd2a20db573608123ae9a0851386c2",
+        "database-23ef065edba452c455a1-68deeec804402ec55afa.jsonl": "65a2a85642a231454adcae07d160c1b32b374c204f5030cf4dc3a6c2aae3197e",
+        "database-23ef065edba452c455a1-69a341798b0e071b268e.jsonl": "444418f7cecbd9d095754356bdbf5058e891b42160e05e1999f8f96a3d66d5be",
+        "database-23ef065edba452c455a1-7b64ad67f1aaa35f617b.jsonl": "77a57535492b47050af5a8060e779e8ead454608327e6d3fb65eb76ccf58fbda",
+        "database-23ef065edba452c455a1-7c510e0845e344a33bdf.jsonl": "47c71308dc487f56fe8e2c6c019bc9a7a810340dcfdb282d655f2baeb494ffb7",
+        "database-23ef065edba452c455a1-a8689505ec6440fb62a9.jsonl": "85da1e9ab8c9fc1bc634ab11bb6fd6fe7bee10280e04028220fd5d8446493d5a",
+        "database-23ef065edba452c455a1-acc0879593922343f8cd.jsonl": "73454e52515d28795a90341394ee51c6ff9c74d5cc8b14a4ecf13030c32ec3aa",
+        "database-23ef065edba452c455a1-c7f997201ad05455ad40.jsonl": "d2e537d4e286391b51c56c934edef68a25e7916d1ba759a24c129f99060c5228",
+        "database-23ef065edba452c455a1-d39c1dd94dd1e75f093e.jsonl": "f79242d1d32f3519b3a1c6c35b765e03ffd7db4a878b8c397307f40f35f4c0e5",
+        "database-23ef065edba452c455a1-d480a94e39c14586f726.jsonl": "760a4e9297bfeeb172f8b0e956839c753594ef22861a50cc2fdbd6fe8cf64012",
+        "interruption-cleanup.json": "84d6fa23f5a4405413056d0ef34e35c8611e1a260f1764e6527787cd18102a78",
+        "interruption-recovery.json": "6c5fb3c11d8503e1aa24e7336b2a31c26def1870c4ed3273c32ad177dbe34c2e",
+        "interruption-resource-audit.json": "6de01600b72495d0345770bf3df2afabcd292b2ed24f7add22efe0b3b4736260",
+        "logs/MySQL-readiness.log": "bc3db46d117c927f9985f6f9ea64758f94dc816c6d8c690553f59b5bd3ca7bd5",
+        "p1-23ef065edba452c455a1-01631e4e4c21df697bc5.json": "2e843090085a53b382d68ee26805b2baf10fa77933d2ee6ef990ac30f84719b2",
+        "p1-23ef065edba452c455a1-0cf3f61dc0796ff72d9d.json": "695d3de2e3e85976f87c9726bbac42a122608d33f817525052b8fc50dbe216bd",
+        "p1-23ef065edba452c455a1-10eb1c931401822fbf55.json": "c14d43f5ed6202776df52432ea496d379629ac3f216e422a9e5b40eae4888d62",
+        "p1-23ef065edba452c455a1-1bc96bfaaa8f3dc674c5.json": "b7bbe16cc82d6c9b1fe814c372fb8c86de9881d93b2b67f24d57cbab0cbc091d",
+        "p1-23ef065edba452c455a1-200ad009c8c6481d8d26.json": "4316d54e80212894124ef660becac9f4e49ab1c3b641c204d666ea0be3299234",
+        "p1-23ef065edba452c455a1-268e312fe2bc2181a2c3.json": "434e6297d2a7c592be560dc06af51e5a294aab9dc3701148fb4a2c50b4c43270",
+        "p1-23ef065edba452c455a1-49cddb2865532b9ec5d7.json": "07b38f30d66132d83ed7e723bb00de02a9f8d28c1afc3bc1a1161145449d4c04",
+        "p1-23ef065edba452c455a1-4a0f0b9d552be837d844.json": "a92b66385d4182894cac4aabcbf9ce3fbaf3cf2d23dac6778b3415239239dcf7",
+        "p1-23ef065edba452c455a1-54540b566a909d355972.json": "6e005986de1ae5f90651f4dd3e0d11f1075e8e6841d58912b44c4f8236997eb3",
+        "p1-23ef065edba452c455a1-554dc6be879b1cd99a24.json": "90d686daa7e5a5b2c025da6da508091da24382ec0e6c5e887dbad00060550a3a",
+        "p1-23ef065edba452c455a1-68deeec804402ec55afa.json": "eb72928374d3218b081d968c7213fd1a68df63658224a1da9eae9b00d6070a76",
+        "p1-23ef065edba452c455a1-69a341798b0e071b268e.json": "a5127c5497594abe74c5dc30031bc7cefe4ee2dd4ba87ec798aa83205abcc7f7",
+        "p1-23ef065edba452c455a1-7b64ad67f1aaa35f617b.json": "e1387c417694dd1773adc2af975931f549bbb984da67b1dceeddd84a345320d1",
+        "p1-23ef065edba452c455a1-7c510e0845e344a33bdf.json": "59a3878cf49f08969ac02b6c54bb6be9a8c2a0e0eb4223a2778f2a2b6c7576d5",
+        "p1-23ef065edba452c455a1-a8689505ec6440fb62a9.json": "f424ece6ff55831d8e931251d3f85341fec387f7d6ab3396593fdc689ad51d89",
+        "p1-23ef065edba452c455a1-acc0879593922343f8cd.json": "9cb73537eb1f68f3e70bedb124372c1d6c36327a14b0b79d803526a432118451",
+        "p1-23ef065edba452c455a1-c7f997201ad05455ad40.json": "d11859057810d7bcf4a76325ba3ebdc9482df7205abc81c7b29f1affcf9f6910",
+        "p1-23ef065edba452c455a1-d39c1dd94dd1e75f093e.json": "5899793e47815de9259375cd07d94a73ed6d993266a8aade701692f1d0447a7c",
+        "p1-23ef065edba452c455a1-d480a94e39c14586f726.json": "7ebdcce5c24834ad381a2db493935da2af3646ce2b84e0e62bd0a276362a27d6",
+        "preflight.json": "f7814ea872bf1eb06e4e00924fb3b223dcd3eec1875c014d27019aa6a05c5b71",
+        "server-http.jsonl": "d53847352ce2ed1707775a0b0d27319dfa0e4c9e0ce077804af7f01652761eb8",
+        "source-before.json": "c1d2541843d7bdf646094cd3beb0f2e6c4d06ce73ce3e36083d08a20e7d2140e",
+        "test-selection.txt": "1a7924a3df5fbc9252ede5ed4ea26b80ffddb55220ec7bedee40857a3a96075a"
+      }
+    },
+    {
+      "id": "9f5147ba9e76",
+      "testsStartedByFixture": 7,
+      "browserTeardowns": 7,
+      "browserRequestStartsRecorded": 107,
+      "browserResponsesRecorded": 83,
+      "browserFailedRequestsRecorded": 19,
+      "serverHTTPObservations": 90,
+      "serverOptions": 0,
+      "browserTestTeardownsComplete": true,
+      "containerRemoved": true,
+      "fixtureTablesEmpty": true,
+      "ownedProcessesStopped": true,
+      "sha256": {
+        "browser-23ef065edba452c455a1-49cddb2865532b9ec5d7.json": "19bb60b1ed12b9d1f6e28812e7e01a579eed0364a5ec64a048133edb88d352a5",
+        "browser-23ef065edba452c455a1-4c9d58d62cb6fbca03b0.json": "84a9169a43fff8d5005216ef4994ce2a12e4d9cc12819a26224650c309c220b3",
+        "browser-23ef065edba452c455a1-554dc6be879b1cd99a24.json": "96656c42a6033590c6158dcbe54b2ce419baf7be311cd3db495282f73f40b9d2",
+        "browser-23ef065edba452c455a1-5ad683bdd8c88d50b079.json": "ed6df062aeda3e199ad6743cf17dcc4a3d93e4d1d154294da4400865463e7ee9",
+        "browser-23ef065edba452c455a1-908c24b9312bb745bef8.json": "2e2900af75a029972c19a8e1a160b2aca2cad45668e0ab4c01524ac9fb813bcd",
+        "browser-23ef065edba452c455a1-a246c5892f6e9505c0d1.json": "be29400d7e04abdd0b8337fbf167dd218fb4058eea1da962dc6b34b87642a063",
+        "browser-23ef065edba452c455a1-acc0879593922343f8cd.json": "094b31d7c068bb4fe619eedda2d321cae63d853fef7856c0956c9edf142e2f78",
+        "database-23ef065edba452c455a1-49cddb2865532b9ec5d7.jsonl": "3beb42bc76d28a53a720fc9f9297bf83e53eb6d9a79157da8ddd86e1878e0261",
+        "database-23ef065edba452c455a1-4c9d58d62cb6fbca03b0.jsonl": "7312ae61fda04da513a3696321c0df045555422115b3a8905a3232022e8c3ef1",
+        "database-23ef065edba452c455a1-554dc6be879b1cd99a24.jsonl": "3f7bd7d64aca885ec3f8c8de5e6df5be2450b8dc3ce4c3ad6153536a9784c252",
+        "database-23ef065edba452c455a1-5ad683bdd8c88d50b079.jsonl": "554b40dfe22e34f782481dbef197fc37f5aa30b2e06596819d7f2b974fcae0d2",
+        "database-23ef065edba452c455a1-908c24b9312bb745bef8.jsonl": "1bcda216c20c9b7fcced3b0977adc38431cae4d06d952ad9129952d469bcd0af",
+        "database-23ef065edba452c455a1-a246c5892f6e9505c0d1.jsonl": "499328812156289bac1d941fb42a2ff2e44fd187fd6769edc6e981628b6234b1",
+        "database-23ef065edba452c455a1-acc0879593922343f8cd.jsonl": "ceeb011776b7e63744814e8f485bcb738b571a7aab928674718dcfbc58df322c",
+        "logs/MySQL-readiness.log": "bc3db46d117c927f9985f6f9ea64758f94dc816c6d8c690553f59b5bd3ca7bd5",
+        "logs/Playwright.log": "f6972625c15b2bf6293eca51eb9286a4698b80a6f3d92c2904e1315c70c710f2",
+        "logs/React-final.log": "5c397c0e62b264f3a06b08511179db397a91d3cf7f610b815c447edd8818570f",
+        "logs/Spring-Boot-final.log": "e3e7c406531ba305ba1b5cb160b2d62dba4dd45e4d39c94af2bb1e6947285a1f",
+        "p1-23ef065edba452c455a1-49cddb2865532b9ec5d7.json": "afcf6e5dde454c6e2a40345384e67e8537ce099b4a88a07b33463b21d2d7f058",
+        "p1-23ef065edba452c455a1-4c9d58d62cb6fbca03b0.json": "7f0860ab880f42534e02d759d4e74e8ff98868893eab3bbbaa53d015e75445db",
+        "p1-23ef065edba452c455a1-554dc6be879b1cd99a24.json": "c50baa96157bbc5cadb6e74a38f6fa4d6cb9e9263367500b207405173f15fb56",
+        "p1-23ef065edba452c455a1-5ad683bdd8c88d50b079.json": "af6954d11b16d24ad9d2427b3473b177e90d6efd2b7aa6c07676f6f5cbf4087a",
+        "p1-23ef065edba452c455a1-908c24b9312bb745bef8.json": "c15dcae78e3f0fa54dee7122f3c25a00b8fd83fd75d5930e3e2dd9125445d47f",
+        "p1-23ef065edba452c455a1-a246c5892f6e9505c0d1.json": "361aea9c9739b0895ff9b4717ff7108e5e4c0ac629c1416837d50f052864f04f",
+        "p1-23ef065edba452c455a1-acc0879593922343f8cd.json": "433d995744e0d7f701433abc3aa4e3e64cc479ba0959867f81f89222ea0c8619",
+        "preflight.json": "89d4c702c4cc8e01ab27acc0ee74c7079597d99340cdf4e064ce8fe9c8ada927",
+        "results.json": "4ad219cd199abf4d2ce133b012c8697b697939acaeafb41cb52b3483212693f2",
+        "run.json": "128fd677a23e8359fa1eff401f4999bbd4e9e8203247051bb6f71af1ad73839d",
+        "server-http.jsonl": "eb411fb57dfa8033b80e92ee0e439f23a542f4ec104ec203f9414667479e98a4",
+        "source-after.json": "fe4b1872429af74d74209e759be6033643536254e20990427f98c0b92ff9f3c0",
+        "source-before.json": "b6b9ee4970ccc3fb8694b13426bb707a93aeb41facc082cfab2f955a19d8c3a3",
+        "test-attempts.jsonl": "4076b23202174465ec93e8e8be10355a23f1be40a46aac87c95063718db0ee26",
+        "test-selection.txt": "eaf4f03c6d930e1f8612f81a008e270b1028a3a4632a254263c2205a7f6bcaee"
+      }
+    }
+  ],
+  "totals": {
+    "uniqueTests": 23,
+    "browserTestsStarted": 27,
+    "browserRequestStartsRecorded": 431,
+    "browserResponsesRecorded": 362,
+    "browserFailedRequestsRecorded": 53,
+    "serverHTTPObservations": 383,
+    "browserRecordCaveat": "First run has 19 browser teardown records and a twentieth interrupted fixture. Browser HTTP counts are recorded lower bounds, not a complete or server-matched total."
+  },
+  "postCleanupAudit": {
+    "checkedAt": "2026-10-23T06:31:06.358Z",
+    "containersAbsent": [
+      "9ce742e1e7dc",
+      "9f5147ba9e76"
+    ],
+    "portsFree": [
+      13000,
+      18080,
+      13316
+    ],
+    "access": "Only exact newly owned names checked; no preserved resource inspected or connected"
+  },
+  "p0Protection": {
+    "count": 71,
+    "changed": []
+  },
+  "localChecks": {
+    "contract": {
+      "endpoints": 73,
+      "recordDTOs": 75,
+      "entities": 30,
+      "status": "PASS"
+    },
+    "safety": {
+      "tests": 2,
+      "passed": 2
+    },
+    "regression": {
+      "beforeFix": [
+        {
+          "test": "isolated preference lookup",
+          "outcome": "FAIL",
+          "reason": "account content replaced by preference error"
+        },
+        {
+          "test": "delayed account save",
+          "outcome": "FAIL",
+          "reason": "onUserUpdated called with account A after switching to B"
+        }
+      ],
+      "harnessCorrections": [
+        "use findAllByText for duplicated account nickname",
+        "restore Korean label after PowerShell stdin encoding loss"
+      ],
+      "afterFix": {
+        "tests": 2,
+        "passed": 2
+      }
+    },
+    "frontendBuild": {
+      "status": "PASS",
+      "message": "Compiled successfully"
+    },
+    "syntax": "PASS",
+    "p0Protected": {
+      "count": 71,
+      "changed": 0,
+      "commit": "f5186d7"
+    },
+    "finalCredentialPatternScan": {
+      "checkedFiles": 97,
+      "matches": 0,
+      "limitation": "Pattern scan complements redaction and restricted artifact fields; not a proof about all conceivable secrets"
+    }
+  }
+}

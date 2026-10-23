@@ -22,7 +22,9 @@ module.exports = defineConfig({
     serviceWorkers: 'block',
     launchOptions: { executablePath: require('playwright-core').chromium.executablePath() },
   },
-  projects: process.env.E2E_AUS_P0 === '1'
+  projects: process.env.E2E_AUS_P1 === '1'
+    ? [{ name: 'aus-p1', testMatch: '**/aus-p1.spec.cjs', use: { ...devices['Desktop Chrome'] } }]
+    : process.env.E2E_AUS_P0 === '1'
     ? [
       { name: 'aus-baseline', testMatch: '**/login.spec.cjs', use: { ...devices['Desktop Chrome'] } },
       { name: 'aus-p0', testMatch: '**/aus-p0.spec.cjs', dependencies: ['aus-baseline'], use: { ...devices['Desktop Chrome'] } },

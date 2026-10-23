@@ -48,6 +48,15 @@ public final class E2eServer {
             Map.entry("logging.level.root", "WARN"),
             Map.entry("logging.level.org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration", "OFF"),
             Map.entry("spring.main.banner-mode", "off")));
+        if ("1".equals(System.getenv("E2E_AUS_P1"))) {
+            String codeTtl = Objects.requireNonNullElse(System.getenv("E2E_CODE_TTL"), "300");
+            String resetTtl = Objects.requireNonNullElse(System.getenv("E2E_RESET_TTL"), "300");
+            E2eDatabase.check(Set.of("8", "300").contains(codeTtl) && Set.of("8", "300").contains(resetTtl), "Unsafe P1 TTL");
+            settings.put("auth.email-verification.code-expiration-seconds", codeTtl);
+            settings.put("auth.password-reset.token-expiration-seconds", resetTtl);
+            settings.put("auth.protection.verify-failures.window-seconds", "15");
+            settings.put("auth.protection.verify-failures.block-seconds", "15");
+        }
         settings.forEach(System::setProperty);
         var app = new SpringApplication(BackendApplication.class, Infrastructure.class);
         try (var context = app.run()) {
@@ -66,7 +75,9 @@ public final class E2eServer {
                     String[] parts = line.split(" ", 3);
                     if (parts.length == 3 && parts[0].equals("MAIL") && parts[1].matches("[a-f0-9]{24}")) {
                         var mail = (MemoryMail)context.getBean(JavaMailSender.class);
-                        String code = parts[2].startsWith("reset:") ? mail.resetTokens.remove(parts[2].substring(6)) : mail.codes.remove(parts[2]);
+                        String code = parts[2].startsWith("state:") && "1".equals(System.getenv("E2E_AUS_P1"))
+                            ? "{\"verification\":" + mail.deliveries.getOrDefault("v:" + parts[2].substring(6), 0) + ",\"reset\":" + mail.deliveries.getOrDefault("r:" + parts[2].substring(6), 0) + "}"
+                            : parts[2].startsWith("reset:") ? mail.resetTokens.remove(parts[2].substring(6)) : mail.codes.remove(parts[2]);
                         if (code == null) code = "";
                         // Private parent-process pipe; the runner consumes these lines without writing logs.
                         System.out.println("E2E_PRIVATE " + parts[1] + " " + code); System.out.flush();
@@ -118,12 +129,13 @@ public final class E2eServer {
     static final class MemoryMail extends JavaMailSenderImpl {
         final Map<String,String> codes = new java.util.concurrent.ConcurrentHashMap<>();
         final Map<String,String> resetTokens = new java.util.concurrent.ConcurrentHashMap<>();
+        final Map<String,Integer> deliveries = new java.util.concurrent.ConcurrentHashMap<>();
         @Override public void send(SimpleMailMessage... messages) {
             for (var message : messages) {
                 var matcher = java.util.regex.Pattern.compile("인증번호: (\\d{6})").matcher(Objects.requireNonNullElse(message.getText(), ""));
-                if (matcher.find() && message.getTo() != null) for (String recipient : message.getTo()) codes.put(recipient, matcher.group(1));
+                if (matcher.find() && message.getTo() != null) for (String recipient : message.getTo()) { codes.put(recipient, matcher.group(1)); deliveries.merge("v:" + recipient, 1, Integer::sum); }
                 var reset = java.util.regex.Pattern.compile("비밀번호 재설정 토큰: ([A-Za-z0-9_-]{43})").matcher(Objects.requireNonNullElse(message.getText(), ""));
-                if (reset.find() && message.getTo() != null) for (String recipient : message.getTo()) resetTokens.put(recipient, reset.group(1));
+                if (reset.find() && message.getTo() != null) for (String recipient : message.getTo()) { resetTokens.put(recipient, reset.group(1)); deliveries.merge("r:" + recipient, 1, Integer::sum); }
             }
         }
         @Override public void send(MimeMessage... messages) { /* no network, no sensitive logs */ }

@@ -28,6 +28,10 @@ class EvidenceReporter {
       startedAt: result.startTime.toISOString(), durationMs: result.duration,
       errors: result.errors.map(error => ({ message: error.message, stack: error.stack })), steps: steps(result.steps),
     });
+    if (process.env.E2E_AUS_P1 === '1') {
+      fs.appendFileSync(path.join(process.env.E2E_EVIDENCE_DIR, 'test-attempts.jsonl'),
+        JSON.stringify(sanitize(this.tests.get(test.id), this.secrets)) + '\n');
+    }
   }
   onEnd(result) {
     const directory = process.env.E2E_EVIDENCE_DIR;

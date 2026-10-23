@@ -9,8 +9,13 @@ const frontend = path.resolve(__dirname, '..');
 const backend = path.resolve(frontend, '../backend');
 const ports = [13000, 18080, 13316];
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+const privateValues = new Set();
+function registerSecret(value) {
+  if (typeof value !== 'string' || value.length < 6 || value.length > 200) throw new Error('Invalid private test value');
+  privateValues.add(value);
+}
 function redactOutput(output, secrets = []) {
-  for (const secret of secrets.filter(Boolean)) output = output.split(secret).join('[REDACTED]');
+  for (const secret of [...secrets, ...privateValues].filter(Boolean).sort((a,b) => b.length-a.length)) output = output.split(secret).join('[REDACTED]');
   return output.replace(/^E2E_PRIVATE .*$/gm, '[PRIVATE IPC OMITTED]')
     .replace(/E2e![a-f0-9]{36}/g, '[REDACTED]')
     .replace(/(?<![A-Za-z0-9_-])[A-Za-z0-9_-]{43}(?![A-Za-z0-9_-])/g, '[REDACTED OPAQUE VALUE]')
@@ -55,6 +60,24 @@ async function assertFree(port) {
 
 async function main() {
   const args = process.argv.slice(2);
+  const ausP1 = ['--aus-p1', '--aus-p1-recheck'].includes(args[0]);
+  let p1Recheck;
+  if (ausP1) {
+    if (args[0] === '--aus-p1' && args.length !== 1) throw new Error('P1 selectors are fixed');
+    if (args[0] === '--aus-p1-recheck') {
+      if (args.length !== 2 || !/^[a-f0-9]{12}$/.test(args[1])) throw new Error('Invalid P1 source');
+      const directory = path.join(backend, 'build/full-service-e2e', args[1]);
+      const recovered = !existsSync(path.join(directory, 'run.json')) && existsSync(path.join(directory, 'interruption-cleanup.json'));
+      const previous = JSON.parse(readFileSync(path.join(directory, recovered ? 'interruption-cleanup.json' : 'run.json')));
+      const bytes = readFileSync(path.join(directory, recovered ? 'interruption-recovery.json' : 'results.json'));
+      if ((!recovered && previous.scope !== 'AUS_P1_ONLY') || !previous.containerRemoved || !previous.fixtureTablesEmpty || !previous.ownedProcessesStopped) throw new Error('P1 cleanup not verified');
+      const tests = recovered ? [] : JSON.parse(bytes).tests.filter(t => t.attempts.some(a => ['failed','timedOut'].includes(a.status)));
+      const ids = recovered ? JSON.parse(bytes).remaining : tests.map(t => t.name.match(/^(B1[0-5]-[a-z0-9-]+):/)?.[1]);
+      if (!ids.length || ids.some(id => !id)) throw new Error('Only failed P1 tests may be selected');
+      if (ids.some(id => !/^B1[0-5]-[a-z0-9-]+$/.test(id))) throw new Error('Invalid P1 recovery selector');
+      p1Recheck = { source: args[1], ids, recoveredInterruption: recovered, sha256: createHash('sha256').update(bytes).digest('hex') };
+    }
+  }
   const rechecking = args[0] === '--aus-p0-recheck';
   const recheckId = rechecking ? args[1] : null;
   const ausP0 = args[0] === '--aus-p0' || rechecking;
@@ -74,7 +97,8 @@ async function main() {
     if (!ids.length || ids.some(id => !id)) throw new Error('Only failed AUS P0 tests can be rechecked.');
     recheck = { source: recheckId, resultsSha256: createHash('sha256').update(resultsFile).digest('hex'), ids };
   }
-  const testArgs = recheck ? ['aus-p0.spec.cjs', '--project=aus-p0', '--no-deps', '--grep', '(' + recheck.ids.join('|') + ') P0:']
+  const testArgs = ausP1 ? ['aus-p1.spec.cjs', '--project=aus-p1', '--no-deps', ...(p1Recheck ? ['--grep','(' + p1Recheck.ids.join('|') + '):'] : [])]
+    : recheck ? ['aus-p0.spec.cjs', '--project=aus-p0', '--no-deps', '--grep', '(' + recheck.ids.join('|') + ') P0:']
     : ausP0 ? ['login.spec.cjs', 'aus-p0.spec.cjs'] : args;
   const id = randomBytes(6).toString('hex');
   const name = `kkiri-e2e-${id}`;
@@ -86,6 +110,7 @@ async function main() {
     E2E_SECOND_EMAIL: `peer${id}@hknu.ac.kr`, E2E_ADMIN_EMAIL: `admin${id}@hknu.ac.kr`,
     E2E_IMAGE_DIRECTORY: path.join(backend, 'build/e2e', id, 'uploads'),
     E2E_EVIDENCE_DIR: path.join(backend, 'build/full-service-e2e', id),
+    ...(ausP1 ? { E2E_AUS_P1: '1', E2E_SUSPENDED_EMAIL: `suspended${id}@hknu.ac.kr`, E2E_WITHDRAWN_EMAIL: `withdrawn${id}@hknu.ac.kr` } : {}),
   };
   Object.assign(env, { MYSQL_DATABASE: env.E2E_DATABASE, MYSQL_USER: env.E2E_DB_USER,
     MYSQL_PASSWORD: env.E2E_DB_PASSWORD, MYSQL_ROOT_PASSWORD: randomBytes(24).toString('hex') });
@@ -97,7 +122,7 @@ async function main() {
   writeFileSync(path.join(env.E2E_EVIDENCE_DIR, 'source-before.json'), JSON.stringify(before, null, 2));
   const run = { id, startedAt: new Date().toISOString(), mysql: '8.0.46', database: env.E2E_DATABASE,
     frontend: 'http://127.0.0.1:13000', backend: 'http://127.0.0.1:18080', node: process.version,
-    gitSha: before.gitSha, testArguments: testArgs, scope: ausP0 ? 'AUS_P0_ONLY' : 'existing selectors', recheck, fixtureTablesEmpty: false };
+    gitSha: before.gitSha, testArguments: testArgs, scope: ausP1 ? 'AUS_P1_ONLY' : ausP0 ? 'AUS_P0_ONLY' : 'existing selectors', recheck: p1Recheck ?? recheck, fixtureTablesEmpty: false };
   console.log(`[e2e] Evidence: ${path.relative(path.dirname(frontend), env.E2E_EVIDENCE_DIR)}`);
   let ownsContainer = false;
   let stopping = false;
@@ -206,12 +231,12 @@ async function main() {
     if (engine !== 'linux') throw new Error('E2E requires Docker Linux containers. Start Docker Desktop.');
     const browserPath = require('playwright-core').chromium.executablePath();
     if (!existsSync(browserPath)) throw new Error('Existing Chromium is missing; download is not authorized.');
-    if (ausP0) {
+    if (ausP0 || ausP1) {
       const listing = await complete(start(process.execPath,
         [require.resolve('@playwright/test/cli'), 'test', ...testArgs, '--list', '--reporter=list'], frontend,
-        { E2E_AUS_P0: '1' }), 'Enumerate approved P0 tests before resource creation');
+        { E2E_AUS_P0: ausP0 ? '1' : '0', E2E_AUS_P1: ausP1 ? '1' : '0' }), 'Enumerate approved tests before resource creation');
       const count = Number(listing.match(/Total: (\d+) tests? in/)?.[1]);
-      if (count !== (recheck ? recheck.ids.length : 9)) throw new Error('Approved P0 test count mismatch.');
+      if (count !== (ausP1 ? (p1Recheck ? p1Recheck.ids.length : 23) : recheck ? recheck.ids.length : 9)) throw new Error('Approved test count mismatch.');
       run.selectedTestCount = count;
       writeFileSync(path.join(env.E2E_EVIDENCE_DIR, 'test-selection.txt'), listing + '\n');
     }
@@ -224,6 +249,19 @@ async function main() {
     console.log(`[e2e] New target ${name}; schema ${env.E2E_DATABASE}; image ${imageId}; ports ${ports.join('/')}.`);
     console.log('[e2e] Starting isolated MySQL 8.0.46 on 127.0.0.1:13316.');
     // Fixed name is unique per run; no existing container or volume is reused.
+    if (ausP1) {
+      const ledgerFile = path.join(backend, 'build/aus-p1-preparation/resource-ledger.json');
+      const ledger = existsSync(ledgerFile) ? JSON.parse(readFileSync(ledgerFile)) : [];
+      if (ledger.length >= 2) throw new Error('Two-container P1 approval budget exhausted');
+      for (const prior of ledger) {
+        const dir = path.join(backend, 'build/full-service-e2e', prior.id);
+        const finished = JSON.parse(readFileSync(path.join(dir, existsSync(path.join(dir,'run.json')) ? 'run.json' : 'interruption-cleanup.json')));
+        if (!finished.containerRemoved || !finished.ownedProcessesStopped) throw new Error('Previous P1 resource is not cleaned');
+      }
+      ledger.push({ id, name, attemptedAt: new Date().toISOString() });
+      mkdirSync(path.dirname(ledgerFile), { recursive: true });
+      writeFileSync(ledgerFile, JSON.stringify(ledger, null, 2));
+    }
     ownsContainer = true;
     run.containerId = await docker(['create', '--pull=never', '--name', name, '--hostname', 'kkiri-e2e', '--label', `kkiri.e2e.owner=${id}`,
       '--publish', '127.0.0.1:13316:3306', '--tmpfs', '/var/lib/mysql:rw,size=1073741824',
@@ -267,24 +305,28 @@ async function main() {
       try {
         let body = ''; for await (const chunk of req) { body += chunk; if (body.length > 500) throw new Error('Oversized control request'); }
         const input = JSON.parse(body);
-        if (req.url === '/mail' && /^[a-z0-9]+@hknu\.ac\.kr$/.test(input.email) && [undefined, 'verification', 'reset'].includes(input.kind)) {
+        if (ausP1 && req.url === '/secret') {
+          registerSecret(input.value); res.setHeader('Content-Type','application/json'); res.end('{}');
+        } else if ((req.url === '/mail' || (ausP1 && req.url === '/mail-state')) && /^[a-z0-9]+@hknu\.ac\.kr$/.test(input.email) && [undefined, 'verification', 'reset'].includes(input.kind)) {
           const requestId = randomBytes(12).toString('hex');
           const code = await new Promise((resolve, reject) => {
             const timer = setTimeout(() => { pendingMail.delete(requestId); reject(new Error('Mail IPC timeout')); }, 5000);
             pendingMail.set(requestId, code => { clearTimeout(timer); resolve(code); });
-            api.stdin.write(`MAIL ${requestId} ${input.kind === 'reset' ? 'reset:' : ''}${input.email}\n`);
+            api.stdin.write(`MAIL ${requestId} ${req.url === '/mail-state' ? 'state:' : input.kind === 'reset' ? 'reset:' : ''}${input.email}\n`);
           });
-          res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ code }));
+          res.setHeader('Content-Type', 'application/json'); res.end(req.url === '/mail-state' ? code : JSON.stringify({ code }));
         } else if (req.url === '/restart') {
           const ttl = input.ttlSeconds ?? 3600;
           if (![8, 3600].includes(ttl)) throw new Error('Unsupported test lifetime');
           const signupTtl = input.signupTtlSeconds ?? 300;
           if (![8, 300].includes(signupTtl)) throw new Error('Unsupported signup lifetime');
+          const codeTtl = input.codeTtlSeconds ?? 300, resetTtl = input.resetTtlSeconds ?? 300;
+          if (![8,300].includes(codeTtl) || ![8,300].includes(resetTtl) || (!ausP1 && (codeTtl !== 300 || resetTtl !== 300))) throw new Error('Unsupported P1 lifetime');
           restarting = true;
           const previous = api; const closed = new Promise(resolve => previous.once('close', resolve));
           previous.stdin.end(); await Promise.race([closed, pause(15_000)]);
           if (previous.exitCode === null) throw new Error('Backend did not stop cleanly');
-          api = start('java', ['-cp', classpath, 'e2e.E2eServer'], frontend, { E2E_ACCESS_TTL: String(ttl), E2E_SIGNUP_TTL: String(signupTtl) });
+          api = start('java', ['-cp', classpath, 'e2e.E2eServer'], frontend, { E2E_ACCESS_TTL: String(ttl), E2E_SIGNUP_TTL: String(signupTtl), E2E_CODE_TTL: String(codeTtl), E2E_RESET_TTL: String(resetTtl) });
           await ready(api, 'Restarted E2E Spring Boot', async () => api.output.includes('E2E_BACKEND_READY'));
           api.once('close', crash); restarting = false;
           res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ restarted: true }));
@@ -344,4 +386,4 @@ async function main() {
   }
 }
 if (require.main === module) main().catch(error => { console.error(`[e2e] ${error.message}`); process.exitCode = 1; });
-module.exports = { assertFree, safeEnvironment, redactOutput, sanitize };
+module.exports = { assertFree, safeEnvironment, redactOutput, sanitize, registerSecret };

@@ -553,6 +553,7 @@ function AccountContent({ account, onSave }) {
     try {
       const payload = Object.fromEntries(ids.map((id) => [id, id === "major" && noMajor ? "세부전공 없음" : draft[id]]));
       const saved = await onSave(payload);
+      if (!saved) return;
       setDraft((current) => ({ ...current, ...saved }));
       window.alert("회원정보를 저장했어요.");
     } catch (error) { window.alert(error.message); return; }
@@ -911,11 +912,9 @@ function MyPageContent({ currentUser, onUserUpdated }) {
   useEffect(() => {
     let cancelled = false;
     setAccountLoading(true); setAccountError(""); setAccount(null);
-    Promise.all([getMyInfo(), getMyPreferences()]).then(([user, preference]) => {
+    getMyInfo().then((user) => {
       if (!cancelled) {
         setAccount({ ...user, major: user.major || "", studentId: user.admissionYear });
-        setPreferences(preference.answers || {});
-        setPreferencesCompleted(preference.completed);
       }
     }).catch((error) => { if (!cancelled) setAccountError(error.message); })
       .finally(() => { if (!cancelled) setAccountLoading(false); });
@@ -923,6 +922,7 @@ function MyPageContent({ currentUser, onUserUpdated }) {
   }, [currentUser?.id, accountRevision]);
   const saveAccount = async (payload) => {
     const user = await updateMyInfo(payload);
+    if (!isCurrentAuthenticationSession(session)) return null;
     const saved = { ...user, major: user.major || "", studentId: user.admissionYear };
     setAccount(saved);
     onUserUpdated?.(user);
@@ -951,6 +951,23 @@ function MyPageContent({ currentUser, onUserUpdated }) {
   }, [currentUser?.id, activeTab, surveyRevision]);
   const [preferences, setPreferences] = useState({});
   const [preferencesCompleted, setPreferencesCompleted] = useState(false);
+  const [preferenceState, setPreferenceState] = useState({ status: "loading", error: "" });
+  const [preferenceRevision, setPreferenceRevision] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    setPreferenceState({ status: "loading", error: "" });
+    setPreferences({});
+    setPreferencesCompleted(false);
+    getMyPreferences().then((preference) => {
+      if (cancelled) return;
+      setPreferences(preference.answers || {});
+      setPreferencesCompleted(preference.completed);
+      setPreferenceState({ status: "success", error: "" });
+    }).catch((error) => {
+      if (!cancelled) setPreferenceState({ status: "error", error: error.message });
+    });
+    return () => { cancelled = true; };
+  }, [currentUser?.id, preferenceRevision]);
   const hasSurveyAnswers = {
     survey: surveyState.status === "success" && surveyState.completed,
     preferences: preferencesCompleted,
@@ -1112,7 +1129,7 @@ function MyPageContent({ currentUser, onUserUpdated }) {
                       <ClipboardList size={19} aria-hidden="true" /> 나의 설문
                       현황
                     </S.CardTitle>
-                    <S.Badge>{surveyState.status === "success" ? `${completeCount} / 2 완료` : surveyState.status === "error" ? "설문 조회 실패" : "설문 확인 중"}</S.Badge>
+                    <S.Badge>{surveyState.status === "error" || preferenceState.status === "error" ? "설문 조회 실패" : surveyState.status === "success" && preferenceState.status === "success" ? `${completeCount} / 2 완료` : "설문 확인 중"}</S.Badge>
                   </S.CardHeader>
                   <S.Helper>
                     두 가지 설문으로 나와 잘 맞는 룸메이트를 더 가까이
@@ -1123,7 +1140,7 @@ function MyPageContent({ currentUser, onUserUpdated }) {
                     aria-label="설문 작성 현황"
                     aria-valuemin={0}
                     aria-valuemax={2}
-                    aria-valuenow={surveyState.status === "success" ? completeCount : undefined}
+                    aria-valuenow={surveyState.status === "success" && preferenceState.status === "success" ? completeCount : undefined}
                   >
                     <S.ProgressFill $value={completeCount * 50} />
                   </S.ProgressTrack>
@@ -1151,8 +1168,8 @@ function MyPageContent({ currentUser, onUserUpdated }) {
                         <S.CardHeader>
                           <Icon size={23} aria-hidden="true" />
                           <S.Badge $muted={!hasSurveyAnswers[id]}>
-                            {id === "survey" && surveyState.status !== "success"
-                              ? (surveyState.status === "error" ? "조회 실패" : "확인 중")
+                            {(id === "survey" ? surveyState : preferenceState).status !== "success"
+                              ? ((id === "survey" ? surveyState : preferenceState).status === "error" ? "조회 실패" : "확인 중")
                               : hasSurveyAnswers[id] ? "작성 완료" : "미작성"}
                           </S.Badge>
                         </S.CardHeader>
@@ -1178,6 +1195,13 @@ function MyPageContent({ currentUser, onUserUpdated }) {
                       {surveyState.status === "error" ? surveyState.error : "내 설문을 불러오는 중이에요."}
                     </p>
                     {surveyState.status === "error" && <S.SecondaryButton onClick={() => setSurveyRevision((value) => value + 1)}>다시 시도</S.SecondaryButton>}
+                  </S.Card>
+                ) : activeTab === "preferences" && preferenceState.status !== "success" ? (
+                  <S.Card>
+                    <p role={preferenceState.status === "error" ? "alert" : "status"}>
+                      {preferenceState.status === "error" ? preferenceState.error : "선호 설문을 불러오는 중이에요."}
+                    </p>
+                    {preferenceState.status === "error" && <S.SecondaryButton onClick={() => setPreferenceRevision((value) => value + 1)}>다시 시도</S.SecondaryButton>}
                   </S.Card>
                 ) : <SurveyContent
                   key={activeTab}

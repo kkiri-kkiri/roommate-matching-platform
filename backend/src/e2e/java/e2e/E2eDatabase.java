@@ -127,6 +127,13 @@ public final class E2eDatabase {
                     peer.verifyEmail(); admin.verifyEmail(); em.persist(peer); em.persist(admin);
                     em.persist(new UserProfile(peer, "E2E상대", "남자", dorm, faculty, null, (short)2000, "20", "1학년", "INTJ"));
                     em.persist(new UserProfile(admin, "E2E관리자", "남자", dorm, faculty, null, (short)2000, "20", "1학년", "INTJ"));
+                    if ("1".equals(System.getenv("E2E_AUS_P1"))) {
+                        for (var status : List.of(UserStatus.SUSPENDED, UserStatus.WITHDRAWN)) {
+                            var inactive = new User(new BCryptPasswordEncoder().encode(required("E2E_LOGIN_PASSWORD")),
+                                required(status == UserStatus.SUSPENDED ? "E2E_SUSPENDED_EMAIL" : "E2E_WITHDRAWN_EMAIL"));
+                            inactive.verifyEmail(); inactive.changeStatus(status); em.persist(inactive);
+                        }
+                    }
                     tx.commit();
                 } catch (Throwable failure) { if (tx.isActive()) tx.rollback(); throw failure; }
             } finally { f.destroy(); }
