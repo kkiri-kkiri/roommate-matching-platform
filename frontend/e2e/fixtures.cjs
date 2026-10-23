@@ -2,6 +2,7 @@ const { test: base, expect } = require('@playwright/test');
 const { database } = require('./lib/database.cjs');
 const { writeFileSync } = require('node:fs');
 const path = require('node:path');
+const { retentionEnabled } = require('./run.cjs');
 
 async function restrict(context) {
   await context.route('**/*', route => {
@@ -15,8 +16,10 @@ const test = base.extend({
   // New browser context per test; reset all data only inside the guarded disposable schema.
   isolatedDatabase: [async ({}, use, testInfo) => {
     process.env.E2E_CURRENT_TEST_ID = testInfo.testId;
-    database('reset');
-    try { await use(); } finally { database('clean'); }
+    // Retained cases own their row IDs; the runner seeds its empty schema once.
+    const retainResources = retentionEnabled();
+    if (!retainResources) database('reset');
+    try { await use(); } finally { if (!retainResources) database('clean'); }
   }, { auto: true, timeout: 120_000 }],
   context: async ({ context }, use) => {
     await restrict(context);

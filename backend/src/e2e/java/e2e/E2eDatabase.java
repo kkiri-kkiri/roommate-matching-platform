@@ -10,6 +10,18 @@ import com.kkirikkiri.user.entity.*;
 
 /** Destructive fixtures are restricted to a newly owned Docker instance and schema. */
 public final class E2eDatabase {
+    static boolean retentionEnabled() {
+        String value = System.getenv("E2E_RETAIN_RESOURCES");
+        check(value == null || value.equals("1"), "Invalid E2E retention setting");
+        return "1".equals(value);
+    }
+    static void validateOperation(String mode) {
+        check(Set.of("prepare", "seed", "reset", "clean", "verify", "snapshot").contains(mode), "Unknown E2E fixture operation");
+        boolean retained = retentionEnabled();
+        check(!retained || (!mode.equals("clean") && !mode.equals("reset")),
+            "Retained E2E resources cannot be cleaned or reset");
+        check(!mode.equals("seed") || retained, "Seed requires explicit E2E retention mode");
+    }
     static String required(String name) {
         String value = System.getenv(name);
         if (value == null || value.isBlank()) throw new IllegalStateException("Missing E2E setting: " + name);
@@ -79,6 +91,7 @@ public final class E2eDatabase {
         return factory;
     }
     static void clean() throws Exception {
+        validateOperation("clean");
         try (var c = guardedConnection(); var s = c.createStatement()) {
             var names = tables(c);
             s.execute("SET FOREIGN_KEY_CHECKS=0");
@@ -95,15 +108,29 @@ public final class E2eDatabase {
             }
         }
     }
+    static void requireEmptyTables(Connection c) throws Exception {
+        var names = tables(c);
+        check(!names.isEmpty(), "Seed requires prepared E2E tables");
+        try (var s = c.createStatement()) {
+            for (String name : names) {
+                check(name.matches("[a-z_]+"), "Unexpected E2E table name");
+                try (var r = s.executeQuery("SELECT COUNT(*) FROM `" + name + "`")) {
+                    check(r.next() && r.getLong(1) == 0, "Refusing to seed non-empty E2E tables");
+                }
+            }
+        }
+    }
     public static void main(String[] args) throws Exception {
         String mode = args.length == 1 ? args[0] : "";
-        check(Set.of("prepare", "reset", "clean", "verify", "snapshot").contains(mode), "Unknown E2E fixture operation");
+        // Reject destructive retained operations before constructing a datasource.
+        validateOperation(mode);
         try (var c = guardedConnection()) {
             if (mode.equals("prepare")) check(tables(c).isEmpty(), "Refusing to initialize an existing schema");
+            if (mode.equals("seed")) requireEmptyTables(c);
         }
         if (mode.equals("prepare")) { var f = factory("create-only"); f.destroy(); }
         if (mode.equals("clean") || mode.equals("reset")) clean();
-        if (mode.equals("reset")) {
+        if (mode.equals("reset") || mode.equals("seed")) {
             var f = factory("validate");
             try (var em = f.getObject().createEntityManager()) {
                 var tx = em.getTransaction(); tx.begin();
@@ -153,6 +180,16 @@ public final class E2eDatabase {
             queries.put("members", "SELECT chat_room_id,user_id,is_left,is_pinned,is_muted FROM chat_room_member ORDER BY chat_room_id,user_id");
             queries.put("messages", "SELECT message_id,chat_room_id,sender_id,content,is_read FROM chat_message ORDER BY message_id");
             queries.put("reports", "SELECT report_id,reporter_id,target_user_id,report_type,post_id,comment_id,reason,description,status,resolution_action,processed_by FROM report ORDER BY report_id");
+            // Keep the original snapshot shape outside explicit retention mode.
+            if (retentionEnabled()) {
+                queries.put("users", "SELECT user_id,role,status,email_verified,CAST(created_at AS CHAR) created_at FROM user ORDER BY user_id");
+                queries.put("posts", "SELECT post_id,author_id,title,content,status,anonymous,CAST(created_at AS CHAR) created_at FROM community_post ORDER BY post_id");
+                queries.put("comments", "SELECT comment_id,post_id,author_id,parent_comment_id,content,status,anonymous,CAST(created_at AS CHAR) created_at FROM community_comment ORDER BY comment_id");
+                queries.put("messages", "SELECT message_id,chat_room_id,sender_id,content,is_read,CAST(sent_at AS CHAR) sent_at FROM chat_message ORDER BY message_id");
+                queries.put("reports", "SELECT report_id,reporter_id,target_user_id,report_type,post_id,comment_id,reason,description,status,resolution_action,processed_by,CAST(created_at AS CHAR) created_at,CAST(processed_at AS CHAR) processed_at FROM report ORDER BY report_id");
+                queries.put("anonymousAuthors", "SELECT anonymous_author_id,post_id,author_id,anonymous_number FROM community_anonymous_author ORDER BY anonymous_author_id");
+                queries.put("imageCleanup", "SELECT cleanup_id,image_url,attempts,CAST(next_attempt_at AS CHAR) next_attempt_at,CAST(created_at AS CHAR) created_at FROM post_image_cleanup ORDER BY cleanup_id");
+            }
             try (var c = guardedConnection()) {
                 for (var query : queries.entrySet()) {
                     var rows = new ArrayList<Map<String,Object>>();

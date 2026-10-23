@@ -34,7 +34,9 @@ function useHarness({ selected = "1", searchQuery = "", state = null, locationKe
   return { ...chat, rooms };
 }
 beforeEach(() => {
+  Object.defineProperty(window, "crypto", { configurable: true, value: require("crypto").webcrypto });
   jest.resetAllMocks();
+  sessionStorage.clear();
   serverById.clear();
   setStatus = jest.fn();
   onCreated = jest.fn();
@@ -91,8 +93,9 @@ test("merges a broadcast racing history and removes duplicate IDs; send waits fo
   ] }));
   expect(result.current.rooms[0].messages.map((item) => item.id)).toEqual([1, 2]);
   expect(result.current.rooms[0].messages[0].sender).toBe("me");
+  act(() => callbacks.onStatus(true));
   act(() => { result.current.send("1", "보내기"); });
-  expect(socket.publish).toHaveBeenCalledWith("1", "보내기");
+  expect(socket.publish).toHaveBeenCalledWith("1", "보내기", expect.any(String));
   expect(result.current.rooms[0].messages).toHaveLength(2);
   act(() => receive({ ...message(3), senderId: 99 }));
   expect(result.current.rooms[0].messages[2].sender).toBe("me");

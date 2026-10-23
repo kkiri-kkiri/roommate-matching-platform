@@ -1,0 +1,766 @@
+{
+  "date": "2026-10-23",
+  "timezone": "Asia/Seoul",
+  "owner": "82cdabce6030",
+  "database": "kkiri_e2e_82cdabce6030",
+  "logicalResults": {
+    "executed": 8,
+    "passed": 6,
+    "failed": 2
+  },
+  "evidenceTotals": {
+    "playwrightAttempts": 13,
+    "browserApiResponses": 1312,
+    "backendApiResponses": 1310,
+    "injected503Responses": 2,
+    "databaseSnapshots": 57
+  },
+  "runs": [
+    {
+      "id": "82cdabce6030",
+      "counts": {
+        "executed": 8,
+        "passed": 3,
+        "failed": 5,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      },
+      "httpResponses": 729,
+      "backendHttpResponses": 728,
+      "databaseSnapshots": 34,
+      "httpByStatus": {
+        "200": 709,
+        "400": 7,
+        "401": 3,
+        "403": 8,
+        "404": 1,
+        "503": 1
+      },
+      "stompByDirectionAndCommand": {
+        "received:CONNECTED": 18,
+        "received:ERROR": 1,
+        "received:MESSAGE": 24,
+        "received:RECEIPT": 1,
+        "sent:CONNECT": 18,
+        "sent:DISCONNECT": 1,
+        "sent:SEND": 13,
+        "sent:SUBSCRIBE": 22,
+        "sent:UNSUBSCRIBE": 6
+      },
+      "sourceUnchanged": true,
+      "fixtureActorsAdded": 3
+    },
+    {
+      "id": "c6f4e65335f7",
+      "parentRunId": "82cdabce6030",
+      "counts": {
+        "executed": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      },
+      "httpResponses": 0,
+      "backendHttpResponses": 0,
+      "databaseSnapshots": 0,
+      "httpByStatus": {},
+      "stompByDirectionAndCommand": {},
+      "sourceUnchanged": true,
+      "fixtureActorsAdded": 3
+    },
+    {
+      "id": "81b2aaea5032",
+      "parentRunId": "82cdabce6030",
+      "counts": {
+        "executed": 4,
+        "passed": 2,
+        "failed": 2,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      },
+      "httpResponses": 419,
+      "backendHttpResponses": 418,
+      "databaseSnapshots": 17,
+      "httpByStatus": {
+        "200": 399,
+        "400": 5,
+        "401": 2,
+        "403": 9,
+        "404": 3,
+        "503": 1
+      },
+      "stompByDirectionAndCommand": {
+        "received:CONNECTED": 12,
+        "received:ERROR": 1,
+        "received:MESSAGE": 11,
+        "received:RECEIPT": 1,
+        "sent:CONNECT": 12,
+        "sent:DISCONNECT": 1,
+        "sent:SEND": 7,
+        "sent:SUBSCRIBE": 13,
+        "sent:UNSUBSCRIBE": 3
+      },
+      "sourceUnchanged": true,
+      "fixtureActorsAdded": 3
+    },
+    {
+      "id": "5fa01fae60e4",
+      "parentRunId": "82cdabce6030",
+      "counts": {
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      },
+      "httpResponses": 164,
+      "backendHttpResponses": 164,
+      "databaseSnapshots": 6,
+      "httpByStatus": {
+        "200": 153,
+        "400": 4,
+        "401": 3,
+        "403": 4
+      },
+      "stompByDirectionAndCommand": {
+        "received:CONNECTED": 8,
+        "received:ERROR": 1,
+        "received:MESSAGE": 11,
+        "received:RECEIPT": 1,
+        "sent:CONNECT": 8,
+        "sent:DISCONNECT": 1,
+        "sent:SEND": 6,
+        "sent:SUBSCRIBE": 9,
+        "sent:UNSUBSCRIBE": 2
+      },
+      "sourceUnchanged": true,
+      "fixtureActorsAdded": 3
+    }
+  ],
+  "cases": [
+    {
+      "name": "P0-01 Community post/image CRUD, public bytes and distinct deletion policies",
+      "attempts": [
+        {
+          "status": "passed",
+          "durationMs": 15060,
+          "errors": []
+        }
+      ],
+      "httpResponses": 51,
+      "observations": [
+        {
+          "name": "P01",
+          "data": {
+            "postId": 12,
+            "individualRemoval": {
+              "file": "C:\\dev\\roommate-matching-platform\\backend\\build\\e2e\\82cdabce6030\\uploads\\1ee5085e-50a8-49e5-9d85-c866c89b48a1.png",
+              "exists": false
+            },
+            "retainedFiles": [
+              {
+                "file": "C:\\dev\\roommate-matching-platform\\backend\\build\\e2e\\82cdabce6030\\uploads\\4d342ec1-7ee4-4cf5-898e-aef5f708fd9d.png",
+                "exists": true,
+                "bytes": 68,
+                "sha256": "5e3d382db4dd83d59aa5742793ad6b7903409e865c83bcbc54835049f043bc15"
+              },
+              {
+                "file": "C:\\dev\\roommate-matching-platform\\backend\\build\\e2e\\82cdabce6030\\uploads\\948befd3-ee6c-47c8-b099-c8b370b59049.png",
+                "exists": true,
+                "bytes": 68,
+                "sha256": "5e3d382db4dd83d59aa5742793ad6b7903409e865c83bcbc54835049f043bc15"
+              }
+            ],
+            "publicAfterDelete": 404
+          }
+        }
+      ],
+      "number": "01",
+      "evidenceRun": "81b2aaea5032",
+      "finalStatus": "PASS"
+    },
+    {
+      "name": "P0-02 Normal/anonymous comments, replies, likes, own activity and post-commit refresh failure",
+      "attempts": [
+        {
+          "status": "failed",
+          "durationMs": 27037,
+          "errors": [
+            "Error: A failed follow-up GET must not invite a duplicate committed comment\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m2\u001b[39m"
+          ]
+        }
+      ],
+      "httpResponses": 134,
+      "observations": [
+        {
+          "name": "P02 normal flows",
+          "data": {
+            "postId": 13,
+            "normal": 9,
+            "anonymous": 10,
+            "reply": 11,
+            "anonymousReply": 12,
+            "CRUD": "PASS",
+            "ownership": "PASS",
+            "likes": "PASS",
+            "activities": "PASS"
+          }
+        },
+        {
+          "name": "P02 refresh defect",
+          "data": {
+            "postId": 13,
+            "draftAfterCommitted": "kkiri_e2e_82cdabce6030 continuation-5032 P02 committed refresh failed",
+            "firstCommittedIds": [
+              13
+            ],
+            "finalIds": [
+              13,
+              14
+            ],
+            "injectedGET": 503
+          }
+        }
+      ],
+      "number": "02",
+      "evidenceRun": "81b2aaea5032",
+      "finalStatus": "FAIL"
+    },
+    {
+      "name": "P0-03 Report intake/admin actions/user effects and REJECT versus NONE",
+      "attempts": [
+        {
+          "status": "passed",
+          "durationMs": 29980,
+          "errors": []
+        }
+      ],
+      "httpResponses": 123,
+      "observations": [
+        {
+          "name": "P03",
+          "data": {
+            "reportId": 1,
+            "completed": 2,
+            "postReport": 3,
+            "commentReport": 4,
+            "userReport": 5,
+            "rejection": {
+              "report_id": 1,
+              "reporter_id": 2,
+              "target_user_id": 1,
+              "report_type": "POST",
+              "post_id": 3,
+              "comment_id": null,
+              "reason": "기타",
+              "description": "kkiri_e2e_82cdabce6030 검토 사유",
+              "status": "REJECTED",
+              "resolution_action": "NONE",
+              "processed_by": 3,
+              "created_at": "2026-10-23 04:31:46",
+              "processed_at": "2026-10-23 04:31:47"
+            },
+            "originalREJECTExpectation": "TEST_EXPECTATION_ERROR"
+          }
+        }
+      ],
+      "number": "03",
+      "evidenceRun": "82cdabce6030",
+      "finalStatus": "PASS"
+    },
+    {
+      "name": "P0-04 Chat room creation/list/settings/leave and membership revocation",
+      "attempts": [
+        {
+          "status": "passed",
+          "durationMs": 15054,
+          "errors": []
+        }
+      ],
+      "httpResponses": 73,
+      "observations": [
+        {
+          "name": "P04",
+          "data": {
+            "roomId": 5,
+            "postId": 14,
+            "createdMembers": [
+              {
+                "chat_room_id": 5,
+                "user_id": 7,
+                "is_left": false,
+                "is_pinned": true,
+                "is_muted": true
+              },
+              {
+                "chat_room_id": 5,
+                "user_id": 8,
+                "is_left": true,
+                "is_pinned": false,
+                "is_muted": false
+              }
+            ],
+            "unauthorizedREST": 403,
+            "forbiddenSendStored": false
+          }
+        }
+      ],
+      "number": "04",
+      "evidenceRun": "81b2aaea5032",
+      "finalStatus": "PASS"
+    },
+    {
+      "name": "P0-05 Two-browser bidirectional real STOMP delivery independently of REST polling",
+      "attempts": [
+        {
+          "status": "passed",
+          "durationMs": 8636,
+          "errors": []
+        }
+      ],
+      "httpResponses": 39,
+      "observations": [
+        {
+          "name": "P05",
+          "data": {
+            "roomId": 2,
+            "restBlocked": true,
+            "frames": [
+              {
+                "actor": "B",
+                "direction": "sent",
+                "command": "CONNECT"
+              },
+              {
+                "actor": "B",
+                "direction": "received",
+                "command": "CONNECTED"
+              },
+              {
+                "actor": "B",
+                "direction": "sent",
+                "command": "SUBSCRIBE"
+              },
+              {
+                "actor": "A",
+                "direction": "sent",
+                "command": "CONNECT"
+              },
+              {
+                "actor": "A",
+                "direction": "received",
+                "command": "CONNECTED"
+              },
+              {
+                "actor": "A",
+                "direction": "sent",
+                "command": "SUBSCRIBE"
+              },
+              {
+                "actor": "A",
+                "direction": "sent",
+                "command": "SEND"
+              },
+              {
+                "actor": "A",
+                "direction": "received",
+                "command": "MESSAGE",
+                "message": {
+                  "id": 3,
+                  "roomId": 2,
+                  "senderId": 1,
+                  "text": "kkiri_e2e_82cdabce6030 P05 A to B",
+                  "sentAt": "2026-10-23T13:32:35.4926224",
+                  "read": false
+                }
+              },
+              {
+                "actor": "B",
+                "direction": "received",
+                "command": "MESSAGE",
+                "message": {
+                  "id": 3,
+                  "roomId": 2,
+                  "senderId": 1,
+                  "text": "kkiri_e2e_82cdabce6030 P05 A to B",
+                  "sentAt": "2026-10-23T13:32:35.4926224",
+                  "read": false
+                }
+              },
+              {
+                "actor": "B",
+                "direction": "sent",
+                "command": "SEND"
+              },
+              {
+                "actor": "A",
+                "direction": "received",
+                "command": "MESSAGE",
+                "message": {
+                  "id": 4,
+                  "roomId": 2,
+                  "senderId": 2,
+                  "text": "kkiri_e2e_82cdabce6030 P05 B to A",
+                  "sentAt": "2026-10-23T13:32:35.8319537",
+                  "read": false
+                }
+              },
+              {
+                "actor": "B",
+                "direction": "received",
+                "command": "MESSAGE",
+                "message": {
+                  "id": 4,
+                  "roomId": 2,
+                  "senderId": 2,
+                  "text": "kkiri_e2e_82cdabce6030 P05 B to A",
+                  "sentAt": "2026-10-23T13:32:35.8319537",
+                  "read": false
+                }
+              }
+            ],
+            "rows": [
+              {
+                "message_id": 3,
+                "chat_room_id": 2,
+                "sender_id": 1,
+                "content": "kkiri_e2e_82cdabce6030 P05 A to B",
+                "is_read": false,
+                "sent_at": "2026-10-23 04:32:35"
+              },
+              {
+                "message_id": 4,
+                "chat_room_id": 2,
+                "sender_id": 2,
+                "content": "kkiri_e2e_82cdabce6030 P05 B to A",
+                "is_read": false,
+                "sent_at": "2026-10-23 04:32:36"
+              }
+            ]
+          }
+        }
+      ],
+      "number": "05",
+      "evidenceRun": "82cdabce6030",
+      "finalStatus": "PASS"
+    },
+    {
+      "name": "P0-06 Read receipts, socket reconnect, REST polling recovery and unconfirmed draft",
+      "attempts": [
+        {
+          "status": "failed",
+          "durationMs": 42441,
+          "errors": [
+            "Error: Draft must remain recoverable until its message is confirmed stored\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"kkiri_e2e_82cdabce6030 P06 not committed\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m"
+          ]
+        }
+      ],
+      "httpResponses": 89,
+      "observations": [
+        {
+          "name": "P06 recovery",
+          "data": {
+            "roomId": 3,
+            "receiptId": 5,
+            "unreadBefore": 1,
+            "unreadAfter": 0,
+            "initialConnections": 2,
+            "reconnected": true,
+            "pollingPath": "/api/chat/rooms/3/messages",
+            "committedRows": [
+              {
+                "message_id": 5,
+                "chat_room_id": 3,
+                "sender_id": 1,
+                "content": "kkiri_e2e_82cdabce6030 P06 unread",
+                "is_read": true,
+                "sent_at": "2026-10-23 04:32:44"
+              },
+              {
+                "message_id": 6,
+                "chat_room_id": 3,
+                "sender_id": 1,
+                "content": "kkiri_e2e_82cdabce6030 P06 reconnect gap",
+                "is_read": true,
+                "sent_at": "2026-10-23 04:32:59"
+              },
+              {
+                "message_id": 7,
+                "chat_room_id": 3,
+                "sender_id": 2,
+                "content": "kkiri_e2e_82cdabce6030 P06 reconnected send",
+                "is_read": true,
+                "sent_at": "2026-10-23 04:33:04"
+              },
+              {
+                "message_id": 8,
+                "chat_room_id": 3,
+                "sender_id": 1,
+                "content": "kkiri_e2e_82cdabce6030 P06 polling recovered",
+                "is_read": true,
+                "sent_at": "2026-10-23 04:33:05"
+              }
+            ]
+          }
+        },
+        {
+          "name": "P06 draft defect",
+          "data": {
+            "roomId": 3,
+            "draft": "kkiri_e2e_82cdabce6030 P06 not committed",
+            "draftAfterUnconfirmedPublish": "",
+            "storedRows": 0,
+            "sendFrameObserved": true,
+            "injectedFailure": "client-to-server SEND dropped after publish"
+          }
+        }
+      ],
+      "number": "06",
+      "evidenceRun": "82cdabce6030",
+      "finalStatus": "FAIL"
+    },
+    {
+      "name": "P0-07 Admin permissions, sanctions, direct deletion and logout policy boundary",
+      "attempts": [
+        {
+          "status": "passed",
+          "durationMs": 33244,
+          "errors": []
+        }
+      ],
+      "httpResponses": 164,
+      "observations": [
+        {
+          "name": "P07",
+          "data": {
+            "roomId": 7,
+            "postId": 16,
+            "commentId": 16,
+            "deniedAdminHTTP": 403,
+            "suspendedHTTP": 401,
+            "suspendedSENDStored": false,
+            "tokenlessHTTP": 401,
+            "retainedAuthenticatedSocket": "STILL_VALID_UNDER_CLIENT_ONLY_LOGOUT_CONTRACT",
+            "originalLogoutExpectation": "POLICY_MISMATCH"
+          }
+        }
+      ],
+      "number": "07",
+      "evidenceRun": "5fa01fae60e4",
+      "finalStatus": "PASS"
+    },
+    {
+      "name": "P0-08 Admin dashboard counts/recent rows agree with committed database and user effects",
+      "attempts": [
+        {
+          "status": "passed",
+          "durationMs": 19878,
+          "errors": []
+        }
+      ],
+      "httpResponses": 80,
+      "observations": [
+        {
+          "name": "P08 baseline",
+          "data": {
+            "expected": {
+              "totalMembers": 3,
+              "totalPosts": 8,
+              "totalComments": 1,
+              "totalReports": 5,
+              "pendingReports": 0,
+              "schoolSchedules": 0,
+              "dormitorySchedules": 0
+            },
+            "stats": {
+              "totalMembers": 3,
+              "totalPosts": 8,
+              "totalComments": 1,
+              "totalReports": 5,
+              "pendingReports": 0,
+              "schoolSchedules": 0,
+              "dormitorySchedules": 0
+            },
+            "recentPosts": [
+              9,
+              8,
+              7
+            ],
+            "recentReports": [
+              5,
+              4,
+              3
+            ],
+            "recentMembers": [
+              3,
+              2,
+              1
+            ]
+          }
+        },
+        {
+          "name": "P08 created",
+          "data": {
+            "expected": {
+              "totalMembers": 3,
+              "totalPosts": 9,
+              "totalComments": 2,
+              "totalReports": 6,
+              "pendingReports": 1,
+              "schoolSchedules": 0,
+              "dormitorySchedules": 0
+            },
+            "stats": {
+              "totalMembers": 3,
+              "totalPosts": 9,
+              "totalComments": 2,
+              "totalReports": 6,
+              "pendingReports": 1,
+              "schoolSchedules": 0,
+              "dormitorySchedules": 0
+            },
+            "recentPosts": [
+              11,
+              9,
+              8
+            ],
+            "recentReports": [
+              6,
+              5,
+              4
+            ],
+            "recentMembers": [
+              3,
+              2,
+              1
+            ]
+          }
+        },
+        {
+          "name": "P08 resolved and suspended",
+          "data": {
+            "expected": {
+              "totalMembers": 3,
+              "totalPosts": 9,
+              "totalComments": 2,
+              "totalReports": 6,
+              "pendingReports": 0,
+              "schoolSchedules": 0,
+              "dormitorySchedules": 0
+            },
+            "stats": {
+              "totalMembers": 3,
+              "totalPosts": 9,
+              "totalComments": 2,
+              "totalReports": 6,
+              "pendingReports": 0,
+              "schoolSchedules": 0,
+              "dormitorySchedules": 0
+            },
+            "recentPosts": [
+              11,
+              9,
+              8
+            ],
+            "recentReports": [
+              6,
+              5,
+              4
+            ],
+            "recentMembers": [
+              3,
+              2,
+              1
+            ]
+          }
+        },
+        {
+          "name": "P08 deleted",
+          "data": {
+            "expected": {
+              "totalMembers": 3,
+              "totalPosts": 8,
+              "totalComments": 1,
+              "totalReports": 6,
+              "pendingReports": 0,
+              "schoolSchedules": 0,
+              "dormitorySchedules": 0
+            },
+            "stats": {
+              "totalMembers": 3,
+              "totalPosts": 8,
+              "totalComments": 1,
+              "totalReports": 6,
+              "pendingReports": 0,
+              "schoolSchedules": 0,
+              "dormitorySchedules": 0
+            },
+            "recentPosts": [
+              9,
+              8,
+              7
+            ],
+            "recentReports": [
+              6,
+              5,
+              4
+            ],
+            "recentMembers": [
+              3,
+              2,
+              1
+            ]
+          }
+        }
+      ],
+      "number": "08",
+      "evidenceRun": "82cdabce6030",
+      "finalStatus": "PASS"
+    }
+  ],
+  "resources": {
+    "container": "kkiri-e2e-82cdabce6030",
+    "state": "running",
+    "image": "mysql:8.0.46-oraclelinux9",
+    "serverUuid": "f8a3a22f-ce99-11f1-bd9a-621e38ee5f3d",
+    "testAccount": "e2e_82cdabce6030",
+    "containerRemoved": false,
+    "appProcessesStopped": true,
+    "ports13000And18080Free": true,
+    "imageDirectory": "C:\\dev\\roommate-matching-platform\\backend\\build\\e2e\\82cdabce6030\\uploads",
+    "lastSnapshotAt": "2026-10-23T04:44:37.066Z",
+    "rows": {
+      "profiles": 12,
+      "surveys": 0,
+      "preferences": 0,
+      "matches": 0,
+      "likes": 0,
+      "events": 0,
+      "categories": 0,
+      "users": 12,
+      "posts": 16,
+      "images": 5,
+      "comments": 16,
+      "postLikes": 0,
+      "commentLikes": 0,
+      "rooms": 7,
+      "members": 14,
+      "messages": 21,
+      "reports": 6,
+      "anonymousAuthors": 4,
+      "imageCleanup": 0
+    }
+  },
+  "productionCodeChanged": false,
+  "p1Executed": false,
+  "limitations": [
+    "Counts include fixture login and background reads; injected 503 responses are subtracted from backend API responses.",
+    "Application fixture users accumulate without cleanup; they are not additional MySQL accounts.",
+    "Original failed attempts and the zero-test grep failure remain preserved; final logical results select the evidenced completed attempt.",
+    "STOMP delivery, REST polling recovery and DB commits were verified independently. WSS/proxy/durable storage are not verified."
+  ]
+}

@@ -6,7 +6,8 @@ import { getCommunityPost } from "../../api/communityApi";
 import { useChatRooms } from "./useChatRooms";
 import { useChatMessages } from "./useChatMessages";
 import { useChatSync } from "./useChatSync";
-import { mapMessage, mergeMessages, validMessage } from "./chatMessages";
+import { mapMessage, mergeMessages } from "./chatMessages";
+import { useChatSend } from "./useChatSend";
 
 const ANONYMOUS_PROFILE_IMAGE = `${process.env.PUBLIC_URL || ""}/img/한경이 이미지/감정/힙합 한경이.png`;
 
@@ -23,7 +24,8 @@ function mapRoom(room) {
 }
 
 export function useChat({ isAuthenticated, rooms, setRooms, activeRoom, searchQuery,
-  location, setStatus, onCreated, selectedRoomId, roomCategory = "all", roomQuery = "", visibleMessageIds }) {
+  location, setStatus, onCreated, selectedRoomId, roomCategory = "all", roomQuery = "", visibleMessageIds,
+  accountId, onSendConfirmed }) {
   const socketRef = useRef(null);
   const creationRef = useRef(null);
   const roomRevisionRef = useRef(0);
@@ -183,14 +185,8 @@ export function useChat({ isAuthenticated, rooms, setRooms, activeRoom, searchQu
     finally { mutationRef.current.delete(roomId); }
   };
 
-  const send = (roomId, text) => {
-    try {
-      if (!validMessage(text)) throw new Error("공백만인 메시지는 보낼 수 없으며 최대 2,000 코드 포인트까지 허용됩니다.");
-      if (!socketRef.current) throw new Error("채팅 서버 연결 후 다시 보내주세요.");
-      socketRef.current.publish(roomId, text);
-      return true;
-    } catch (error) { setStatus(error.message); return false; }
-  };
+  const { send, pendingSends } = useChatSend({ accountId, rooms, socketRef, connected, setStatus,
+    onConfirmed: onSendConfirmed });
 
   const leave = async (roomId) => {
     if (mutationRef.current.has(roomId)) return false;
@@ -206,6 +202,6 @@ export function useChat({ isAuthenticated, rooms, setRooms, activeRoom, searchQu
   };
 
   return { ...roomList, ...messageList, connected,
-    searchResults, updateSettings, send, leave,
+    searchResults, updateSettings, send, pendingSends, leave,
     sourcePost: sourcePost && sourcePost.id === sourcePostId ? sourcePost : { status: "loading" } };
 }

@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +22,8 @@ import org.hibernate.annotations.DynamicUpdate;
 import com.kkirikkiri.user.entity.User;
 
 @Entity
-@Table(name = "CHAT_MESSAGE")
+@Table(name = "CHAT_MESSAGE", uniqueConstraints = @UniqueConstraint(name = "uk_chat_message_client",
+		columnNames = {"chat_room_id", "sender_id", "client_message_id"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicUpdate
@@ -46,6 +48,10 @@ public class ChatMessage {
 	@Column(name = "content", nullable = false, length = MAX_CONTENT_LENGTH)
 	private String content;
 
+	/** Optional durable key for retries of the same logical send. Legacy sends remain null. */
+	@Column(name = "client_message_id", length = 36, updatable = false)
+	private String clientMessageId;
+
 	@Column(name = "sent_at", nullable = false, updatable = false, columnDefinition = "DATETIME")
 	private LocalDateTime sentAt;
 
@@ -61,6 +67,10 @@ public class ChatMessage {
 	 * 발신자의 인증 및 활성 참여 여부는 서비스에서 검증한다.
 	 */
 	public ChatMessage(ChatRoom chatRoom, User sender, String content) {
+		this(chatRoom, sender, content, null);
+	}
+
+	public ChatMessage(ChatRoom chatRoom, User sender, String content, String clientMessageId) {
 		this.chatRoom = Objects.requireNonNull(chatRoom, "chatRoom");
 		this.sender = Objects.requireNonNull(sender, "sender");
 		Objects.requireNonNull(content, "content");
@@ -68,6 +78,7 @@ public class ChatMessage {
 			throw new IllegalArgumentException("content must not exceed 2000 characters");
 		}
 		this.content = content;
+		this.clientMessageId = clientMessageId;
 	}
 
 	@PrePersist

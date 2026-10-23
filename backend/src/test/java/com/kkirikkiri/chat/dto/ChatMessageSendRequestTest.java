@@ -18,6 +18,19 @@ import com.kkirikkiri.chat.entity.ChatRoomCategory;
 import com.kkirikkiri.user.entity.User;
 
 class ChatMessageSendRequestTest {
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.NullSource
+    @ValueSource(strings = {"b29b86b5-184a-4c44-a28e-89c62ecc5398"})
+    void acceptsOptionalUuidV4SendId(String id) {
+        assertTrue(validator.validate(new ChatMessageSendRequest("hello", id)).isEmpty());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "not-a-uuid", "b29b86b5-184a-1c44-a28e-89c62ecc5398"})
+    void rejectsMalformedSendIds(String id) {
+        assertEquals("clientMessageId", validator.validate(new ChatMessageSendRequest("hello", id))
+                .iterator().next().getPropertyPath().toString());
+    }
     private static ValidatorFactory factory;
     private static Validator validator;
     private final User sender = new User("encoded", "sender@example.com");

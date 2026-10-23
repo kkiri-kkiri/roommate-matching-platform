@@ -1,0 +1,1048 @@
+{
+  "date": "2026-10-23",
+  "scope": "Community and Chat D1/D2 defect fixes",
+  "previousEvidence": "backend/validation/ccra-stage6-7-p0-20261023.json",
+  "frontend": {
+    "status": "PASS",
+    "suites": 14,
+    "passedSuites": 14,
+    "tests": 154,
+    "passed": 154,
+    "failed": 0,
+    "command": "npm test -- --watchAll=false --runInBand --testPathPattern=\"pages/community|pages/chat|api/chatSocket.test|api/chatApi.test|api/communityApi.test\" --json --outputFile=ccra-fix-test-results.json",
+    "rawResult": "backend/build/ccra-fix-frontend-results.json",
+    "log": "frontend/ccra-fix-tests.log",
+    "results": [
+      {
+        "file": "frontend/src/pages/chat/ChatPage.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "messages behind a profile dialog are acknowledged only after it closes",
+            "status": "passed"
+          },
+          {
+            "name": "a hidden tab does not acknowledge history until it becomes visible",
+            "status": "passed"
+          },
+          {
+            "name": "dropped SEND retains the input and blocks double submit until the exact saved STOMP echo",
+            "status": "passed"
+          },
+          {
+            "name": "REST recovery confirms a committed send when the STOMP echo was lost without sending again",
+            "status": "passed"
+          },
+          {
+            "name": "reload restores pending content and the retry sends the same ID even if storage already committed",
+            "status": "passed"
+          },
+          {
+            "name": "composes and sends 2000 a code points and blocks 2001 without truncation",
+            "status": "passed"
+          },
+          {
+            "name": "composes and sends 2000 가 code points and blocks 2001 without truncation",
+            "status": "passed"
+          },
+          {
+            "name": "composes and sends 2000 😀 code points and blocks 2001 without truncation",
+            "status": "passed"
+          },
+          {
+            "name": "paste and IME composition preserve compound text and do not send until composition ends",
+            "status": "passed"
+          },
+          {
+            "name": "prepending older messages preserves the visible anchor and acknowledges only the viewport",
+            "status": "passed"
+          },
+          {
+            "name": "account replacement cleans up the old socket and does not retain its cached rooms",
+            "status": "passed"
+          },
+          {
+            "name": "loads more rooms visibly while retaining global category counts",
+            "status": "passed"
+          },
+          {
+            "name": "anonymous authors have no profile link or profile modal even via a direct URL",
+            "status": "passed"
+          },
+          {
+            "name": "chat avatars preserve anonymous=true identity in the list, header and messages",
+            "status": "passed"
+          },
+          {
+            "name": "chat avatars preserve anonymous=false identity in the list, header and messages",
+            "status": "passed"
+          },
+          {
+            "name": "hides all profile tags in the ROOMMATE chat modal with 룸메찾기 origin and 0 tags",
+            "status": "passed"
+          },
+          {
+            "name": "hides all profile tags in the ROOMMATE chat modal with 룸메찾기 origin and 1 tags",
+            "status": "passed"
+          },
+          {
+            "name": "hides all profile tags in the ROOMMATE chat modal with 룸메찾기 origin and 5 tags",
+            "status": "passed"
+          },
+          {
+            "name": "hides all profile tags in the COMMUNITY chat modal with 커뮤니티 origin and 0 tags",
+            "status": "passed"
+          },
+          {
+            "name": "hides all profile tags in the COMMUNITY chat modal with 커뮤니티 origin and 1 tags",
+            "status": "passed"
+          },
+          {
+            "name": "hides all profile tags in the COMMUNITY chat modal with 커뮤니티 origin and 5 tags",
+            "status": "passed"
+          },
+          {
+            "name": "preserves roommate score handling for 0",
+            "status": "passed"
+          },
+          {
+            "name": "preserves roommate score handling for null",
+            "status": "passed"
+          },
+          {
+            "name": "keeps the same counterpart's rooms separate and counts each category",
+            "status": "passed"
+          },
+          {
+            "name": "opens detail locally and preserves chat state on close",
+            "status": "passed"
+          },
+          {
+            "name": "opens detail locally and preserves chat state on escape",
+            "status": "passed"
+          },
+          {
+            "name": "opens detail locally and preserves chat state on backdrop",
+            "status": "passed"
+          },
+          {
+            "name": "returns locally from a failed detail lookup without changing a legacy profile URL",
+            "status": "passed"
+          },
+          {
+            "name": "aborts a pending detail lookup when the local modal closes",
+            "status": "passed"
+          },
+          {
+            "name": "places message search directly below the roommate header and preserves searching and clearing",
+            "status": "passed"
+          },
+          {
+            "name": "restores the community source after a direct visit",
+            "status": "passed"
+          },
+          {
+            "name": "classifies source lookup failure {\"status\":400,\"errorCode\":\"INVALID_REQUEST\"} without a clickable fallback",
+            "status": "passed"
+          },
+          {
+            "name": "classifies source lookup failure {} without a clickable fallback",
+            "status": "passed"
+          },
+          {
+            "name": "classifies source lookup failure {\"status\":500,\"errorCode\":\"INTERNAL_SERVER_ERROR\"} without a clickable fallback",
+            "status": "passed"
+          },
+          {
+            "name": "classifies source lookup failure {\"status\":400} without a clickable fallback",
+            "status": "passed"
+          },
+          {
+            "name": "classifies source lookup failure {\"status\":400,\"errorCode\":\"VALIDATION_ERROR\"} without a clickable fallback",
+            "status": "passed"
+          },
+          {
+            "name": "classifies source lookup failure {\"status\":401,\"errorCode\":\"UNAUTHORIZED\"} without a clickable fallback",
+            "status": "passed"
+          },
+          {
+            "name": "classifies source lookup failure {\"status\":403,\"errorCode\":\"FORBIDDEN\"} without a clickable fallback",
+            "status": "passed"
+          },
+          {
+            "name": "ignores a late deleted-post response after switching to another community room",
+            "status": "passed"
+          },
+          {
+            "name": "clears a deleted source notice when switching to a normal community post",
+            "status": "passed"
+          },
+          {
+            "name": "does not classify an invalid source ID as a deleted post",
+            "status": "passed"
+          },
+          {
+            "name": "treats an incomplete success response as a lookup failure",
+            "status": "passed"
+          },
+          {
+            "name": "reusing a roommate room does not duplicate it or remove the counterpart's community room",
+            "status": "passed"
+          },
+          {
+            "name": "handles unavailable profiles and returns to the original chat: 프로필이 삭제되었거나 공개되지 않습니다.",
+            "status": "passed"
+          },
+          {
+            "name": "handles unavailable profiles and returns to the original chat: 프로필 조회에 실패했습니다.",
+            "status": "passed"
+          },
+          {
+            "name": "uses the existing detail API and closes back to the original chat",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "frontend/src/pages/community/CommunityPage.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "uses server filtering, sorting and paging, and renders list DTO fields",
+            "status": "passed"
+          },
+          {
+            "name": "changes the dormitory filter and resets paging: 나래관",
+            "status": "passed"
+          },
+          {
+            "name": "changes the dormitory filter and resets paging: 호연관",
+            "status": "passed"
+          },
+          {
+            "name": "changes the dormitory filter and resets paging: 비봉관",
+            "status": "passed"
+          },
+          {
+            "name": "changes the dormitory filter and resets paging: 창조관",
+            "status": "passed"
+          },
+          {
+            "name": "loads activity from /community/my-posts",
+            "status": "passed"
+          },
+          {
+            "name": "loads activity from /community/my-comments",
+            "status": "passed"
+          },
+          {
+            "name": "my posts link to editing and delete only after confirmation, then refresh the list",
+            "status": "passed"
+          },
+          {
+            "name": "my comments preserve a failed edit draft and save inline on retry",
+            "status": "passed"
+          },
+          {
+            "name": "my reply deletion prevents duplicate requests and adjusts the last page",
+            "status": "passed"
+          },
+          {
+            "name": "refetches likes, preserves failed comment drafts, and uses numeric chat IDs",
+            "status": "passed"
+          },
+          {
+            "name": "alerts report errors, keeps the dialog open for retry and only closes after success",
+            "status": "passed"
+          },
+          {
+            "name": "creates a post and navigates using its server ID",
+            "status": "passed"
+          },
+          {
+            "name": "shows server errors for missing posts",
+            "status": "passed"
+          },
+          {
+            "name": "editing retains only selected server image IDs and sends new Files separately",
+            "status": "passed"
+          },
+          {
+            "name": "renders anonymous and public authors on /community",
+            "status": "passed"
+          },
+          {
+            "name": "renders anonymous and public authors on /community/my-posts",
+            "status": "passed"
+          },
+          {
+            "name": "renders anonymous and public authors on /community/posts/12",
+            "status": "passed"
+          },
+          {
+            "name": "sends anonymous=true when creating a checked post",
+            "status": "passed"
+          },
+          {
+            "name": "editing displays an immutable anonymous choice: true",
+            "status": "passed"
+          },
+          {
+            "name": "editing displays an immutable anonymous choice: false",
+            "status": "passed"
+          },
+          {
+            "name": "restores locked anonymity after edit-page remount: true",
+            "status": "passed"
+          },
+          {
+            "name": "restores locked anonymity after edit-page remount: false",
+            "status": "passed"
+          },
+          {
+            "name": "failed edit retains drafts and locked anonymity before retry: true",
+            "status": "passed"
+          },
+          {
+            "name": "failed edit retains drafts and locked anonymity before retry: false",
+            "status": "passed"
+          },
+          {
+            "name": "creation still allows toggling anonymity in either direction",
+            "status": "passed"
+          },
+          {
+            "name": "keeps owner actions for anonymous posts",
+            "status": "passed"
+          },
+          {
+            "name": "starts anonymous post chat from its source without an author ID",
+            "status": "passed"
+          },
+          {
+            "name": "restores anonymous ownership from mine after remount: /community",
+            "status": "passed"
+          },
+          {
+            "name": "restores anonymous ownership from mine after remount: /community/my-posts",
+            "status": "passed"
+          },
+          {
+            "name": "restores anonymous ownership from mine after remount: /community/posts/12",
+            "status": "passed"
+          },
+          {
+            "name": "does not infer post ownership from matching IDs when server mine is false",
+            "status": "passed"
+          },
+          {
+            "name": "blocks anonymous edit route when mine is false",
+            "status": "passed"
+          },
+          {
+            "name": "submits comments and replies with independent anonymous choices: true",
+            "status": "passed"
+          },
+          {
+            "name": "submits comments and replies with independent anonymous choices: false",
+            "status": "passed"
+          },
+          {
+            "name": "keeps an anonymous comment draft when submission fails",
+            "status": "passed"
+          },
+          {
+            "name": "renders comment and reply profile images, anonymous=true",
+            "status": "passed"
+          },
+          {
+            "name": "renders comment and reply profile images, anonymous=false",
+            "status": "passed"
+          },
+          {
+            "name": "offers first post creation for an empty dormitory and category filter",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "frontend/src/pages/chat/useChat.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "loading history does not acknowledge incoming messages outside the viewport",
+            "status": "passed"
+          },
+          {
+            "name": "a late older unread snapshot cannot overwrite a newer successful acknowledgement",
+            "status": "passed"
+          },
+          {
+            "name": "merges a broadcast racing history and removes duplicate IDs; send waits for broadcast",
+            "status": "passed"
+          },
+          {
+            "name": "switches subscriptions, ignores stale history and reloads after reconnect",
+            "status": "passed"
+          },
+          {
+            "name": "read/settings/leave only succeed after REST success and expose failures",
+            "status": "passed"
+          },
+          {
+            "name": "acknowledges only rendered incoming IDs after history resolves, retaining unseen unread count",
+            "status": "passed"
+          },
+          {
+            "name": "does not acknowledge own messages, empty history or failed history requests",
+            "status": "passed"
+          },
+          {
+            "name": "broadcasts arriving during an acknowledgement are sent as separate exact receipts",
+            "status": "passed"
+          },
+          {
+            "name": "creates ROOMMATE using the server room ID",
+            "status": "passed"
+          },
+          {
+            "name": "maps existing COMMUNITY post state and rejects missing comment IDs",
+            "status": "passed"
+          },
+          {
+            "name": "creates anonymous COMMUNITY chat with source ID and no recipient ID",
+            "status": "passed"
+          },
+          {
+            "name": "searches the server without replacing the room history",
+            "status": "passed"
+          },
+          {
+            "name": "reentering regular posts updates the source and preserves loaded messages despite a stale room list",
+            "status": "passed"
+          },
+          {
+            "name": "opening a room refreshes its latest source without creating a room or clearing history",
+            "status": "passed"
+          },
+          {
+            "name": "anonymous broadcasts keep sender direction for viewerIsAuthor=true",
+            "status": "passed"
+          },
+          {
+            "name": "anonymous broadcasts keep sender direction for viewerIsAuthor=false",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "frontend/src/pages/community/CommunityPostPage.recovery.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "confirmed comment (anonymous=false) is not posted again after failed refresh",
+            "status": "passed"
+          },
+          {
+            "name": "confirmed comment (anonymous=true) is not posted again after failed refresh",
+            "status": "passed"
+          },
+          {
+            "name": "confirmed reply (anonymous=false) closes composer and refresh retry cannot POST",
+            "status": "passed"
+          },
+          {
+            "name": "confirmed reply (anonymous=true) closes composer and refresh retry cannot POST",
+            "status": "passed"
+          },
+          {
+            "name": "failed POST retains draft and anonymity and never tries the follow-up GET",
+            "status": "passed"
+          },
+          {
+            "name": "confirmed anonymous comment edit also finishes when refresh fails",
+            "status": "passed"
+          },
+          {
+            "name": "confirmed anonymous comment delete also finishes when refresh fails",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "frontend/src/pages/chat/useChatMessages.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "loads older pages once, retains new arrivals, deduplicates and stops at last page",
+            "status": "passed"
+          },
+          {
+            "name": "retries a failed older cursor without removing existing history",
+            "status": "passed"
+          },
+          {
+            "name": "search pagination resets on a new term or room, ignoring a late old page",
+            "status": "passed"
+          },
+          {
+            "name": "polls only visible own receipts and never acknowledges a fetched message",
+            "status": "passed"
+          },
+          {
+            "name": "a forbidden resync removes a room left on another client",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "frontend/src/pages/chat/useChatRooms.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "appends server pages in order, deduplicates IDs and uses global counts",
+            "status": "passed"
+          },
+          {
+            "name": "filter changes reset pagination and ignore a stale next page",
+            "status": "passed"
+          },
+          {
+            "name": "a failed next page preserves loaded rooms and retries the same page",
+            "status": "passed"
+          },
+          {
+            "name": "deep links load a room outside the page without inserting it into filtered list IDs",
+            "status": "passed"
+          },
+          {
+            "name": "stale selected-room responses cannot restore a previously selected room",
+            "status": "passed"
+          },
+          {
+            "name": "background sync preserves loaded pages with a stable prefix and resets changed order safely",
+            "status": "passed"
+          },
+          {
+            "name": "an unselected or newly created room gets server preview, unread count and order without incrementing locally",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "frontend/src/pages/community/CommunityAnonymousComments.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "renders server numbers with gaps, preserves anonymous ownership and reply presentation after reorder",
+            "status": "passed"
+          },
+          {
+            "name": "opens an anonymous author's chat using the comment source and no real user ID",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "frontend/src/pages/chat/useChatSend.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "publish alone and repeated clicks never clear pending or create another request",
+            "status": "passed"
+          },
+          {
+            "name": "timeout and repeated lost confirmations reuse the same durable key and body",
+            "status": "passed"
+          },
+          {
+            "name": "only an own, same-room, same-key committed message confirms, regardless of REST or STOMP origin",
+            "status": "passed"
+          },
+          {
+            "name": "send exception, disconnect and reload preserve a recoverable draft and retry ID",
+            "status": "passed"
+          },
+          {
+            "name": "a different account never loads another account's pending content",
+            "status": "passed"
+          },
+          {
+            "name": "unavailable durable storage blocks publish and leaves the editable draft untouched",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "frontend/src/pages/chat/useChatSync.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "polls one bounded REST page and selected receipts while visible, stops on logout",
+            "status": "passed"
+          },
+          {
+            "name": "coalesces duplicate notifications/reconnect/focus and serializes reversed arrivals",
+            "status": "passed"
+          },
+          {
+            "name": "returns from hidden tabs and catches up a long gap in bounded batches",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "frontend/src/api/communityApi.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "unwraps the existing post response",
+            "status": "passed"
+          },
+          {
+            "name": "preserves HTTP status 400 and errorCode INVALID_REQUEST alongside the existing message",
+            "status": "passed"
+          },
+          {
+            "name": "preserves HTTP status 401 and errorCode UNAUTHORIZED alongside the existing message",
+            "status": "passed"
+          },
+          {
+            "name": "preserves HTTP status 403 and errorCode FORBIDDEN alongside the existing message",
+            "status": "passed"
+          },
+          {
+            "name": "preserves HTTP status 500 and errorCode INTERNAL_SERVER_ERROR alongside the existing message",
+            "status": "passed"
+          },
+          {
+            "name": "does not invent a deletion code for a network failure",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "frontend/src/api/chatApi.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "keeps the offset request shape and adds a cursor only when requested",
+            "status": "passed"
+          },
+          {
+            "name": "requests bounded room pages with server filters and retains metadata",
+            "status": "passed"
+          },
+          {
+            "name": "fetches a selected room independently from the loaded list page",
+            "status": "passed"
+          },
+          {
+            "name": "sends exact read receipt IDs with the existing auth session and unwraps the response",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "frontend/src/api/chatSocket.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "authenticates and reattaches only the selected subscription on reconnect",
+            "status": "passed"
+          },
+          {
+            "name": "old callbacks and stale cleanup cannot affect the new room or a stopped session",
+            "status": "passed"
+          },
+          {
+            "name": "publishes the durable client key without treating transport acceptance as storage confirmation",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "frontend/src/pages/community/communityData.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "resolves uploaded image URLs against the API server",
+            "status": "passed"
+          },
+          {
+            "name": "groups unordered flat replies and preserves numeric authors and server images",
+            "status": "passed"
+          },
+          {
+            "name": "defaults legacy posts to public and displays anonymous posts independently of identity",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "frontend/src/pages/chat/chatMessages.test.js",
+        "status": "passed",
+        "cases": [
+          {
+            "name": "allows 2000 and rejects 2001 code points for 가",
+            "status": "passed"
+          },
+          {
+            "name": "allows 2000 and rejects 2001 code points for a",
+            "status": "passed"
+          },
+          {
+            "name": "allows 2000 and rejects 2001 code points for 😀",
+            "status": "passed"
+          },
+          {
+            "name": "counts mixed/compound text by code points: 가a😀",
+            "status": "passed"
+          },
+          {
+            "name": "counts mixed/compound text by code points: 👨‍👩‍👧‍👦",
+            "status": "passed"
+          },
+          {
+            "name": "counts mixed/compound text by code points: é",
+            "status": "passed"
+          },
+          {
+            "name": "keeps blank validation and monotonic receipts, and orders sub-millisecond timestamps",
+            "status": "passed"
+          }
+        ]
+      }
+    ]
+  },
+  "backend": {
+    "status": "PASS",
+    "databaseConnected": false,
+    "type": "Mockito/Validator/entity unit tests only; no Spring application context",
+    "tests": 164,
+    "suites": [
+      {
+        "name": "com.kkirikkiri.chat.controller.ChatWebSocketControllerTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "com.kkirikkiri.chat.controller.ChatWebSocketControllerTest",
+          "com.kkirikkiri.chat.controller.ChatWebSocketControllerTest",
+          "com.kkirikkiri.chat.controller.ChatWebSocketControllerTest",
+          "com.kkirikkiri.chat.controller.ChatWebSocketControllerTest",
+          "com.kkirikkiri.chat.controller.ChatWebSocketControllerTest",
+          "com.kkirikkiri.chat.controller.ChatWebSocketControllerTest"
+        ]
+      },
+      {
+        "name": "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+        "tests": 31,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest",
+          "com.kkirikkiri.chat.dto.ChatMessageSendRequestTest"
+        ]
+      },
+      {
+        "name": "com.kkirikkiri.chat.entity.ChatMessageTest",
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "com.kkirikkiri.chat.entity.ChatMessageTest",
+          "com.kkirikkiri.chat.entity.ChatMessageTest",
+          "com.kkirikkiri.chat.entity.ChatMessageTest",
+          "com.kkirikkiri.chat.entity.ChatMessageTest",
+          "com.kkirikkiri.chat.entity.ChatMessageTest",
+          "com.kkirikkiri.chat.entity.ChatMessageTest"
+        ]
+      },
+      {
+        "name": "com.kkirikkiri.chat.service.ChatServiceTest",
+        "tests": 121,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest",
+          "com.kkirikkiri.chat.service.ChatServiceTest"
+        ]
+      }
+    ],
+    "command": "gradlew.bat test --tests com.kkirikkiri.chat.service.ChatServiceTest --tests com.kkirikkiri.chat.controller.ChatWebSocketControllerTest --tests com.kkirikkiri.chat.dto.ChatMessageSendRequestTest --tests com.kkirikkiri.chat.entity.ChatMessageTest bootJar",
+    "log": "backend/build/ccra-fix-unit.log"
+  },
+  "checks": {
+    "frontendBuild": "PASS",
+    "bootJar": "PASS",
+    "contract": {
+      "status": "PASS",
+      "endpoints": 73,
+      "recordDtos": 75,
+      "entities": 30
+    },
+    "diffCheck": "PASS"
+  },
+  "actualServerDatabaseE2e": {
+    "status": "NOT_RUN",
+    "reason": "No authorization for new resources; retained resources must not be accessed. Previous P0 result remains unchanged."
+  },
+  "resources": {
+    "existingDatabaseOrDockerAccess": false,
+    "newDatabaseOrDockerResources": 0,
+    "deletedDatabaseOrDockerResources": 0,
+    "springBootServersStarted": 0,
+    "migrationsApplied": false
+  },
+  "limitations": [
+    "Manual nullable client_message_id column and UNIQUE constraint migration is required before backend deployment.",
+    "New frontend requires new backend; legacy sends with no clientMessageId remain supported but do not gain deduplication.",
+    "MySQL physical DDL, locking and concurrent duplicate sends are not verified by mock unit tests.",
+    "Pending content persists in account-scoped sessionStorage for the current browser tab; tab closure/storage removal is outside its retention guarantee.",
+    "No automatic retransmission; unknown outcomes retain the same ID for explicit retry.",
+    "Existing auth/calendar/other-team production code and shared E2E runner were not changed by this fix."
+  ],
+  "files": [
+    {
+      "file": "frontend/src/pages/community/CommunityPostPage.js",
+      "sha256": "fde4af62c8fe25a0c34072b511a52782d54fdb14f944f037d0192fd3ac1ade4a"
+    },
+    {
+      "file": "frontend/src/pages/community/CommunityPostPage.recovery.test.js",
+      "sha256": "1046f8474ef6a2501e5f35ffe1c0a9ba9c18dae22bc7ee7dec6c24ef118a47af"
+    },
+    {
+      "file": "frontend/src/api/chatSocket.js",
+      "sha256": "76fc8fe50b77b1f34686e17c37363693ed6992a00cac8a4e3ab30bdfd6f2da57"
+    },
+    {
+      "file": "frontend/src/api/chatSocket.test.js",
+      "sha256": "997d42ae959a265e7354776ed9b40c3c401bf3620d8352d38109503ad15ae1cf"
+    },
+    {
+      "file": "frontend/src/pages/chat/ChatPage.js",
+      "sha256": "5ae4fef52d3128f1afb69aeed37150823bbb686dec1d5aa98658a41fe50598de"
+    },
+    {
+      "file": "frontend/src/pages/chat/ChatPage.test.js",
+      "sha256": "8fdbabf328beec9be38ed0546fe2c900a6e73f05800062b8f9d5869b7a8edda9"
+    },
+    {
+      "file": "frontend/src/pages/chat/useChat.js",
+      "sha256": "183be12e177a9b9285c9d778b04c47b5571d5c860c8d273412f801201413fd41"
+    },
+    {
+      "file": "frontend/src/pages/chat/useChat.test.js",
+      "sha256": "a070e9c2352c024edbf862aeec52fe146c280aad7a1c9a62d0d8bdbb989218f2"
+    },
+    {
+      "file": "frontend/src/pages/chat/useChatSend.js",
+      "sha256": "6002fcf74e4534c62540470b62695ecd00a910dec442f85b4ad6a26489c8aa27"
+    },
+    {
+      "file": "frontend/src/pages/chat/useChatSend.test.js",
+      "sha256": "47cd2c0ddd3952de759d4fe814cbb2bc586b38450ee2e8adf748d5ebed18253a"
+    },
+    {
+      "file": "backend/src/main/java/com/kkirikkiri/chat/dto/ChatMessageSendRequest.java",
+      "sha256": "ce0e91ad9e7c02325a324dfcf666a870fa5c385d53f320c3fe3386b78c7551fc"
+    },
+    {
+      "file": "backend/src/main/java/com/kkirikkiri/chat/dto/ChatMessageBroadcastResponse.java",
+      "sha256": "56dd32a12d3191ed789093a185ab6314a0d479eb48ebc7494fb256c32dd71911"
+    },
+    {
+      "file": "backend/src/main/java/com/kkirikkiri/chat/dto/ChatMessageResponse.java",
+      "sha256": "684923f0bfa5e897707db9b060d2765ed96e1154c5d581a6749fa09ba18e049b"
+    },
+    {
+      "file": "backend/src/main/java/com/kkirikkiri/chat/entity/ChatMessage.java",
+      "sha256": "c84c92f833e9d439533ff61595fce2ed94123a828602bf0a601edab61fea1bf0"
+    },
+    {
+      "file": "backend/src/main/java/com/kkirikkiri/chat/repository/ChatMessageRepository.java",
+      "sha256": "51f6f326c309d31e29305defbd4b4606626e2f4c7bc72633ae6e27c85a3b5ce6"
+    },
+    {
+      "file": "backend/src/main/java/com/kkirikkiri/chat/service/ChatService.java",
+      "sha256": "6e6612baba26caeb05ceb65ec3ea2fcdac65a2dd09b7698e47db478956c373ea"
+    },
+    {
+      "file": "backend/src/test/java/com/kkirikkiri/chat/service/ChatServiceTest.java",
+      "sha256": "1330fc4d9f519c54523953df315bdbd83039a88099ef56678925df87d164025d"
+    },
+    {
+      "file": "backend/src/test/java/com/kkirikkiri/chat/dto/ChatMessageSendRequestTest.java",
+      "sha256": "2eb34e841ad742099754733746739013c65e5d2e29321fa256ba682e4d97bf3d"
+    },
+    {
+      "file": "backend/API.md",
+      "sha256": "3fbffe6cac3f00835ca3d5abcd7315afcbb705cb0933869941d90abc3fe0b665"
+    },
+    {
+      "file": "backend/ERD.md",
+      "sha256": "c8b7c378968fdfdcf4d493abdd3d4bb741b32cf6ba60870857c020e409423d96"
+    },
+    {
+      "file": "backend/migrations/20261023_chat_send_idempotency.sql",
+      "sha256": "88dcb3a8f832acd12e49809d4158b6a7d24f1870df0d3f84cdc75d8964f93fcd"
+    },
+    {
+      "file": "backend/migrations/20261023_chat_send_idempotency.md",
+      "sha256": "9b180f690d039fcdba1b3ef24abe9f8eb9523b75b2f2ba7babbc39728fe38c67"
+    }
+  ]
+}

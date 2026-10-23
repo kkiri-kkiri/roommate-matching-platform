@@ -1,0 +1,1992 @@
+{
+  "date": "2026-10-23",
+  "timezone": "Asia/Seoul",
+  "owner": "82cdabce6030",
+  "database": "kkiri_e2e_82cdabce6030",
+  "logicalResults": {
+    "executed": 9,
+    "passed": 9,
+    "failed": 0
+  },
+  "rawAttempts": {
+    "executed": 10,
+    "passed": 9,
+    "failed": 1,
+    "harnessFailures": 1,
+    "reproducedServiceDefects": 0
+  },
+  "migration": {
+    "index": [
+      {
+        "index_name": "uk_chat_message_client",
+        "non_unique": 0,
+        "seq_in_index": 1,
+        "column_name": "chat_room_id"
+      },
+      {
+        "index_name": "uk_chat_message_client",
+        "non_unique": 0,
+        "seq_in_index": 2,
+        "column_name": "sender_id"
+      },
+      {
+        "index_name": "uk_chat_message_client",
+        "non_unique": 0,
+        "seq_in_index": 3,
+        "column_name": "client_message_id"
+      }
+    ],
+    "originalRows": {
+      "auth_email_identity": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "auth_limit_bucket": {
+        "current": 30,
+        "original": 30,
+        "missing": 0,
+        "changed": 0
+      },
+      "calendar_category": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "calendar_category_setting": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "calendar_event": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "chat_message": {
+        "current": 21,
+        "original": 21,
+        "missing": 0,
+        "changed": 0
+      },
+      "chat_room": {
+        "current": 7,
+        "original": 7,
+        "missing": 0,
+        "changed": 0
+      },
+      "chat_room_member": {
+        "current": 14,
+        "original": 14,
+        "missing": 0,
+        "changed": 0
+      },
+      "comment_like": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "community_anonymous_author": {
+        "current": 4,
+        "original": 4,
+        "missing": 0,
+        "changed": 0
+      },
+      "community_comment": {
+        "current": 16,
+        "original": 16,
+        "missing": 0,
+        "changed": 0
+      },
+      "community_post": {
+        "current": 16,
+        "original": 16,
+        "missing": 0,
+        "changed": 0
+      },
+      "dormitory": {
+        "current": 2,
+        "original": 2,
+        "missing": 0,
+        "changed": 0
+      },
+      "email_verification": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "faculty": {
+        "current": 2,
+        "original": 2,
+        "missing": 0,
+        "changed": 0
+      },
+      "major": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "password_reset_token": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "post_image": {
+        "current": 5,
+        "original": 5,
+        "missing": 0,
+        "changed": 0
+      },
+      "post_image_cleanup": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "post_like": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "preference_criterion": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "profile_like": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "profile_survey": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "profile_survey_option": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "report": {
+        "current": 6,
+        "original": 6,
+        "missing": 0,
+        "changed": 0
+      },
+      "roommate_match": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "roommate_preference": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "roommate_preference_option": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "schedule_crawl_run": {
+        "current": 0,
+        "original": 0,
+        "missing": 0,
+        "changed": 0
+      },
+      "user": {
+        "current": 12,
+        "original": 12,
+        "missing": 0,
+        "changed": 0
+      },
+      "user_profile": {
+        "current": 12,
+        "original": 12,
+        "missing": 0,
+        "changed": 0
+      }
+    },
+    "column": [
+      {
+        "column_name": "client_message_id",
+        "column_type": "varchar(36)",
+        "is_nullable": "YES"
+      }
+    ],
+    "sql": "ALTER TABLE `chat_message`\n    ADD COLUMN client_message_id VARCHAR(36) NULL,\n    ADD CONSTRAINT uk_chat_message_client UNIQUE (chat_room_id, sender_id, client_message_id)",
+    "legacyMessages": [
+      {
+        "total": 21,
+        "null_keys": 21
+      }
+    ],
+    "identity": [
+      {
+        "db": "kkiri_e2e_82cdabce6030",
+        "account": "e2e_82cdabce6030@%",
+        "version": "8.0.46",
+        "uuid": "f8a3a22f-ce99-11f1-bd9a-621e38ee5f3d",
+        "hostname": "kkiri-e2e",
+        "timezone": "+00:00"
+      }
+    ],
+    "applied": true
+  },
+  "preservation": {
+    "auth_email_identity": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "auth_limit_bucket": {
+      "changed": 3,
+      "current": 42,
+      "original": 30,
+      "missing": 0
+    },
+    "calendar_category": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "calendar_category_setting": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "calendar_event": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "chat_message": {
+      "changed": 0,
+      "current": 42,
+      "original": 21,
+      "missing": 0
+    },
+    "chat_room": {
+      "changed": 0,
+      "current": 12,
+      "original": 7,
+      "missing": 0
+    },
+    "chat_room_member": {
+      "changed": 0,
+      "current": 24,
+      "original": 14,
+      "missing": 0
+    },
+    "comment_like": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "community_anonymous_author": {
+      "changed": 0,
+      "current": 8,
+      "original": 4,
+      "missing": 0
+    },
+    "community_comment": {
+      "changed": 0,
+      "current": 26,
+      "original": 16,
+      "missing": 0
+    },
+    "community_post": {
+      "changed": 0,
+      "current": 26,
+      "original": 16,
+      "missing": 0
+    },
+    "dormitory": {
+      "changed": 0,
+      "current": 2,
+      "original": 2,
+      "missing": 0
+    },
+    "email_verification": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "faculty": {
+      "changed": 0,
+      "current": 2,
+      "original": 2,
+      "missing": 0
+    },
+    "major": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "password_reset_token": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "post_image": {
+      "changed": 0,
+      "current": 5,
+      "original": 5,
+      "missing": 0
+    },
+    "post_image_cleanup": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "post_like": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "preference_criterion": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "profile_like": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "profile_survey": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "profile_survey_option": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "report": {
+      "changed": 0,
+      "current": 6,
+      "original": 6,
+      "missing": 0
+    },
+    "roommate_match": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "roommate_preference": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "roommate_preference_option": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "schedule_crawl_run": {
+      "changed": 0,
+      "current": 0,
+      "original": 0,
+      "missing": 0
+    },
+    "user": {
+      "changed": 0,
+      "current": 18,
+      "original": 12,
+      "missing": 0
+    },
+    "user_profile": {
+      "changed": 0,
+      "current": 18,
+      "original": 12,
+      "missing": 0
+    }
+  },
+  "cases": [
+    {
+      "name": "RV-01 comment anonymous=false: committed POST, failed GET, read-only retry",
+      "status": "PASS",
+      "evidenceRun": "3bee6cb70e3b",
+      "durationMs": 9168
+    },
+    {
+      "name": "RV-01 comment anonymous=true: committed POST, failed GET, read-only retry",
+      "status": "PASS",
+      "evidenceRun": "3bee6cb70e3b",
+      "durationMs": 6845
+    },
+    {
+      "name": "RV-01 reply anonymous=false: committed POST, failed GET, read-only retry",
+      "status": "PASS",
+      "evidenceRun": "3bee6cb70e3b",
+      "durationMs": 7503
+    },
+    {
+      "name": "RV-01 reply anonymous=true: committed POST, failed GET, read-only retry",
+      "status": "PASS",
+      "evidenceRun": "3bee6cb70e3b",
+      "durationMs": 8292
+    },
+    {
+      "name": "RV-02 Existing comment/reply CRUD and anonymity remain compatible",
+      "status": "PASS",
+      "evidenceRun": "3bee6cb70e3b",
+      "durationMs": 16673
+    },
+    {
+      "name": "RV-03 D1 dropped SEND keeps draft; same-key retry commits once and clears on echo",
+      "status": "PASS",
+      "evidenceRun": "3bee6cb70e3b",
+      "durationMs": 18080
+    },
+    {
+      "name": "RV-04 committed send with lost confirmation survives reload and retry never inserts twice",
+      "status": "PASS",
+      "evidenceRun": "3bee6cb70e3b",
+      "durationMs": 10091
+    },
+    {
+      "name": "RV-05 MySQL concurrent same-ID sends and physical UNIQUE enforcement",
+      "status": "PASS",
+      "evidenceRun": "3bee6cb70e3b",
+      "durationMs": 19971
+    },
+    {
+      "name": "RV-06 two-way STOMP, REST polling, reconnect and history recovery",
+      "status": "PASS",
+      "evidenceRun": "62e3c9338423",
+      "durationMs": 24183
+    }
+  ],
+  "observations": [
+    {
+      "test": "RV-02 Existing comment/reply CRUD and anonymity remain compatible",
+      "name": "RV02 CRUD",
+      "data": {
+        "postId": 21,
+        "ids": [
+          23,
+          24,
+          25,
+          26
+        ],
+        "http": {
+          "post": 200,
+          "patch": 200,
+          "delete": 200,
+          "foreignPatch": 403
+        },
+        "rows": [
+          {
+            "comment_id": 23,
+            "post_id": 21,
+            "author_id": 14,
+            "parent_comment_id": null,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV02 edited normal",
+            "status": "DELETED",
+            "anonymous": false,
+            "created_at": "2026-10-23 05:32:12"
+          },
+          {
+            "comment_id": 24,
+            "post_id": 21,
+            "author_id": 14,
+            "parent_comment_id": null,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV02 edited anonymous",
+            "status": "DELETED",
+            "anonymous": true,
+            "created_at": "2026-10-23 05:32:12"
+          },
+          {
+            "comment_id": 25,
+            "post_id": 21,
+            "author_id": 13,
+            "parent_comment_id": 23,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV02 edited reply",
+            "status": "DELETED",
+            "anonymous": false,
+            "created_at": "2026-10-23 05:32:13"
+          },
+          {
+            "comment_id": 26,
+            "post_id": 21,
+            "author_id": 13,
+            "parent_comment_id": 24,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV02 edited anonymous reply",
+            "status": "DELETED",
+            "anonymous": true,
+            "created_at": "2026-10-23 05:32:14"
+          }
+        ]
+      }
+    },
+    {
+      "test": "RV-01 reply anonymous=true: committed POST, failed GET, read-only retry",
+      "name": "RV01 saved-vs-refresh",
+      "data": {
+        "postId": 20,
+        "id": 22,
+        "reply": true,
+        "anonymous": true,
+        "postStatus": 200,
+        "injectedGetStatus": 503,
+        "postRequests": 1,
+        "refreshRetryStatus": 200,
+        "storedBeforeRetry": [
+          {
+            "comment_id": 22,
+            "post_id": 20,
+            "author_id": 13,
+            "parent_comment_id": 21,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV01 committed true true",
+            "status": "ACTIVE",
+            "anonymous": true,
+            "created_at": "2026-10-23 05:32:02"
+          }
+        ],
+        "storedAfterRetry": [
+          {
+            "comment_id": 22,
+            "post_id": 20,
+            "author_id": 13,
+            "parent_comment_id": 21,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV01 committed true true",
+            "status": "ACTIVE",
+            "anonymous": true,
+            "created_at": "2026-10-23 05:32:02"
+          }
+        ],
+        "dialogs": []
+      }
+    },
+    {
+      "test": "RV-01 comment anonymous=true: committed POST, failed GET, read-only retry",
+      "name": "RV01 saved-vs-refresh",
+      "data": {
+        "postId": 18,
+        "id": 18,
+        "reply": false,
+        "anonymous": true,
+        "postStatus": 200,
+        "injectedGetStatus": 503,
+        "postRequests": 1,
+        "refreshRetryStatus": 200,
+        "storedBeforeRetry": [
+          {
+            "comment_id": 18,
+            "post_id": 18,
+            "author_id": 13,
+            "parent_comment_id": null,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV01 committed false true",
+            "status": "ACTIVE",
+            "anonymous": true,
+            "created_at": "2026-10-23 05:31:47"
+          }
+        ],
+        "storedAfterRetry": [
+          {
+            "comment_id": 18,
+            "post_id": 18,
+            "author_id": 13,
+            "parent_comment_id": null,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV01 committed false true",
+            "status": "ACTIVE",
+            "anonymous": true,
+            "created_at": "2026-10-23 05:31:47"
+          }
+        ],
+        "dialogs": []
+      }
+    },
+    {
+      "test": "RV-04 committed send with lost confirmation survives reload and retry never inserts twice",
+      "name": "RV04 lost confirmation",
+      "data": {
+        "roomId": 9,
+        "before": [
+          {
+            "message_id": 23,
+            "chat_room_id": 9,
+            "sender_id": 13,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV04 saved ack lost",
+            "is_read": true,
+            "client_message_id": "c18a9683-d5d6-40fa-b42a-0b81686c9089",
+            "sent_at": "2026-10-23 05:32:47"
+          }
+        ],
+        "after": [
+          {
+            "message_id": 23,
+            "chat_room_id": 9,
+            "sender_id": 13,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV04 saved ack lost",
+            "is_read": true,
+            "client_message_id": "c18a9683-d5d6-40fa-b42a-0b81686c9089",
+            "sent_at": "2026-10-23 05:32:47"
+          }
+        ],
+        "pending": {
+          "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV04 saved ack lost",
+          "clientMessageId": "c18a9683-d5d6-40fa-b42a-0b81686c9089",
+          "state": "sending",
+          "startedAt": 1792733566915
+        },
+        "reloadRestored": true,
+        "frames": [
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "CONNECT",
+            "at": "2026-10-23T05:32:46.710Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "received",
+            "command": "CONNECTED",
+            "at": "2026-10-23T05:32:46.723Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "SUBSCRIBE",
+            "at": "2026-10-23T05:32:46.745Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "SEND",
+            "at": "2026-10-23T05:32:46.915Z",
+            "payload": {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV04 saved ack lost",
+              "clientMessageId": "c18a9683-d5d6-40fa-b42a-0b81686c9089"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "received",
+            "command": "MESSAGE",
+            "at": "2026-10-23T05:32:47.017Z",
+            "payload": {
+              "id": 23,
+              "roomId": 9,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV04 saved ack lost",
+              "sentAt": "2026-10-23T14:32:46.9702925",
+              "read": false,
+              "clientMessageId": "c18a9683-d5d6-40fa-b42a-0b81686c9089"
+            },
+            "dropped": true
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "CONNECT",
+            "at": "2026-10-23T05:32:48.875Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "received",
+            "command": "CONNECTED",
+            "at": "2026-10-23T05:32:48.888Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "SUBSCRIBE",
+            "at": "2026-10-23T05:32:48.923Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "SEND",
+            "at": "2026-10-23T05:32:49.076Z",
+            "payload": {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV04 saved ack lost",
+              "clientMessageId": "c18a9683-d5d6-40fa-b42a-0b81686c9089"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "received",
+            "command": "MESSAGE",
+            "at": "2026-10-23T05:32:49.160Z",
+            "payload": {
+              "id": 23,
+              "roomId": 9,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV04 saved ack lost",
+              "sentAt": "2026-10-23T14:32:47",
+              "read": true,
+              "clientMessageId": "c18a9683-d5d6-40fa-b42a-0b81686c9089"
+            },
+            "dropped": false
+          }
+        ]
+      }
+    },
+    {
+      "test": "RV-03 D1 dropped SEND keeps draft; same-key retry commits once and clears on echo",
+      "name": "RV03 draft preservation",
+      "data": {
+        "roomId": 8,
+        "pending": {
+          "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV03 unconfirmed",
+          "clientMessageId": "17f5b0cb-17f1-4e62-9b07-390e329f0974",
+          "state": "sending",
+          "startedAt": 1792733548296
+        },
+        "beforeRetry": [],
+        "stored": [
+          {
+            "message_id": 22,
+            "chat_room_id": 8,
+            "sender_id": 13,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV03 unconfirmed",
+            "is_read": true,
+            "client_message_id": "17f5b0cb-17f1-4e62-9b07-390e329f0974",
+            "sent_at": "2026-10-23 05:32:39"
+          }
+        ],
+        "frames": [
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "CONNECT",
+            "at": "2026-10-23T05:32:27.849Z",
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "received",
+            "command": "CONNECTED",
+            "at": "2026-10-23T05:32:27.928Z",
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "SUBSCRIBE",
+            "at": "2026-10-23T05:32:27.943Z",
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "UNSUBSCRIBE",
+            "at": "2026-10-23T05:32:27.965Z",
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "SUBSCRIBE",
+            "at": "2026-10-23T05:32:27.967Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "CONNECT",
+            "at": "2026-10-23T05:32:28.061Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "received",
+            "command": "CONNECTED",
+            "at": "2026-10-23T05:32:28.080Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "SUBSCRIBE",
+            "at": "2026-10-23T05:32:28.166Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "SEND",
+            "at": "2026-10-23T05:32:28.297Z",
+            "payload": {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV03 unconfirmed",
+              "clientMessageId": "17f5b0cb-17f1-4e62-9b07-390e329f0974"
+            },
+            "dropped": true
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "SEND",
+            "at": "2026-10-23T05:32:38.551Z",
+            "payload": {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV03 unconfirmed",
+              "clientMessageId": "17f5b0cb-17f1-4e62-9b07-390e329f0974"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "received",
+            "command": "MESSAGE",
+            "at": "2026-10-23T05:32:38.724Z",
+            "payload": {
+              "id": 22,
+              "roomId": 8,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV03 unconfirmed",
+              "sentAt": "2026-10-23T14:32:38.6619151",
+              "read": false,
+              "clientMessageId": "17f5b0cb-17f1-4e62-9b07-390e329f0974"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "received",
+            "command": "MESSAGE",
+            "at": "2026-10-23T05:32:38.755Z",
+            "payload": {
+              "id": 22,
+              "roomId": 8,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV03 unconfirmed",
+              "sentAt": "2026-10-23T14:32:38.6619151",
+              "read": false,
+              "clientMessageId": "17f5b0cb-17f1-4e62-9b07-390e329f0974"
+            },
+            "dropped": false
+          }
+        ],
+        "clearedAfterCommittedEcho": true
+      }
+    },
+    {
+      "test": "RV-01 reply anonymous=false: committed POST, failed GET, read-only retry",
+      "name": "RV01 saved-vs-refresh",
+      "data": {
+        "postId": 19,
+        "id": 20,
+        "reply": true,
+        "anonymous": false,
+        "postStatus": 200,
+        "injectedGetStatus": 503,
+        "postRequests": 1,
+        "refreshRetryStatus": 200,
+        "storedBeforeRetry": [
+          {
+            "comment_id": 20,
+            "post_id": 19,
+            "author_id": 13,
+            "parent_comment_id": 19,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV01 committed true false",
+            "status": "ACTIVE",
+            "anonymous": false,
+            "created_at": "2026-10-23 05:31:54"
+          }
+        ],
+        "storedAfterRetry": [
+          {
+            "comment_id": 20,
+            "post_id": 19,
+            "author_id": 13,
+            "parent_comment_id": 19,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV01 committed true false",
+            "status": "ACTIVE",
+            "anonymous": false,
+            "created_at": "2026-10-23 05:31:54"
+          }
+        ],
+        "dialogs": []
+      }
+    },
+    {
+      "test": "RV-01 comment anonymous=false: committed POST, failed GET, read-only retry",
+      "name": "RV01 saved-vs-refresh",
+      "data": {
+        "postId": 17,
+        "id": 17,
+        "reply": false,
+        "anonymous": false,
+        "postStatus": 200,
+        "injectedGetStatus": 503,
+        "postRequests": 1,
+        "refreshRetryStatus": 200,
+        "storedBeforeRetry": [
+          {
+            "comment_id": 17,
+            "post_id": 17,
+            "author_id": 13,
+            "parent_comment_id": null,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV01 committed false false",
+            "status": "ACTIVE",
+            "anonymous": false,
+            "created_at": "2026-10-23 05:31:40"
+          }
+        ],
+        "storedAfterRetry": [
+          {
+            "comment_id": 17,
+            "post_id": 17,
+            "author_id": 13,
+            "parent_comment_id": null,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV01 committed false false",
+            "status": "ACTIVE",
+            "anonymous": false,
+            "created_at": "2026-10-23 05:31:40"
+          }
+        ],
+        "dialogs": []
+      }
+    },
+    {
+      "test": "RV-05 MySQL concurrent same-ID sends and physical UNIQUE enforcement",
+      "name": "RV05 concurrency UNIQUE",
+      "data": {
+        "roomId": 10,
+        "rows": [
+          {
+            "message_id": 25,
+            "chat_room_id": 10,
+            "sender_id": 13,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+            "is_read": true,
+            "client_message_id": "ad755043-00bc-4d5d-91ce-d7452ddbded0",
+            "sent_at": "2026-10-23 05:32:58"
+          }
+        ],
+        "concurrent": {
+          "connections": 8,
+          "queuedWithinMs": 1,
+          "requests": [
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            }
+          ],
+          "received": [
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:57.8126489",
+              "read": false,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": false,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": false,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": false,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": false,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": false,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": false,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": false,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            }
+          ],
+          "errors": 0
+        },
+        "retry": {
+          "connections": 8,
+          "queuedWithinMs": 0,
+          "requests": [
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            }
+          ],
+          "received": [
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": true,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": true,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": true,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": true,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": true,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": true,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": true,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            },
+            {
+              "id": 25,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:32:58",
+              "read": true,
+              "clientMessageId": "ad755043-00bc-4d5d-91ce-d7452ddbded0"
+            }
+          ],
+          "errors": 0
+        },
+        "constraint": {
+          "index": [
+            {
+              "index_name": "uk_chat_message_client",
+              "non_unique": 0,
+              "seq_in_index": 1,
+              "column_name": "chat_room_id"
+            },
+            {
+              "index_name": "uk_chat_message_client",
+              "non_unique": 0,
+              "seq_in_index": 2,
+              "column_name": "sender_id"
+            },
+            {
+              "index_name": "uk_chat_message_client",
+              "non_unique": 0,
+              "seq_in_index": 3,
+              "column_name": "client_message_id"
+            }
+          ],
+          "rolledBack": true,
+          "vendorCode": 1062,
+          "sqlState": "23000",
+          "messageId": 25
+        },
+        "distinct": {
+          "connections": 2,
+          "queuedWithinMs": 0,
+          "requests": [
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "469d2db6-2944-423c-92a0-cf61f433ea94"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "clientMessageId": "468ed6dd-ffb1-47d5-ba3d-7346a0b96e85"
+            }
+          ],
+          "received": [
+            {
+              "id": 29,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:33:07.686086",
+              "read": false,
+              "clientMessageId": "468ed6dd-ffb1-47d5-ba3d-7346a0b96e85"
+            },
+            {
+              "id": 30,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 concurrent",
+              "sentAt": "2026-10-23T14:33:07.7153449",
+              "read": false,
+              "clientMessageId": "469d2db6-2944-423c-92a0-cf61f433ea94"
+            }
+          ],
+          "errors": 0
+        },
+        "legacy": {
+          "connections": 2,
+          "queuedWithinMs": 0,
+          "requests": [
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 legacy"
+            },
+            {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 legacy"
+            }
+          ],
+          "received": [
+            {
+              "id": 32,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 legacy",
+              "sentAt": "2026-10-23T14:33:08.6519728",
+              "read": false,
+              "clientMessageId": null
+            },
+            {
+              "id": 33,
+              "roomId": 10,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 legacy",
+              "sentAt": "2026-10-23T14:33:08.6760633",
+              "read": false,
+              "clientMessageId": null
+            }
+          ],
+          "errors": 0
+        },
+        "legacyRows": [
+          {
+            "message_id": 32,
+            "chat_room_id": 10,
+            "sender_id": 13,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 legacy",
+            "is_read": false,
+            "client_message_id": null,
+            "sent_at": "2026-10-23 05:33:09"
+          },
+          {
+            "message_id": 33,
+            "chat_room_id": 10,
+            "sender_id": 13,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-3bee6cb70e3b RV05 legacy",
+            "is_read": false,
+            "client_message_id": null,
+            "sent_at": "2026-10-23 05:33:09"
+          }
+        ]
+      }
+    },
+    {
+      "test": "RV-06 two-way STOMP, REST polling, reconnect and history recovery",
+      "name": "RV06 real regression",
+      "data": {
+        "roomId": 12,
+        "originalConnections": 1,
+        "connectionsAfter": 2,
+        "pollingPath": "/api/chat/rooms/12/messages/read-status",
+        "pollingStatus": 200,
+        "rows": [
+          {
+            "message_id": 39,
+            "chat_room_id": 12,
+            "sender_id": 16,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 A to B",
+            "is_read": true,
+            "client_message_id": "58b876b4-d7a3-465b-a2f2-fb5f70eb428b",
+            "sent_at": "2026-10-23 05:36:29"
+          },
+          {
+            "message_id": 40,
+            "chat_room_id": 12,
+            "sender_id": 17,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 B to A",
+            "is_read": true,
+            "client_message_id": "e992cf3b-76bd-4262-a3ce-3f29e7956962",
+            "sent_at": "2026-10-23 05:36:29"
+          },
+          {
+            "message_id": 41,
+            "chat_room_id": 12,
+            "sender_id": 16,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 gap history",
+            "is_read": true,
+            "client_message_id": "16db5a67-bdf7-4acb-9e0d-ad6e8187ce9d",
+            "sent_at": "2026-10-23 05:36:30"
+          },
+          {
+            "message_id": 42,
+            "chat_room_id": 12,
+            "sender_id": 17,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 reconnected B send",
+            "is_read": true,
+            "client_message_id": "0f338c1a-f3b8-42f5-b786-99d4edc8ac82",
+            "sent_at": "2026-10-23 05:36:35"
+          },
+          {
+            "message_id": 43,
+            "chat_room_id": 12,
+            "sender_id": 16,
+            "content": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 polling only",
+            "is_read": true,
+            "client_message_id": "c3270b8e-8dba-414b-bac5-0409a3b13f7a",
+            "sent_at": "2026-10-23 05:36:36"
+          }
+        ],
+        "frames": [
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "CONNECT",
+            "at": "2026-10-23T05:36:28.344Z",
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "received",
+            "command": "CONNECTED",
+            "at": "2026-10-23T05:36:28.456Z",
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "SUBSCRIBE",
+            "at": "2026-10-23T05:36:28.461Z",
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "UNSUBSCRIBE",
+            "at": "2026-10-23T05:36:28.479Z",
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "SUBSCRIBE",
+            "at": "2026-10-23T05:36:28.480Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "CONNECT",
+            "at": "2026-10-23T05:36:28.571Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "received",
+            "command": "CONNECTED",
+            "at": "2026-10-23T05:36:28.592Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "SUBSCRIBE",
+            "at": "2026-10-23T05:36:28.653Z",
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "SEND",
+            "at": "2026-10-23T05:36:28.791Z",
+            "payload": {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 A to B",
+              "clientMessageId": "58b876b4-d7a3-465b-a2f2-fb5f70eb428b"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "received",
+            "command": "MESSAGE",
+            "at": "2026-10-23T05:36:28.911Z",
+            "payload": {
+              "id": 39,
+              "roomId": 12,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 A to B",
+              "sentAt": "2026-10-23T14:36:28.8696288",
+              "read": false,
+              "clientMessageId": "58b876b4-d7a3-465b-a2f2-fb5f70eb428b"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "received",
+            "command": "MESSAGE",
+            "at": "2026-10-23T05:36:28.947Z",
+            "payload": {
+              "id": 39,
+              "roomId": 12,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 A to B",
+              "sentAt": "2026-10-23T14:36:28.8696288",
+              "read": false,
+              "clientMessageId": "58b876b4-d7a3-465b-a2f2-fb5f70eb428b"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "SEND",
+            "at": "2026-10-23T05:36:29.046Z",
+            "payload": {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 B to A",
+              "clientMessageId": "e992cf3b-76bd-4262-a3ce-3f29e7956962"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "received",
+            "command": "MESSAGE",
+            "at": "2026-10-23T05:36:29.210Z",
+            "payload": {
+              "id": 40,
+              "roomId": 12,
+              "senderId": 17,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 B to A",
+              "sentAt": "2026-10-23T14:36:29.1169379",
+              "read": false,
+              "clientMessageId": "e992cf3b-76bd-4262-a3ce-3f29e7956962"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "received",
+            "command": "MESSAGE",
+            "at": "2026-10-23T05:36:29.246Z",
+            "payload": {
+              "id": 40,
+              "roomId": 12,
+              "senderId": 17,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 B to A",
+              "sentAt": "2026-10-23T14:36:29.1169379",
+              "read": false,
+              "clientMessageId": "e992cf3b-76bd-4262-a3ce-3f29e7956962"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "SEND",
+            "at": "2026-10-23T05:36:29.528Z",
+            "payload": {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 gap history",
+              "clientMessageId": "16db5a67-bdf7-4acb-9e0d-ad6e8187ce9d"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "received",
+            "command": "MESSAGE",
+            "at": "2026-10-23T05:36:29.630Z",
+            "payload": {
+              "id": 41,
+              "roomId": 12,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 gap history",
+              "sentAt": "2026-10-23T14:36:29.590514",
+              "read": false,
+              "clientMessageId": "16db5a67-bdf7-4acb-9e0d-ad6e8187ce9d"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "CONNECT",
+            "at": "2026-10-23T05:36:34.396Z",
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "received",
+            "command": "CONNECTED",
+            "at": "2026-10-23T05:36:34.426Z",
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "SUBSCRIBE",
+            "at": "2026-10-23T05:36:34.431Z",
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "UNSUBSCRIBE",
+            "at": "2026-10-23T05:36:34.451Z",
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "SUBSCRIBE",
+            "at": "2026-10-23T05:36:34.453Z",
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "sent",
+            "command": "SEND",
+            "at": "2026-10-23T05:36:34.973Z",
+            "payload": {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 reconnected B send",
+              "clientMessageId": "0f338c1a-f3b8-42f5-b786-99d4edc8ac82"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "received",
+            "command": "MESSAGE",
+            "at": "2026-10-23T05:36:35.111Z",
+            "payload": {
+              "id": 42,
+              "roomId": 12,
+              "senderId": 17,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 reconnected B send",
+              "sentAt": "2026-10-23T14:36:35.0631348",
+              "read": false,
+              "clientMessageId": "0f338c1a-f3b8-42f5-b786-99d4edc8ac82"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "B",
+            "direction": "received",
+            "command": "MESSAGE",
+            "at": "2026-10-23T05:36:35.147Z",
+            "payload": {
+              "id": 42,
+              "roomId": 12,
+              "senderId": 17,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 reconnected B send",
+              "sentAt": "2026-10-23T14:36:35.0631348",
+              "read": false,
+              "clientMessageId": "0f338c1a-f3b8-42f5-b786-99d4edc8ac82"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "sent",
+            "command": "SEND",
+            "at": "2026-10-23T05:36:35.519Z",
+            "payload": {
+              "text": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 polling only",
+              "clientMessageId": "c3270b8e-8dba-414b-bac5-0409a3b13f7a"
+            },
+            "dropped": false
+          },
+          {
+            "actor": "A",
+            "direction": "received",
+            "command": "MESSAGE",
+            "at": "2026-10-23T05:36:35.673Z",
+            "payload": {
+              "id": 43,
+              "roomId": 12,
+              "senderId": null,
+              "text": "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 polling only",
+              "sentAt": "2026-10-23T14:36:35.6175416",
+              "read": false,
+              "clientMessageId": "c3270b8e-8dba-414b-bac5-0409a3b13f7a"
+            },
+            "dropped": false
+          }
+        ],
+        "peerWebSocketBlockedDuringPolling": true,
+        "nativePeerMessagesAfterCut": [],
+        "deliveredByStompWhileRestBlocked": [
+          "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 A to B",
+          "kkiri_e2e_82cdabce6030 revalidation-62e3c9338423 RV06 B to A"
+        ]
+      }
+    }
+  ],
+  "runs": [
+    {
+      "id": "3bee6cb70e3b",
+      "counts": {
+        "executed": 9,
+        "passed": 8,
+        "failed": 1,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      },
+      "httpByStatus": {
+        "200": 447,
+        "403": 1,
+        "503": 7
+      },
+      "observedHttpResponses": 455,
+      "injected503Responses": 7,
+      "actualBackendResponses": 448,
+      "existingJdbcSnapshots": 18,
+      "scopedJdbcOperations": 8,
+      "fixtureActorsAdded": 3,
+      "sourceUnchanged": true,
+      "ownedProcessesStopped": true,
+      "uploadsUnchanged": true
+    },
+    {
+      "id": "62e3c9338423",
+      "counts": {
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      },
+      "httpByStatus": {
+        "200": 76
+      },
+      "observedHttpResponses": 76,
+      "injected503Responses": 0,
+      "actualBackendResponses": 76,
+      "existingJdbcSnapshots": 1,
+      "scopedJdbcOperations": 1,
+      "fixtureActorsAdded": 3,
+      "sourceUnchanged": true,
+      "ownedProcessesStopped": true,
+      "uploadsUnchanged": true
+    }
+  ],
+  "evidenceTotals": {
+    "observedHttpResponses": 531,
+    "injected503Responses": 7,
+    "actualBackendResponses": 524,
+    "existingJdbcSnapshots": 19,
+    "scopedJdbcOperations": 9,
+    "gatewayFrameCounts": {
+      "received:CONNECTED": 7,
+      "received:MESSAGE": 12,
+      "sent:CONNECT": 7,
+      "sent:SEND": 9,
+      "sent:SUBSCRIBE": 10,
+      "sent:UNSUBSCRIBE": 3
+    }
+  },
+  "harnessFailure": {
+    "evidenceRun": "3bee6cb70e3b",
+    "case": "RV-06",
+    "reason": "Route-level socket close alone did not establish that the browser application socket stopped receiving; the polling-only assertion correctly failed.",
+    "correction": "Track and close native browser WebSocket instances, suppress forwarding from closed links, reject reconnects during polling, and independently assert zero native MESSAGE events for the recovered message.",
+    "retestRun": "62e3c9338423",
+    "retest": "PASS",
+    "operatingCodeChanged": false
+  },
+  "resources": {
+    "container": "kkiri-e2e-82cdabce6030",
+    "state": "running",
+    "image": "mysql:8.0.46-oraclelinux9",
+    "account": "e2e_82cdabce6030",
+    "serverUuid": "f8a3a22f-ce99-11f1-bd9a-621e38ee5f3d",
+    "newDockerResources": 0,
+    "newSchemas": 0,
+    "newDatabaseAccounts": 0,
+    "appendedApplicationActors": 6,
+    "containerRemoved": false,
+    "databaseResetOrCleaned": false,
+    "originalRowsMissing": 0,
+    "originalBusinessRowsChanged": 0,
+    "existingAuthLimitBucketsUpdatedByLogin": 3,
+    "uploads": [
+      {
+        "name": "1c9a7a3f-1412-4ba4-891d-53edbbf54661.png",
+        "bytes": 68,
+        "sha256": "5e3d382db4dd83d59aa5742793ad6b7903409e865c83bcbc54835049f043bc15"
+      },
+      {
+        "name": "4d342ec1-7ee4-4cf5-898e-aef5f708fd9d.png",
+        "bytes": 68,
+        "sha256": "5e3d382db4dd83d59aa5742793ad6b7903409e865c83bcbc54835049f043bc15"
+      },
+      {
+        "name": "620a2fab-9ec2-456d-bef0-acec001180d1.png",
+        "bytes": 68,
+        "sha256": "5e3d382db4dd83d59aa5742793ad6b7903409e865c83bcbc54835049f043bc15"
+      },
+      {
+        "name": "948befd3-ee6c-47c8-b099-c8b370b59049.png",
+        "bytes": 68,
+        "sha256": "5e3d382db4dd83d59aa5742793ad6b7903409e865c83bcbc54835049f043bc15"
+      },
+      {
+        "name": "a96b490e-1073-410e-9f63-dee1d4669ca6.png",
+        "bytes": 68,
+        "sha256": "5e3d382db4dd83d59aa5742793ad6b7903409e865c83bcbc54835049f043bc15"
+      }
+    ],
+    "uploadsUnchanged": true,
+    "appProcessesStopped": true,
+    "ports13000And18080Free": true,
+    "finalRowCounts": {
+      "auth_email_identity": 0,
+      "auth_limit_bucket": 42,
+      "calendar_category": 0,
+      "calendar_category_setting": 0,
+      "calendar_event": 0,
+      "chat_message": 42,
+      "chat_room": 12,
+      "chat_room_member": 24,
+      "comment_like": 0,
+      "community_anonymous_author": 8,
+      "community_comment": 26,
+      "community_post": 26,
+      "dormitory": 2,
+      "email_verification": 0,
+      "faculty": 2,
+      "major": 0,
+      "password_reset_token": 0,
+      "post_image": 5,
+      "post_image_cleanup": 0,
+      "post_like": 0,
+      "preference_criterion": 0,
+      "profile_like": 0,
+      "profile_survey": 0,
+      "profile_survey_option": 0,
+      "report": 6,
+      "roommate_match": 0,
+      "roommate_preference": 0,
+      "roommate_preference_option": 0,
+      "schedule_crawl_run": 0,
+      "user": 18,
+      "user_profile": 18
+    }
+  },
+  "productionCodeChanged": false,
+  "sharedRunnerChanged": false,
+  "p1Executed": false,
+  "limitations": [
+    "Two independent Chromium browser contexts; cross-browser engines and WSS/proxy deployments are not tested.",
+    "Current single JVM Simple Broker deployment only; multiple application JVMs and process-crash recovery are not exercised.",
+    "Concurrency evidence is eight independent STOMP sessions queued within one browser task and resulting MySQL rows/response IDs; DB lock wait timings are not instrumented.",
+    "Only the first failed polling harness case was rerun; original failed evidence and all test rows remain preserved.",
+    "Authentication limiter bucket mutations are normal effects of real fixture logins; no authentication production code was changed.",
+    "Raw frame gateway counts include upstream observations and injected drops; native browser MESSAGE checks independently establish polling isolation."
+  ],
+  "evidenceFiles": [
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/actors.json",
+      "sha256": "32a11388bda6ef925bd4d8251d8785a3791217bfae68dd95bf98ed52cc1a60de"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/browser-4cea32f7537438a57da5-0429a13459454218cb1c.json",
+      "sha256": "fefa8ee20dd07d4c839d5ec862a773e4c9d30b28f1c29840ac6d018c5938a4d3"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/browser-4cea32f7537438a57da5-15b8136c48dd62cd2213.json",
+      "sha256": "04a98ac1e954dd0a9d7e351142b18e9ccaad464eb18b9a5e6c0a4faaa26b67a1"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/browser-4cea32f7537438a57da5-4e1d0871506d8bf275a0.json",
+      "sha256": "5f5ef9eb8036541fa84230e2467a7161911b857b2485b43e098a67040a76c7d2"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/browser-4cea32f7537438a57da5-60eef8383409fa1ce21e.json",
+      "sha256": "8e502917442ab429e8944d552b4cb9cea6e33f96ab3e2b0d9fb6749f4b9d9447"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/browser-4cea32f7537438a57da5-791283b697f913865051.json",
+      "sha256": "b5852fa6b7863f176bf70678434ab74f77e15bf99f054761b6c6877b1b924952"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/browser-4cea32f7537438a57da5-97bb7ba2588466e6f142.json",
+      "sha256": "4c6f7a2e8ab36678b48746c3f9930c9c868d6af24761e90d1a349badef03693b"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/browser-4cea32f7537438a57da5-c04d0cb3bb81fa505ff0.json",
+      "sha256": "2a7a4775a7f3690ce51256085843bc95311ea9564bffb189c5640a64ac98f4b4"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/browser-4cea32f7537438a57da5-c548690d7759e072b1f5.json",
+      "sha256": "bc9920853264e94fd960af34e823e32df9915bc27885049e274acbc4e6f33555"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/browser-4cea32f7537438a57da5-f226727ab08d0b4565e4.json",
+      "sha256": "04fc98481e13c4132786d849f0605071fa466202901b4f536dabfed13504e5af"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/database-4cea32f7537438a57da5-0429a13459454218cb1c.jsonl",
+      "sha256": "0d9e0c9a2066af71c09b5f668fc0e4066e18732371f695a1f18691539fd6594a"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/database-4cea32f7537438a57da5-15b8136c48dd62cd2213.jsonl",
+      "sha256": "b5d4ce2a3cafb5a3a4ff05ab95a7b2607cf780ac11b7918684283b90e643f20e"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/database-4cea32f7537438a57da5-4e1d0871506d8bf275a0.jsonl",
+      "sha256": "ce93bf9a3a4a4dab8a738109baef69a802d82bc6ae6bd7ef3546f68df1875d06"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/database-4cea32f7537438a57da5-60eef8383409fa1ce21e.jsonl",
+      "sha256": "5ec92c11a5142346067bd6507f63950ca821cb2dfcdcac9455a4f340ac4e4b6b"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/database-4cea32f7537438a57da5-791283b697f913865051.jsonl",
+      "sha256": "b21e3a3b59a8ea657f9c4ea506219b19150554e8b11adeb31774c1d607fc2e4d"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/database-4cea32f7537438a57da5-97bb7ba2588466e6f142.jsonl",
+      "sha256": "d53d9546fa2789a903034ff7c2cca3aba1839e65fcd174b8268eb3ecf5b73c03"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/database-4cea32f7537438a57da5-c04d0cb3bb81fa505ff0.jsonl",
+      "sha256": "2315916569822ccbeb039663b4744c075aceb680b83929ad0aed051e51fc61ea"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/database-4cea32f7537438a57da5-c548690d7759e072b1f5.jsonl",
+      "sha256": "a80db0f055958bb81f3906ab7e46edc20375fef5ed7afa617b584e2f5389a876"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/database-4cea32f7537438a57da5-f226727ab08d0b4565e4.jsonl",
+      "sha256": "1c2eccab6b3defdebf87f41fa233e85afd712efeab6091d3cfcad5d8b2d85163"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/migrate.json",
+      "sha256": "79c759c1227b8f7fdf50193f905351ae9f925a04134fe790f151f2407159b7f9"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/preservation.json",
+      "sha256": "f16b55b10ea4194d847808b080dfe2a18a504a02deae8d434558f2238856b366"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/results.json",
+      "sha256": "9e7f237c6ea9cce2ef116fe3a04658840e5781df5c0adc026aa0fbd26327d7d4"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/revalidation-database.jsonl",
+      "sha256": "c85e7ab416456e0b3cad0af6a278fe49577094c437b0e1f73125cb1563ef0c11"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/run.json",
+      "sha256": "da20502105cadbd333a2a3ab824e91128ffdbe1dc605f6c0195ad03a74b0cff8"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/source-after.json",
+      "sha256": "c700fc1c59da176de1b42263dbe95ae6cba8ebd25d9a61935c713b92a3866007"
+    },
+    {
+      "file": "backend/build/full-service-e2e/3bee6cb70e3b/source-before.json",
+      "sha256": "c700fc1c59da176de1b42263dbe95ae6cba8ebd25d9a61935c713b92a3866007"
+    },
+    {
+      "file": "backend/build/full-service-e2e/62e3c9338423/actors.json",
+      "sha256": "82a37a0fcd6bda6e80075795a05f2b382507a1ae9c37c1e65f7d23c0588045fc"
+    },
+    {
+      "file": "backend/build/full-service-e2e/62e3c9338423/browser-4cea32f7537438a57da5-791283b697f913865051.json",
+      "sha256": "cbcd05c3ec82054e6fc4bbb58033888f577bd7f88337ca031a5d17a1ef333999"
+    },
+    {
+      "file": "backend/build/full-service-e2e/62e3c9338423/database-4cea32f7537438a57da5-791283b697f913865051.jsonl",
+      "sha256": "163638731e0c0ce02ac1ec87c4e06727227bea6a183f855dcb20e0a39246f49d"
+    },
+    {
+      "file": "backend/build/full-service-e2e/62e3c9338423/preservation.json",
+      "sha256": "c1b102e1d208a8858cbc7aa3c542095e3f11405e8492026b9e268a1e825b2eeb"
+    },
+    {
+      "file": "backend/build/full-service-e2e/62e3c9338423/results.json",
+      "sha256": "2441c5ef88b2e9a58661fab3ce3d064e02d349a86d5fcbc3fdbf7da6a20c6fc6"
+    },
+    {
+      "file": "backend/build/full-service-e2e/62e3c9338423/revalidation-database.jsonl",
+      "sha256": "76af89409bdf7044f36d70edd9a993b7e3062d953d8da57242ac407a74ec6bd1"
+    },
+    {
+      "file": "backend/build/full-service-e2e/62e3c9338423/run.json",
+      "sha256": "b5380f8608904b2c87374fc4b80a1a8f5ef32693c381a4ac737ce633717b2f59"
+    },
+    {
+      "file": "backend/build/full-service-e2e/62e3c9338423/source-after.json",
+      "sha256": "d07b5dc386c5dc7e4b99cf1d17625bd3a1408b15e78b17ced37a82516759040e"
+    },
+    {
+      "file": "backend/build/full-service-e2e/62e3c9338423/source-before.json",
+      "sha256": "d07b5dc386c5dc7e4b99cf1d17625bd3a1408b15e78b17ced37a82516759040e"
+    }
+  ]
+}
