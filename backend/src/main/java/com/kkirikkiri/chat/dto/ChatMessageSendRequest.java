@@ -1,6 +1,7 @@
 package com.kkirikkiri.chat.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.CodePointLength;
 
 import com.kkirikkiri.chat.entity.ChatMessage;
@@ -9,5 +10,10 @@ import com.kkirikkiri.chat.entity.ChatMessage;
 public record ChatMessageSendRequest(
 		@NotBlank
 		@CodePointLength(max = ChatMessage.MAX_CONTENT_LENGTH, message = "{jakarta.validation.constraints.Size.message}")
-		String text) {
+		String text,
+		@Pattern(regexp = "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")
+		String clientMessageId) {
+	public ChatMessageSendRequest(String text) {
+		this(text, null);
+	}
 }

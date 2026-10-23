@@ -17,6 +17,15 @@ import com.kkirikkiri.chat.entity.ChatMessage;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 
+	/** Current read after the sender membership lock, including under MySQL repeatable read. */
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("""
+			select m from ChatMessage m where m.chatRoom.chatRoomId = :roomId
+			and m.sender.userId = :userId and m.clientMessageId = :clientId
+			""")
+	Optional<ChatMessage> findClientMessageForUpdate(@Param("roomId") Long roomId,
+			@Param("userId") Long userId, @Param("clientId") String clientId);
+
 	Optional<ChatMessage> findByMessageIdAndChatRoom_ChatRoomId(Long messageId, Long roomId);
 
 	@Query("""

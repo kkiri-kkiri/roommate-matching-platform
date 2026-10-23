@@ -46,7 +46,9 @@ function roomPage(content, extra = {}) {
 }
 
 beforeEach(() => {
+  Object.defineProperty(window, "crypto", { configurable: true, value: require("crypto").webcrypto });
   jest.resetAllMocks();
+  sessionStorage.clear();
   jest.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function () {
     if (this.hasAttribute("data-message-id") || this.getAttribute("aria-label") === "대화 내용") {
       return { top: 0, bottom: 100, left: 0, right: 100, width: 100, height: 100 };
@@ -100,14 +102,71 @@ test("a hidden tab does not acknowledge history until it becomes visible", async
   await waitFor(() => expect(chatApi.markChatRoomRead).toHaveBeenCalledWith("41", [8]));
 });
 
-function connectedSocket() {
+function connectedSocket({ confirm = true } = {}) {
   const socket = { connect: jest.fn(), disconnect: jest.fn(), subscribe: jest.fn(() => jest.fn()), publish: jest.fn() };
+  let receive;
+  socket.subscribe.mockImplementation((roomId, callback) => { receive = callback; return jest.fn(); });
+  if (confirm) socket.publish.mockImplementation((roomId, text, clientMessageId) => receive?.({
+    id: 100, roomId, text, clientMessageId, senderId: 1, sentAt: "2026-10-23T12:00:00", read: false,
+  }));
   createChatSocket.mockImplementation((options) => {
     socket.connect.mockImplementation(() => options.onStatus(true));
     return socket;
   });
   return socket;
 }
+
+test("dropped SEND retains the input and blocks double submit until the exact saved STOMP echo", async () => {
+  const socket = connectedSocket({ confirm: false });
+  render(<ChatPage currentUser={{ id: 1 }} />);
+  const input = await screen.findByRole("textbox", { name: "메시지 보내기" });
+  fireEvent.change(input, { target: { value: "유실되면 안 되는 메시지" } });
+  fireEvent.keyDown(input, { key: "Enter" });
+  fireEvent.keyDown(input, { key: "Enter" });
+  expect(socket.publish).toHaveBeenCalledTimes(1);
+  expect(input).toHaveValue("유실되면 안 되는 메시지");
+  expect(input).toHaveAttribute("readonly");
+  expect(screen.getByRole("button", { name: "메시지 전송" })).toBeDisabled();
+  const [roomId, text, clientMessageId] = socket.publish.mock.calls[0];
+  const receive = socket.subscribe.mock.calls.at(-1)[1];
+  act(() => receive({ id: 90, roomId, text, senderId: 1, sentAt: "2026-10-23T12:00:00" }));
+  expect(input).toHaveValue(text);
+  act(() => receive({ id: 91, roomId, text, clientMessageId, senderId: 1, sentAt: "2026-10-23T12:00:01" }));
+  await waitFor(() => expect(input).toHaveValue(""));
+  expect(input).not.toHaveAttribute("readonly");
+  expect(socket.publish).toHaveBeenCalledTimes(1);
+});
+
+test("REST recovery confirms a committed send when the STOMP echo was lost without sending again", async () => {
+  const socket = connectedSocket({ confirm: false });
+  render(<ChatPage currentUser={{ id: 1 }} />);
+  const input = await screen.findByRole("textbox", { name: "메시지 보내기" });
+  await waitFor(() => expect(chatApi.getChatMessages).toHaveBeenCalled());
+  fireEvent.change(input, { target: { value: "저장은 됐지만 방송 유실" } });
+  fireEvent.click(screen.getByRole("button", { name: "메시지 전송" }));
+  const [, text, clientMessageId] = socket.publish.mock.calls[0];
+  expect(input).toHaveValue(text);
+  chatApi.getChatMessages.mockResolvedValue({ content: [{ id: 92, text, clientMessageId,
+    senderType: "ME", sentAt: "2026-10-23T12:00:00", read: false }], last: true });
+  fireEvent(window, new Event("focus"));
+  await waitFor(() => expect(input).toHaveValue(""));
+  expect(socket.publish).toHaveBeenCalledTimes(1);
+});
+
+test("reload restores pending content and the retry sends the same ID even if storage already committed", async () => {
+  const socket = connectedSocket({ confirm: false });
+  const first = render(<ChatPage currentUser={{ id: 1 }} />);
+  const input = await screen.findByRole("textbox", { name: "메시지 보내기" });
+  fireEvent.change(input, { target: { value: "응답 유실 후 복구" } });
+  fireEvent.click(screen.getByRole("button", { name: "메시지 전송" }));
+  const original = socket.publish.mock.calls[0];
+  first.unmount();
+  render(<ChatPage currentUser={{ id: 1 }} />);
+  expect(await screen.findByRole("textbox", { name: "메시지 보내기" })).toHaveValue(original[1]);
+  fireEvent.click(screen.getByRole("button", { name: "메시지 저장 확인·재시도" }));
+  expect(socket.publish).toHaveBeenCalledTimes(2);
+  expect(socket.publish.mock.calls[1]).toEqual(original);
+});
 
 test.each(["a", "가", "😀"])("composes and sends 2000 %s code points and blocks 2001 without truncation", async (character) => {
   const socket = connectedSocket();
@@ -118,7 +177,7 @@ test.each(["a", "가", "😀"])("composes and sends 2000 %s code points and bloc
   fireEvent.change(input, { target: { value: text } });
   expect(screen.getByText("2000 / 2000")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "메시지 전송" }));
-  expect(socket.publish).toHaveBeenCalledWith("41", text);
+  expect(socket.publish).toHaveBeenCalledWith("41", text, expect.any(String));
   const overflow = character.repeat(2001);
   fireEvent.change(input, { target: { value: overflow } });
   expect(input).toHaveValue(overflow);
@@ -143,7 +202,7 @@ test("paste and IME composition preserve compound text and do not send until com
   expect(screen.getByRole("button", { name: "메시지 전송" })).toBeDisabled();
   fireEvent.compositionEnd(input);
   fireEvent.keyDown(input, { key: "Enter" });
-  expect(socket.publish).toHaveBeenCalledWith("41", text);
+  expect(socket.publish).toHaveBeenCalledWith("41", text, expect.any(String));
   fireEvent.change(input, { target: { value: " \n\t" } });
   expect(screen.getByRole("button", { name: "메시지 전송" })).toBeDisabled();
 });

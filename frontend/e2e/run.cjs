@@ -58,8 +58,32 @@ async function assertFree(port) {
   });
 }
 
-async function main() {
-  const args = process.argv.slice(2);
+// Only the CLI selects retention; ambient E2E settings are filtered out.
+function retentionEnabled(environment = process.env) {
+  const value = environment.E2E_RETAIN_RESOURCES;
+  if (value !== undefined && value !== '1') throw new Error('Invalid E2E retention setting');
+  return value === '1';
+}
+function parseRunArguments(args) {
+  let retainResources = false;
+  const playwrightArgs = [];
+  for (const arg of args) {
+    if (arg === '--retain-resources') {
+      if (retainResources) throw new Error('Duplicate --retain-resources');
+      retainResources = true;
+    } else {
+      if (arg.startsWith('--retain-resources=')) throw new Error('Use --retain-resources without a value');
+      playwrightArgs.push(arg);
+    }
+  }
+  return { retainResources, playwrightArgs };
+}
+
+async function main(rawArgs = process.argv.slice(2)) {
+  const { retainResources, playwrightArgs: args } = parseRunArguments(rawArgs);
+  if (retainResources && args.some(arg => /^--aus-p[01](?:-recheck)?$/.test(arg))) {
+    throw new Error('AUS P0/P1 requires disposable resources; retention is not supported');
+  }
   const ausP1 = ['--aus-p1', '--aus-p1-recheck'].includes(args[0]);
   let p1Recheck;
   if (ausP1) {
@@ -111,6 +135,7 @@ async function main() {
     E2E_IMAGE_DIRECTORY: path.join(backend, 'build/e2e', id, 'uploads'),
     E2E_EVIDENCE_DIR: path.join(backend, 'build/full-service-e2e', id),
     ...(ausP1 ? { E2E_AUS_P1: '1', E2E_SUSPENDED_EMAIL: `suspended${id}@hknu.ac.kr`, E2E_WITHDRAWN_EMAIL: `withdrawn${id}@hknu.ac.kr` } : {}),
+    ...(retainResources ? { E2E_RETAIN_RESOURCES: '1' } : {}),
   };
   Object.assign(env, { MYSQL_DATABASE: env.E2E_DATABASE, MYSQL_USER: env.E2E_DB_USER,
     MYSQL_PASSWORD: env.E2E_DB_PASSWORD, MYSQL_ROOT_PASSWORD: randomBytes(24).toString('hex') });
@@ -123,6 +148,12 @@ async function main() {
   const run = { id, startedAt: new Date().toISOString(), mysql: '8.0.46', database: env.E2E_DATABASE,
     frontend: 'http://127.0.0.1:13000', backend: 'http://127.0.0.1:18080', node: process.version,
     gitSha: before.gitSha, testArguments: testArgs, scope: ausP1 ? 'AUS_P1_ONLY' : ausP0 ? 'AUS_P0_ONLY' : 'existing selectors', recheck: p1Recheck ?? recheck, fixtureTablesEmpty: false };
+  if (retainResources) run.retention = { enabled: true, automaticDeletion: false,
+    containerName: name, database: env.E2E_DATABASE, account: env.E2E_DB_USER,
+    imageDirectory: env.E2E_IMAGE_DIRECTORY, serverUuid: null,
+    creationAttempted: false, containerCreated: false, containerStarted: false,
+    schemaPrepared: false, seedCompleted: false };
+  const stage = value => { if (retainResources) run.phase = value; };
   console.log(`[e2e] Evidence: ${path.relative(path.dirname(frontend), env.E2E_EVIDENCE_DIR)}`);
   let ownsContainer = false;
   let stopping = false;
@@ -141,6 +172,7 @@ async function main() {
     return path.relative(frontend, file);
   }
   function start(command, args, cwd = frontend, extraEnv = {}) {
+    if (retainResources && stopping) throw new Error('Retained E2E execution is stopping');
     const child = spawn(command, args, { cwd, env: { ...env, ...extraEnv }, windowsHide: true,
       detached: process.platform !== 'win32', stdio: ['pipe', 'pipe', 'pipe'] });
     child.output = ''; child.errors = '';
@@ -196,7 +228,7 @@ async function main() {
     if (control) await new Promise(resolve => control.close(resolve));
     for (const child of [...children].reverse()) await stop(child);
     // Evidence is written directly outside the allowlisted disposable E2E directories.
-    // A report-writing problem must not prevent removal of owned DB resources.
+    // Retention never performs Docker cleanup, including on errors and signals.
     const evidenceErrors = [];
     try {
       if (api) failureLog(api, 'Spring-Boot-final');
@@ -205,7 +237,7 @@ async function main() {
       writeFileSync(path.join(env.E2E_EVIDENCE_DIR, 'source-after.json'), JSON.stringify(after, null, 2));
       run.sourceUnchangedDuringRun = JSON.stringify(before.files) === JSON.stringify(after.files);
     } catch { evidenceErrors.push('Could not finish source/server evidence'); }
-    if (ownsContainer) {
+    if (ownsContainer && !retainResources) {
       const container = await docker(['ps', '-aq', '--filter', `name=^/${name}$`, '--filter', `label=kkiri.e2e.owner=${id}`], 'Find owned E2E container');
       if (container) {
         const owner = await docker(['inspect', '--format', '{{index .Config.Labels "kkiri.e2e.owner"}}', container], 'Verify container ownership');
@@ -215,15 +247,24 @@ async function main() {
         console.log('[e2e] Owned MySQL container and disposable data removed.');
       }
     }
+    if (retainResources) {
+      run.containerRemoved = false;
+      console.log('[e2e] Retention enabled: no container stop/removal or database cleanup performed.');
+    }
     run.finishedAt = new Date().toISOString();
     run.ownedProcessesStopped = launched.every(child => child.exitCode !== null || child.signalCode !== null || child.spawnError);
     run.evidenceErrors = evidenceErrors;
     writeFileSync(path.join(env.E2E_EVIDENCE_DIR, 'run.json'), JSON.stringify(run, null, 2));
     if (evidenceErrors.length || !run.ownedProcessesStopped) throw new Error('E2E cleanup/evidence incomplete; inspect run.json');
   }
-  const interrupted = () => { void cleanup().then(() => process.exit(130), error => { console.error(error.message); process.exit(1); }); };
-  process.once('SIGINT', interrupted); process.once('SIGTERM', interrupted);
+  const interrupted = signal => {
+    if (retainResources) { run.interrupted = signal; run.failureStage = run.phase; }
+    void cleanup().then(() => process.exit(130), error => { console.error(error.message); process.exit(1); });
+  };
+  const onSigint = () => interrupted('SIGINT'), onSigterm = () => interrupted('SIGTERM');
+  process.once('SIGINT', onSigint); process.once('SIGTERM', onSigterm);
   try {
+    stage('preflight');
     for (const port of ports) await assertFree(port);
     const endpoint = await docker(['context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], 'Read Docker endpoint');
     if (!/^(npipe:\/\/|unix:\/\/)/.test(endpoint)) throw new Error('E2E requires a local Docker engine.');
@@ -262,13 +303,19 @@ async function main() {
       mkdirSync(path.dirname(ledgerFile), { recursive: true });
       writeFileSync(ledgerFile, JSON.stringify(ledger, null, 2));
     }
+    stage('container-create');
+    if (retainResources) run.retention.creationAttempted = true;
     ownsContainer = true;
     run.containerId = await docker(['create', '--pull=never', '--name', name, '--hostname', 'kkiri-e2e', '--label', `kkiri.e2e.owner=${id}`,
       '--publish', '127.0.0.1:13316:3306', '--tmpfs', '/var/lib/mysql:rw,size=1073741824',
       '--env', 'MYSQL_DATABASE', '--env', 'MYSQL_USER', '--env', 'MYSQL_PASSWORD', '--env', 'MYSQL_ROOT_PASSWORD',
       'mysql:8.0.46-oraclelinux9', '--lower-case-table-names=1', '--character-set-server=utf8mb4',
       '--collation-server=utf8mb4_0900_ai_ci'], 'Create E2E MySQL', 300_000);
+    if (retainResources) run.retention.containerCreated = true;
+    stage('container-start');
     await docker(['start', name], 'Start E2E MySQL');
+    if (retainResources) run.retention.containerStarted = true;
+    stage('mysql-ready');
     const deadline = Date.now() + 120_000;
     while (true) {
       try {
@@ -279,14 +326,24 @@ async function main() {
       if (Date.now() > deadline) throw new Error('E2E MySQL did not become ready within 120 seconds.');
       await pause(1000);
     }
+    if (retainResources) run.retention.serverUuid = env.E2E_DB_UUID;
     console.log(`[e2e] Target: ${env.E2E_DATABASE}; account: ${env.E2E_DB_USER}; server UUID verified before DDL.`);
+    stage('compile-e2e');
     const gradle = process.platform === 'win32'
       ? start('cmd.exe', ['/d', '/s', '/c', 'gradlew.bat --no-daemon prepareE2e'], backend)
       : start('./gradlew', ['--no-daemon', 'prepareE2e'], backend);
     await complete(gradle, 'Compile E2E-only backend source set', 300_000);
     const classpath = readFileSync(path.join(backend, 'build/e2e/classpath.txt'), 'utf8');
+    stage('schema-prepare');
     await complete(start('java', ['-cp', classpath, 'e2e.E2eDatabase', 'prepare']), 'Guard and prepare E2E schema');
+    if (retainResources) {
+      run.retention.schemaPrepared = true;
+      stage('seed');
+      await complete(start('java', ['-cp', classpath, 'e2e.E2eDatabase', 'seed']), 'Seed empty retained E2E schema');
+      run.retention.seedCompleted = true;
+    }
     mkdirSync(env.E2E_IMAGE_DIRECTORY, { recursive: true });
+    stage('backend-start');
     api = start('java', ['-cp', classpath, 'e2e.E2eServer']);
     async function ready(child, label, condition, timeout = 120_000) {
       const deadline = Date.now() + timeout;
@@ -334,6 +391,7 @@ async function main() {
       } catch { restarting = false; res.writeHead(500).end('E2E control operation failed'); }
     });
     await new Promise(resolve => control.listen(0, '127.0.0.1', resolve));
+    stage('react-start');
     react = start(process.execPath, [require.resolve('react-scripts/scripts/start.js')], frontend, {
       HOST: '127.0.0.1', PORT: '13000', BROWSER: 'none', CI: 'true',
       REACT_APP_API_BASE_URL: 'http://127.0.0.1:18080/api',
@@ -345,6 +403,7 @@ async function main() {
       catch { return false; }
     }, 300_000);
     console.log('[e2e] React and Spring Boot ready; scheduling, production seeds, SMTP and AI network transport disabled.');
+    stage('playwright');
     const playwright = start(process.execPath, [require.resolve('@playwright/test/cli'), 'test', ...testArgs], frontend, {
       E2E_CONTROL_URL: `http://127.0.0.1:${control.address().port}`, E2E_CONTROL_KEY: controlKey,
       E2E_AUS_P0: ausP0 ? '1' : '0',
@@ -368,22 +427,26 @@ async function main() {
     catch (error) { run.playwrightExitCode = playwright.exitCode; throw error; }
     finally {
       failureLog(playwright, 'Playwright');
-      await complete(start('java', ['-cp', classpath, 'e2e.E2eDatabase', 'clean']), 'Final E2E data cleanup');
-      run.fixtureTablesEmpty = true;
-      console.log('[e2e] All fixture tables verified empty.');
+      if (!retainResources) {
+        await complete(start('java', ['-cp', classpath, 'e2e.E2eDatabase', 'clean']), 'Final E2E data cleanup');
+        run.fixtureTablesEmpty = true;
+        console.log('[e2e] All fixture tables verified empty.');
+      }
     }
     api.removeListener('close', crash); react.removeListener('close', crash);
     api.stdin.end();
     await Promise.race([new Promise(resolve => api.once('close', resolve)), pause(10_000)]);
+    stage('completed');
   } catch (error) {
+    if (retainResources && !run.failureStage) run.failureStage = run.phase;
     for (const [child, label] of [[api, 'E2E-Spring-Boot'], [react, 'E2E-React']]) {
       if (child) console.error(`[e2e] Server diagnostic: ${failureLog(child, label)}`);
     }
     throw error;
   } finally {
     await cleanup();
-    process.removeListener('SIGINT', interrupted); process.removeListener('SIGTERM', interrupted);
+    process.removeListener('SIGINT', onSigint); process.removeListener('SIGTERM', onSigterm);
   }
 }
 if (require.main === module) main().catch(error => { console.error(`[e2e] ${error.message}`); process.exitCode = 1; });
-module.exports = { assertFree, safeEnvironment, redactOutput, sanitize, registerSecret };
+module.exports = { assertFree, safeEnvironment, redactOutput, sanitize, registerSecret, retentionEnabled, parseRunArguments, main };

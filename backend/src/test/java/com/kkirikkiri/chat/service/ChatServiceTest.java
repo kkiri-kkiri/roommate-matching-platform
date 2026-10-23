@@ -67,6 +67,7 @@ class ChatServiceTest {
     @InjectMocks ChatService service;
 
     private static final LocalDateTime SENT_AT = LocalDateTime.of(2026, 1, 1, 12, 0);
+    private static final String CLIENT_ID = "b29b86b5-184a-4c44-a28e-89c62ecc5398";
     private User user;
     private User target;
     private ChatRoom room;
@@ -81,6 +82,78 @@ class ChatServiceTest {
         room = room(10L);
         member = new ChatRoomMember(room, user);
         counterpart = new ChatRoomMember(room, target);
+    }
+
+    @Test
+    void lostCommitConfirmationRetryReturnsTheOriginalMessageWithoutInserting() {
+        stubActiveMember();
+        stubCounterpart();
+        var stored = new ChatMessage(room, user, "hello", CLIENT_ID);
+        ReflectionTestUtils.setField(stored, "messageId", 42L);
+        ReflectionTestUtils.setField(stored, "sentAt", SENT_AT);
+        when(chatMessageRepository.findClientMessageForUpdate(10L, 7L, CLIENT_ID))
+                .thenReturn(Optional.empty(), Optional.of(stored));
+        when(chatMessageRepository.save(any())).thenReturn(stored);
+        var request = new ChatMessageSendRequest("hello", CLIENT_ID);
+        var first = service.sendMessage(7L, 10L, request);
+        var retry = service.sendMessage(7L, 10L, request);
+        assertEquals(first, retry);
+        assertEquals(42L, retry.id());
+        assertEquals(CLIENT_ID, retry.clientMessageId());
+        verify(chatMessageRepository, times(1)).save(any());
+        var order = inOrder(userRepository, chatRoomMemberRepository, chatMessageRepository);
+        order.verify(userRepository).findByIdForAccountUpdate(7L);
+        order.verify(chatRoomMemberRepository).findMemberForUpdate(10L, 7L);
+        order.verify(chatMessageRepository).findClientMessageForUpdate(10L, 7L, CLIENT_ID);
+        var captured = ArgumentCaptor.forClass(ChatMessage.class);
+        verify(chatMessageRepository).save(captured.capture());
+        assertEquals(CLIENT_ID, captured.getValue().getClientMessageId());
+        assertEquals(CLIENT_ID, ChatMessageResponse.from(stored, "ME", false).clientMessageId());
+    }
+
+    @Test
+    void rejectsChangingTheBodyOfAnAlreadySavedClientId() {
+        stubActiveMember();
+        stubCounterpart();
+        when(chatMessageRepository.findClientMessageForUpdate(10L, 7L, CLIENT_ID))
+                .thenReturn(Optional.of(new ChatMessage(room, user, "original", CLIENT_ID)));
+        assertError(ErrorCode.INVALID_REQUEST,
+                () -> service.sendMessage(7L, 10L, new ChatMessageSendRequest("changed", CLIENT_ID)));
+        verify(chatMessageRepository, never()).save(any());
+    }
+
+    @Test
+    void failedStorageCanRetryWithTheOriginalIdAndDoesNotReturnFalseSuccess() {
+        stubActiveMember();
+        stubCounterpart();
+        when(chatMessageRepository.save(any())).thenThrow(new DataAccessResourceFailureException("unavailable"))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        var request = new ChatMessageSendRequest("recover", CLIENT_ID);
+        assertThrows(DataAccessResourceFailureException.class, () -> service.sendMessage(7L, 10L, request));
+        assertEquals(CLIENT_ID, service.sendMessage(7L, 10L, request).clientMessageId());
+        verify(chatMessageRepository, times(2)).findClientMessageForUpdate(10L, 7L, CLIENT_ID);
+    }
+
+    @Test
+    void distinctSendIdsAllowIntentionalMessagesWithIdenticalBodies() {
+        stubActiveMember();
+        stubCounterpart();
+        when(chatMessageRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        var first = service.sendMessage(7L, 10L, new ChatMessageSendRequest("same", CLIENT_ID));
+        String secondId = "ba25e0c9-c701-4b71-9c45-b395d2a9f12e";
+        var second = service.sendMessage(7L, 10L, new ChatMessageSendRequest("same", secondId));
+        assertEquals(CLIENT_ID, first.clientMessageId());
+        assertEquals(secondId, second.clientMessageId());
+        verify(chatMessageRepository, times(2)).save(any());
+    }
+
+    @Test
+    void retryStillRequiresCurrentActiveMembershipBeforeReturningStoredContent() {
+        member.leave();
+        when(chatRoomMemberRepository.findMemberForUpdate(10L, 7L)).thenReturn(Optional.of(member));
+        assertError(ErrorCode.FORBIDDEN,
+                () -> service.sendMessage(7L, 10L, new ChatMessageSendRequest("hello", CLIENT_ID)));
+        verifyNoInteractions(chatMessageRepository);
     }
 
     @Test

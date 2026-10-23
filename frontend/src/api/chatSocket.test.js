@@ -47,3 +47,11 @@ test("old callbacks and stale cleanup cannot affect the new room or a stopped se
   expect(client.subscribe).toHaveBeenCalledTimes(2);
   expect(subscriptions[1].unsubscribe).toHaveBeenCalledTimes(1);
 });
+
+test("publishes the durable client key without treating transport acceptance as storage confirmation", () => {
+  const socket = createChatSocket({ onStatus: jest.fn(), onError: jest.fn() });
+  client.connected = true;
+  socket.publish("10", "초안", "b29b86b5-184a-4c44-a28e-89c62ecc5398");
+  expect(client.publish).toHaveBeenCalledWith({ destination: "/pub/chat/rooms/10/messages",
+    body: JSON.stringify({ text: "초안", clientMessageId: "b29b86b5-184a-4c44-a28e-89c62ecc5398" }) });
+});
