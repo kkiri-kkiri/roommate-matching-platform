@@ -64,9 +64,9 @@ export function createChatSocket({ onConnect, onStatus, onError }) {
       return () => { if (selected === target) unsubscribe(); };
     },
     unsubscribe,
-    publish: (roomId, text) => {
+    publish: (roomId, text, clientMessageId) => {
       if (!client.connected) throw new Error("채팅 서버 연결 후 다시 보내주세요.");
-      client.publish({ destination: `/pub/chat/rooms/${roomId}/messages`, body: JSON.stringify({ text }) });
+      client.publish({ destination: `/pub/chat/rooms/${roomId}/messages`, body: JSON.stringify({ text, clientMessageId }) });
     },
     disconnect: () => {
       stopped = true;

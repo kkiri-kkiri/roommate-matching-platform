@@ -136,7 +136,6 @@ function ChatWorkspace({ currentUser }) {
   const profileOpen = profileView === "summary" && Boolean(activeRoom) && !activeRoom.anonymous;
   const detailedProfileOpen = profileView === "detail" && activeRoom?.category === "roommate" && !activeRoom.anonymous;
   const roomSearchQuery = roomSearch.trim().toLocaleLowerCase();
-  const draft = drafts[selectedId] || "";
   const messages = activeRoom?.messages || [];
   const searchQuery = messageSearch.trim().toLocaleLowerCase();
 
@@ -144,16 +143,21 @@ function ChatWorkspace({ currentUser }) {
   const profileHref = `/chat?room=${encodeURIComponent(selectedId)}&view=profile`;
 
   const { connected, loadingRooms, roomError, messageLoading, messageError, searchResults,
-    updateSettings, send, leave, sourcePost, roomIds, roomCounts, totalRooms,
+    updateSettings, send, pendingSends, leave, sourcePost, roomIds, roomCounts, totalRooms,
     hasMoreRooms, loadingMoreRooms, moreRoomsError, loadMoreRooms,
     hasOlderMessages, moreMessagesLoading, moreMessagesError, loadOlderMessages } = useChat({
     isAuthenticated, rooms, setRooms, activeRoom, searchQuery, location, setStatus,
     selectedRoomId: selectedId, roomCategory: category, roomQuery: roomSearch, visibleMessageIds,
+    accountId: currentUser?.id ?? currentUser?.userId ?? "guest",
+    onSendConfirmed: (roomId, text) => setDrafts((current) =>
+      current[roomId]?.trim() === text ? { ...current, [roomId]: "" } : current),
     onCreated: (roomId) => {
       setCategory("all"); setRoomSearch(""); setMobileOpen(true);
       setSearchParams({ room: roomId }, { replace: true, state: null });
     },
   });
+  const pendingSend = pendingSends[selectedId];
+  const draft = pendingSend?.text ?? drafts[selectedId] ?? "";
   const pinnedCount = roomCounts.pinned;
   const categoryCounts = roomCounts;
   const byId = new Map(rooms.map((room) => [room.id, room]));
@@ -252,7 +256,6 @@ function ChatWorkspace({ currentUser }) {
     const text = draft.trim();
     if (!activeRoom || composing || !validMessage(draft)) return;
     if (!send(selectedId, text)) return;
-    setDrafts((current) => ({ ...current, [selectedId]: "" }));
 
     inputRef.current?.focus();
   };
@@ -499,7 +502,7 @@ function ChatWorkspace({ currentUser }) {
                 <S.Composer onSubmit={sendMessage}>
                   <S.ScreenReaderOnly as="label" htmlFor="chat-message">메시지 보내기</S.ScreenReaderOnly>
                   <S.ComposerField>
-                    <S.MessageInput id="chat-message" ref={inputRef} value={draft} rows={1}
+                    <S.MessageInput id="chat-message" ref={inputRef} value={draft} rows={1} readOnly={Boolean(pendingSend)}
                       placeholder={`${activeRoom.nickname}님에게 메시지를 남겨보세요`}
                       aria-invalid={codePointLength(draft) > MAX_MESSAGE_LENGTH}
                       aria-describedby="chat-message-count"
@@ -511,12 +514,18 @@ function ChatWorkspace({ currentUser }) {
                           if (!event.repeat) sendMessage(event);
                         }
                       }} />
-                    <S.SendButton type="submit" disabled={!validMessage(draft) || composing || !connected} aria-label="메시지 전송">
+                    <S.SendButton type="submit" disabled={!validMessage(draft) || composing || !connected || Boolean(pendingSend)} aria-label="메시지 전송">
                       <Send size={18} aria-hidden="true" />전송
                     </S.SendButton>
                   </S.ComposerField>
                   <span id="chat-message-count" role="status">{codePointLength(draft)} / {MAX_MESSAGE_LENGTH}
                     {codePointLength(draft) > MAX_MESSAGE_LENGTH ? " · 입력 한도를 초과했습니다." : ""}</span>
+                  {pendingSend && <div role="status">
+                    <p>{pendingSend.state === "sending" ? "메시지 저장을 확인하고 있어요."
+                      : "저장 여부를 아직 확인하지 못했어요. 내용은 보관 중이에요. 재시도해도 같은 메시지를 중복 저장하지 않아요."}</p>
+                    {pendingSend.state === "unknown" && <button type="button" disabled={!connected}
+                      onClick={() => send(selectedId, pendingSend.text)}>메시지 저장 확인·재시도</button>}
+                  </div>}
                 </S.Composer>
               </>
             ) : (

@@ -215,6 +215,7 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
   const navigate = useNavigate();
   const busyRef = useRef(false);
   const [busy, setBusy] = useState(false);
+  const [commentRefreshFailed, setCommentRefreshFailed] = useState(false);
   const [replyTarget, setReplyTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [reportTarget, setReportTarget] = useState(null);
@@ -270,16 +271,26 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
     await onRefresh();
   });
 
+  // A failed read cannot undo a confirmed comment write. Retrying only reads the list.
+  const refreshComments = async () => {
+    try {
+      await onRefresh();
+      setCommentRefreshFailed(false);
+    } catch {
+      setCommentRefreshFailed(true);
+    }
+  };
+
   const addComment = (content, anonymous, commentId) => runAction(async () => {
     if (commentId == null) await api.createCommunityComment(post.id, content, anonymous);
     else await api.createCommunityReply(commentId, content, anonymous);
-    await onRefresh();
     if (commentId != null) setReplyTarget(null);
+    await refreshComments();
   });
 
   const saveComment = (commentId, replyId, content) => runAction(async () => {
     await api.updateCommunityComment(replyId ?? commentId, content);
-    await onRefresh();
+    await refreshComments();
   });
 
   const confirmDelete = () => runAction(async () => {
@@ -288,7 +299,7 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
       if (mine) await onDeletePost();
     } else {
       await api.deleteCommunityComment(deleteTarget.replyId ?? deleteTarget.commentId);
-      await onRefresh();
+      await refreshComments();
       if (replyTarget === deleteTarget.commentId && !deleteTarget.replyId) setReplyTarget(null);
     }
     setDeleteTarget(null);
@@ -321,6 +332,10 @@ function CommunityPostPage({ post, currentUser, onRefresh, onDeletePost, onEdit,
   return (
     <S.Detail aria-labelledby="community-post-title" aria-busy={busy}>
       {busy && <p role="status">처리하고 있어요.</p>}
+      {commentRefreshFailed && <div role="alert">
+        <p>댓글 변경은 저장되었지만 목록을 새로고침하지 못했어요. 다시 등록하지 말고 목록을 새로고침해 주세요.</p>
+        <S.SecondaryButton type="button" disabled={busy} onClick={() => runAction(refreshComments)}>댓글 목록 새로고침</S.SecondaryButton>
+      </div>}
       <S.BackLink as={Link} to="/community"><ArrowLeft size={17} aria-hidden="true" />커뮤니티 목록</S.BackLink>
       <S.Article>
         <S.ArticleTop>

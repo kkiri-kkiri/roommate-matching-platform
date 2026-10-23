@@ -1664,6 +1664,15 @@ ChatWebSocketController는 트랜잭션 서비스 호출이 정상 반환된 후
 DB 커밋과 WebSocket 전달은 하나의 원자적 작업이 아니므로 커밋 후 프로세스 장애/전달 실패 가능성은 남는다.
 브로커 전달 확인·영속 재시도/outbox·JVM 간 중계가 구현됐다는 뜻은 아니다. REST 재조회가 복구를 보조한다.
 
+전송 본문에는 선택적으로 소문자 UUID v4 `clientMessageId`를 추가할 수 있다. 같은 방·인증 발신자의
+동일 ID 재시도는 기존 저장 메시지를 반환하고 다시 방송한다. 동일 ID에 다른 본문은 INVALID_REQUEST다.
+이 ID는 Broadcast와 REST 메시지 이력에도 포함되며 기존 행/기존 본문에는 null이다. 새 프론트는
+publish 반환이나 STOMP transport receipt를 저장 성공으로 취급하지 않는다. 자신의 동일 ID 메시지가
+STOMP 또는 REST 이력으로 확인될 때까지 입력과 ID를 계정별 sessionStorage에 보관한다.
+10초 확인 지연/연결 종료 후에는 결과 미확정으로 표시하며 사용자 재시도도 같은 ID를 재사용한다.
+자동 재전송은 하지 않는다. 단순 본문/시간 일치로 저장을 추측하지 않는다.
+[수동 마이그레이션](migrations/20261023_chat_send_idempotency.md)을 백엔드 배포 전에 적용해야 한다.
+
 10.5 읽음 처리
 
 POST /api/chat/rooms/{roomId}/read
@@ -2886,11 +2895,11 @@ API 전체를 한 번에 구현하지 않고 다음 순서로 진행한다.
 | [CalendarEventListRequest](src/main/java/com/kkirikkiri/calendar/dto/CalendarEventListRequest.java) | `from: LocalDate` (NotNull, DateTimeFormat(iso = DateTimeFormat.ISO.DATE))<br>`to: LocalDate` (NotNull, DateTimeFormat(iso = DateTimeFormat.ISO.DATE))<br>`categories: List< String>` (NotBlank) |
 | [CalendarEventResponse](src/main/java/com/kkirikkiri/calendar/dto/CalendarEventResponse.java) | `id: Long`<br>`title: String`<br>`startDate: LocalDate`<br>`endDate: LocalDate`<br>`startTime: LocalTime`<br>`endTime: LocalTime`<br>`category: String`<br>`categoryId: Long`<br>`description: String`<br>`editable: boolean`<br>`source: String` |
 | [CalendarEventUpdateRequest](src/main/java/com/kkirikkiri/calendar/dto/CalendarEventUpdateRequest.java) | `title: String` (Pattern(regexp = "(?s).*\\S.*"), Size(max = 80))<br>`startDate: LocalDate` (없음)<br>`endDate: LocalDate` (없음)<br>`startTime: String` (Pattern(regexp = "([01][0-9]&#124;2[0-3]):[0-5][0-9]"))<br>`endTime: String` (Pattern(regexp = "([01][0-9]&#124;2[0-3]):[0-5][0-9]"))<br>`categoryId: Long` (Positive)<br>`description: String` (Size(max = 2000)) |
-| [ChatMessageBroadcastResponse](src/main/java/com/kkirikkiri/chat/dto/ChatMessageBroadcastResponse.java) | `id: Long`<br>`roomId: Long`<br>`senderId: Long`<br>`text: String`<br>`sentAt: LocalDateTime`<br>`read: boolean` |
+| [ChatMessageBroadcastResponse](src/main/java/com/kkirikkiri/chat/dto/ChatMessageBroadcastResponse.java) | `id: Long`<br>`roomId: Long`<br>`senderId: Long`<br>`text: String`<br>`sentAt: LocalDateTime`<br>`read: boolean`<br>`clientMessageId: String` (선택적 전송 ID; 기존 메시지는 null) |
 | [ChatMessageListRequest](src/main/java/com/kkirikkiri/chat/dto/ChatMessageListRequest.java) | `page: Integer` (Min(0))<br>`size: Integer` (Min(1), Max(100))<br>`q: String` (없음)<br>`beforeId: Long` (Positive)<br>`afterId: Long` (Positive) |
 | [ChatMessageReadStatusResponse](src/main/java/com/kkirikkiri/chat/dto/ChatMessageReadStatusResponse.java) | `id: Long`<br>`read: boolean` |
-| [ChatMessageResponse](src/main/java/com/kkirikkiri/chat/dto/ChatMessageResponse.java) | `id: Long`<br>`senderId: Long`<br>`senderType: String`<br>`text: String`<br>`sentAt: LocalDateTime`<br>`read: boolean` |
-| [ChatMessageSendRequest](src/main/java/com/kkirikkiri/chat/dto/ChatMessageSendRequest.java) | `text: String` (NotBlank, CodePointLength(max = ChatMessage.MAX_CONTENT_LENGTH = 2000); message는 Size 검증 메시지 키를 재사용) |
+| [ChatMessageResponse](src/main/java/com/kkirikkiri/chat/dto/ChatMessageResponse.java) | `id: Long`<br>`senderId: Long`<br>`senderType: String`<br>`text: String`<br>`sentAt: LocalDateTime`<br>`read: boolean`<br>`clientMessageId: String` (선택적 전송 ID; 기존 메시지는 null) |
+| [ChatMessageSendRequest](src/main/java/com/kkirikkiri/chat/dto/ChatMessageSendRequest.java) | `text: String` (NotBlank, CodePointLength(max = ChatMessage.MAX_CONTENT_LENGTH = 2000); message는 Size 검증 메시지 키를 재사용)<br>`clientMessageId: String` (선택적 소문자 UUID v4; Pattern 검증) |
 | [ChatReadRequest](src/main/java/com/kkirikkiri/chat/dto/ChatReadRequest.java) | `messageIds: List<Long>` (NotEmpty, Size(max = 100); 각 원소 NotNull, Positive) |
 | [ChatRoomCreateRequest](src/main/java/com/kkirikkiri/chat/dto/ChatRoomCreateRequest.java) | `targetUserId: Long` (annotation 없음; ROOMMATE 필수·양수는 서비스 검증)<br>`category: ChatRoomCategory` (NotNull)<br>`sourcePostId: Long` (없음)<br>`sourceCommentId: Long` (없음)<br>`sourceFrom: String` (Pattern(regexp = "POST&#124;COMMENT")) |
 | [ChatRoomListRequest](src/main/java/com/kkirikkiri/chat/dto/ChatRoomListRequest.java) | `category: String` (Pattern(regexp = "ALL&#124;ROOMMATE&#124;COMMUNITY"))<br>`q: String` (없음)<br>`page: Integer` (Min(0))<br>`size: Integer` (Min(1), Max(100)) |

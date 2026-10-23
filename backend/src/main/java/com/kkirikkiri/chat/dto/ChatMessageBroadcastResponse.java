@@ -11,12 +11,17 @@ public record ChatMessageBroadcastResponse(
 		Long senderId,
 		String text,
 		LocalDateTime sentAt,
-		boolean read) {
+		boolean read,
+		String clientMessageId) {
+
+	public ChatMessageBroadcastResponse(Long id, Long roomId, Long senderId, String text, LocalDateTime sentAt, boolean read) {
+		this(id, roomId, senderId, text, sentAt, read, null);
+	}
 
 	public static ChatMessageBroadcastResponse from(ChatMessage message, boolean read) {
 		return new ChatMessageBroadcastResponse(message.getMessageId(),
 				message.getChatRoom().getChatRoomId(), message.getChatRoom().isAnonymousAuthor(message.getSender().getUserId())
 						? null : message.getSender().getUserId(),
-				message.getContent(), message.getSentAt(), read);
+				message.getContent(), message.getSentAt(), read, message.getClientMessageId());
 	}
 }

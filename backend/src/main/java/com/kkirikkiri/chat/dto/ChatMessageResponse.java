@@ -11,11 +11,16 @@ public record ChatMessageResponse(
 		String senderType,
 		String text,
 		LocalDateTime sentAt,
-		boolean read) {
+		boolean read,
+		String clientMessageId) {
+
+	public ChatMessageResponse(Long id, Long senderId, String senderType, String text, LocalDateTime sentAt, boolean read) {
+		this(id, senderId, senderType, text, sentAt, read, null);
+	}
 
 	public static ChatMessageResponse from(ChatMessage message, String senderType, boolean read) {
 		return new ChatMessageResponse(message.getMessageId(), message.getChatRoom().isAnonymousAuthor(message.getSender().getUserId())
 						? null : message.getSender().getUserId(),
-				senderType, message.getContent(), message.getSentAt(), read);
+				senderType, message.getContent(), message.getSentAt(), read, message.getClientMessageId());
 	}
 }

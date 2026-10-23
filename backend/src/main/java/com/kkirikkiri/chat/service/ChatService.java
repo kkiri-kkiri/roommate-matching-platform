@@ -205,10 +205,21 @@ public class ChatService {
 	@Transactional
 	public ChatMessageBroadcastResponse sendMessage(Long userId, Long roomId, ChatMessageSendRequest request) {
 		validateRequest(request);
-		ChatRoomMember member = findActiveMember(userId, roomId);
+		// Same lock order as leave/read/settings; serialize concurrent retries before lookup/insert.
+		ChatRoomMember member = request.clientMessageId() == null ? findActiveMember(userId, roomId)
+				: findActiveMemberForUpdate(userId, roomId);
 		findCounterpart(roomId, userId);
+		if (request.clientMessageId() != null) {
+			var existing = chatMessageRepository.findClientMessageForUpdate(roomId, userId, request.clientMessageId());
+			if (existing.isPresent()) {
+				if (!existing.get().getContent().equals(request.text())) {
+					throw new CustomException(ErrorCode.INVALID_REQUEST);
+				}
+				return ChatMessageBroadcastResponse.from(existing.get(), existing.get().isRead());
+			}
+		}
 		ChatMessage message = chatMessageRepository.save(
-				new ChatMessage(member.getChatRoom(), member.getUser(), request.text()));
+				new ChatMessage(member.getChatRoom(), member.getUser(), request.text(), request.clientMessageId()));
 		return ChatMessageBroadcastResponse.from(message, message.isRead());
 	}
 

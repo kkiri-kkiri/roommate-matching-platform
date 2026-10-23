@@ -1749,6 +1749,10 @@ DATETIME
 
 채팅 목록의 최근 메시지와 최근 메시지 시간은 가장 최근 CHAT_MESSAGE를 조회하여 표시한다.
 
+선택적 `client_message_id VARCHAR(36) NULL`은 동일 전송 재시도의 영속 식별자다.
+`(chat_room_id,sender_id,client_message_id)` UNIQUE를 사용하며 기존 NULL 행은 유지한다.
+수동 적용 절차는 [20261023_chat_send_idempotency.md](migrations/20261023_chat_send_idempotency.md)를 따른다.
+
 6. 캘린더·학교/생활관 일정
 
 캘린더 카테고리 (CALENDAR_CATEGORY)
@@ -2398,10 +2402,11 @@ CALENDAR_CATEGORY.created_at도 같은 정책을 사용한다. 기존 데이터�
 | chat_room_id | BIGINT | NOT NULL | FK → CHAT_ROOM; DEFAULT 없음 |
 | sender_id | BIGINT | NOT NULL | FK → USER; DEFAULT 없음 |
 | content | VARCHAR(2000) | NOT NULL | DEFAULT 없음 |
+| client_message_id | VARCHAR(36) | NULL 허용 | 선택적 전송 ID; DEFAULT 없음 |
 | sent_at | DATETIME | NOT NULL | DEFAULT 없음 |
 | is_read | BOOLEAN | NOT NULL | Entity DEFAULT 없음; 수동 DDL DEFAULT FALSE |
 
-복합 UNIQUE: 명시 선언 없음.
+복합 UNIQUE: `uk_chat_message_client(chat_room_id,sender_id,client_message_id)`.
 
 ### CHAT_ROOM
 
