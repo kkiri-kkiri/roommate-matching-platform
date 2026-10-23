@@ -81,7 +81,9 @@ export async function signup(payload) {
     const response = await apiClient.post("/auth/signup", payload);
     return response.data.data;
   } catch (error) {
-    throw new Error(getApiErrorMessage(error, "회원가입에 실패했습니다."));
+    const failure = new Error(getApiErrorMessage(error, "회원가입에 실패했습니다."));
+    failure.errorCode = error.response?.data?.errorCode;
+    throw failure;
   }
 }
 

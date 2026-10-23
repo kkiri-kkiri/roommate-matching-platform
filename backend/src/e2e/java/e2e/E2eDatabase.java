@@ -142,12 +142,25 @@ public final class E2eDatabase {
                     em.persist(dorm); em.persist(faculty); em.persist(user);
                     em.persist(new Dormitory("NARAE", "나래", true));
                     em.persist(new Faculty("HK자율전공학부", true));
+                    var computer = new Faculty("컴퓨터응용수학부", true);
+                    var law = new Faculty("법경영학부", true);
+                    em.persist(computer); em.persist(law);
+                    em.persist(new Major(computer, "소프트웨어융합전공", true));
+                    em.persist(new Major(computer, "정보보안전공", true));
+                    em.persist(new Major(law, "법학전공", true));
                     em.persist(new UserProfile(user, "E2E사용자", "남자", dorm, faculty, null, (short)2000, "20", "1학년", "INTJ"));
                     var peer = new User(new BCryptPasswordEncoder().encode(required("E2E_LOGIN_PASSWORD")), required("E2E_SECOND_EMAIL"));
                     var admin = new User(new BCryptPasswordEncoder().encode(required("E2E_LOGIN_PASSWORD")), required("E2E_ADMIN_EMAIL"), UserRole.ADMIN);
                     peer.verifyEmail(); admin.verifyEmail(); em.persist(peer); em.persist(admin);
                     em.persist(new UserProfile(peer, "E2E상대", "남자", dorm, faculty, null, (short)2000, "20", "1학년", "INTJ"));
                     em.persist(new UserProfile(admin, "E2E관리자", "남자", dorm, faculty, null, (short)2000, "20", "1학년", "INTJ"));
+                    if ("1".equals(System.getenv("E2E_AUS_P1"))) {
+                        for (var status : List.of(UserStatus.SUSPENDED, UserStatus.WITHDRAWN)) {
+                            var inactive = new User(new BCryptPasswordEncoder().encode(required("E2E_LOGIN_PASSWORD")),
+                                required(status == UserStatus.SUSPENDED ? "E2E_SUSPENDED_EMAIL" : "E2E_WITHDRAWN_EMAIL"));
+                            inactive.verifyEmail(); inactive.changeStatus(status); em.persist(inactive);
+                        }
+                    }
                     tx.commit();
                 } catch (Throwable failure) { if (tx.isActive()) tx.rollback(); throw failure; }
             } finally { f.destroy(); }
@@ -163,9 +176,13 @@ public final class E2eDatabase {
             var snapshot = new LinkedHashMap<String,Object>();
             // Fixed, read-only business-data projection; never selects credentials or verification codes.
             Map<String,String> queries = new LinkedHashMap<>();
-            queries.put("profiles", "SELECT user_id,nickname,introduction FROM user_profile ORDER BY user_id");
-            queries.put("surveys", "SELECT user_id,sleep_time,wake_time FROM profile_survey ORDER BY user_id");
-            queries.put("preferences", "SELECT user_id FROM roommate_preference ORDER BY user_id");
+            queries.put("profiles", "SELECT p.user_id,p.nickname,p.introduction,p.grade,p.mbti,p.major_id,f.faculty_name,m.major_name,d.dormitory_name dormitory FROM user_profile p JOIN faculty f ON f.faculty_id=p.faculty_id LEFT JOIN major m ON m.major_id=p.major_id JOIN dormitory d ON d.dormitory_id=p.dormitory_id ORDER BY p.user_id");
+            queries.put("surveys", "SELECT * FROM profile_survey ORDER BY user_id");
+            queries.put("surveyOptions", "SELECT o.*,s.user_id FROM profile_survey_option o JOIN profile_survey s ON s.profile_survey_id=o.profile_survey_id ORDER BY s.user_id,o.field_code,o.option_value");
+            queries.put("preferences", "SELECT * FROM roommate_preference ORDER BY user_id");
+            queries.put("preferenceOptions", "SELECT o.*,p.user_id FROM roommate_preference_option o JOIN roommate_preference p ON p.preference_id=o.preference_id ORDER BY p.user_id,o.criterion_code,o.option_value");
+            queries.put("criteria", "SELECT c.*,p.user_id FROM preference_criterion c JOIN roommate_preference p ON p.preference_id=c.preference_id ORDER BY p.user_id,c.criterion_code");
+            queries.put("resetStates", "SELECT user_id,used_at IS NOT NULL used FROM password_reset_token ORDER BY password_reset_token_id");
             queries.put("matches", "SELECT requester_user_id,target_user_id,match_score FROM roommate_match ORDER BY requester_user_id,target_user_id");
             queries.put("likes", "SELECT user_id,target_user_id FROM profile_like ORDER BY user_id,target_user_id");
             queries.put("events", "SELECT event_id,owner_user_id,title,CAST(start_date AS CHAR) start_date,CAST(start_time AS CHAR) start_time FROM calendar_event ORDER BY event_id");

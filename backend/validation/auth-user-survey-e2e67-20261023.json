@@ -1,0 +1,589 @@
+{
+  "date": "2026-10-23",
+  "timezone": "Asia/Seoul",
+  "scope": "Auth/User/Survey P0 only; P1 not executed",
+  "finalStatus": "PASS",
+  "p0": {
+    "pass": 9,
+    "fail": 0,
+    "blocked": 0,
+    "notRun": 0
+  },
+  "p1": {
+    "pass": 0,
+    "fail": 0,
+    "blocked": 0,
+    "notRun": 6,
+    "ids": [
+      "B10",
+      "B11",
+      "B12",
+      "B13",
+      "B14",
+      "B15"
+    ],
+    "executionApproved": false
+  },
+  "browserTestAttempts": 13,
+  "browserHttpResponses": 256,
+  "serverCompletedHttp": 257,
+  "httpCountDefinition": "Counts API requests excluding OPTIONS. Browser response events and server completions are separate observations, never added together. Includes automatic UI queries and fixture login HTTP.",
+  "cases": [
+    {
+      "id": "B1",
+      "priority": "P0",
+      "status": "PASS",
+      "title": "B1 P0: real email verification and signup commit then account retrieval",
+      "run": "bc2479b6524d",
+      "evidence": "backend/build/full-service-e2e/bc2479b6524d/results.json"
+    },
+    {
+      "id": "B2",
+      "priority": "P0",
+      "status": "PASS",
+      "title": "React → Spring Boot → MySQL: real login and JWT session restoration",
+      "run": "bc2479b6524d",
+      "evidence": "backend/build/full-service-e2e/bc2479b6524d/results.json"
+    },
+    {
+      "id": "B3",
+      "priority": "P0",
+      "status": "PASS",
+      "title": "B3 P0: signup token expires naturally and the same form recovers through re-verification",
+      "run": "a7650271b288",
+      "evidence": "backend/build/full-service-e2e/a7650271b288/results.json"
+    },
+    {
+      "id": "B4",
+      "priority": "P0",
+      "status": "PASS",
+      "title": "B4 P0: account academic and MBTI edits persist through JDBC GET and relogin",
+      "run": "a7650271b288",
+      "evidence": "backend/build/full-service-e2e/a7650271b288/results.json"
+    },
+    {
+      "id": "B5",
+      "priority": "P0",
+      "status": "PASS",
+      "title": "B5 P0: UI password change rejects the previous password and accepts the new password",
+      "run": "a7650271b288",
+      "evidence": "backend/build/full-service-e2e/a7650271b288/results.json"
+    },
+    {
+      "id": "B6",
+      "priority": "P0",
+      "status": "PASS",
+      "title": "B6 P0: actual reset mail token enters React and commits a password usable for login",
+      "run": "bc2479b6524d",
+      "evidence": "backend/build/full-service-e2e/bc2479b6524d/results.json"
+    },
+    {
+      "id": "B7",
+      "priority": "P0",
+      "status": "PASS",
+      "title": "B7 P0: profile survey full answers and introduction persist and are retrieved after relogin",
+      "run": "bc2479b6524d",
+      "evidence": "backend/build/full-service-e2e/bc2479b6524d/results.json"
+    },
+    {
+      "id": "B8",
+      "priority": "P0",
+      "status": "PASS",
+      "title": "B8 P0: preference survey scalar multi answers and all 18 weights survive GET and relogin",
+      "run": "a7650271b288",
+      "evidence": "backend/build/full-service-e2e/a7650271b288/results.json"
+    },
+    {
+      "id": "B9",
+      "priority": "P0",
+      "status": "PASS",
+      "title": "B9 P0: logout account switching and naturally expired JWT isolate account and survey data",
+      "run": "bc2479b6524d",
+      "evidence": "backend/build/full-service-e2e/bc2479b6524d/results.json"
+    }
+  ],
+  "runs": [
+    {
+      "id": "8f703b4e60ae",
+      "startedAt": "2026-10-23T02:02:11.644Z",
+      "finishedAt": "2026-10-23T02:02:13.867Z",
+      "counts": {
+        "executed": 0
+      },
+      "browserHttpResponses": 0,
+      "serverCompletedHttp": 0,
+      "serverMinusBrowser": {},
+      "container": null,
+      "containerId": null,
+      "containerRemoved": false,
+      "fixtureTablesEmpty": false,
+      "ownedProcessesStopped": true,
+      "recheck": null
+    },
+    {
+      "id": "bc2479b6524d",
+      "startedAt": "2026-10-23T02:31:36.869Z",
+      "finishedAt": "2026-10-23T02:42:43.599Z",
+      "counts": {
+        "executed": 9,
+        "passed": 5,
+        "failed": 4,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      },
+      "browserHttpResponses": 168,
+      "serverCompletedHttp": 169,
+      "serverMinusBrowser": {
+        "GET /api/roommates/recommended 200": 1
+      },
+      "container": "kkiri-e2e-bc2479b6524d",
+      "containerId": "cd46b3adb4ceecbbceb43ca634d4b91bcf11edf41b0458549e550f0aec11b882",
+      "containerRemoved": true,
+      "fixtureTablesEmpty": true,
+      "ownedProcessesStopped": true,
+      "recheck": null
+    },
+    {
+      "id": "bac96aefd975",
+      "startedAt": "2026-10-23T02:46:50.338Z",
+      "finishedAt": "2026-10-23T02:48:29.935Z",
+      "counts": {
+        "executed": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      },
+      "browserHttpResponses": 0,
+      "serverCompletedHttp": 0,
+      "serverMinusBrowser": {},
+      "container": "kkiri-e2e-bac96aefd975",
+      "containerId": "876abec225ee14cde061afd86e760f643f1776ad368b1a89b6170c18e8746533",
+      "containerRemoved": true,
+      "fixtureTablesEmpty": true,
+      "ownedProcessesStopped": true,
+      "recheck": {
+        "source": "bc2479b6524d",
+        "resultsSha256": "079ee4ccffaa0b28e4a5889126e1a6adb32219f84e6c60812c8145b9ff347089",
+        "ids": [
+          "B3",
+          "B4",
+          "B5",
+          "B8"
+        ]
+      }
+    },
+    {
+      "id": "a7650271b288",
+      "startedAt": "2026-10-23T02:49:24.226Z",
+      "finishedAt": "2026-10-23T02:54:11.348Z",
+      "counts": {
+        "executed": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      },
+      "browserHttpResponses": 88,
+      "serverCompletedHttp": 88,
+      "serverMinusBrowser": {},
+      "container": "kkiri-e2e-a7650271b288",
+      "containerId": "f021806a416fb5c5389e0eef814405980d4484c5d7e5facd454c2fee746c99ef",
+      "containerRemoved": true,
+      "fixtureTablesEmpty": true,
+      "ownedProcessesStopped": true,
+      "recheck": {
+        "source": "bc2479b6524d",
+        "resultsSha256": "079ee4ccffaa0b28e4a5889126e1a6adb32219f84e6c60812c8145b9ff347089",
+        "ids": [
+          "B3",
+          "B4",
+          "B5",
+          "B8"
+        ]
+      }
+    }
+  ],
+  "finalResourceAudit": {
+    "date": "2026-10-23",
+    "timezone": "Asia/Seoul",
+    "containers": [
+      {
+        "name": "kkiri-e2e-bc2479b6524d",
+        "absent": true
+      },
+      {
+        "name": "kkiri-e2e-bac96aefd975",
+        "absent": true
+      },
+      {
+        "name": "kkiri-e2e-a7650271b288",
+        "absent": true
+      }
+    ],
+    "ports": [
+      {
+        "address": "127.0.0.1",
+        "port": 13000,
+        "free": true
+      },
+      {
+        "address": "127.0.0.1",
+        "port": 18080,
+        "free": true
+      },
+      {
+        "address": "127.0.0.1",
+        "port": 13316,
+        "free": true
+      }
+    ],
+    "artifactScan": {
+      "files": 46,
+      "generatedCredentialPatternMatches": []
+    },
+    "existingPreservedResourcesAccessed": false
+  },
+  "protectedSources": {
+    "files": 358,
+    "unchanged": true,
+    "definition": "All backend/src/main and frontend/src except the four explicit signup fix/regression files"
+  },
+  "frontendDefects": [
+    {
+      "id": "expired-signup-verification-lock",
+      "firstRun": "bc2479b6524d",
+      "case": "B3",
+      "evidence": "Actual signup 400 EMAIL_VERIFICATION_TOKEN_INVALID, no account created, verification button remains unavailable. SignupPage catch retained isVerified=true.",
+      "fix": "Preserve signup errorCode in authApi and clear verification state only for EMAIL_VERIFICATION_TOKEN_INVALID. Preserve the signup draft."
+    }
+  ],
+  "runnerErrors": [
+    {
+      "run": "8f703b4e60ae",
+      "kind": "Docker named-pipe permission",
+      "tests": 0,
+      "http": 0,
+      "resourceCreated": false
+    },
+    {
+      "run": "bc2479b6524d",
+      "cases": [
+        "B4",
+        "B5"
+      ],
+      "kind": "Selector matched outer section and four edit buttons",
+      "fix": "Select nearest section of the exact heading"
+    },
+    {
+      "run": "bc2479b6524d",
+      "cases": [
+        "B8"
+      ],
+      "kind": "Runner expected DTO from existing Void PUT",
+      "fix": "Compare submitted preference values with independent JDBC and subsequent GET; preserve API contract"
+    },
+    {
+      "run": "bac96aefd975",
+      "kind": "Anchored grep did not match Playwright full test title",
+      "tests": 0,
+      "http": 0,
+      "resourceCreated": true,
+      "resourceRemoved": true,
+      "fix": "Correct grep and require exact --list test count before resource creation"
+    },
+    {
+      "kind": "New Jest UI regression exceeded default 5-second limit",
+      "finalDurationMs": 5312,
+      "fix": "20-second limit for this form-completion test; rerun passed"
+    }
+  ],
+  "checks": {
+    "e2eJavaCompilation": "PASS prepareE2e",
+    "contract": "PASS 73 endpoints / 75 record DTOs / 30 entities",
+    "frontendRegression": {
+      "uniqueTests": 29,
+      "finalPassed": 29,
+      "attempts": 34,
+      "initialTimeouts": 1
+    },
+    "runnerSafety": "6 PASS",
+    "frontendBuild": "PASS",
+    "backendTestBootJar": "BUILD SUCCESSFUL; test and bootJar UP-TO-DATE, no fresh H2 execution"
+  },
+  "limits": [
+    "No real SMTP, AI, school network, HTTPS/ingress or production verification",
+    "No other-domain E2E cases executed; automatic homepage queries are included in HTTP counts only",
+    "No P1 browser execution or full repetition of previously passed P0 cases",
+    "Stateless logout contract unchanged; retained-token/socket server revocation is outside this scope"
+  ],
+  "evidence": [
+    {
+      "path": "backend/build/full-service-e2e/8f703b4e60ae/logs/Docker-engine-availability.log",
+      "sha256": "2886728ade4a54f7e947b7ceb9e003f05b1fb5241102720eac6a85f18e7f3a7e"
+    },
+    {
+      "path": "backend/build/full-service-e2e/8f703b4e60ae/run.json",
+      "sha256": "82e8256d8b38debf71465d8ee7d17ed9b8e11e686c7add8dcf70482e4d831687"
+    },
+    {
+      "path": "backend/build/full-service-e2e/8f703b4e60ae/source-after.json",
+      "sha256": "df4e330b69c16ddad1ef6b9ca5ed7390458fd6adfd1814ba8f92877c6f1c6024"
+    },
+    {
+      "path": "backend/build/full-service-e2e/8f703b4e60ae/source-before.json",
+      "sha256": "df4e330b69c16ddad1ef6b9ca5ed7390458fd6adfd1814ba8f92877c6f1c6024"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/browser-0b333e0b2e7441e0af38-0200a05e7cd42229fd51.json",
+      "sha256": "3604775c0e5cea65343e620b1fe2e94c970132d0a115c690b46ca667bdc7f1b3"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/browser-0b333e0b2e7441e0af38-2cce4c59ff52d126217e.json",
+      "sha256": "14dddc12e368f60d87540c1d3af7f67bcfe12533c74a1b4393a0e4b2cd49b0d4"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/browser-0b333e0b2e7441e0af38-46f6525c61bfb21cb846.json",
+      "sha256": "4fbc13390f3db654d6d6d5e68e09827597bdf7f50f79209479f176756b62295f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/browser-0b333e0b2e7441e0af38-4ce14b7cee13f5276a5f.json",
+      "sha256": "54f6d37c6879e4221e18a35e8f5d6fa041a1f17a566a948e2cd582c608ab29f0"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/browser-0b333e0b2e7441e0af38-a29d42667b2da20bc42c.json",
+      "sha256": "f344504dfce4420f1994a42f03e7595a96201ec09212d9293bb15fd0a7b43fb5"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/browser-0b333e0b2e7441e0af38-a8f2bce47609aca232c1.json",
+      "sha256": "5bb7d13bce50076f1e9b3d438f98f643e6bf86912c603928c15ce3eba992a346"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/browser-0b333e0b2e7441e0af38-c03e9d6703d98020e868.json",
+      "sha256": "0bef058e034176f2db9187b60e082cf5648d45032251935f29503a991daab679"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/browser-0b333e0b2e7441e0af38-f02ed5d22d00ce3e8dc4.json",
+      "sha256": "aeaba3ab1c8bff440731b11535086b2015c934db42f1206303a202c4fd1eed38"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/browser-b7f41ffa7202353a0a8e-fd380d17c77fa358b7cc.json",
+      "sha256": "2a6b2585bd5e372687cd7c4608787c302b06c4de918f9428018545da77a6d41e"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/database-0b333e0b2e7441e0af38-0200a05e7cd42229fd51.jsonl",
+      "sha256": "2a80278b42d4cea4513f658b389940e0c7c1f837585d21c8c48f9ff91aa25394"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/database-0b333e0b2e7441e0af38-2cce4c59ff52d126217e.jsonl",
+      "sha256": "2b8af465d2e73354b867d3745ade7fb781e1377eddc78fb142d119515e414088"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/database-0b333e0b2e7441e0af38-46f6525c61bfb21cb846.jsonl",
+      "sha256": "ef48da81fbd8a75fe007cf793ae5b5260bdb7c8aca7e00167e86a64ffd2a16d1"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/database-0b333e0b2e7441e0af38-4ce14b7cee13f5276a5f.jsonl",
+      "sha256": "40dc65865fb55d90ada12be5052ac29ec6a20a78d7cab39faa7247e6ee923748"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/database-0b333e0b2e7441e0af38-a29d42667b2da20bc42c.jsonl",
+      "sha256": "7f68170b2bc79ef0b85fb56820fc9008e72f123a7e7d93908e313e12cbc239ff"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/database-0b333e0b2e7441e0af38-a8f2bce47609aca232c1.jsonl",
+      "sha256": "9d07fe42d9156f285aeb106874fc61366e652a38ac6b49a26c3e22c57688829e"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/database-0b333e0b2e7441e0af38-c03e9d6703d98020e868.jsonl",
+      "sha256": "33a90ddfa30ed23a09ce89d930a69f7d32c017ecfbe65fba0ff65051809cd8f3"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/database-0b333e0b2e7441e0af38-f02ed5d22d00ce3e8dc4.jsonl",
+      "sha256": "2e358ebe6f0cac8379115ea499dae9740c03ac573784efebe36404d5e2a5ffe4"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/database-b7f41ffa7202353a0a8e-fd380d17c77fa358b7cc.jsonl",
+      "sha256": "a5ac75a6081f41d5fc22beedde26c6bda07ab8e0861d5bff7158149cd2f5d431"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/logs/E2E-React.log",
+      "sha256": "c833856b010e9c6ef6bb2ca26a436a707658a95b99e2fa9816187fa1505a69de"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/logs/E2E-Spring-Boot.log",
+      "sha256": "e3e7c406531ba305ba1b5cb160b2d62dba4dd45e4d39c94af2bb1e6947285a1f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/logs/MySQL-readiness.log",
+      "sha256": "bc3db46d117c927f9985f6f9ea64758f94dc816c6d8c690553f59b5bd3ca7bd5"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/logs/Playwright.log",
+      "sha256": "f20d30f09062c497d8e07a4e2bbaa438ba5c8fb8daaf58c4a68a8a2455829e0a"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/logs/React-final.log",
+      "sha256": "c833856b010e9c6ef6bb2ca26a436a707658a95b99e2fa9816187fa1505a69de"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/logs/Spring-Boot-final.log",
+      "sha256": "e3e7c406531ba305ba1b5cb160b2d62dba4dd45e4d39c94af2bb1e6947285a1f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/preflight.json",
+      "sha256": "2ecb4c4a2c0ebff8b3f836aa7b2dc419d9f84b30692e81e36afdae26dc6c008c"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/results.json",
+      "sha256": "079ee4ccffaa0b28e4a5889126e1a6adb32219f84e6c60812c8145b9ff347089"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/run.json",
+      "sha256": "d429f24269cfb65dd99545f463a67d6c930a581fd23e8d08d719240ecb42971b"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/server-http.jsonl",
+      "sha256": "c2ff92ed4be0597314722e1022916b96980e3ced750237cfead4e0047471288e"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/source-after.json",
+      "sha256": "2b9467edac934a49cb26b46b269a82f9f7d92e5e5a009f0c2d28207dde325d0d"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bc2479b6524d/source-before.json",
+      "sha256": "2b9467edac934a49cb26b46b269a82f9f7d92e5e5a009f0c2d28207dde325d0d"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bac96aefd975/logs/E2E-React.log",
+      "sha256": "a1e9677d112465de7719a536dc1f5d3f37693bac475102596844f9b50bbc75fd"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bac96aefd975/logs/E2E-Spring-Boot.log",
+      "sha256": "e3e7c406531ba305ba1b5cb160b2d62dba4dd45e4d39c94af2bb1e6947285a1f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bac96aefd975/logs/MySQL-readiness.log",
+      "sha256": "bc3db46d117c927f9985f6f9ea64758f94dc816c6d8c690553f59b5bd3ca7bd5"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bac96aefd975/logs/Playwright.log",
+      "sha256": "f96fc287d2466247c719842ff720554a6e0ffa5154b9906b370c700354a8bfc2"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bac96aefd975/logs/React-final.log",
+      "sha256": "a1e9677d112465de7719a536dc1f5d3f37693bac475102596844f9b50bbc75fd"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bac96aefd975/logs/Spring-Boot-final.log",
+      "sha256": "e3e7c406531ba305ba1b5cb160b2d62dba4dd45e4d39c94af2bb1e6947285a1f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bac96aefd975/preflight.json",
+      "sha256": "b7661545249ab52b5372e2dc21b5391d20efed1b0ec5acf00a0c2682f4cede48"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bac96aefd975/results.json",
+      "sha256": "27b7719fcf78ee628e297cc3ac26552ceeccf80542e3c45a5a47363d16a7673c"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bac96aefd975/run.json",
+      "sha256": "2d916c0e8d63834a551c7a3627067ca82f4e5e4ec61400f61407c932e966612f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bac96aefd975/source-after.json",
+      "sha256": "2467f48a31f4850e57d161c07a8ef697073d8ad6264bbb58a83859832f5bc280"
+    },
+    {
+      "path": "backend/build/full-service-e2e/bac96aefd975/source-before.json",
+      "sha256": "2467f48a31f4850e57d161c07a8ef697073d8ad6264bbb58a83859832f5bc280"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/browser-0b333e0b2e7441e0af38-2cce4c59ff52d126217e.json",
+      "sha256": "52de01d9e7ecbd631990bc2d275b52981d16c104ee140df80f28cab6f937501a"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/browser-0b333e0b2e7441e0af38-46f6525c61bfb21cb846.json",
+      "sha256": "6c93d1dedd9e08140db3f224631b6586409e7cdca90e4d11e980f8abc4070933"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/browser-0b333e0b2e7441e0af38-4ce14b7cee13f5276a5f.json",
+      "sha256": "aa951225adeb126f013d3dcbcf0c91ba7b4e79b49d9a26c636d49745e4a333bc"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/browser-0b333e0b2e7441e0af38-c03e9d6703d98020e868.json",
+      "sha256": "697e2d4cc7bb8702c3b71c95ae6c102ef235f960b79be89155f98e3aa51b0591"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/database-0b333e0b2e7441e0af38-2cce4c59ff52d126217e.jsonl",
+      "sha256": "a18d89e87e11c610eb6c2c1a4429f3de5a5b14155e187c5492098e695807b71d"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/database-0b333e0b2e7441e0af38-46f6525c61bfb21cb846.jsonl",
+      "sha256": "fe00147ac90fac63cd83654ba95a0c6018a6c5dde4ca469621c84399f012d92f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/database-0b333e0b2e7441e0af38-4ce14b7cee13f5276a5f.jsonl",
+      "sha256": "fb267dc5b624ef0ac88cc8a1b343c515318001900565b030d58e9ee8dbabbdb5"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/database-0b333e0b2e7441e0af38-c03e9d6703d98020e868.jsonl",
+      "sha256": "87c7a912276249766f4567cec05302749a3fec97d9d1f20708d2b715ec6a7fbc"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/environment-audit.json",
+      "sha256": "99360109fa34bc2eabfc1472d73858b8fcc5b70dc37824421a79a5685e529235"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/logs/MySQL-readiness.log",
+      "sha256": "bc3db46d117c927f9985f6f9ea64758f94dc816c6d8c690553f59b5bd3ca7bd5"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/logs/Playwright.log",
+      "sha256": "60896c85d432d3b810128af74a30a3e296f5d3b90ffffa2fde0e57f08e90344a"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/logs/React-final.log",
+      "sha256": "3f7c50ed22ac4ec4e8fc5353902a5be5316e80bf1460bf3fcd11851c6a43a1b6"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/logs/Spring-Boot-final.log",
+      "sha256": "e3e7c406531ba305ba1b5cb160b2d62dba4dd45e4d39c94af2bb1e6947285a1f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/preflight.json",
+      "sha256": "9e6c89cca719232966e5b4613e759e0d98a6469294545861bf1b5d80a15354f4"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/results.json",
+      "sha256": "7f24036d28d27d0b74a808f97e86ef2df2acb4f70cf6773da1e01a2b6265bef3"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/run.json",
+      "sha256": "454bc9747f1165d03c612d1588ed49483a2fd0e551abb8a758f24a1a0f0495d9"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/server-http.jsonl",
+      "sha256": "f3e5179b95fa4a7f2804feb0ac2e253782fd407b82e400e99eb9cf87b1aefc65"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/source-after.json",
+      "sha256": "f714c6fd990c5d6b8ae3434a56b897569690da7754891665067a6026c26caceb"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/source-before.json",
+      "sha256": "7f0e1ad9c62a9d901d7b67cf1431dbb212a956b76ea09699e5886e16dc745971"
+    },
+    {
+      "path": "backend/build/full-service-e2e/a7650271b288/test-selection.txt",
+      "sha256": "906515f3caa81ac53603463bf590f4c8f0dd9d84e6bcbc48cd68f33923ba3a66"
+    },
+    {
+      "path": "backend/build/full-service-e2e/aus67-final-audit-20261023.json",
+      "sha256": "9366f883b7598bb41009cfc991a86bbce9fc691949a5ac616a92470d44194767"
+    }
+  ]
+}

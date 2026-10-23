@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const net = require('node:net');
 const { assertFree, safeEnvironment, redactOutput, sanitize } = require('./run.cjs');
 const { database } = require('./lib/database.cjs');
-const { retentionEnabled, parseRunArguments } = require('./run.cjs');
+const { retentionEnabled, parseRunArguments, main } = require('./run.cjs');
 const { readFileSync, mkdirSync, mkdtempSync, writeFileSync } = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
@@ -40,6 +40,13 @@ test('structured evidence preserves numeric IDs and timings while removing secre
   assert.equal(original.rows[0].note.includes('test-secret'), true);
 });
 
+test('diagnostics redact opaque reset tokens and generated replacement passwords', () => {
+  const token = 'x'.repeat(43), password = 'E2e!' + 'a'.repeat(36);
+  const output = redactOutput(`fill("${token}") fill("${password}")`);
+  assert.equal(output.includes(token), false);
+  assert.equal(output.includes(password), false);
+});
+
 test('retention requires the explicit CLI flag and never forwards it to Playwright', () => {
   const args = ['chat.spec.cjs', '--headed', '--grep', 'P0'];
   assert.deepEqual(parseRunArguments(args), { retainResources: false, playwrightArgs: args });
@@ -52,9 +59,16 @@ test('retention requires the explicit CLI flag and never forwards it to Playwrig
   assert.deepEqual(safeEnvironment({ E2E_RETAIN_RESOURCES: '1', PATH: '/bin' }), { PATH: '/bin' });
 });
 
+test('AUS P0/P1 selectors reject retention before evidence or resource preparation', async () => {
+  for (const selector of ['--aus-p0', '--aus-p1', '--aus-p0-recheck', '--aus-p1-recheck']) {
+    await assert.rejects(main(['--retain-resources', selector]), /requires disposable resources/);
+    await assert.rejects(main([selector, '--retain-resources']), /requires disposable resources/);
+  }
+});
+
 // Execute the actual runner with in-memory files and simulated child processes.
 // No Docker CLI, Java, Gradle, React, Playwright or network is started by this harness.
-async function simulateRun({ retained = true, failure, signal, evidenceFailure = false, platform = 'linux' } = {}) {
+async function simulateRun({ retained = true, failure, signal, evidenceFailure = false, platform = 'linux', selectors = ['chat.spec.cjs'] } = {}) {
   const calls = [], files = new Map(), children = new Map(), logs = [];
   const fakeProcess = new EventEmitter();
   Object.assign(fakeProcess, { env: { PATH: '/test', E2E_RETAIN_RESOURCES: '1' },
@@ -66,7 +80,7 @@ async function simulateRun({ retained = true, failure, signal, evidenceFailure =
   fakeProcess.kill = pid => children.get(Math.abs(pid))?.finish(0);
   const disk = {
     readFileSync: file => String(file).endsWith('classpath.txt') ? 'fake-classpath' : 'source',
-    mkdirSync() {}, existsSync: () => false,
+    mkdirSync() {}, existsSync: file => file === '/fake/chromium',
     lstatSync: file => ({ isSymbolicLink: () => false,
       isDirectory: () => ['backend/src/main', 'backend/src/e2e', 'frontend/src', 'frontend/e2e']
         .some(dir => String(file).replaceAll('\\', '/').endsWith(dir)) }),
@@ -92,9 +106,10 @@ async function simulateRun({ retained = true, failure, signal, evidenceFailure =
       if (command === 'docker') {
         if (args[0] === 'context') output = 'unix:///fake-docker';
         else if (args[0] === 'info') output = 'linux';
+        else if (args[0] === 'image') output = 'sha256:' + 'a'.repeat(64);
         else if (args[0] === 'create') { output = 'new-owned-container'; if (failure === 'create') code = 1; }
         else if (args[0] === 'exec') output = '11111111-2222-3333-4444-555555555555';
-        else if (args[0] === 'ps') output = 'new-owned-container';
+        else if (args[0] === 'ps') output = calls.some(c => c.command === 'docker' && c.args[0] === 'create') ? 'new-owned-container' : '';
         else if (args[0] === 'inspect') output = calls.find(c => c.command === 'docker' && c.args[0] === 'create')
           .args.find(a => a.startsWith('kkiri.e2e.owner=')).split('=')[1];
         if (failure === 'start' && args[0] === 'start') code = 1;
@@ -108,7 +123,8 @@ async function simulateRun({ retained = true, failure, signal, evidenceFailure =
         running = failure !== 'react'; code = running ? 0 : 1;
       }
       else if (args[0] === '@playwright/test/cli') {
-        if (signal) { running = true; fakeProcess.emit(signal); }
+        if (args.includes('--list')) output = `Total: ${options.env.E2E_AUS_P1 === '1' ? 23 : 9} tests in 1 file`;
+        else if (signal) { running = true; fakeProcess.emit(signal); }
         else if (failure === 'playwright') code = 1;
       } else if (failure === 'compile') code = 1;
       if (output) child.stdout.emit('data', output + '\n');
@@ -117,6 +133,7 @@ async function simulateRun({ retained = true, failure, signal, evidenceFailure =
     return child;
   };
   const modules = {
+    'playwright-core': { chromium: { executablePath: () => '/fake/chromium' } },
     'node:child_process': { spawn, spawnSync: () => ({ status: 0, stdout: 'fake-sha' }) },
     'node:fs': disk,
     'node:http': { createServer: () => ({ listen: (_port, _host, cb) => cb(),
@@ -141,7 +158,7 @@ async function simulateRun({ retained = true, failure, signal, evidenceFailure =
     timedOut = true;
     fakeProcess.emit('SIGTERM');
   }, 5000);
-  try { await module.exports.main([...(retained ? ['--retain-resources'] : []), 'chat.spec.cjs']); }
+  try { await module.exports.main([...(retained ? ['--retain-resources'] : []), ...selectors]); }
   catch (caught) { error = caught; }
   finally { clearTimeout(watchdog); }
   assert.equal(timedOut, false, 'Simulated runner must finish within five seconds');
@@ -158,7 +175,10 @@ for (const scenario of [{}, { failure: 'preflight' }, { failure: 'create' }, { f
   test(`retained runner preserves resources: ${JSON.stringify(scenario)}`, async () => {
     const result = await simulateRun(scenario);
     const dockerCalls = result.calls.filter(c => c.command === 'docker');
-    assert.equal(dockerCalls.some(c => ['rm', 'stop', 'restart', 'kill', 'prune', 'ps', 'inspect'].includes(c.args[0])), false);
+    assert.equal(dockerCalls.some(c => ['rm', 'stop', 'restart', 'kill', 'prune', 'inspect'].includes(c.args[0])), false);
+    const nameChecks = dockerCalls.filter(c => c.args[0] === 'ps');
+    assert.ok(nameChecks.length <= 1, 'retention only checks the new name before creation');
+    for (const call of nameChecks) assert.match(call.args.at(-1), /^name=\^\/kkiri-e2e-[a-f0-9]{12}\$$/);
     const operations = result.calls.filter(c => c.args.includes('e2e.E2eDatabase')).map(c => c.args.at(-1));
     assert.equal(operations.some(op => ['reset', 'clean'].includes(op)), false);
     assert.ok(result.children.every(child => child.exitCode !== null), 'owned helper/app processes stop');
@@ -195,6 +215,32 @@ for (const failure of [undefined, 'playwright']) {
     assert.deepEqual(result.calls.filter(c => c.args.includes('e2e.E2eDatabase')).map(c => c.args.at(-1)), ['prepare', 'clean']);
     assert.equal(result.calls.filter(c => c.command === 'docker' && c.args[0] === 'rm').length, 1);
     for (const call of result.calls) assert.equal(call.env.E2E_RETAIN_RESOURCES, undefined);
+  });
+}
+
+for (const phase of ['p0', 'p1']) {
+  test(`merged runner preserves AUS ${phase} selection and disposable cleanup`, async () => {
+    const result = await simulateRun({ retained: false, selectors: ['--aus-' + phase] });
+    assert.ifError(result.error);
+    assert.equal(result.report.scope, phase === 'p0' ? 'AUS_P0_ONLY' : 'AUS_P1_ONLY');
+    assert.equal(result.report.selectedTestCount, phase === 'p0' ? 9 : 23);
+    assert.equal(result.report.containerRemoved, true);
+    assert.equal(result.report.fixtureTablesEmpty, true);
+    assert.equal(result.report.retention, undefined);
+    const playwright = result.calls.filter(c => c.args[0] === '@playwright/test/cli');
+    assert.equal(playwright.length, 2, 'enumeration precedes actual selection');
+    const listed = playwright[0], executed = playwright[1];
+    assert.ok(listed.args.includes('--list'));
+    assert.equal(executed.args.includes('--list'), false);
+    assert.ok(executed.args.includes('aus-' + phase + '.spec.cjs'));
+    assert.equal(executed.args.includes('--aus-' + phase), false);
+    assert.equal(executed.env[phase === 'p0' ? 'E2E_AUS_P0' : 'E2E_AUS_P1'], '1');
+    if (phase === 'p0') assert.ok(executed.args.includes('login.spec.cjs'));
+    else {
+      assert.ok(executed.args.includes('--no-deps'));
+      assert.ok(executed.args.includes('--project=aus-p1'));
+      assert.equal(executed.args.includes('login.spec.cjs'), false);
+    }
   });
 }
 

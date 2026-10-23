@@ -42,3 +42,13 @@ test("network and limit errors receive actionable messages", async () => {
   client.post.mockRejectedValue({ response: { status: 429, data: { message: "요청이 너무 많습니다." } } });
   await expect(login("student@hknu.ac.kr", "Password1!")).rejects.toThrow("요청이 너무 많습니다.");
 });
+
+test("signup preserves the server error code needed to recover expired verification without retrying", async () => {
+  client.post.mockRejectedValue({ response: { status: 400, data: {
+    errorCode: "EMAIL_VERIFICATION_TOKEN_INVALID", message: "다시 인증해 주세요.",
+  } } });
+  await expect(signup({ nickname: "학생" })).rejects.toMatchObject({
+    errorCode: "EMAIL_VERIFICATION_TOKEN_INVALID", message: "다시 인증해 주세요.",
+  });
+  expect(client.post).toHaveBeenCalledTimes(1);
+});
