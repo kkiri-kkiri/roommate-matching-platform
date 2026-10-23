@@ -1,0 +1,1516 @@
+{
+  "date": "2026-10-22",
+  "timezone": "Asia/Seoul",
+  "recordedAtUtc": "2026-10-23T00:58:11.521Z",
+  "status": "PASS",
+  "approval": {
+    "status": "CONDITIONALLY_APPROVED_AND_EXECUTED",
+    "scope": "Exact new resources and 29 cases; P0 results reviewed before P1; DELETE synthetic rows only and retain resources; real AI/school prohibited"
+  },
+  "logicalCases": 29,
+  "caseAttempts": 30,
+  "priorityResults": [
+    {
+      "priority": "P0",
+      "pass": 17,
+      "fail": 0,
+      "blocked": 0,
+      "notRun": 0
+    },
+    {
+      "priority": "P1",
+      "pass": 12,
+      "fail": 0,
+      "blocked": 0,
+      "notRun": 0
+    }
+  ],
+  "tcpHttpRequests": 212,
+  "serverHttpObserved": 212,
+  "httpCountDefinition": "Client to Spring Boot security/controller/service/MySQL only; includes fixtures and the first failed null-format attempt. Excludes local Gateway/HTML downstream requests and IPC/JDBC.",
+  "httpDistribution": [
+    {
+      "key": "200/",
+      "count": 182
+    },
+    {
+      "key": "502/AI_GATEWAY_INVALID_RESPONSE",
+      "count": 1
+    },
+    {
+      "key": "503/AI_GATEWAY_UNAVAILABLE",
+      "count": 1
+    },
+    {
+      "key": "403/FORBIDDEN",
+      "count": 12
+    },
+    {
+      "key": "400/VALIDATION_ERROR",
+      "count": 12
+    },
+    {
+      "key": "400/INVALID_REQUEST",
+      "count": 3
+    },
+    {
+      "key": "409/MATCH_ANALYSIS_UNAVAILABLE",
+      "count": 1
+    }
+  ],
+  "localTransports": {
+    "aiStubRequests": 4,
+    "htmlFixtureRequests": 4,
+    "realAiGatewayRequests": 0,
+    "realSchoolRequests": 0
+  },
+  "mysql": {
+    "actualVersion": "8.0.46",
+    "db": "kkirimc5http20261022",
+    "containerId": "9fd6a36a8fbbfc5a297e13571b17c571bf0eca22c53c2063d52ce0629432738f",
+    "createdAt": "2026-10-22T14:44:23.3570095Z",
+    "volume": "kkiri-mc-http5-data-20261022",
+    "status": "retain-no-resource-deletion",
+    "user": "mc5http20261022",
+    "port": 13348,
+    "version": "8.0.46",
+    "container": "kkiri-mc-http5-mysql-20261022",
+    "uuid": "078257da-ce27-11f1-94ba-eea983ee4696",
+    "hostname": "kkiri-mc-http5-mysql-20261022",
+    "image": "mysql:8.0.46-oraclelinux9",
+    "imageId": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+    "jarSha256": "19F69E2A0533B5FBC022E940B0FFEA51ACD1E37E076DC4C886125DD315168077",
+    "collation": "utf8mb4_0900_ai_ci",
+    "jdbcSessionZone": "+00:00",
+    "grants": [
+      {
+        "Grants for mc5http20261022@%": "GRANT USAGE ON *.* TO `mc5http20261022`@`%`"
+      },
+      {
+        "Grants for mc5http20261022@%": "GRANT ALL PRIVILEGES ON `kkirimc5http20261022`.* TO `mc5http20261022`@`%`"
+      }
+    ]
+  },
+  "p0Review": {
+    "cases": 17,
+    "httpRequests": 124,
+    "reviewedAtUtc": "2026-10-22T14:53:55.399Z",
+    "evidence": "backend/build/matching-calendar-http5/p0-reviewed.json"
+  },
+  "scenarios": [
+    {
+      "id": "recommended-59-60-order-page",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "60 included; 59 excluded; score DESC/id ASC; size 10 clamps to 9; second page retains rank ten",
+      "actual": {
+        "firstNine": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "excludedScore": 59,
+        "eligible": 10,
+        "includedScore": 60
+      },
+      "error": null
+    },
+    {
+      "id": "recommended-compound-filter",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "AND across scalar and multi filters with exact ranked IDs",
+      "actual": {
+        "expectedIds": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      "error": null
+    },
+    {
+      "id": "rank-nine-no-backfill",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "Rank ten matches a filter, but cannot backfill a filtered top nine",
+      "actual": {
+        "rankTen": 11,
+        "returned": 0,
+        "rankTenScore": 60
+      },
+      "error": null
+    },
+    {
+      "id": "filtered-pagination",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "Filtered total/pages apply after top-nine selection; disjoint pages concatenate exactly",
+      "actual": {
+        "ids": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      "error": null
+    },
+    {
+      "id": "weights-refresh-recommend-detail",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "HTTP weight reversal yields committed 17 then 83 without repairing GET; recommendation/detail agree",
+      "actual": {
+        "after": 83,
+        "before": 17
+      },
+      "error": null
+    },
+    {
+      "id": "ai-local-score-consistency",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "Real Gateway client uses local TCP stub; API score stays 83 even when explanation mentions 999",
+      "actual": {
+        "externalGatewayVerified": false,
+        "transport": "LOCAL_STUB_ONLY",
+        "score": 83
+      },
+      "error": null
+    },
+    {
+      "id": "ai-local-malformed-recovery",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "Malformed local upstream maps to 502 and next request recovers; matching data preserved",
+      "actual": {
+        "errorCode": "AI_GATEWAY_INVALID_RESPONSE",
+        "recovered": true
+      },
+      "error": null
+    },
+    {
+      "id": "ai-local-upstream-error",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "Local upstream 503 maps to 503 AI_GATEWAY_UNAVAILABLE",
+      "actual": {
+        "errorCode": "AI_GATEWAY_UNAVAILABLE"
+      },
+      "error": null
+    },
+    {
+      "id": "query-repeated-comma",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/matching/cases.json",
+      "expected": "Repeated query values and comma-separated values have identical order/counts",
+      "actual": {
+        "ids": [
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52
+        ]
+      },
+      "error": null
+    },
+    {
+      "id": "query-blank-too-long",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/matching/cases.json",
+      "expected": "Blank and 31-char smoking filter rejected; unknown nonblank option returns empty",
+      "actual": {
+        "invalid": 2,
+        "unknownEmpty": true
+      },
+      "error": null
+    },
+    {
+      "id": "unsupported-sort",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/matching/cases.json",
+      "expected": "Unsupported recommended sort retains INVALID_REQUEST",
+      "actual": {
+        "rejected": 3
+      },
+      "error": null
+    },
+    {
+      "id": "no-preference-score-null",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/matching/cases.json",
+      "expected": "No requester preference gives null detail score, empty recommendations and 409 analysis without Gateway",
+      "actual": {
+        "gatewayCalls": 0
+      },
+      "error": null
+    },
+    {
+      "id": "all-indifferent-score-null",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/matching/cases.json",
+      "expected": "All indifferent criteria gives null score and empty recommendations",
+      "actual": {
+        "scoreIsNull": true
+      },
+      "error": null
+    },
+    {
+      "id": "rounding-boundaries",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/matching/cases.json",
+      "expected": "Partial weights round 14.285→14,12.5→13,16.666→17",
+      "actual": [
+        14,
+        13,
+        17
+      ],
+      "error": null
+    },
+    {
+      "id": "http-cross-server-crud",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "sharedReadUpdateDelete": true
+      },
+      "error": null
+    },
+    {
+      "id": "http-private-ownership",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "blocked": 3
+      },
+      "error": null
+    },
+    {
+      "id": "http-system-category-protection",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "blocked": 3
+      },
+      "error": null
+    },
+    {
+      "id": "category-read-patch-delete",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "getReadOnly": true,
+        "settingsDeleted": true
+      },
+      "error": null
+    },
+    {
+      "id": "foreign-category-mutations",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "blockedMutations": 2
+      },
+      "error": null
+    },
+    {
+      "id": "collected-event-protection",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "fixture": "LOCAL_HTML_ONLY",
+        "blockedMutations": 4
+      },
+      "error": null
+    },
+    {
+      "id": "public-private-visibility",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "fixture": "LOCAL_HTML_ONLY",
+        "ownView": 63,
+        "public": 62
+      },
+      "error": null
+    },
+    {
+      "id": "period-overlap-category-filter",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "inclusiveOverlaps": [
+          129,
+          130,
+          131
+        ]
+      },
+      "error": null
+    },
+    {
+      "id": "local-crawl-public-admin-link",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "repeatNew": 0,
+        "public": 62,
+        "fixture": "LOCAL_HTML_ONLY",
+        "stored": 62,
+        "realSchoolVerified": false
+      },
+      "error": null
+    },
+    {
+      "id": "create-date-time-boundaries",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "rejected": 4,
+        "midnightAccepted": true
+      },
+      "error": null
+    },
+    {
+      "id": "patch-null-merge",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1-null-recovery/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "omittedAndNullRetained": true,
+        "descriptionPreserved": true,
+        "dbSnapshotUnchanged": true,
+        "allDtoFieldsPreserved": true,
+        "endTime": "00:00",
+        "startTime": "23:59"
+      },
+      "error": null
+    },
+    {
+      "id": "patch-merged-range-rollback",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "rejected": 3,
+        "unchanged": true
+      },
+      "error": null
+    },
+    {
+      "id": "patch-description-empty",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "emptyDescriptionSaved": true
+      },
+      "error": null
+    },
+    {
+      "id": "category-null-merge",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "retained": true
+      },
+      "error": null
+    },
+    {
+      "id": "query-date-boundaries",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "rejected": 3
+      },
+      "error": null
+    }
+  ],
+  "runs": [
+    {
+      "id": "P0-continue1/matching",
+      "summary": {
+        "priority": "P0",
+        "verdict": "PASS",
+        "scenarios": 8,
+        "passed": 8,
+        "httpRequests": 41,
+        "serverHttpObserved": 41,
+        "processesStopped": true,
+        "allTablesEmpty": true,
+        "ddlUnchanged": true,
+        "externalGatewayCalls": 0,
+        "localStubCalls": 4
+      }
+    },
+    {
+      "id": "P0/calendar",
+      "summary": {
+        "priority": "P0",
+        "verdict": "PASS",
+        "scenarios": 9,
+        "passed": 9,
+        "httpRequests": 83,
+        "serverHttpObserved": 83,
+        "processesStopped": true,
+        "allTablesEmpty": true,
+        "realSchoolCalls": 0,
+        "singleJvm": true
+      }
+    },
+    {
+      "id": "P1/matching",
+      "summary": {
+        "priority": "P1",
+        "verdict": "PASS",
+        "scenarios": 6,
+        "passed": 6,
+        "httpRequests": 38,
+        "serverHttpObserved": 38,
+        "processesStopped": true,
+        "allTablesEmpty": true,
+        "ddlUnchanged": true,
+        "externalGatewayCalls": 0,
+        "localStubCalls": 0
+      }
+    },
+    {
+      "id": "P1/calendar",
+      "summary": {
+        "priority": "P1",
+        "verdict": "FAIL_OR_INCOMPLETE",
+        "scenarios": 6,
+        "passed": 5,
+        "httpRequests": 42,
+        "serverHttpObserved": 42,
+        "processesStopped": true,
+        "allTablesEmpty": true,
+        "realSchoolCalls": 0,
+        "singleJvm": true
+      }
+    },
+    {
+      "id": "P1-null-recovery/calendar",
+      "summary": {
+        "priority": "P1",
+        "verdict": "PASS",
+        "scenarios": 1,
+        "passed": 1,
+        "httpRequests": 8,
+        "serverHttpObserved": 8,
+        "processesStopped": true,
+        "allTablesEmpty": true,
+        "realSchoolCalls": 0,
+        "singleJvm": true
+      }
+    }
+  ],
+  "attempts": [
+    {
+      "id": "recommended-59-60-order-page",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "60 included; 59 excluded; score DESC/id ASC; size 10 clamps to 9; second page retains rank ten",
+      "actual": {
+        "firstNine": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "excludedScore": 59,
+        "eligible": 10,
+        "includedScore": 60
+      },
+      "error": null
+    },
+    {
+      "id": "recommended-compound-filter",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "AND across scalar and multi filters with exact ranked IDs",
+      "actual": {
+        "expectedIds": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      "error": null
+    },
+    {
+      "id": "rank-nine-no-backfill",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "Rank ten matches a filter, but cannot backfill a filtered top nine",
+      "actual": {
+        "rankTen": 11,
+        "returned": 0,
+        "rankTenScore": 60
+      },
+      "error": null
+    },
+    {
+      "id": "filtered-pagination",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "Filtered total/pages apply after top-nine selection; disjoint pages concatenate exactly",
+      "actual": {
+        "ids": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      "error": null
+    },
+    {
+      "id": "weights-refresh-recommend-detail",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "HTTP weight reversal yields committed 17 then 83 without repairing GET; recommendation/detail agree",
+      "actual": {
+        "after": 83,
+        "before": 17
+      },
+      "error": null
+    },
+    {
+      "id": "ai-local-score-consistency",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "Real Gateway client uses local TCP stub; API score stays 83 even when explanation mentions 999",
+      "actual": {
+        "externalGatewayVerified": false,
+        "transport": "LOCAL_STUB_ONLY",
+        "score": 83
+      },
+      "error": null
+    },
+    {
+      "id": "ai-local-malformed-recovery",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "Malformed local upstream maps to 502 and next request recovers; matching data preserved",
+      "actual": {
+        "errorCode": "AI_GATEWAY_INVALID_RESPONSE",
+        "recovered": true
+      },
+      "error": null
+    },
+    {
+      "id": "ai-local-upstream-error",
+      "domain": "Matching",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0-continue1/matching/cases.json",
+      "expected": "Local upstream 503 maps to 503 AI_GATEWAY_UNAVAILABLE",
+      "actual": {
+        "errorCode": "AI_GATEWAY_UNAVAILABLE"
+      },
+      "error": null
+    },
+    {
+      "id": "http-cross-server-crud",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "sharedReadUpdateDelete": true
+      },
+      "error": null
+    },
+    {
+      "id": "http-private-ownership",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "blocked": 3
+      },
+      "error": null
+    },
+    {
+      "id": "http-system-category-protection",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "blocked": 3
+      },
+      "error": null
+    },
+    {
+      "id": "category-read-patch-delete",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "getReadOnly": true,
+        "settingsDeleted": true
+      },
+      "error": null
+    },
+    {
+      "id": "foreign-category-mutations",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "blockedMutations": 2
+      },
+      "error": null
+    },
+    {
+      "id": "collected-event-protection",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "fixture": "LOCAL_HTML_ONLY",
+        "blockedMutations": 4
+      },
+      "error": null
+    },
+    {
+      "id": "public-private-visibility",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "fixture": "LOCAL_HTML_ONLY",
+        "ownView": 63,
+        "public": 62
+      },
+      "error": null
+    },
+    {
+      "id": "period-overlap-category-filter",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "inclusiveOverlaps": [
+          129,
+          130,
+          131
+        ]
+      },
+      "error": null
+    },
+    {
+      "id": "local-crawl-public-admin-link",
+      "domain": "Calendar",
+      "priority": "P0",
+      "status": "PASS",
+      "evidence": "P0/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "repeatNew": 0,
+        "public": 62,
+        "fixture": "LOCAL_HTML_ONLY",
+        "stored": 62,
+        "realSchoolVerified": false
+      },
+      "error": null
+    },
+    {
+      "id": "query-repeated-comma",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/matching/cases.json",
+      "expected": "Repeated query values and comma-separated values have identical order/counts",
+      "actual": {
+        "ids": [
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52
+        ]
+      },
+      "error": null
+    },
+    {
+      "id": "query-blank-too-long",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/matching/cases.json",
+      "expected": "Blank and 31-char smoking filter rejected; unknown nonblank option returns empty",
+      "actual": {
+        "invalid": 2,
+        "unknownEmpty": true
+      },
+      "error": null
+    },
+    {
+      "id": "unsupported-sort",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/matching/cases.json",
+      "expected": "Unsupported recommended sort retains INVALID_REQUEST",
+      "actual": {
+        "rejected": 3
+      },
+      "error": null
+    },
+    {
+      "id": "no-preference-score-null",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/matching/cases.json",
+      "expected": "No requester preference gives null detail score, empty recommendations and 409 analysis without Gateway",
+      "actual": {
+        "gatewayCalls": 0
+      },
+      "error": null
+    },
+    {
+      "id": "all-indifferent-score-null",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/matching/cases.json",
+      "expected": "All indifferent criteria gives null score and empty recommendations",
+      "actual": {
+        "scoreIsNull": true
+      },
+      "error": null
+    },
+    {
+      "id": "rounding-boundaries",
+      "domain": "Matching",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/matching/cases.json",
+      "expected": "Partial weights round 14.285→14,12.5→13,16.666→17",
+      "actual": [
+        14,
+        13,
+        17
+      ],
+      "error": null
+    },
+    {
+      "id": "create-date-time-boundaries",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "rejected": 4,
+        "midnightAccepted": true
+      },
+      "error": null
+    },
+    {
+      "id": "patch-null-merge",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "FAIL",
+      "evidence": "P1/calendar/cases.json",
+      "expected": null,
+      "actual": null,
+      "error": {
+        "causes": [
+          {
+            "type": "AssertionError",
+            "assertion": "Null fields cleared data",
+            "applicationFrames": [
+              "com.kkirikkiri.calendar.crawler.CalendarMultiSupport.check(CalendarMultiSupport.java:27)",
+              "com.kkirikkiri.calendar.crawler.CalendarHttp5.lambda$additional$13(CalendarHttp5.java:56)",
+              "com.kkirikkiri.calendar.crawler.CalendarMultiInstance.test(CalendarMultiInstance.java:66)",
+              "com.kkirikkiri.calendar.crawler.CalendarHttp5.additional(CalendarHttp5.java:56)",
+              "com.kkirikkiri.calendar.crawler.CalendarHttp5.main(CalendarHttp5.java:25)"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "patch-merged-range-rollback",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "rejected": 3,
+        "unchanged": true
+      },
+      "error": null
+    },
+    {
+      "id": "patch-description-empty",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "emptyDescriptionSaved": true
+      },
+      "error": null
+    },
+    {
+      "id": "category-null-merge",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "retained": true
+      },
+      "error": null
+    },
+    {
+      "id": "query-date-boundaries",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "rejected": 3
+      },
+      "error": null
+    },
+    {
+      "id": "patch-null-merge",
+      "domain": "Calendar",
+      "priority": "P1",
+      "status": "PASS",
+      "evidence": "P1-null-recovery/calendar/cases.json",
+      "expected": null,
+      "actual": {
+        "omittedAndNullRetained": true,
+        "descriptionPreserved": true,
+        "dbSnapshotUnchanged": true,
+        "allDtoFieldsPreserved": true,
+        "endTime": "00:00",
+        "startTime": "23:59"
+      },
+      "error": null
+    }
+  ],
+  "diagnostics": [
+    {
+      "id": "diagnostic-20261022T144748Z",
+      "summary": {
+        "httpRequests": 0,
+        "ready": false,
+        "processesStopped": true
+      }
+    },
+    {
+      "id": "diagnostic-20261022T145132Z",
+      "summary": {
+        "processesStopped": true,
+        "httpRequests": 0,
+        "ready": true
+      }
+    }
+  ],
+  "defects": {
+    "confirmedServiceDefects": [],
+    "assessment": "No confirmed service defect in the 29 final scenarios; this does not prove complete deployment correctness.",
+    "runnerErrors": [
+      {
+        "id": "shared-validation-classpath",
+        "result": "INCOMPLETE",
+        "httpRequests": 0,
+        "originalEvidence": "P0/matching",
+        "diagnosis": "Calendar test Infrastructure was on the Matching application component-scan classpath, introducing a second primary DataSource and preventing EntityManager auto-configuration. Diagnostic root missing type: jakarta.persistence.EntityManager.",
+        "resolution": "Separate classes/matching and classes/calendar; same JAR and retained schema, validate only; isolated startup succeeds."
+      },
+      {
+        "id": "null-patch-time-format-expectation",
+        "result": "FAIL",
+        "case": "patch-null-merge",
+        "originalEvidence": "P1/calendar",
+        "diagnosis": "Runner incorrectly expected 23:59:00. Existing CalendarEventResponse declares @JsonFormat HH:mm.",
+        "resolution": "Assert existing 23:59/00:00 format and full DTO equality, both omitted/null PATCH, GET equality and unchanged DB; reran only this case (8 HTTP)."
+      },
+      {
+        "id": "powershell-recovery-json-array",
+        "result": "TOOL_GUARD_REJECTED",
+        "httpRequests": 0,
+        "diagnosis": "Pipeline ConvertFrom-Json array wrapper prevented exact failed-case inspection.",
+        "resolution": "Explicit InputObject and object[] conversion; marker and HTTP JVM not started by rejected attempt."
+      }
+    ],
+    "priorPreparationError": "Unqualified CrawledAcademicEvent corrected during DB-free compilation before approval."
+  },
+  "cleanup": {
+    "all31TablesEmpty": true,
+    "ddlUnchangedExceptAutoIncrement": true,
+    "httpJvmsObserved": 8,
+    "allOwnedHttpJvmsStopped": true,
+    "successfulBootPoolsClosed": true,
+    "accountConnectionsAtAudit": 1,
+    "accountConnectionsMeaning": "Only the read-only auditor itself; prior application connections absent",
+    "httpListenersRemaining": 0,
+    "resourceDeletionPerformed": false
+  },
+  "retention": {
+    "containerId": "9fd6a36a8fbbfc5a297e13571b17c571bf0eca22c53c2063d52ce0629432738f",
+    "volume": "kkiri-mc-http5-data-20261022",
+    "recordedAtUtc": "2026-10-22T14:58:51.6978790Z",
+    "listeners": {
+      "13348": 1,
+      "18095": 0,
+      "18096": 0
+    },
+    "volumeInfo": "kkiri-mc-http5-data-20261022|local|local",
+    "binding": [
+      {
+        "HostIp": "127.0.0.1",
+        "HostPort": "13348"
+      }
+    ],
+    "existingResourcesInspected": false,
+    "status": "running",
+    "resourceDeletionPerformed": false,
+    "container": "kkiri-mc-http5-mysql-20261022",
+    "existingResourcesChangedByThisRun": false,
+    "dataMount": [
+      {
+        "Type": "volume",
+        "Name": "kkiri-mc-http5-data-20261022",
+        "Destination": "/var/lib/mysql"
+      }
+    ],
+    "imageId": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b"
+  },
+  "existingResources": {
+    "databasesAccessed": false,
+    "resourcesStarted": false,
+    "mutations": false,
+    "internalStateAudited": false,
+    "note": "Only newly created approved resources were inspected/used; no global claim about independently changing existing resources."
+  },
+  "protection": {
+    "checkedFiles": 284,
+    "allUnchanged": true,
+    "jarSha256": "19F69E2A0533B5FBC022E940B0FFEA51ACD1E37E076DC4C886125DD315168077",
+    "serviceOrOriginalToolChanged": false
+  },
+  "priorCalendar31": {
+    "status": "INSUFFICIENT_EVIDENCE",
+    "combinedWithNew29": false,
+    "rerun": false,
+    "passBasedExclusions": 0
+  },
+  "originalPlan": {
+    "path": "backend/validation/matching-calendar-http5-plan-20261022.json",
+    "sha256": "4b7502b0ef70fd32684bf1e29229e0bab0c7baff8133638f74a916c879919e5f",
+    "preserved": true
+  },
+  "excludedDuplicates": [
+    {
+      "scope": "Existing general roommate listing, profile-like races and basic calendar creation",
+      "reason": "Explicit user scope exclusion; fixtures can create calendars, but creation is not counted as a new scenario. No unsupported prior PASS claim."
+    },
+    {
+      "scope": "Remaining original Calendar scenarios",
+      "reason": "Execute only the three reused functional contracts and new missing cases; do not rerun all 31 concurrency, restart, timeout and forced process/connection failure cases."
+    },
+    {
+      "scope": "Auth/Survey expiry and input boundaries; other-domain full suites",
+      "reason": "Explicit user scope exclusion. Valid survey PUTs arrange scoring fixtures only."
+    }
+  ],
+  "unverified": [
+    {
+      "scope": "Real AI Gateway",
+      "status": "BLOCKED",
+      "reason": "Outside approved scope; no approved credentials/cost/endpoint. Stub success is only local client-contract evidence."
+    },
+    {
+      "scope": "Real school crawl",
+      "status": "BLOCKED",
+      "reason": "Outside approved scope; only repository HTML on loopback used."
+    },
+    {
+      "scope": "Additional distinct-score sorting and negative filter combinations",
+      "status": "NOT RUN",
+      "reason": "The 29 cases check tied-score ID order and explicit DESC acceptance, but do not independently contrast unequal-score DESC or every negative compound-filter combination."
+    },
+    {
+      "scope": "Deployment HTTPS/ingress and production resources",
+      "status": "NOT RUN",
+      "reason": "Not part of approved isolated loopback validation."
+    },
+    {
+      "scope": "Prior Calendar 31 execution",
+      "status": "INSUFFICIENT_EVIDENCE",
+      "reason": "Original runtime evidence not recovered."
+    },
+    {
+      "scope": "Existing unit/H2/other-domain/full MySQL suites",
+      "status": "NOT RUN",
+      "reason": "Not repeated as instructed."
+    }
+  ],
+  "sources": [
+    {
+      "path": "backend/tools/matching-calendar-http5/CalendarHttp5.java",
+      "sha256": "91c34f45041c9cc76f60127b01c4a2297b3fcf0631798072660eeab351d680b5"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/MatchingHttp5.java",
+      "sha256": "1d43e68f4aea765a4f6295f6afe38418ba6037909a1c37844c7b91a7182ff6a1"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/McHttp5Audit.java",
+      "sha256": "46c81fe0552e3df6d616885bba3ce5fc373c4588903f944ef71016e49675afa9"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/RUNBOOK.md",
+      "sha256": "bcf009b7f33b1ff6375b5242526d526b83fa53e9d100d3b787f36c2baa7fac67"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/preflight.ps1",
+      "sha256": "32344bcde20f1a8762d568db1873d1847b0792fb5ca8dd298c494078452051c4"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/prepare.cjs",
+      "sha256": "f68c80af50182b6f1ae53b2993c0203fe527f256df10f59b9ce75a2c200a7c1e"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/provision.ps1",
+      "sha256": "a92de22a81dd6fb9ec428b51fff4435cb05d72596a3eff03c633100e91780068"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/report.cjs",
+      "sha256": "01980240ec53e65b919c97e7ca32d058b9182ccc0975787ac0eb288b4e4c0714"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/review.cjs",
+      "sha256": "695c1a1e0239df2f7ef6923db63e66171a59aa47995dc0883343e9a611e46f91"
+    },
+    {
+      "path": "backend/tools/matching-calendar-http5/run.ps1",
+      "sha256": "1546b1ec6bbbbfc9b3f1d53db3e68a5df27aa3d757b61e3d586c85718d0da39a"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "backend/build/matching-calendar-http5/P0-continue1/matching/summary.json",
+      "sha256": "9b6c4f6936bef62932c93a39347aab96d4a7cde4efc5c5a99ffce0a62d45615d"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0-continue1/matching/cases.json",
+      "sha256": "446ae8dd453cce46c9a587b2e44b5d6c96c5f40328bf78a64880a133805baa92"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0-continue1/matching/requests.json",
+      "sha256": "6b5217ac1323d40099000a2bd2013f6047eba01158dd9ea8faf80fce364cc012"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0-continue1/matching/servers.json",
+      "sha256": "e96ee4618d5d754e5330434b452737f586ba326f0717915463f34a413a16bf27"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0-continue1/matching/cleanup.json",
+      "sha256": "b3a34361ea8f1366ceadb059f1c0b0808a73acdc7d66c6543a9c6a04e3f17aba"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0-continue1/matching/environment.json",
+      "sha256": "85b4fb7106484483c856f1a405bb36b2fe1557824e3e531884b02f90373416bb"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0/calendar/summary.json",
+      "sha256": "75cbfae91e00abb0acb4217516ec7074738a7d11302f6d3c9e937b29506b2e1f"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0/calendar/cases.json",
+      "sha256": "163403d64bd1234589e5a07023732f604d7599e654d98f50f3489ae34174b6cf"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0/calendar/requests.json",
+      "sha256": "eb67026017a2098d3b768bf7470df1a9506a2cedde2a983ebfb002bfd4bef8d7"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0/calendar/servers.json",
+      "sha256": "7989409c6eb5a060d672cae1931e296c45775811e84f759d9d56ab494ad8b811"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0/calendar/cleanup.json",
+      "sha256": "2a537caac002c3390b1c3eeaca287ca0af5e47a576ab4106cbb342c4441cda58"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0/calendar/environment.json",
+      "sha256": "07b9d9d2e245e64357fd37f538697fb89d9e2a8c7b8173a2345d43ce0bd386bc"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1/matching/summary.json",
+      "sha256": "6e1797e41038085e1f5dbc7535389de8397a34271f86c3d9b151e3158aba8126"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1/matching/cases.json",
+      "sha256": "8c4355feb16544e345c021ee36f1ee553e8196123ea46f6860459aac37adf219"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1/matching/requests.json",
+      "sha256": "c8a0a525ffe2dc1f444641962f02493fa3a08bad69208a0a2bdf09ef0f61d493"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1/matching/servers.json",
+      "sha256": "d7d4868b99f779d875e6fdb915f45bef245cdbc49ea2c92d5d0d987819f455f9"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1/matching/cleanup.json",
+      "sha256": "b3a34361ea8f1366ceadb059f1c0b0808a73acdc7d66c6543a9c6a04e3f17aba"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1/matching/environment.json",
+      "sha256": "85b4fb7106484483c856f1a405bb36b2fe1557824e3e531884b02f90373416bb"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1/calendar/summary.json",
+      "sha256": "d7e7ef0203760ea413184ef5747c154378271c9077a4f499f90a51581faf0ef4"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1/calendar/cases.json",
+      "sha256": "5ccfb054cc80468e792fe8d4bf710c5ce362f05d50ac60398bfc56fb4d4758f6"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1/calendar/requests.json",
+      "sha256": "cae6711ff0b8dc5f69e093142d9a34eb3658c359a2e0ef7d3c15383bc77bb55d"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1/calendar/servers.json",
+      "sha256": "13e0e6ae6208150e10aa35b84b3c6351874a9c0214d15e69fdc7f62bbf2c30d5"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1/calendar/cleanup.json",
+      "sha256": "a2e92484d18f33572f969fb5a82cb8a0b7779084dca90fcccd61e26213211ce3"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1/calendar/environment.json",
+      "sha256": "07b9d9d2e245e64357fd37f538697fb89d9e2a8c7b8173a2345d43ce0bd386bc"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1-null-recovery/calendar/summary.json",
+      "sha256": "c955dcec103b5dbfb21c631ece54fbc92fb8cf6dceb9f048d2670b9eb902eeae"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1-null-recovery/calendar/cases.json",
+      "sha256": "a9e45b1be47b44f766f0b0394eb36529f4680fa29c8d240cd17d1c0ce27d14b6"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1-null-recovery/calendar/requests.json",
+      "sha256": "429e278f8a8d261a7250398cc65f79b2d61a15508bd588b3cf49d82e9d95728f"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1-null-recovery/calendar/servers.json",
+      "sha256": "9a388b3d7ef3d8da53e8f94729a061965bebe82593892625d10810e9ed95555e"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1-null-recovery/calendar/cleanup.json",
+      "sha256": "2beeb442a33fb7bbb8be007d212ef5ee9574f0ac09ee69fca9be3d704f6cf736"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P1-null-recovery/calendar/environment.json",
+      "sha256": "07b9d9d2e245e64357fd37f538697fb89d9e2a8c7b8173a2345d43ce0bd386bc"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/preflight.json",
+      "sha256": "2a6086819e48ba06f39a42e2a2e7fa89845e53e423d579f819bfbc1ab450497f"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/preflight-20261022T135749Z.json",
+      "sha256": "5de4dcdbeeb4c60d85deffb87704f3f5fb3f99ad8fbee63d6a9f9ddbdfec3f0c"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/preflight-20261022T140637Z.json",
+      "sha256": "494aa8b92976f9cf29f1f7f5e3af63a1b6afd34f80304899ca1005cfe63fda1f"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/environment.json",
+      "sha256": "70216da76f850f3529132bedb212deb32a63cd5ca24e5ea25ce50ac7ed7db48d"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/execution-started.json",
+      "sha256": "d6f12b59ed77981510a9e31f4295d774a41730e5ee6bf75b7ec57b0292a2cdd7"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/p0-continuation-started.json",
+      "sha256": "a729df438875a40ca97baa1213ab7955a7b4d5c03eecc0f36791ac0f1d1ad61b"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/p1-started.json",
+      "sha256": "3f6c6dc164b61e33fc039265e352e36ef84fa62f33e7adf4b05353ea2fec45e7"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/patch-null-recovery-started.json",
+      "sha256": "a0a65c5ca4e474e9cad117f78cfe88196b201562318e95603907e211b00b0bee"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/p0-reviewed.json",
+      "sha256": "945c2f9834ef5ca4d66d271c600320dc9a46339b856124b73511f68212235b8d"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/source-adaptations.json",
+      "sha256": "939581fb8a2a17549f9c10d89fd2b2f4bd9c63bd147fdf614f93c88d35b1fd86"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/prepared.json",
+      "sha256": "57839a53ff7a408d5698c48de29f810f5b3320221cab06accf2f1a0946b81626"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/resource-retention.json",
+      "sha256": "8627fd345b51d5c2a357639b670ef66cb8f9b0ec880ff4e9976f9104f01a2787"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/http-process-audit.json",
+      "sha256": "617f537464c65612312c839c2c4a18652ab9717a9cf0e6382e73f4a90f5d39e8"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/audit-20261022T145812Z.json",
+      "sha256": "e01d3305ced0969ea647553609808d96cda934a35fcc8e0955bae1e81c9ca533"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/protected-sources-before.json",
+      "sha256": "5ddbd072f822849626dbe72a57c46cdc3920f4bfa789c96852c6178967d87c92"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/protected-sources-after.json",
+      "sha256": "9875326f92d0577f82901d5be6488cf2359936972cbbc21bcd16326e6886bcac"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0/matching/cases.json",
+      "sha256": "3a4aa9d557d946d61b88450aeb1f89c50c01014fed310b93336e4883492014c6"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0/matching/summary.json",
+      "sha256": "806420e4e0e2256890bb62fc8e03412c72c28760bc1280b6af018efdd03e3c33"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0/matching/servers.json",
+      "sha256": "fdd9e74cff683cfd4a3f6768748300e0204e4c2a23550737a6a02f20f5a70adc"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0/matching/cleanup.json",
+      "sha256": "b3a34361ea8f1366ceadb059f1c0b0808a73acdc7d66c6543a9c6a04e3f17aba"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0/matching/schema-before.json",
+      "sha256": "579325e0d438625c529afc43f4936ac2c7d19366d537d506c1438f511c46771c"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/P0/matching/schema-after.json",
+      "sha256": "579325e0d438625c529afc43f4936ac2c7d19366d537d506c1438f511c46771c"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/history/blocked-preflight-20261022T140637Z.json",
+      "sha256": "77bd86fd0995c51e18c756ebbc29d0f634ca7fcc63388ab891e9718e66ba84d0"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/history/patch-null-recovery-gate-error.json",
+      "sha256": "49ae28037b363e1fee32ec3c30c8f4d2bdb55edabc10d412d387539db133b396"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/history/source-adaptations-preapproval.json",
+      "sha256": "4b696f1344331a569d042f919915aea6498677dfaa5a096dd2f77c734ea24e33"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/history/prepared-preapproval.json",
+      "sha256": "0f772de99013df15c14b1cf0e72fd58ebf00d7eb9b7d1257eeb5e0101cd11e15"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/history/source-adaptations-before-startup-diagnostic.json",
+      "sha256": "829381cbac9ee2a2d4aea829984611934f61df9f74ec5b28138b6c1cc52ed7a2"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/history/source-adaptations-before-null-assertion-fix.json",
+      "sha256": "3928eee10908abd844091ab48ec160e197cdc99514e4492d5356bed608feb5d5"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/diagnostic-20261022T144748Z/servers.json",
+      "sha256": "b4b248eac2823c4945045e460db39d4314d922314b045636e989e22dfcedb06b"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/diagnostic-20261022T144748Z/summary.json",
+      "sha256": "b529e4ae813e48ae79268ce01d8cfd5052c383387e65abef2afa4f42dfdf651c"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/diagnostic-20261022T144748Z/error.json",
+      "sha256": "0d56966d98f3aafd7235cdc848a08330d36753539f27932134689b56536cba89"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/diagnostic-20261022T145132Z/servers.json",
+      "sha256": "06b010c2490c1891ebd88af9dcbce7216aa3adae499bbd136ffbe58b5b5be7f6"
+    },
+    {
+      "path": "backend/build/matching-calendar-http5/diagnostic-20261022T145132Z/summary.json",
+      "sha256": "0549edaf0f522940d150659c88543f9179e9e428bf68cfd71db8d404490729dc"
+    }
+  ],
+  "commitFiles": [
+    "backend/tools/matching-calendar-http5/CalendarHttp5.java",
+    "backend/tools/matching-calendar-http5/MatchingHttp5.java",
+    "backend/tools/matching-calendar-http5/McHttp5Audit.java",
+    "backend/tools/matching-calendar-http5/RUNBOOK.md",
+    "backend/tools/matching-calendar-http5/preflight.ps1",
+    "backend/tools/matching-calendar-http5/prepare.cjs",
+    "backend/tools/matching-calendar-http5/provision.ps1",
+    "backend/tools/matching-calendar-http5/report.cjs",
+    "backend/tools/matching-calendar-http5/review.cjs",
+    "backend/tools/matching-calendar-http5/run.ps1",
+    "backend/MATCHING_CALENDAR_HTTP5_VALIDATION.md",
+    "backend/validation/matching-calendar-http5-plan-20261022.json",
+    "backend/validation/matching-calendar-http5-20261022.json"
+  ],
+  "committed": false
+}
