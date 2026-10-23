@@ -33,3 +33,10 @@ test('structured evidence preserves numeric IDs and timings while removing secre
     rows: [{ note: 'token [REDACTED] / [REDACTED SIX-DIGIT VALUE]' }] });
   assert.equal(original.rows[0].note.includes('test-secret'), true);
 });
+
+test('diagnostics redact opaque reset tokens and generated replacement passwords', () => {
+  const token = 'x'.repeat(43), password = 'E2e!' + 'a'.repeat(36);
+  const output = redactOutput(`fill("${token}") fill("${password}")`);
+  assert.equal(output.includes(token), false);
+  assert.equal(output.includes(password), false);
+});

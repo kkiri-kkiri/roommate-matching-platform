@@ -1,63 +1,7 @@
 const { test, expect, database } = require('../fixtures.cjs');
 
-const apiOrigin = 'http://127.0.0.1:18080';
-async function responseTo(page, method, path, action) {
-  const response = page.waitForResponse(r => r.url().split('?')[0] === apiOrigin + '/api' + path && r.request().method() === method);
-  await action();
-  const result = await response;
-  expect(result.status()).toBe(200);
-  return result;
-}
-async function control(operation, data = {}) {
-  const response = await fetch(process.env.E2E_CONTROL_URL + '/' + operation, {
-    method: 'POST', headers: { Authorization: `Bearer ${process.env.E2E_CONTROL_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(data), signal: AbortSignal.timeout(120_000),
-  });
-  if (!response.ok) throw new Error('Managed E2E control failed');
-  return response.json();
-}
-async function login(page, email) {
-  await page.goto('/login');
-  await page.getByLabel('학교 이메일', { exact: true }).fill(email.split('@')[0]);
-  await responseTo(page, 'POST', '/auth/login/email-check', () => page.getByRole('button', { name: '다음', exact: true }).click());
-  await page.getByLabel('비밀번호', { exact: true }).fill(process.env.E2E_LOGIN_PASSWORD);
-  await responseTo(page, 'POST', '/auth/login', () => page.getByRole('button', { name: '로그인', exact: true }).click());
-  await expect(page).toHaveURL('http://127.0.0.1:13000/');
-}
-async function logout(page) {
-  await page.getByRole('button', { name: '프로필 메뉴 열기', exact: true }).click();
-  await page.getByRole('button', { name: '로그아웃', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => Boolean(localStorage.getItem('accessToken')))).toBe(false);
-}
-async function saveSurvey(page, introduction, sleep = '22시 이전') {
-  await page.goto('/profile?tab=survey');
-  await page.getByRole('button', { name: /내 설문 작성하기|설문 수정/, exact: true }).click();
-  for (const select of await page.locator('select[id^="survey-"]').all()) await select.selectOption({ index: 1 });
-  for (const group of await page.locator('fieldset:has(> legend)').all()) {
-    const first = group.getByRole('button').first();
-    if (await first.getAttribute('aria-pressed') !== 'true') await first.click();
-  }
-  await page.locator('#survey-sleepTime').selectOption(sleep);
-  await page.locator('#survey-wakeTime').selectOption('07시 이전');
-  await page.locator('#survey-introduction').fill(introduction);
-  const result = await responseTo(page, 'PUT', '/users/me/profile-survey', () => page.getByRole('button', { name: '저장', exact: true }).click());
-  expect((await result.json()).data.introduction).toBe(introduction);
-  await expect(page.getByText(introduction, { exact: true })).toBeVisible();
-}
-async function preference(page, reverse = false) {
-  await page.goto('/profile?tab=preferences');
-  await page.getByRole('button', { name: /선호 룸메 설문 작성하기|설문 수정/, exact: true }).click();
-  if (!reverse) {
-    for (const select of await page.locator('select[id^="preferences-"]').all()) await select.selectOption('상관없음');
-    for (const group of await page.locator('fieldset:has(> legend)').all()) await group.getByRole('button', { name: '상관없음', exact: true }).click();
-    await page.getByRole('group', { name: '선호하는 취침시간 복수 선택 가능', exact: true }).getByRole('button', { name: '22시 이전', exact: true }).click();
-    await page.getByRole('group', { name: '선호하는 기상시간 복수 선택 가능', exact: true }).getByRole('button', { name: '07시 이전', exact: true }).click();
-  }
-  await page.locator('#preferences-bedtime-weight').press(reverse ? 'Home' : 'End');
-  await page.locator('#preferences-wakeTime-weight').press(reverse ? 'End' : 'Home');
-  await responseTo(page, 'PUT', '/users/me/roommate-preferences', () => page.getByRole('button', { name: '저장', exact: true }).click());
-  await expect(page.getByRole('button', { name: '설문 수정', exact: true })).toBeVisible();
-}
+const { responseTo, control, login, logout } = require('../lib/flows.cjs');
+const { saveSurvey, preference, signup } = require('../lib/aus-flows.cjs');
 
 test('A–C/F: real signup, surveys, exact weighted matching, likes, calendar, ownership and restart persistence', async ({ page, peerPage }) => {
   test.setTimeout(300_000);
@@ -67,25 +11,7 @@ test('A–C/F: real signup, surveys, exact weighted matching, likes, calendar, o
   let me, target, eventId;
   const score = () => database('snapshot').matches.find(row => row.requester_user_id === me && row.target_user_id === target)?.match_score;
   await test.step('A: real email verification and signup; profile survey survives logout and login', async () => {
-    await page.goto('/signup');
-    await page.locator('#signup-school-email').fill(email.split('@')[0]);
-    await responseTo(page, 'POST', '/auth/email-verifications/send', () => page.getByRole('button', { name: '인증번호 전송', exact: true }).click());
-    const { code } = await control('mail', { email });
-    if (!/^\d{6}$/.test(code)) throw new Error('Memory SMTP did not capture a verification code');
-    await page.locator('#signup-verification-code').fill(code);
-    await responseTo(page, 'POST', '/auth/email-verifications/verify', () => page.getByRole('button', { name: '인증 확인', exact: true }).click());
-    await page.locator('#signup-password').fill(process.env.E2E_LOGIN_PASSWORD);
-    await page.locator('#signup-password-confirm').fill(process.env.E2E_LOGIN_PASSWORD);
-    await page.locator('#signup-nickname').fill('E2E신규');
-    await responseTo(page, 'GET', '/auth/signup/availability', () => page.getByRole('button', { name: '중복 확인', exact: true }).click());
-    await page.locator('label[for="signup-gender-0"]').click();
-    await page.locator('label[for="signup-dormitory-0"]').click();
-    await page.locator('#signup-faculty').selectOption('HK자율전공학부');
-    await page.locator('#signup-birth-year').fill('2003');
-    await page.locator('#signup-student-id').fill('22');
-    await page.locator('label[for="signup-grade-0"]').click();
-    for (const label of ['에너지 방향 I', '인식 방식 N', '판단 방식 T', '생활 양식 J']) await page.getByRole('button', { name: label, exact: true }).click();
-    await responseTo(page, 'POST', '/auth/signup', () => page.getByRole('button', { name: '회원가입', exact: true }).click());
+    await signup(page, email);
     await login(page, email);
     await saveSurvey(page, 'E2E 실제 DB 설문');
     const snapshot = database('snapshot');

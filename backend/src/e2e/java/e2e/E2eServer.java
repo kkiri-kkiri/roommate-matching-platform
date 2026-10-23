@@ -22,6 +22,8 @@ public final class E2eServer {
         try (var ignored = E2eDatabase.guardedConnection()) { /* before Spring can touch the DB */ }
         String ttl = Objects.requireNonNullElse(System.getenv("E2E_ACCESS_TTL"), "3600");
         E2eDatabase.check(Set.of("8", "3600").contains(ttl), "Unsafe E2E token lifetime");
+        String signupTtl = Objects.requireNonNullElse(System.getenv("E2E_SIGNUP_TTL"), "300");
+        E2eDatabase.check(Set.of("8", "300").contains(signupTtl), "Unsafe E2E signup lifetime");
         Map<String, String> settings = new HashMap<>(Map.ofEntries(
             Map.entry("spring.config.location", "classpath:/application.properties"),
             Map.entry("spring.config.import", ""), Map.entry("spring.profiles.active", "e2e"),
@@ -37,6 +39,7 @@ public final class E2eServer {
             Map.entry("app.cors.allowed-origins", "http://127.0.0.1:13000"),
             Map.entry("jwt.secret", E2eDatabase.required("E2E_JWT_SECRET")),
             Map.entry("jwt.access-token-expiration-seconds", ttl),
+            Map.entry("auth.email-verification.token-expiration-seconds", signupTtl),
             Map.entry("ai.api-key", "e2e-only"), Map.entry("ai.base-url", "http://127.0.0.1:1"),
             Map.entry("ai.model", "e2e-only"), Map.entry("spring.mail.host", "127.0.0.1"),
             Map.entry("spring.mail.port", "1"), Map.entry("spring.mail.username", ""),
@@ -62,7 +65,9 @@ public final class E2eServer {
                 while ((line = reader.readLine()) != null) {
                     String[] parts = line.split(" ", 3);
                     if (parts.length == 3 && parts[0].equals("MAIL") && parts[1].matches("[a-f0-9]{24}")) {
-                        String code = ((MemoryMail)context.getBean(JavaMailSender.class)).codes.getOrDefault(parts[2], "");
+                        var mail = (MemoryMail)context.getBean(JavaMailSender.class);
+                        String code = parts[2].startsWith("reset:") ? mail.resetTokens.remove(parts[2].substring(6)) : mail.codes.remove(parts[2]);
+                        if (code == null) code = "";
                         // Private parent-process pipe; the runner consumes these lines without writing logs.
                         System.out.println("E2E_PRIVATE " + parts[1] + " " + code); System.out.flush();
                     }
@@ -88,15 +93,37 @@ public final class E2eServer {
             };
         }
         @Bean JavaMailSender memoryMail() { return new MemoryMail(); }
+        @Bean org.springframework.boot.web.servlet.FilterRegistrationBean<org.springframework.web.filter.OncePerRequestFilter> httpEvidence() {
+            var registration = new org.springframework.boot.web.servlet.FilterRegistrationBean<org.springframework.web.filter.OncePerRequestFilter>();
+            registration.setFilter(new org.springframework.web.filter.OncePerRequestFilter() {
+                @Override protected void doFilterInternal(jakarta.servlet.http.HttpServletRequest request,
+                        jakarta.servlet.http.HttpServletResponse response, jakarta.servlet.FilterChain chain)
+                        throws java.io.IOException, jakarta.servlet.ServletException {
+                    try { chain.doFilter(request, response); }
+                    finally {
+                        if (request.getRequestURI().startsWith("/api/") && !request.getMethod().equals("OPTIONS")) {
+                            System.out.println("E2E_HTTP {\"method\":\"" + request.getMethod() + "\",\"path\":\""
+                                + request.getRequestURI() + "\",\"status\":" + response.getStatus() + "}");
+                            System.out.flush();
+                        }
+                    }
+                }
+            });
+            registration.setOrder(org.springframework.core.Ordered.HIGHEST_PRECEDENCE);
+            return registration;
+        }
         @Bean @Primary AiGatewayClient fixedAi(ObjectMapper mapper) { return new FixedAi(mapper); }
         @Bean com.kkirikkiri.calendar.crawler.HknuAcademicCalendarCrawler disabledCrawler() { return new DisabledCrawler(); }
     }
     static final class MemoryMail extends JavaMailSenderImpl {
         final Map<String,String> codes = new java.util.concurrent.ConcurrentHashMap<>();
+        final Map<String,String> resetTokens = new java.util.concurrent.ConcurrentHashMap<>();
         @Override public void send(SimpleMailMessage... messages) {
             for (var message : messages) {
                 var matcher = java.util.regex.Pattern.compile("인증번호: (\\d{6})").matcher(Objects.requireNonNullElse(message.getText(), ""));
                 if (matcher.find() && message.getTo() != null) for (String recipient : message.getTo()) codes.put(recipient, matcher.group(1));
+                var reset = java.util.regex.Pattern.compile("비밀번호 재설정 토큰: ([A-Za-z0-9_-]{43})").matcher(Objects.requireNonNullElse(message.getText(), ""));
+                if (reset.find() && message.getTo() != null) for (String recipient : message.getTo()) resetTokens.put(recipient, reset.group(1));
             }
         }
         @Override public void send(MimeMessage... messages) { /* no network, no sensitive logs */ }

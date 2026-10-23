@@ -2,6 +2,7 @@ const { test: base, expect } = require('@playwright/test');
 const { database } = require('./lib/database.cjs');
 const { writeFileSync } = require('node:fs');
 const path = require('node:path');
+const { sanitize } = require('./run.cjs');
 
 async function restrict(context) {
   await context.route('**/*', route => {
@@ -58,6 +59,14 @@ const test = base.extend({
     context.on('page', page => watch(page, 'A')); context.pages().forEach(page => watch(page, 'A'));
     try { await use({ watch, requests, sockets, note: (name, data) => observations.push({ name, data }) }); }
     finally {
+      // Sanitize before Playwright's artifact teardown writes error-context.md.
+      const secrets = ['E2E_LOGIN_PASSWORD', 'E2E_DB_PASSWORD', 'E2E_JWT_SECRET', 'MYSQL_ROOT_PASSWORD', 'E2E_CONTROL_KEY']
+        .map(key => process.env[key]).filter(Boolean);
+      for (const error of testInfo.errors) {
+        for (const key of ['message', 'stack', 'errorContext', 'value']) {
+          if (typeof error[key] === 'string') error[key] = sanitize(error[key], secrets);
+        }
+      }
       const name = testInfo.testId.replace(/[^a-z0-9-]/gi, '_');
       writeFileSync(path.join(process.env.E2E_EVIDENCE_DIR, `browser-${name}.json`), JSON.stringify({ test: testInfo.title, requests, sockets, observations }, null, 2));
     }

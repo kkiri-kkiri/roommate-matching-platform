@@ -370,6 +370,12 @@ const SignupPage = () => {
       window.alert("회원가입이 완료되었습니다. 로그인해 주세요.");
       navigate("/login");
     } catch (error) {
+      if (error.errorCode === "EMAIL_VERIFICATION_TOKEN_INVALID") {
+        setVerificationToken("");
+        setVerificationCode("");
+        setVerificationSent(false);
+        setIsVerified(false);
+      }
       window.alert(error.message);
     } finally {
       authInFlight.current = false;

@@ -1,6 +1,6 @@
 const { spawn, spawnSync } = require('node:child_process');
 const { randomBytes, createHash } = require('node:crypto');
-const { readFileSync, mkdirSync, writeFileSync, readdirSync, lstatSync, existsSync } = require('node:fs');
+const { readFileSync, mkdirSync, writeFileSync, appendFileSync, readdirSync, lstatSync, existsSync } = require('node:fs');
 const path = require('node:path');
 const net = require('node:net');
 const http = require('node:http');
@@ -13,6 +13,7 @@ function redactOutput(output, secrets = []) {
   for (const secret of secrets.filter(Boolean)) output = output.split(secret).join('[REDACTED]');
   return output.replace(/^E2E_PRIVATE .*$/gm, '[PRIVATE IPC OMITTED]')
     .replace(/E2e![a-f0-9]{36}/g, '[REDACTED]')
+    .replace(/(?<![A-Za-z0-9_-])[A-Za-z0-9_-]{43}(?![A-Za-z0-9_-])/g, '[REDACTED OPAQUE VALUE]')
     .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, '[REDACTED TOKEN]')
     .replace(/\b\d{6}\b/g, '[REDACTED SIX-DIGIT VALUE]')
     .replace(/Using generated security password: \S+/g, 'Using generated security password: [REDACTED]');
@@ -53,6 +54,28 @@ async function assertFree(port) {
 }
 
 async function main() {
+  const args = process.argv.slice(2);
+  const rechecking = args[0] === '--aus-p0-recheck';
+  const recheckId = rechecking ? args[1] : null;
+  const ausP0 = args[0] === '--aus-p0' || rechecking;
+  if (rechecking && (args.length !== 2 || !/^[a-f0-9]{12}$/.test(recheckId ?? ''))) throw new Error('Invalid P0 recheck source.');
+  if (ausP0 && !rechecking && args.length !== 1) throw new Error('AUS P0 accepts no additional test selectors.');
+  let recheck;
+  if (recheckId) {
+    if (args.length !== 2 || !/^[a-f0-9]{12}$/.test(recheckId)) throw new Error('Invalid P0 recheck source.');
+    const directory = path.join(backend, 'build/full-service-e2e', recheckId);
+    const previous = JSON.parse(readFileSync(path.join(directory, 'run.json'), 'utf8'));
+    const resultsFile = readFileSync(path.join(directory, 'results.json'));
+    const results = JSON.parse(resultsFile);
+    if (previous.scope !== 'AUS_P0_ONLY' || !previous.containerRemoved || !previous.ownedProcessesStopped || !previous.fixtureTablesEmpty)
+      throw new Error('Previous P0 must have verified cleanup before recheck.');
+    const failed = results.tests.filter(t => t.attempts.some(a => a.status === 'failed' || a.status === 'timedOut'));
+    const ids = failed.map(t => t.name.match(/^(B[13456789]) P0:/)?.[1]);
+    if (!ids.length || ids.some(id => !id)) throw new Error('Only failed AUS P0 tests can be rechecked.');
+    recheck = { source: recheckId, resultsSha256: createHash('sha256').update(resultsFile).digest('hex'), ids };
+  }
+  const testArgs = recheck ? ['aus-p0.spec.cjs', '--project=aus-p0', '--no-deps', '--grep', '(' + recheck.ids.join('|') + ') P0:']
+    : ausP0 ? ['login.spec.cjs', 'aus-p0.spec.cjs'] : args;
   const id = randomBytes(6).toString('hex');
   const name = `kkiri-e2e-${id}`;
   const env = {
@@ -74,7 +97,7 @@ async function main() {
   writeFileSync(path.join(env.E2E_EVIDENCE_DIR, 'source-before.json'), JSON.stringify(before, null, 2));
   const run = { id, startedAt: new Date().toISOString(), mysql: '8.0.46', database: env.E2E_DATABASE,
     frontend: 'http://127.0.0.1:13000', backend: 'http://127.0.0.1:18080', node: process.version,
-    gitSha: before.gitSha, testArguments: process.argv.slice(2), fixtureTablesEmpty: false };
+    gitSha: before.gitSha, testArguments: testArgs, scope: ausP0 ? 'AUS_P0_ONLY' : 'existing selectors', recheck, fixtureTablesEmpty: false };
   console.log(`[e2e] Evidence: ${path.relative(path.dirname(frontend), env.E2E_EVIDENCE_DIR)}`);
   let ownsContainer = false;
   let stopping = false;
@@ -104,6 +127,9 @@ async function main() {
         if (line.startsWith('E2E_PRIVATE ')) {
           const [, requestId, code = ''] = line.split(' ');
           pendingMail.get(requestId)?.(code); pendingMail.delete(requestId);
+        } else if (line.startsWith('E2E_HTTP ')) {
+          const event = JSON.parse(line.slice(9));
+          appendFileSync(path.join(env.E2E_EVIDENCE_DIR, 'server-http.jsonl'), JSON.stringify({ pid: child.pid, ...event }) + '\n');
         } else child.output = (child.output + line + '\n').slice(-100_000);
       }
     });
@@ -178,10 +204,28 @@ async function main() {
     if (!/^(npipe:\/\/|unix:\/\/)/.test(endpoint)) throw new Error('E2E requires a local Docker engine.');
     const engine = await docker(['info', '--format', '{{.OSType}}'], 'Docker engine availability');
     if (engine !== 'linux') throw new Error('E2E requires Docker Linux containers. Start Docker Desktop.');
+    const browserPath = require('playwright-core').chromium.executablePath();
+    if (!existsSync(browserPath)) throw new Error('Existing Chromium is missing; download is not authorized.');
+    if (ausP0) {
+      const listing = await complete(start(process.execPath,
+        [require.resolve('@playwright/test/cli'), 'test', ...testArgs, '--list', '--reporter=list'], frontend,
+        { E2E_AUS_P0: '1' }), 'Enumerate approved P0 tests before resource creation');
+      const count = Number(listing.match(/Total: (\d+) tests? in/)?.[1]);
+      if (count !== (recheck ? recheck.ids.length : 9)) throw new Error('Approved P0 test count mismatch.');
+      run.selectedTestCount = count;
+      writeFileSync(path.join(env.E2E_EVIDENCE_DIR, 'test-selection.txt'), listing + '\n');
+    }
+    const imageId = await docker(['image', 'inspect', 'mysql:8.0.46-oraclelinux9', '--format', '{{.Id}}'], 'Existing MySQL image');
+    if (!/^sha256:[a-f0-9]{64}$/.test(imageId)) throw new Error('Existing MySQL image is missing.');
+    const collision = await docker(['ps', '-aq', '--filter', `name=^/${name}$`], 'New E2E name collision check');
+    if (collision) throw new Error('E2E resource name already exists; refusing access.');
+    run.preflight = { endpoint, engine, imageId, browserPath, portsFree: ports, container: name, namedVolumes: 0 };
+    writeFileSync(path.join(env.E2E_EVIDENCE_DIR, 'preflight.json'), JSON.stringify(run.preflight, null, 2));
+    console.log(`[e2e] New target ${name}; schema ${env.E2E_DATABASE}; image ${imageId}; ports ${ports.join('/')}.`);
     console.log('[e2e] Starting isolated MySQL 8.0.46 on 127.0.0.1:13316.');
     // Fixed name is unique per run; no existing container or volume is reused.
     ownsContainer = true;
-    await docker(['create', '--name', name, '--hostname', 'kkiri-e2e', '--label', `kkiri.e2e.owner=${id}`,
+    run.containerId = await docker(['create', '--pull=never', '--name', name, '--hostname', 'kkiri-e2e', '--label', `kkiri.e2e.owner=${id}`,
       '--publish', '127.0.0.1:13316:3306', '--tmpfs', '/var/lib/mysql:rw,size=1073741824',
       '--env', 'MYSQL_DATABASE', '--env', 'MYSQL_USER', '--env', 'MYSQL_PASSWORD', '--env', 'MYSQL_ROOT_PASSWORD',
       'mysql:8.0.46-oraclelinux9', '--lower-case-table-names=1', '--character-set-server=utf8mb4',
@@ -223,22 +267,24 @@ async function main() {
       try {
         let body = ''; for await (const chunk of req) { body += chunk; if (body.length > 500) throw new Error('Oversized control request'); }
         const input = JSON.parse(body);
-        if (req.url === '/mail' && /^[a-z0-9]+@hknu\.ac\.kr$/.test(input.email)) {
+        if (req.url === '/mail' && /^[a-z0-9]+@hknu\.ac\.kr$/.test(input.email) && [undefined, 'verification', 'reset'].includes(input.kind)) {
           const requestId = randomBytes(12).toString('hex');
           const code = await new Promise((resolve, reject) => {
             const timer = setTimeout(() => { pendingMail.delete(requestId); reject(new Error('Mail IPC timeout')); }, 5000);
             pendingMail.set(requestId, code => { clearTimeout(timer); resolve(code); });
-            api.stdin.write(`MAIL ${requestId} ${input.email}\n`);
+            api.stdin.write(`MAIL ${requestId} ${input.kind === 'reset' ? 'reset:' : ''}${input.email}\n`);
           });
           res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ code }));
         } else if (req.url === '/restart') {
           const ttl = input.ttlSeconds ?? 3600;
           if (![8, 3600].includes(ttl)) throw new Error('Unsupported test lifetime');
+          const signupTtl = input.signupTtlSeconds ?? 300;
+          if (![8, 300].includes(signupTtl)) throw new Error('Unsupported signup lifetime');
           restarting = true;
           const previous = api; const closed = new Promise(resolve => previous.once('close', resolve));
           previous.stdin.end(); await Promise.race([closed, pause(15_000)]);
           if (previous.exitCode === null) throw new Error('Backend did not stop cleanly');
-          api = start('java', ['-cp', classpath, 'e2e.E2eServer'], frontend, { E2E_ACCESS_TTL: String(ttl) });
+          api = start('java', ['-cp', classpath, 'e2e.E2eServer'], frontend, { E2E_ACCESS_TTL: String(ttl), E2E_SIGNUP_TTL: String(signupTtl) });
           await ready(api, 'Restarted E2E Spring Boot', async () => api.output.includes('E2E_BACKEND_READY'));
           api.once('close', crash); restarting = false;
           res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ restarted: true }));
@@ -257,8 +303,11 @@ async function main() {
       catch { return false; }
     }, 300_000);
     console.log('[e2e] React and Spring Boot ready; scheduling, production seeds, SMTP and AI network transport disabled.');
-    const playwright = start(process.execPath, [require.resolve('@playwright/test/cli'), 'test', ...process.argv.slice(2)], frontend, {
+    const playwright = start(process.execPath, [require.resolve('@playwright/test/cli'), 'test', ...testArgs], frontend, {
       E2E_CONTROL_URL: `http://127.0.0.1:${control.address().port}`, E2E_CONTROL_KEY: controlKey,
+      E2E_AUS_P0: ausP0 ? '1' : '0',
+      // Playwright otherwise captures a DOM snapshot on failure, including plain-text reset tokens.
+      PLAYWRIGHT_NO_COPY_PROMPT: '1',
     });
     const secrets = [env.E2E_LOGIN_PASSWORD, env.E2E_DB_PASSWORD, env.E2E_JWT_SECRET, env.MYSQL_ROOT_PASSWORD];
     // Buffer complete lines so credentials split across transport chunks are still redacted.
