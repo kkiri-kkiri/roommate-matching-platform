@@ -15,7 +15,8 @@ async function restrict(context) {
 const test = base.extend({
   // New browser context per test; reset all data only inside the guarded disposable schema.
   isolatedDatabase: [async ({}, use, testInfo) => {
-    process.env.E2E_CURRENT_TEST_ID = testInfo.testId;
+    process.env.E2E_CURRENT_TEST_ID = process.env.E2E_MC_P0 === '1'
+      ? process.env.E2E_MC_PHASE + '-' + testInfo.testId : testInfo.testId;
     // Retained cases own their row IDs; the runner seeds its empty schema once.
     const retainResources = retentionEnabled();
     if (!retainResources) database('reset');
@@ -69,7 +70,9 @@ const test = base.extend({
           if (typeof error[key] === 'string') error[key] = sanitize(error[key], secrets);
         }
       }
-      const name = testInfo.testId.replace(/[^a-z0-9-]/gi, '_');
+      const phase = process.env.E2E_MC_P0 === '1' ? process.env.E2E_MC_PHASE : null;
+      if (phase && !/^[a-z0-9-]{1,50}$/.test(phase)) throw new Error('Unsafe MC phase');
+      const name = (phase ? phase + '-' : '') + testInfo.testId.replace(/[^a-z0-9-]/gi, '_');
       writeFileSync(path.join(process.env.E2E_EVIDENCE_DIR, `browser-${name}.json`), JSON.stringify({ test: testInfo.title, requests, sockets, observations }, null, 2));
     }
   }, { auto: true }],

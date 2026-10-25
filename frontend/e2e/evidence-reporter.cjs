@@ -28,7 +28,7 @@ class EvidenceReporter {
       startedAt: result.startTime.toISOString(), durationMs: result.duration,
       errors: result.errors.map(error => ({ message: error.message, stack: error.stack })), steps: steps(result.steps),
     });
-    if (process.env.E2E_AUS_P1 === '1') {
+    if (process.env.E2E_AUS_P1 === '1' || process.env.E2E_MC_P0 === '1') {
       fs.appendFileSync(path.join(process.env.E2E_EVIDENCE_DIR, 'test-attempts.jsonl'),
         JSON.stringify(sanitize(this.tests.get(test.id), this.secrets)) + '\n');
     }
@@ -48,7 +48,9 @@ class EvidenceReporter {
       else if (attempt.status === 'interrupted') counts.interrupted++;
       else counts.failed++;
     }
-    fs.writeFileSync(path.join(directory, 'results.json'), JSON.stringify(sanitize({
+    const phase = process.env.E2E_MC_P0 === '1' ? process.env.E2E_MC_PHASE : null;
+    if (phase && !/^[a-z0-9-]{1,50}$/.test(phase)) throw new Error('Unsafe MC phase');
+    fs.writeFileSync(path.join(directory, phase ? `results-${phase}.json` : 'results.json'), JSON.stringify(sanitize({
       startedAt: this.startedAt, finishedAt: new Date().toISOString(), status: result.status, counts,
       gitSha: process.env.E2E_GIT_SHA, tests,
     }, this.secrets), null, 2));
