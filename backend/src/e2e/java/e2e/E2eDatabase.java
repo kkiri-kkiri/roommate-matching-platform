@@ -124,6 +124,10 @@ public final class E2eDatabase {
         String mode = args.length == 1 ? args[0] : "";
         // Reject destructive retained operations before constructing a datasource.
         validateOperation(mode);
+        if ("1".equals(System.getenv("E2E_MC_P1"))) {
+            McP1Fixtures.validateScope();
+            if (mode.equals("reset") || mode.equals("seed")) McP1Fixtures.caseId();
+        }
         try (var c = guardedConnection()) {
             if (mode.equals("prepare")) check(tables(c).isEmpty(), "Refusing to initialize an existing schema");
             if (mode.equals("seed")) requireEmptyTables(c);
@@ -155,6 +159,7 @@ public final class E2eDatabase {
                     em.persist(new UserProfile(peer, "E2E상대", "남자", dorm, faculty, null, (short)2000, "20", "1학년", "INTJ"));
                     em.persist(new UserProfile(admin, "E2E관리자", "남자", dorm, faculty, null, (short)2000, "20", "1학년", "INTJ"));
                     if ("1".equals(System.getenv("E2E_MC_P0"))) McFixtures.seed(em, user, peer, dorm, faculty);
+                    if ("1".equals(System.getenv("E2E_MC_P1"))) McP1Fixtures.seed(em, user, peer, dorm, faculty);
                     if ("1".equals(System.getenv("E2E_AUS_P1"))) {
                         for (var status : List.of(UserStatus.SUSPENDED, UserStatus.WITHDRAWN)) {
                             var inactive = new User(new BCryptPasswordEncoder().encode(required("E2E_LOGIN_PASSWORD")),
@@ -188,7 +193,7 @@ public final class E2eDatabase {
             queries.put("likes", "SELECT user_id,target_user_id FROM profile_like ORDER BY user_id,target_user_id");
             queries.put("events", "SELECT event_id,owner_user_id,title,CAST(start_date AS CHAR) start_date,CAST(start_time AS CHAR) start_time FROM calendar_event ORDER BY event_id");
             queries.put("categories", "SELECT category_id,owner_user_id,default_name FROM calendar_category WHERE is_system=FALSE ORDER BY category_id");
-            if ("1".equals(System.getenv("E2E_MC_P0"))) {
+            if ("1".equals(System.getenv("E2E_MC_P0")) || "1".equals(System.getenv("E2E_MC_P1"))) {
                 queries.put("events", "SELECT event_id,owner_user_id,category_id,title,CAST(start_date AS CHAR) start_date,CAST(end_date AS CHAR) end_date,CAST(start_time AS CHAR) start_time,CAST(end_time AS CHAR) end_time,is_all_day,description,source_type,source_name FROM calendar_event ORDER BY event_id");
                 queries.put("mcLikes", "SELECT profile_like_id,user_id,target_user_id FROM profile_like ORDER BY profile_like_id DESC");
                 queries.put("categorySettings", "SELECT user_id,category_id,display_name,color,is_enabled FROM calendar_category_setting ORDER BY user_id,category_id");

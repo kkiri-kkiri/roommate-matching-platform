@@ -33,6 +33,13 @@ function database(operation) {
     return snapshot;
   }
   record({ operation, completed: true, allTablesEmpty: operation === 'clean' });
+  if (process.env.E2E_MC_P1 === '1' && operation === 'reset') {
+    const line = result.stdout.split(/\r?\n/).find(line => line.startsWith('E2E_MC_P1_FIXTURE '));
+    if (!line) throw new Error('Missing independent MC P1 fixture manifest');
+    const fixture = JSON.parse(line.slice('E2E_MC_P1_FIXTURE '.length));
+    record({ operation:'fixture', fixture });
+    return fixture;
+  }
 }
 function record(data) {
   const directory = process.env.E2E_EVIDENCE_DIR;

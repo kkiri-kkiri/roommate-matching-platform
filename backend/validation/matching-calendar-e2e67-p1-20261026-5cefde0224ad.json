@@ -1,0 +1,3611 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-26",
+  "timezone": "Asia/Seoul",
+  "runId": "5cefde0224ad",
+  "p0Commit": "5c9f08cb4ff7c9d19467fffa447b3678bc7a6515",
+  "postP0CommitWorktree": "?? backend/MATCHING_CALENDAR_E2E67_P1_PLAN.md\n",
+  "branch": "test/frontend-backend-maching-calendar",
+  "initialCounts": {
+    "executed": 31,
+    "passed": 27,
+    "failed": 4,
+    "skipped": 0,
+    "interrupted": 0,
+    "notExecuted": 0
+  },
+  "finalCounts": {
+    "PASS": 31,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_RUN": 0
+  },
+  "groups": {
+    "R07": {
+      "status": "PASS",
+      "PASS": 5,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_RUN": 0
+    },
+    "R08": {
+      "status": "PASS",
+      "PASS": 7,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_RUN": 0
+    },
+    "C05": {
+      "status": "PASS",
+      "PASS": 5,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_RUN": 0
+    },
+    "C06": {
+      "status": "PASS",
+      "PASS": 4,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_RUN": 0
+    },
+    "C07": {
+      "status": "PASS",
+      "PASS": 10,
+      "FAIL": 0,
+      "BLOCKED": 0,
+      "NOT_RUN": 0
+    }
+  },
+  "independentTests": 31,
+  "nativeAttempts": 35,
+  "manualRecheckAttempts": 4,
+  "automaticRetries": 0,
+  "p0TestsExecuted": 0,
+  "otherDomainE2eExecuted": 0,
+  "phases": [
+    {
+      "label": "p1-original",
+      "ids": [
+        "R07-01",
+        "R07-02",
+        "R07-03",
+        "R07-04",
+        "R07-05",
+        "R08-01",
+        "R08-02",
+        "R08-03",
+        "R08-04",
+        "R08-05",
+        "R08-06",
+        "R08-07",
+        "C05-01",
+        "C05-02",
+        "C05-03",
+        "C05-04",
+        "C05-05",
+        "C06-01",
+        "C06-02",
+        "C06-03",
+        "C06-04",
+        "C07-01",
+        "C07-02",
+        "C07-03",
+        "C07-04",
+        "C07-05",
+        "C07-06",
+        "C07-07",
+        "C07-08",
+        "C07-09",
+        "C07-10"
+      ],
+      "exit": 1,
+      "file": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "sha256": "7cc1611b0f414b5fdca6b264df54ce47544e1784970d45f37112623954b3b38b",
+      "counts": {
+        "executed": 31,
+        "passed": 27,
+        "failed": 4,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      },
+      "startedAt": "2026-10-26T07:08:26.460Z",
+      "finishedAt": "2026-10-26T07:15:28.043Z"
+    },
+    {
+      "label": "p1-recheck-1",
+      "ids": [
+        "C05-01",
+        "C05-05",
+        "C06-03",
+        "C06-04"
+      ],
+      "exit": 0,
+      "file": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json",
+      "sha256": "4e9dd260176769988b38a633a4739846d44185398c99b8fc5a9c0e098d3bef29",
+      "counts": {
+        "executed": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      },
+      "startedAt": "2026-10-26T07:18:36.119Z",
+      "finishedAt": "2026-10-26T07:19:33.382Z"
+    }
+  ],
+  "cases": [
+    {
+      "id": "R07-01",
+      "title": "R07-01 P1: late filter response cannot replace the latest applied filter or a cancelled draft",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-d42134033e7d7192c8a8",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:08:27.097Z",
+        "durationMs": 7195,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-01.json",
+          "fixture": {
+            "caseId": "R07-01",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 1,
+            "targetId": 4,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 1,
+              "P1다음달": 2,
+              "P1다른달참조": 3,
+              "P1공개": 4
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "R07-02",
+      "title": "R07-02 P1: rapid tab changes retain only the latest tab response",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-a84917c8b68f231b85dc",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:08:42.890Z",
+        "durationMs": 4838,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-02.json",
+          "fixture": {
+            "caseId": "R07-02",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 16,
+            "targetId": 19,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 5,
+              "P1다음달": 6,
+              "P1다른달참조": 7,
+              "P1공개": 8
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "R07-03",
+      "title": "R07-03 P1: delayed second page cannot overwrite a recommended page-zero transition",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-64ed04af4f96961037f9",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:08:54.532Z",
+        "durationMs": 5698,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-03.json",
+          "fixture": {
+            "caseId": "R07-03",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 31,
+            "targetId": 34,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 9,
+              "P1다음달": 10,
+              "P1다른달참조": 11,
+              "P1공개": 12
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "R07-04",
+      "title": "R07-04 P1: detail back and forward follow actual history and tab URL",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-1da0127fcb8ca91019d6",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:09:06.765Z",
+        "durationMs": 5846,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-04.json",
+          "fixture": {
+            "caseId": "R07-04",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 46,
+            "targetId": 49,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 13,
+              "P1다음달": 14,
+              "P1다른달참조": 15,
+              "P1공개": 16
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "R07-05",
+      "title": "R07-05 P1: a previous mount response cannot overwrite back navigation reload",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-f619f855c386f69b71d9",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:09:19.394Z",
+        "durationMs": 5371,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-05.json",
+          "fixture": {
+            "caseId": "R07-05",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 61,
+            "targetId": 64,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 17,
+              "P1다음달": 18,
+              "P1다른달참조": 19,
+              "P1공개": 20
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "R08-01",
+      "title": "R08-01 P1: synthetic AI_GATEWAY_UNAVAILABLE releases loading and permits explicit local FixedAi recovery",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-02faebc0e5b289afab79",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:09:31.699Z",
+        "durationMs": 3938,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-01.json",
+          "fixture": {
+            "caseId": "R08-01",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 76,
+            "targetId": 79,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 21,
+              "P1다음달": 22,
+              "P1다른달참조": 23,
+              "P1공개": 24
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "R08-02",
+      "title": "R08-02 P1: synthetic AI_ANALYSIS_RATE_LIMITED releases loading and permits explicit local FixedAi recovery",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-5d165efb92a61f885751",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:09:42.336Z",
+        "durationMs": 4144,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-02.json",
+          "fixture": {
+            "caseId": "R08-02",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 91,
+            "targetId": 94,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 25,
+              "P1다음달": 26,
+              "P1다른달참조": 27,
+              "P1공개": 28
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "R08-03",
+      "title": "R08-03 P1: synthetic AI_ANALYSIS_BUSY releases loading and permits explicit local FixedAi recovery",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-11f072b2b58b09149973",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:09:52.818Z",
+        "durationMs": 4108,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-03.json",
+          "fixture": {
+            "caseId": "R08-03",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 106,
+            "targetId": 109,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 29,
+              "P1다음달": 30,
+              "P1다른달참조": 31,
+              "P1공개": 32
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "R08-04",
+      "title": "R08-04 P1: POST like pre-upstream failure recovers without duplicate writes",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-c1a2bea01447546ef463",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:10:03.943Z",
+        "durationMs": 7832,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-04.json",
+          "fixture": {
+            "caseId": "R08-04",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 121,
+            "targetId": 124,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 33,
+              "P1다음달": 34,
+              "P1다른달참조": 35,
+              "P1공개": 36
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "R08-05",
+      "title": "R08-05 P1: DELETE like pre-upstream failure recovers without duplicate writes",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-d22416dd780aa0411be9",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:10:18.115Z",
+        "durationMs": 7309,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-05.json",
+          "fixture": {
+            "caseId": "R08-05",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 136,
+            "targetId": 139,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 37,
+              "P1다음달": 38,
+              "P1다른달참조": 39,
+              "P1공개": 40
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "R08-06",
+      "title": "R08-06 P1: POST like committed response loss recovers without duplicate writes",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-9e1b2357c0cb0d601cd1",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:10:32.004Z",
+        "durationMs": 7673,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-06.json",
+          "fixture": {
+            "caseId": "R08-06",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 151,
+            "targetId": 154,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 41,
+              "P1다음달": 42,
+              "P1다른달참조": 43,
+              "P1공개": 44
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "R08-07",
+      "title": "R08-07 P1: DELETE like committed response loss recovers without duplicate writes",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-f9fe969e81a6c2168c2b",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:10:46.359Z",
+        "durationMs": 7636,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-07.json",
+          "fixture": {
+            "caseId": "R08-07",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 166,
+            "targetId": 169,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 45,
+              "P1다음달": 46,
+              "P1다른달참조": 47,
+              "P1공개": 48
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C05-01",
+      "title": "C05-01 P1: fixed calendar boundary dates preserve API MySQL and main calendar placement",
+      "phase": "p1-recheck-1",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json",
+      "nativeTestId": "7313af95b3e04ded6b04-ed236c5030b438b9a85a",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:18:36.637Z",
+        "durationMs": 8331,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "FAIL",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "FAIL",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        },
+        {
+          "phase": "p1-recheck-1",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-01.json",
+          "fixture": {
+            "caseId": "C05-01",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 181,
+            "targetId": null,
+            "from": "2026-01-31",
+            "to": "2026-02-01",
+            "clock": "2026-01-31T12:00:00+09:00",
+            "events": {
+              "P1기존": 49,
+              "P1다음달": 50,
+              "P1다른달참조": 51,
+              "P1다일": 52,
+              "P1끝날": 53,
+              "P1이전": 54,
+              "P1이후": 55,
+              "P1공개": 56
+            }
+          },
+          "alerts": []
+        },
+        {
+          "phase": "p1-recheck-1",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-recheck-1-C05-01.json",
+          "fixture": {
+            "caseId": "C05-01",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 238,
+            "targetId": null,
+            "from": "2026-01-31",
+            "to": "2026-02-01",
+            "clock": "2026-01-31T12:00:00+09:00",
+            "events": {
+              "P1기존": 154,
+              "P1다음달": 155,
+              "P1다른달참조": 156,
+              "P1다일": 157,
+              "P1끝날": 158,
+              "P1이전": 159,
+              "P1이후": 160,
+              "P1공개": 161
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C05-02",
+      "title": "C05-02 P1: fixed calendar boundary dates preserve API MySQL and main calendar placement",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-849789c1ba6f154b28cb",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:11:22.006Z",
+        "durationMs": 10816,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-02.json",
+          "fixture": {
+            "caseId": "C05-02",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 184,
+            "targetId": null,
+            "from": "2028-02-28",
+            "to": "2028-03-01",
+            "clock": "2028-02-28T12:00:00+09:00",
+            "events": {
+              "P1기존": 57,
+              "P1다음달": 58,
+              "P1다른달참조": 59,
+              "P1다일": 60,
+              "P1끝날": 61,
+              "P1이전": 62,
+              "P1이후": 63,
+              "P1윤일": 64,
+              "P1공개": 65
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C05-03",
+      "title": "C05-03 P1: fixed calendar boundary dates preserve API MySQL and main calendar placement",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-66398e4e2dbbfcfc713f",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:11:39.117Z",
+        "durationMs": 8323,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-03.json",
+          "fixture": {
+            "caseId": "C05-03",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 187,
+            "targetId": null,
+            "from": "2026-12-31",
+            "to": "2027-01-02",
+            "clock": "2026-12-31T12:00:00+09:00",
+            "events": {
+              "P1기존": 66,
+              "P1다음달": 67,
+              "P1다른달참조": 68,
+              "P1다일": 69,
+              "P1끝날": 70,
+              "P1이전": 71,
+              "P1이후": 72,
+              "P1공개": 73
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C05-04",
+      "title": "C05-04 P1: fixed calendar boundary dates preserve API MySQL and main calendar placement",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-70e2eb31b0f3dc4d4a83",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:11:52.729Z",
+        "durationMs": 9700,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-04.json",
+          "fixture": {
+            "caseId": "C05-04",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 190,
+            "targetId": null,
+            "from": "2026-12-31",
+            "to": "2027-01-01",
+            "clock": "2026-12-31T23:59:00+09:00",
+            "events": {
+              "P1기존": 74,
+              "P1다음달": 75,
+              "P1다른달참조": 76,
+              "P1다일": 77,
+              "P1끝날": 78,
+              "P1이전": 79,
+              "P1이후": 80,
+              "P1자정": 81,
+              "P1시작만": 82,
+              "P1종료만": 83,
+              "P1공개": 84
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C05-05",
+      "title": "C05-05 P1: fixed calendar boundary dates preserve API MySQL and main calendar placement",
+      "phase": "p1-recheck-1",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json",
+      "nativeTestId": "7313af95b3e04ded6b04-c864d4696b475a02e915",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:18:51.943Z",
+        "durationMs": 9372,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "FAIL",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "FAIL",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        },
+        {
+          "phase": "p1-recheck-1",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-05.json",
+          "fixture": {
+            "caseId": "C05-05",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 193,
+            "targetId": null,
+            "from": "2026-10-30",
+            "to": "2026-11-02",
+            "clock": "2026-10-30T12:00:00+09:00",
+            "events": {
+              "P1기존": 85,
+              "P1다음달": 86,
+              "P1다른달참조": 87,
+              "P1다일": 88,
+              "P1끝날": 89,
+              "P1이전": 90,
+              "P1이후": 91,
+              "P1자정": 92,
+              "P1시작만": 93,
+              "P1종료만": 94,
+              "P1공개": 95
+            }
+          },
+          "alerts": []
+        },
+        {
+          "phase": "p1-recheck-1",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-recheck-1-C05-05.json",
+          "fixture": {
+            "caseId": "C05-05",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 241,
+            "targetId": null,
+            "from": "2026-10-30",
+            "to": "2026-11-02",
+            "clock": "2026-10-30T12:00:00+09:00",
+            "events": {
+              "P1기존": 162,
+              "P1다음달": 163,
+              "P1다른달참조": 164,
+              "P1다일": 165,
+              "P1끝날": 166,
+              "P1이전": 167,
+              "P1이후": 168,
+              "P1자정": 169,
+              "P1시작만": 170,
+              "P1종료만": 171,
+              "P1공개": 172
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C06-01",
+      "title": "C06-01 P1: second category creation failure retains the first server ID and draft",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-7d9c45aa91c8bc1fd834",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:12:29.421Z",
+        "durationMs": 7601,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-01.json",
+          "fixture": {
+            "caseId": "C06-01",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 196,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 96,
+              "P1다음달": 97,
+              "P1다른달참조": 98,
+              "P1공개": 99
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C06-02",
+      "title": "C06-02 P1: a delayed settings failure blocks duplicate submission and retries only PUT",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-c6def10f9992c6d99483",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:12:42.745Z",
+        "durationMs": 5633,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-02.json",
+          "fixture": {
+            "caseId": "C06-02",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 199,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 100,
+              "P1다음달": 101,
+              "P1다른달참조": 102,
+              "P1공개": 103
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C06-03",
+      "title": "C06-03 P1: partial deletion plus failed recovery GET does not replay a committed DELETE",
+      "phase": "p1-recheck-1",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json",
+      "nativeTestId": "7313af95b3e04ded6b04-f0d460bbaabf72094cc5",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:19:07.111Z",
+        "durationMs": 8241,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "FAIL",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "FAIL",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        },
+        {
+          "phase": "p1-recheck-1",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-03.json",
+          "fixture": {
+            "caseId": "C06-03",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 202,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 104,
+              "P1다음달": 105,
+              "P1다른달참조": 106,
+              "P1공개": 107
+            }
+          },
+          "alerts": []
+        },
+        {
+          "phase": "p1-recheck-1",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-recheck-1-C06-03.json",
+          "fixture": {
+            "caseId": "C06-03",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 244,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 173,
+              "P1다음달": 174,
+              "P1다른달참조": 175,
+              "P1공개": 176
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C06-04",
+      "title": "C06-04 P1: actual server rejects deleting a category used only outside the current month",
+      "phase": "p1-recheck-1",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json",
+      "nativeTestId": "7313af95b3e04ded6b04-fa4bf70a24e648d01223",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:19:20.634Z",
+        "durationMs": 6716,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "FAIL",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "FAIL",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        },
+        {
+          "phase": "p1-recheck-1",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-04.json",
+          "fixture": {
+            "caseId": "C06-04",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 205,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 108,
+              "P1다음달": 109,
+              "P1다른달참조": 110,
+              "P1공개": 111
+            }
+          },
+          "alerts": []
+        },
+        {
+          "phase": "p1-recheck-1",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-recheck-1-C06-04.json",
+          "fixture": {
+            "caseId": "C06-04",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 247,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 177,
+              "P1다음달": 178,
+              "P1다른달참조": 179,
+              "P1공개": 180
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C07-01",
+      "title": "C07-01 P1: independent /calendar/events GET error shows retry and recovers real data",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-372fa8e758d95124db60",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:13:19.506Z",
+        "durationMs": 6937,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-01.json",
+          "fixture": {
+            "caseId": "C07-01",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 208,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 112,
+              "P1다음달": 113,
+              "P1다른달참조": 114,
+              "P1공개": 115
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C07-02",
+      "title": "C07-02 P1: independent /calendar/categories GET error shows retry and recovers real data",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-83911898ed675c84d4a7",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:13:32.845Z",
+        "durationMs": 6006,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-02.json",
+          "fixture": {
+            "caseId": "C07-02",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 211,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 116,
+              "P1다음달": 117,
+              "P1다른달참조": 118,
+              "P1공개": 119
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C07-03",
+      "title": "C07-03 P1: previous-month event response cannot overwrite the latest month",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-480f15d73228ba9c16a1",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:13:44.669Z",
+        "durationMs": 5366,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-03.json",
+          "fixture": {
+            "caseId": "C07-03",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 214,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 120,
+              "P1다음달": 121,
+              "P1다른달참조": 122,
+              "P1공개": 123
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C07-04",
+      "title": "C07-04 P1: delayed category loading and month navigation converge on latest settings and month",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-4e35f9b1cb12d842edfc",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:13:55.523Z",
+        "durationMs": 6212,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-04.json",
+          "fixture": {
+            "caseId": "C07-04",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 217,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 124,
+              "P1다음달": 125,
+              "P1다른달참조": 126,
+              "P1공개": 127
+            }
+          },
+          "alerts": []
+        }
+      ]
+    },
+    {
+      "id": "C07-05",
+      "title": "C07-05 P1: failed event POST preserves draft or detail and retries explicitly",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-d4c73ddf3fcc53ee058b",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:14:07.014Z",
+        "durationMs": 8185,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-05.json",
+          "fixture": {
+            "caseId": "C07-05",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 220,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 128,
+              "P1다음달": 129,
+              "P1다른달참조": 130,
+              "P1공개": 131
+            }
+          },
+          "alerts": [
+            "P1 요청 실패",
+            "일정을 등록했어요."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C07-06",
+      "title": "C07-06 P1: failed event PATCH preserves draft or detail and retries explicitly",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-8046cd399f1a5a88f6f1",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:14:21.147Z",
+        "durationMs": 7704,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-06.json",
+          "fixture": {
+            "caseId": "C07-06",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 223,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 133,
+              "P1다음달": 134,
+              "P1다른달참조": 135,
+              "P1공개": 136
+            }
+          },
+          "alerts": [
+            "P1 요청 실패",
+            "일정을 수정했어요."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C07-07",
+      "title": "C07-07 P1: failed event DELETE preserves draft or detail and retries explicitly",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-88bcc6c0549d9695c457",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:14:34.434Z",
+        "durationMs": 7654,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-07.json",
+          "fixture": {
+            "caseId": "C07-07",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 226,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 137,
+              "P1다음달": 138,
+              "P1다른달참조": 139,
+              "P1공개": 140
+            }
+          },
+          "alerts": [
+            "P1 요청 실패",
+            "일정을 삭제했어요."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C07-08",
+      "title": "C07-08 P1: delayed committed event POST blocks duplicate UI submission",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-f8e169838f788dd47872",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:14:47.490Z",
+        "durationMs": 7960,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-08.json",
+          "fixture": {
+            "caseId": "C07-08",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 229,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 141,
+              "P1다음달": 142,
+              "P1다른달참조": 143,
+              "P1공개": 144
+            }
+          },
+          "alerts": [
+            "일정을 등록했어요."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C07-09",
+      "title": "C07-09 P1: delayed committed event PATCH blocks duplicate UI submission",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-a8f748b3a1189704a76a",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:15:01.010Z",
+        "durationMs": 8097,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-09.json",
+          "fixture": {
+            "caseId": "C07-09",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 232,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 146,
+              "P1다음달": 147,
+              "P1다른달참조": 148,
+              "P1공개": 149
+            }
+          },
+          "alerts": [
+            "일정을 수정했어요."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C07-10",
+      "title": "C07-10 P1: delayed committed event DELETE blocks duplicate UI submission",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-12b0108cf936b2c70597",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:15:14.807Z",
+        "durationMs": 7439,
+        "errors": [],
+        "steps": []
+      },
+      "initialStatus": "PASS",
+      "history": [
+        {
+          "phase": "p1-original",
+          "status": "PASS",
+          "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json"
+        }
+      ],
+      "evidence": [
+        {
+          "phase": "p1-original",
+          "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-10.json",
+          "fixture": {
+            "caseId": "C07-10",
+            "database": "kkiri_e2e_5cefde0224ad",
+            "userId": 235,
+            "targetId": null,
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "clock": "2026-10-15T12:00:00+09:00",
+            "events": {
+              "P1기존": 150,
+              "P1다음달": 151,
+              "P1다른달참조": 152,
+              "P1공개": 153
+            }
+          },
+          "alerts": [
+            "일정을 삭제했어요."
+          ]
+        }
+      ]
+    }
+  ],
+  "attempts": [
+    {
+      "id": "R07-01",
+      "title": "R07-01 P1: late filter response cannot replace the latest applied filter or a cancelled draft",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-d42134033e7d7192c8a8",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:08:27.097Z",
+        "durationMs": 7195,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "R07-02",
+      "title": "R07-02 P1: rapid tab changes retain only the latest tab response",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-a84917c8b68f231b85dc",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:08:42.890Z",
+        "durationMs": 4838,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "R07-03",
+      "title": "R07-03 P1: delayed second page cannot overwrite a recommended page-zero transition",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-64ed04af4f96961037f9",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:08:54.532Z",
+        "durationMs": 5698,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "R07-04",
+      "title": "R07-04 P1: detail back and forward follow actual history and tab URL",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-1da0127fcb8ca91019d6",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:09:06.765Z",
+        "durationMs": 5846,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "R07-05",
+      "title": "R07-05 P1: a previous mount response cannot overwrite back navigation reload",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-f619f855c386f69b71d9",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:09:19.394Z",
+        "durationMs": 5371,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "R08-01",
+      "title": "R08-01 P1: synthetic AI_GATEWAY_UNAVAILABLE releases loading and permits explicit local FixedAi recovery",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-02faebc0e5b289afab79",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:09:31.699Z",
+        "durationMs": 3938,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "R08-02",
+      "title": "R08-02 P1: synthetic AI_ANALYSIS_RATE_LIMITED releases loading and permits explicit local FixedAi recovery",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-5d165efb92a61f885751",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:09:42.336Z",
+        "durationMs": 4144,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "R08-03",
+      "title": "R08-03 P1: synthetic AI_ANALYSIS_BUSY releases loading and permits explicit local FixedAi recovery",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-11f072b2b58b09149973",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:09:52.818Z",
+        "durationMs": 4108,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "R08-04",
+      "title": "R08-04 P1: POST like pre-upstream failure recovers without duplicate writes",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-c1a2bea01447546ef463",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:10:03.943Z",
+        "durationMs": 7832,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "R08-05",
+      "title": "R08-05 P1: DELETE like pre-upstream failure recovers without duplicate writes",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-d22416dd780aa0411be9",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:10:18.115Z",
+        "durationMs": 7309,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "R08-06",
+      "title": "R08-06 P1: POST like committed response loss recovers without duplicate writes",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-9e1b2357c0cb0d601cd1",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:10:32.004Z",
+        "durationMs": 7673,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "R08-07",
+      "title": "R08-07 P1: DELETE like committed response loss recovers without duplicate writes",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-f9fe969e81a6c2168c2b",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:10:46.359Z",
+        "durationMs": 7636,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C05-01",
+      "title": "C05-01 P1: fixed calendar boundary dates preserve API MySQL and main calendar placement",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-ed236c5030b438b9a85a",
+      "status": "FAIL",
+      "attempt": {
+        "status": "failed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:11:00.540Z",
+        "durationMs": 15412,
+        "errors": [
+          {
+            "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.fc-daygrid-day[data-date=\"2026-02-01\"]').getByRole('button')\u001b[22m\n",
+            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.fc-daygrid-day[data-date=\"2026-02-01\"]').getByRole('button')\u001b[22m\n\n    at selectCalendarDay (C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\tests\\mc-p1.spec.cjs:107:34)\n    at C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\tests\\mc-p1.spec.cjs:132:13"
+          }
+        ],
+        "steps": []
+      }
+    },
+    {
+      "id": "C05-02",
+      "title": "C05-02 P1: fixed calendar boundary dates preserve API MySQL and main calendar placement",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-849789c1ba6f154b28cb",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:11:22.006Z",
+        "durationMs": 10816,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C05-03",
+      "title": "C05-03 P1: fixed calendar boundary dates preserve API MySQL and main calendar placement",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-66398e4e2dbbfcfc713f",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:11:39.117Z",
+        "durationMs": 8323,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C05-04",
+      "title": "C05-04 P1: fixed calendar boundary dates preserve API MySQL and main calendar placement",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-70e2eb31b0f3dc4d4a83",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:11:52.729Z",
+        "durationMs": 9700,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C05-05",
+      "title": "C05-05 P1: fixed calendar boundary dates preserve API MySQL and main calendar placement",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-c864d4696b475a02e915",
+      "status": "FAIL",
+      "attempt": {
+        "status": "failed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:12:07.883Z",
+        "durationMs": 15411,
+        "errors": [
+          {
+            "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.fc-daygrid-day[data-date=\"2026-11-02\"]').getByRole('button')\u001b[22m\n",
+            "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.fc-daygrid-day[data-date=\"2026-11-02\"]').getByRole('button')\u001b[22m\n\n    at selectCalendarDay (C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\tests\\mc-p1.spec.cjs:107:34)\n    at C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\tests\\mc-p1.spec.cjs:132:13"
+          }
+        ],
+        "steps": []
+      }
+    },
+    {
+      "id": "C06-01",
+      "title": "C06-01 P1: second category creation failure retains the first server ID and draft",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-7d9c45aa91c8bc1fd834",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:12:29.421Z",
+        "durationMs": 7601,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C06-02",
+      "title": "C06-02 P1: a delayed settings failure blocks duplicate submission and retries only PUT",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-c6def10f9992c6d99483",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:12:42.745Z",
+        "durationMs": 5633,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C06-03",
+      "title": "C06-03 P1: partial deletion plus failed recovery GET does not replay a committed DELETE",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-f0d460bbaabf72094cc5",
+      "status": "FAIL",
+      "attempt": {
+        "status": "failed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:12:54.080Z",
+        "durationMs": 6649,
+        "errors": [
+          {
+            "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m1\u001b[39m\nReceived length: \u001b[31m2\u001b[39m\nReceived array:  \u001b[31m[{\"at\": \"2026-10-26T07:13:02.148Z\", \"caseId\": \"C06-03\", \"kind\": \"browser-start\", \"method\": \"DELETE\", \"path\": \"/api/calendar/categories/140\", \"query\": {}, \"requestId\": 9}, {\"at\": \"2026-10-26T07:13:03.244Z\", \"caseId\": \"C06-03\", \"kind\": \"browser-start\", \"method\": \"DELETE\", \"path\": \"/api/calendar/categories/140\", \"query\": {}, \"requestId\": 12}]\u001b[39m",
+            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m1\u001b[39m\nReceived length: \u001b[31m2\u001b[39m\nReceived array:  \u001b[31m[{\"at\": \"2026-10-26T07:13:02.148Z\", \"caseId\": \"C06-03\", \"kind\": \"browser-start\", \"method\": \"DELETE\", \"path\": \"/api/calendar/categories/140\", \"query\": {}, \"requestId\": 9}, {\"at\": \"2026-10-26T07:13:03.244Z\", \"caseId\": \"C06-03\", \"kind\": \"browser-start\", \"method\": \"DELETE\", \"path\": \"/api/calendar/categories/140\", \"query\": {}, \"requestId\": 12}]\u001b[39m\n    at C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\tests\\mc-p1.spec.cjs:198:62"
+          }
+        ],
+        "steps": []
+      }
+    },
+    {
+      "id": "C06-04",
+      "title": "C06-04 P1: actual server rejects deleting a category used only outside the current month",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-fa4bf70a24e648d01223",
+      "status": "FAIL",
+      "attempt": {
+        "status": "failed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:13:07.197Z",
+        "durationMs": 5739,
+        "errors": [
+          {
+            "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m400\u001b[39m",
+            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m400\u001b[39m\n    at responseTo (C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\lib\\flows.cjs:7:61)\n    at C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\tests\\mc-p1.spec.cjs:207:18"
+          }
+        ],
+        "steps": []
+      }
+    },
+    {
+      "id": "C07-01",
+      "title": "C07-01 P1: independent /calendar/events GET error shows retry and recovers real data",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-372fa8e758d95124db60",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:13:19.506Z",
+        "durationMs": 6937,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C07-02",
+      "title": "C07-02 P1: independent /calendar/categories GET error shows retry and recovers real data",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-83911898ed675c84d4a7",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:13:32.845Z",
+        "durationMs": 6006,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C07-03",
+      "title": "C07-03 P1: previous-month event response cannot overwrite the latest month",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-480f15d73228ba9c16a1",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:13:44.669Z",
+        "durationMs": 5366,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C07-04",
+      "title": "C07-04 P1: delayed category loading and month navigation converge on latest settings and month",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-4e35f9b1cb12d842edfc",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:13:55.523Z",
+        "durationMs": 6212,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C07-05",
+      "title": "C07-05 P1: failed event POST preserves draft or detail and retries explicitly",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-d4c73ddf3fcc53ee058b",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:14:07.014Z",
+        "durationMs": 8185,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C07-06",
+      "title": "C07-06 P1: failed event PATCH preserves draft or detail and retries explicitly",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-8046cd399f1a5a88f6f1",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:14:21.147Z",
+        "durationMs": 7704,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C07-07",
+      "title": "C07-07 P1: failed event DELETE preserves draft or detail and retries explicitly",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-88bcc6c0549d9695c457",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:14:34.434Z",
+        "durationMs": 7654,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C07-08",
+      "title": "C07-08 P1: delayed committed event POST blocks duplicate UI submission",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-f8e169838f788dd47872",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:14:47.490Z",
+        "durationMs": 7960,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C07-09",
+      "title": "C07-09 P1: delayed committed event PATCH blocks duplicate UI submission",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-a8f748b3a1189704a76a",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:15:01.010Z",
+        "durationMs": 8097,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C07-10",
+      "title": "C07-10 P1: delayed committed event DELETE blocks duplicate UI submission",
+      "phase": "p1-original",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "nativeTestId": "7313af95b3e04ded6b04-12b0108cf936b2c70597",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:15:14.807Z",
+        "durationMs": 7439,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C05-01",
+      "title": "C05-01 P1: fixed calendar boundary dates preserve API MySQL and main calendar placement",
+      "phase": "p1-recheck-1",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json",
+      "nativeTestId": "7313af95b3e04ded6b04-ed236c5030b438b9a85a",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:18:36.637Z",
+        "durationMs": 8331,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C05-05",
+      "title": "C05-05 P1: fixed calendar boundary dates preserve API MySQL and main calendar placement",
+      "phase": "p1-recheck-1",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json",
+      "nativeTestId": "7313af95b3e04ded6b04-c864d4696b475a02e915",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:18:51.943Z",
+        "durationMs": 9372,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C06-03",
+      "title": "C06-03 P1: partial deletion plus failed recovery GET does not replay a committed DELETE",
+      "phase": "p1-recheck-1",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json",
+      "nativeTestId": "7313af95b3e04ded6b04-f0d460bbaabf72094cc5",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:19:07.111Z",
+        "durationMs": 8241,
+        "errors": [],
+        "steps": []
+      }
+    },
+    {
+      "id": "C06-04",
+      "title": "C06-04 P1: actual server rejects deleting a category used only outside the current month",
+      "phase": "p1-recheck-1",
+      "nativeFile": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json",
+      "nativeTestId": "7313af95b3e04ded6b04-fa4bf70a24e648d01223",
+      "status": "PASS",
+      "attempt": {
+        "status": "passed",
+        "retry": 0,
+        "startedAt": "2026-10-26T07:19:20.634Z",
+        "durationMs": 6716,
+        "errors": [],
+        "steps": []
+      }
+    }
+  ],
+  "classifications": {
+    "confirmedFrontendDefects": 1,
+    "resolvedFrontendDefects": 1,
+    "backendDefects": 0,
+    "initialHarnessFailures": 3,
+    "environmentBlockedCases": 0,
+    "orchestrationErrors": []
+  },
+  "c06DeletionReplay": [
+    {
+      "phase": "p1-original",
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-03.json",
+      "observations": [
+        {
+          "kind": "browser-response",
+          "caseId": "C06-03",
+          "at": "2026-10-26T07:13:02.172Z",
+          "requestId": 9,
+          "method": "DELETE",
+          "path": "/api/calendar/categories/140",
+          "query": {},
+          "status": 200
+        },
+        {
+          "kind": "synthetic-response",
+          "caseId": "C06-03",
+          "at": "2026-10-26T07:13:02.176Z",
+          "requestId": 10,
+          "method": "DELETE",
+          "path": "/api/calendar/categories/141",
+          "query": {},
+          "status": 500,
+          "code": "INTERNAL_SERVER_ERROR",
+          "upstream": false
+        },
+        {
+          "kind": "browser-response",
+          "caseId": "C06-03",
+          "at": "2026-10-26T07:13:02.178Z",
+          "requestId": 10,
+          "method": "DELETE",
+          "path": "/api/calendar/categories/141",
+          "query": {},
+          "status": 500
+        },
+        {
+          "kind": "synthetic-response",
+          "caseId": "C06-03",
+          "at": "2026-10-26T07:13:02.182Z",
+          "requestId": 11,
+          "method": "GET",
+          "path": "/api/calendar/categories",
+          "query": {},
+          "status": 500,
+          "code": "INTERNAL_SERVER_ERROR",
+          "upstream": false
+        },
+        {
+          "kind": "browser-response",
+          "caseId": "C06-03",
+          "at": "2026-10-26T07:13:03.279Z",
+          "requestId": 12,
+          "method": "DELETE",
+          "path": "/api/calendar/categories/140",
+          "query": {},
+          "status": 400
+        },
+        {
+          "kind": "partial-retry-observed",
+          "caseId": "C06-03",
+          "at": "2026-10-26T07:13:04.340Z",
+          "path": "/api/calendar/categories/140",
+          "status": 400,
+          "mysql": [
+            {
+              "category_id": 139,
+              "owner_user_id": 202,
+              "default_name": "P1개인"
+            },
+            {
+              "category_id": 141,
+              "owner_user_id": 202,
+              "default_name": "P1빈B"
+            },
+            {
+              "category_id": 142,
+              "owner_user_id": 202,
+              "default_name": "P1다른달"
+            },
+            {
+              "category_id": 143,
+              "owner_user_id": 203,
+              "default_name": "P1개인B"
+            },
+            {
+              "category_id": 144,
+              "owner_user_id": 202,
+              "default_name": "P1신규A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": "p1-recheck-1",
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-recheck-1-C06-03.json",
+      "observations": [
+        {
+          "kind": "browser-response",
+          "caseId": "C06-03",
+          "at": "2026-10-26T07:19:14.987Z",
+          "requestId": 9,
+          "method": "DELETE",
+          "path": "/api/calendar/categories/239",
+          "query": {},
+          "status": 200
+        },
+        {
+          "kind": "synthetic-response",
+          "caseId": "C06-03",
+          "at": "2026-10-26T07:19:14.992Z",
+          "requestId": 10,
+          "method": "DELETE",
+          "path": "/api/calendar/categories/240",
+          "query": {},
+          "status": 500,
+          "code": "INTERNAL_SERVER_ERROR",
+          "upstream": false
+        },
+        {
+          "kind": "browser-response",
+          "caseId": "C06-03",
+          "at": "2026-10-26T07:19:15.088Z",
+          "requestId": 10,
+          "method": "DELETE",
+          "path": "/api/calendar/categories/240",
+          "query": {},
+          "status": 500
+        },
+        {
+          "kind": "synthetic-response",
+          "caseId": "C06-03",
+          "at": "2026-10-26T07:19:15.096Z",
+          "requestId": 11,
+          "method": "GET",
+          "path": "/api/calendar/categories",
+          "query": {},
+          "status": 500,
+          "code": "INTERNAL_SERVER_ERROR",
+          "upstream": false
+        },
+        {
+          "kind": "browser-response",
+          "caseId": "C06-03",
+          "at": "2026-10-26T07:19:16.475Z",
+          "requestId": 12,
+          "method": "DELETE",
+          "path": "/api/calendar/categories/240",
+          "query": {},
+          "status": 200
+        },
+        {
+          "kind": "partial-retry-observed",
+          "caseId": "C06-03",
+          "at": "2026-10-26T07:19:17.654Z",
+          "path": "/api/calendar/categories",
+          "status": 200,
+          "mysql": [
+            {
+              "category_id": 238,
+              "owner_user_id": 244,
+              "default_name": "P1개인"
+            },
+            {
+              "category_id": 241,
+              "owner_user_id": 244,
+              "default_name": "P1다른달"
+            },
+            {
+              "category_id": 242,
+              "owner_user_id": 245,
+              "default_name": "P1개인B"
+            },
+            {
+              "category_id": 243,
+              "owner_user_id": 244,
+              "default_name": "P1신규A"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "observations": {
+    "browserStart": 511,
+    "browserResponse": 467,
+    "browserFailure": 39,
+    "syntheticResponses": 16,
+    "upstreamCompleted": 11,
+    "injectedLoss": 2,
+    "routeCancelled": 0,
+    "unmatchedBrowserStarts": 5,
+    "browserStatuses": {
+      "200": 448,
+      "400": 3,
+      "429": 1,
+      "500": 13,
+      "503": 2
+    },
+    "failureReasons": {
+      "net::ERR_ABORTED": 37,
+      "net::ERR_FAILED": 2
+    },
+    "syntheticStatuses": {
+      "429": 1,
+      "500": 13,
+      "503": 2
+    },
+    "serverHttpCompleted": 477,
+    "serverStatuses": {
+      "200": 474,
+      "400": 3
+    },
+    "mysql": {
+      "snapshot": 127,
+      "reset": 35,
+      "clean": 35,
+      "fixture": 35,
+      "cleanZeroConfirmed": 35
+    },
+    "journalSnapshotDifferences": [
+      {
+        "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-02.json",
+        "snapshotEvents": 93,
+        "journalEvents": 95,
+        "lateEvents": [
+          {
+            "kind": "browser-response",
+            "caseId": "C05-02",
+            "at": "2026-10-26T07:11:38.073Z",
+            "requestId": 43,
+            "method": "GET",
+            "path": "/api/calendar/events",
+            "query": {
+              "from": "2026-02-01",
+              "to": "2026-02-28"
+            },
+            "status": 200
+          },
+          {
+            "kind": "browser-response",
+            "caseId": "C05-02",
+            "at": "2026-10-26T07:11:38.073Z",
+            "requestId": 44,
+            "method": "GET",
+            "path": "/api/calendar/categories",
+            "query": {},
+            "status": 200
+          }
+        ],
+        "reason": "Events recorded after the fixture JSON snapshot; use the original JSONL without rewriting either source."
+      },
+      {
+        "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-03.json",
+        "snapshotEvents": 35,
+        "journalEvents": 36,
+        "lateEvents": [
+          {
+            "kind": "browser-start",
+            "caseId": "C06-03",
+            "at": "2026-10-26T07:13:05.367Z",
+            "requestId": 13,
+            "method": "GET",
+            "path": "/api/calendar/categories",
+            "query": {}
+          }
+        ],
+        "reason": "Events recorded after the fixture JSON snapshot; use the original JSONL without rewriting either source."
+      },
+      {
+        "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-04.json",
+        "snapshotEvents": 20,
+        "journalEvents": 21,
+        "lateEvents": [
+          {
+            "kind": "browser-start",
+            "caseId": "C06-04",
+            "at": "2026-10-26T07:13:17.645Z",
+            "requestId": 9,
+            "method": "GET",
+            "path": "/api/calendar/categories",
+            "query": {}
+          }
+        ],
+        "reason": "Events recorded after the fixture JSON snapshot; use the original JSONL without rewriting either source."
+      }
+    ],
+    "distinction": "Synthetic HTTP errors are local browser injection; upstream-complete records actual route.fetch responses; injected-loss follows a confirmed MySQL commit. Server HTTP excludes OPTIONS."
+  },
+  "checks": {
+    "javaCompile": {
+      "status": "PASS",
+      "file": "backend/build/mc-p1-preparation/20261026/compile.log",
+      "offline": true
+    },
+    "runnerSafety": {
+      "passed": 42,
+      "skipped": 3,
+      "file": "backend/build/mc-p1-preparation/20261026/safety.log"
+    },
+    "jest": {
+      "passed": 26,
+      "suites": 3,
+      "file": "backend/build/mc-p1-preparation/20261026/regression-after.log"
+    },
+    "regressionBeforeFix": {
+      "failed": 1,
+      "passed": 8,
+      "file": "backend/build/mc-p1-preparation/20261026/defect-regression-before.log"
+    },
+    "frontendBuild": {
+      "status": "PASS",
+      "file": "backend/build/mc-p1-preparation/20261026/build.log"
+    },
+    "contractCheck": {
+      "endpoints": 73,
+      "recordDtos": 75,
+      "entities": 30,
+      "status": "PASS"
+    }
+  },
+  "resources": {
+    "createdContainers": 1,
+    "schemas": 1,
+    "accounts": 1,
+    "volumes": 0,
+    "remainingApprovedBudget": 0,
+    "identity": {
+      "at": "2026-10-26T07:09:19.547Z",
+      "container": {
+        "id": "28471273f6c5bb8c2c07ffabf2f5cbaab278a94489b8e15ce0dcfdad73b87468",
+        "owner": "5cefde0224ad",
+        "image": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+        "mounts": [],
+        "tmpfs": {
+          "/var/lib/mysql": "rw,size=1073741824"
+        }
+      },
+      "database": {
+        "schema": "kkiri_e2e_5cefde0224ad",
+        "account": "e2e_5cefde0224ad@%",
+        "version": "8.0.46",
+        "uuid": "d2c36584-d10b-11f1-b9b7-b21e3ac3fce9",
+        "hostname": "kkiri-e2e",
+        "port": 3306,
+        "timezone": "+00:00"
+      }
+    },
+    "cleanup": {
+      "at": "2026-10-26T07:21:10.204Z",
+      "id": "5cefde0224ad",
+      "containerId": "28471273f6c5bb8c2c07ffabf2f5cbaab278a94489b8e15ce0dcfdad73b87468",
+      "containerAbsentByExactId": true,
+      "containerAbsentByExactName": true,
+      "portsRebindable": [
+        13000,
+        18080,
+        13316
+      ],
+      "fixtureTablesEmpty": true,
+      "ownedProcessesStopped": true
+    },
+    "runFinishedAt": "2026-10-26T07:19:35.871Z"
+  },
+  "preservation": {
+    "p0FilesCompared": 151,
+    "changedProtected": [],
+    "originalPhasePreserved": true,
+    "sourceChangesBetweenPhases": [
+      "frontend/src/calendar/CalendarDataContext.js",
+      "frontend/src/calendar/CalendarDataContext.test.js",
+      "frontend/e2e/tests/mc-p1.spec.cjs"
+    ],
+    "sourceUnchangedDuringWholeRun": false,
+    "sourceChangeReason": "Approved frontend deletion progress fix and its regression test, plus failed-case E2E month-navigation and expected-error helper corrections; original source copies retained."
+  },
+  "environment": {
+    "ai": "E2eServer.FixedAi",
+    "crawler": "DisabledCrawler",
+    "mail": "MemoryMail",
+    "externalGatewayRequests": 0,
+    "schoolRequests": 0,
+    "smtpRequests": 0,
+    "calendarClock": "Calendar Date constructor fixed; Date.now and server JWT clock remain real"
+  },
+  "orchestration": {
+    "playwrightExitCode": 0,
+    "sessionState": "FINISHED",
+    "ownedProcessesStopped": true
+  },
+  "p1Committed": false,
+  "pushed": false,
+  "coreFiles": [
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-02faebc0e5b289afab79.json",
+      "bytes": 17105,
+      "sha256": "2b872da155de658ac51dc482f00c5cf088d2936dccd33106cab2433008e3ec7a"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-11f072b2b58b09149973.json",
+      "bytes": 17127,
+      "sha256": "2662672ee5f77677521fcfba02d7510d21f602b21eb7ff87092eab685dbd1124"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-12b0108cf936b2c70597.json",
+      "bytes": 13218,
+      "sha256": "faf059dcb034a64f474a58abc97f7ce0a11064be0417578e0037b8d471a08ae5"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-1da0127fcb8ca91019d6.json",
+      "bytes": 18191,
+      "sha256": "da3e004e885ce4aa824e594cc73ceb6785a4621542c411c93f1599273955f7a7"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-372fa8e758d95124db60.json",
+      "bytes": 15340,
+      "sha256": "f903a8e38bb1f152d290dcd994031fcdd8dc64df1358827025f57cab821b2acc"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-480f15d73228ba9c16a1.json",
+      "bytes": 13760,
+      "sha256": "6c60706c051b00c382e3292f751a0feaad2ab2277defdc8c2f752b1bc3d7abb4"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-4e35f9b1cb12d842edfc.json",
+      "bytes": 15455,
+      "sha256": "634c0399948efbfd62823a50665ffe3f623a6efe397c4001efd8078cb7de0edc"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-5d165efb92a61f885751.json",
+      "bytes": 17119,
+      "sha256": "5db8892f4936e4a9af10e2da4fdca8f96d5ede7e4758c155d65d4fd3eae4aef1"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-64ed04af4f96961037f9.json",
+      "bytes": 17604,
+      "sha256": "b6f38e052c5e1531fdc7f596171b6236ad8e166eaf9c69d3e78d00adae89973a"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-66398e4e2dbbfcfc713f.json",
+      "bytes": 30468,
+      "sha256": "f0db8cf314cf6d5f1fb6ee096d884bec9eee090f33f6718c4842aecd39ea23b6"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-70e2eb31b0f3dc4d4a83.json",
+      "bytes": 37807,
+      "sha256": "3ce39f520ed0b087f23e176e005c441cbba51c3a7beda37e62a137f56be893de"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-7d9c45aa91c8bc1fd834.json",
+      "bytes": 21440,
+      "sha256": "c2951668bd159a3893ec956f90d47aeaeeaa5cfab7bf6348e25cf07d461e190b"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-8046cd399f1a5a88f6f1.json",
+      "bytes": 12658,
+      "sha256": "8ca83e21e5bc147cb5b41b2b0b09d360a92f3df2384b2043517650d224136497"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-83911898ed675c84d4a7.json",
+      "bytes": 15194,
+      "sha256": "ddb7e1c6a49a3676082d989d3c664ab24285d6d9959823fb894c662f1c87464b"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-849789c1ba6f154b28cb.json",
+      "bytes": 42609,
+      "sha256": "e2a18adc603134fd4f2663664409310d79f5c68490cb5680c162ea202255511e"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-88bcc6c0549d9695c457.json",
+      "bytes": 12169,
+      "sha256": "99d08ea6b0b7a33716d0d5d64dd7ca00786d879d9a4ff6d8638fac76d9b251cc"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-9e1b2357c0cb0d601cd1.json",
+      "bytes": 21243,
+      "sha256": "787e47df20497b7a8256906e600a30d7f8c66f39b646f6fddff9f156d4f1f30a"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-a84917c8b68f231b85dc.json",
+      "bytes": 17794,
+      "sha256": "7c8bc4fbcd44794ec98fb3d8bf7bcbcf9ee604fe41a43da3627a1790bf678dc8"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-a8f748b3a1189704a76a.json",
+      "bytes": 14166,
+      "sha256": "fe27c1cc1883442f931cd8cbbc994e266b37dce556f955626ab959c2d02f85f4"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-c1a2bea01447546ef463.json",
+      "bytes": 18942,
+      "sha256": "a8dffb048a20301b889829a9659e29a130c00b9b978e9cb0f5514f06c6679a1a"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-c6def10f9992c6d99483.json",
+      "bytes": 23984,
+      "sha256": "b6efe0d19432a4a98ba20f7413be1a945487e685bd77cfd25da3fd315572bb18"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-c864d4696b475a02e915.json",
+      "bytes": 13416,
+      "sha256": "9cca72a8ac1686157d5c950c926cc6e239f67749e3f20fabe1d3b75f399dd5b5"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-d22416dd780aa0411be9.json",
+      "bytes": 18846,
+      "sha256": "a41283241e55713e8fe8bef1db5739012debb53088c2355b33c3d49871a61296"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-d42134033e7d7192c8a8.json",
+      "bytes": 18115,
+      "sha256": "e187706717a61642249d75309609f3e32fa9b1db311d49860c7e7bf1dfc8810d"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-d4c73ddf3fcc53ee058b.json",
+      "bytes": 14023,
+      "sha256": "f95552c3fcf2024a4a9eb22bcdd317ad67165682f47c1976e3bb1c4fbeda6fb9"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-ed236c5030b438b9a85a.json",
+      "bytes": 11780,
+      "sha256": "d382614177a547f70e9cd44772f6d60536bb82c1b2284430fc8c4e230a55c396"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-f0d460bbaabf72094cc5.json",
+      "bytes": 16016,
+      "sha256": "ff30aa995e07096996ed6ea4d5610ecd4a570482e3f52f9e89cd59a0ad7b2302"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-f619f855c386f69b71d9.json",
+      "bytes": 23780,
+      "sha256": "4860c5961a0f72430b6a9cb2f06f31151477071bea31178f63d20c823c047e77"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-f8e169838f788dd47872.json",
+      "bytes": 15816,
+      "sha256": "35062c77f1f2c419bd2ae4481f924bf301b94e2e05f4969e0eea83c715d11529"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-f9fe969e81a6c2168c2b.json",
+      "bytes": 21026,
+      "sha256": "b121534e37295b387e5c8c086fc33b6afc9b63f86682d2ac4394e2d75d732213"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-original-7313af95b3e04ded6b04-fa4bf70a24e648d01223.json",
+      "bytes": 9889,
+      "sha256": "213fb23bc2b580b4d3d9b72d035ada52b9be992d6e1f9ceb5e2c3f9d83c126f6"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-recheck-1-7313af95b3e04ded6b04-c864d4696b475a02e915.json",
+      "bytes": 54838,
+      "sha256": "b9f930273c1b4732141b65168638640612115c9bb4444ae6d89fb7216e94db3e"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-recheck-1-7313af95b3e04ded6b04-ed236c5030b438b9a85a.json",
+      "bytes": 30063,
+      "sha256": "201e7b53b258b630a187c19233efcb4ef739ed1312f5cb0c0415434874f8da96"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-recheck-1-7313af95b3e04ded6b04-f0d460bbaabf72094cc5.json",
+      "bytes": 21715,
+      "sha256": "41c895adb286fe524421a30f6d7f32f722d084fbe7853935ca7c318bbe05ca49"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/browser-p1-recheck-1-7313af95b3e04ded6b04-fa4bf70a24e648d01223.json",
+      "bytes": 10575,
+      "sha256": "a40e84e0a103e0f623f99cff45a11ff14d66777b13fec2cbf528f046667d9319"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/cleanup-audit.json",
+      "bytes": 344,
+      "sha256": "9831bad19295af76d3145f79d0a53599d872821f34511c10f93cdd715291976c"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-02faebc0e5b289afab79.jsonl",
+      "bytes": 61080,
+      "sha256": "a0ad878978e051c69027757ccbda8b71ddaf5c587da8152a0269e07c54d1dea9"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-11f072b2b58b09149973.jsonl",
+      "bytes": 61560,
+      "sha256": "03cc79294943e0035e81fec2c983bb2caa27573b47f70c467d80b8aeb433cf43"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-12b0108cf936b2c70597.jsonl",
+      "bytes": 58970,
+      "sha256": "5475bd88a5d2b5b434da50c92da94bc0001c1687e6f1e7c399a52e879a6b35dc"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-1da0127fcb8ca91019d6.jsonl",
+      "bytes": 60984,
+      "sha256": "30e15b0175431d20a4ed4011203c8149989c6cd41438e64755e4545ae42d777f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-372fa8e758d95124db60.jsonl",
+      "bytes": 35946,
+      "sha256": "6a253f4bfff545e4bdc1e63bf77ca9c6aa2918135543103c3162bf4e394eb908"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-480f15d73228ba9c16a1.jsonl",
+      "bytes": 35946,
+      "sha256": "4b362f2edc03284222062c4c70bc8258fac13a886b1b072e373652193642f800"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-4e35f9b1cb12d842edfc.jsonl",
+      "bytes": 35946,
+      "sha256": "c2962c71441f75798a6fd46e8b4ae84735a133897cab1cfd9543942a50eb804c"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-5d165efb92a61f885751.jsonl",
+      "bytes": 61170,
+      "sha256": "bc36e3aae0c3a1379cf3370371a6305e0c25c53037a3215fd92dca7db262ffe6"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-64ed04af4f96961037f9.jsonl",
+      "bytes": 60927,
+      "sha256": "4a46876c94557fc6617d6e27d6df0cd2e0428895da6735561d1218c72bc35d2a"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-66398e4e2dbbfcfc713f.jsonl",
+      "bytes": 51941,
+      "sha256": "76b35a88672e83da11e5dd05feab661346aecb98cc204ef98bac5f6d4dfaf7bf"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-70e2eb31b0f3dc4d4a83.jsonl",
+      "bytes": 55101,
+      "sha256": "ac7edb335858f5687b3400cfefb676d7d1892ed195058533a6c71c11fed12072"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-7d9c45aa91c8bc1fd834.jsonl",
+      "bytes": 48945,
+      "sha256": "0b479df9ecec801f1715bd179dd5546bda9ba1fc12b8bc68507274e4b5c1a0ac"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-8046cd399f1a5a88f6f1.jsonl",
+      "bytes": 59588,
+      "sha256": "692c686089ea594b67909fde27766ca43e52d4f6483e1f00c97dcb16658c3312"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-83911898ed675c84d4a7.jsonl",
+      "bytes": 35946,
+      "sha256": "49281bd47ce58df42dff15abe7768375c107443e4f2b275bd52f233b35715cba"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-849789c1ba6f154b28cb.jsonl",
+      "bytes": 52875,
+      "sha256": "49d5e9d1c4a192278ee45ec6a882e16f8ec89a7c1f51f032df51e24be975aefd"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-88bcc6c0549d9695c457.jsonl",
+      "bytes": 59097,
+      "sha256": "a83bcaf8c537e99a814769aa7fac47980593351872fce0e060f79c018a6695ce"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-9e1b2357c0cb0d601cd1.jsonl",
+      "bytes": 153738,
+      "sha256": "200845fce4fe7e2e15b777dd4b757768b22f9c38e5bf0c767a899e4dba0cd1e8"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-a84917c8b68f231b85dc.jsonl",
+      "bytes": 60812,
+      "sha256": "c5c3a32a85ce84e46ece4138a82f8d023c160202947376ccefa113e25144af31"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-a8f748b3a1189704a76a.jsonl",
+      "bytes": 59774,
+      "sha256": "cca2fd7c650016b8fb37b398d68ae49c706e14f83572ee6d29a0dbfbe72c400f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-c1a2bea01447546ef463.jsonl",
+      "bytes": 153596,
+      "sha256": "8345b3b20b73d8e05037670108cf9b6b80d354179658f8a3ebf53ecd81362015"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-c6def10f9992c6d99483.jsonl",
+      "bytes": 36342,
+      "sha256": "e4d2ed7ccdb515d78a2e62e3eeee8ab7319a93d7c66009f78796c417dcad65d4"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-c864d4696b475a02e915.jsonl",
+      "bytes": 41380,
+      "sha256": "6534f45591037cb2d80fccb5745a60e52176e1cba177e8e3d506911e3363eede"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-d22416dd780aa0411be9.jsonl",
+      "bytes": 153693,
+      "sha256": "a766458c2b281d13e631d312ecc4ae9dffbbf8360169d1598abb3f72eeeb4c2e"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-d42134033e7d7192c8a8.jsonl",
+      "bytes": 60232,
+      "sha256": "ff166e398d7f8e868c75b5d26d2fd7606262c06ab47cf463e5bda3692fb3a2b2"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-d4c73ddf3fcc53ee058b.jsonl",
+      "bytes": 60112,
+      "sha256": "bd9797846e519e4c6b256bc44351f4b7cc52c8d9b4680e340c7a1d0db45c0ae8"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-ed236c5030b438b9a85a.jsonl",
+      "bytes": 38947,
+      "sha256": "e8784381b3f54c198d196ae43d4f5005c355b247d91bd9bb98787165acab4e64"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-f0d460bbaabf72094cc5.jsonl",
+      "bytes": 47779,
+      "sha256": "75b895a501c2347b182f29a0062c8fc0e9b0cde6ac03ebf3685edc6eac2c7d6e"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-f619f855c386f69b71d9.jsonl",
+      "bytes": 60782,
+      "sha256": "ff152b5d24492951b71e3560d6ffd8442f5b1d0098aa956131dd1e181a052c8d"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-f8e169838f788dd47872.jsonl",
+      "bytes": 60560,
+      "sha256": "89214a37fb593ebd7a1e728efd4688be95ac5cd1bf55a7a328963590fcf2b9e6"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-f9fe969e81a6c2168c2b.jsonl",
+      "bytes": 153646,
+      "sha256": "762059c541dbe2a039a13a664599b4e46b4e774c2780e3ae7fdb2701ae438853"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-original-7313af95b3e04ded6b04-fa4bf70a24e648d01223.jsonl",
+      "bytes": 35946,
+      "sha256": "9c560a0c7271e767c19b0c91c6dca6e90b520063d313acbf3add2301628ada5e"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-recheck-1-7313af95b3e04ded6b04-c864d4696b475a02e915.jsonl",
+      "bytes": 55300,
+      "sha256": "7f89724df1a475b81728ed8ad83c41d071a23bd6dc5b8a43a83bc6668bb76c79"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-recheck-1-7313af95b3e04ded6b04-ed236c5030b438b9a85a.jsonl",
+      "bytes": 52129,
+      "sha256": "a8b3435bc48aced2dbe66d714aa0ada8d3de69f3c39c47eed737e984f814f81b"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-recheck-1-7313af95b3e04ded6b04-f0d460bbaabf72094cc5.jsonl",
+      "bytes": 59882,
+      "sha256": "7574d287d78183407509626e38c978f3d18d4f63952933c856b1595b20751db0"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/database-p1-recheck-1-7313af95b3e04ded6b04-fa4bf70a24e648d01223.jsonl",
+      "bytes": 47905,
+      "sha256": "c78dc029045184a8aa920c2c912b62ca869a5de139f6f19800f4eab99e2148a5"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/identity-observed.json",
+      "bytes": 586,
+      "sha256": "eab128a30fb1f3d70ac19a4a0bdd528d361f029b7962d16d77c1190f0a406e2b"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/logs/MC-p1-original.log",
+      "bytes": 10407,
+      "sha256": "c79492fca624b0d8a56c52d1b6e28f40a8f36f7b85326eaead5fe80c9ddfdc1f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/logs/MC-P1-p1-original.log",
+      "bytes": 10407,
+      "sha256": "c79492fca624b0d8a56c52d1b6e28f40a8f36f7b85326eaead5fe80c9ddfdc1f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/logs/MC-p1-recheck-1.log",
+      "bytes": 651,
+      "sha256": "4cbfcedf3168e60b3f83310fa2cf86a83dcd72e754ee6bf7ca8514fc81582a2f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/logs/MySQL-readiness.log",
+      "bytes": 77,
+      "sha256": "bc3db46d117c927f9985f6f9ea64758f94dc816c6d8c690553f59b5bd3ca7bd5"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/logs/React-final.log",
+      "bytes": 1035,
+      "sha256": "e1f712e1e7aa3ea9ea15b4d22e1f081ec373a20e07487b789a07e9f21a4d343f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/logs/Spring-Boot-final.log",
+      "bytes": 348,
+      "sha256": "c6a1edb613c85ecfa9f23b8e74cdfd907cd5531658a86208eecd52886b60676a"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/mc-p1-commands.jsonl",
+      "bytes": 69,
+      "sha256": "d1ceed4d8feaebd08977cd74080a69c7f8c4d641ec7fbcf29ed3e4b22437a443"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/mc-p1-session.json",
+      "bytes": 1022,
+      "sha256": "3810553d55a764da354634a43ced6430ddc4ae7afc242fe4f91f17f4431a1a12"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/original-preservation.json",
+      "bytes": 1937,
+      "sha256": "40c997dc275e041d21de13ae3c905c3a1a5ccc49b22ca2c2ea51a552d38cde21"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-01.json",
+      "bytes": 7420,
+      "sha256": "c9e38c44f5ad05feff4b43993062a8ff0ba0b4d3b83792179e1aa12b74d92964"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-01.jsonl",
+      "bytes": 4400,
+      "sha256": "c516833ab355f2709a7e675395126e9e33d76e57c0270acf4226171356decbdb"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-02.json",
+      "bytes": 27083,
+      "sha256": "287c3e71a207ff25c31c67e27e9aa1ec811d5580d9da06d00e9958edff6f331f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-02.jsonl",
+      "bytes": 17623,
+      "sha256": "220b759c941228971656c23ab5393822b74481f1f7cca8ac32abb85fbe11cb55"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-03.json",
+      "bytes": 19430,
+      "sha256": "20f6b3d65f2a6344a4b5e6af746cca4050dcc94cd8f562de260b8e96c071df38"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-03.jsonl",
+      "bytes": 12298,
+      "sha256": "964297d83c51fc1ddfeb8d2611a33c2b1a9051d2a7f5d28d26c9bafce2d9b496"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-04.json",
+      "bytes": 24259,
+      "sha256": "78d8637ffb79200cf783cba981474d2d6f2fb2df32efe91712c3ab0223d4a08e"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-04.jsonl",
+      "bytes": 15315,
+      "sha256": "a5d9f91c887cb88af01d4b5613e17383a8cd28faed9e5655e6512a9e928be293"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-05.json",
+      "bytes": 8756,
+      "sha256": "fca15776ff8f58af39c8a50aa5d3f11e14854bad0d0c2cbaf9969450193c1f15"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C05-05.jsonl",
+      "bytes": 5130,
+      "sha256": "02d370075c96d11174afa695d293f2d6fa86f903406a7ebee51c5b50f1208bc7"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-01.json",
+      "bytes": 14732,
+      "sha256": "d85ae050ce7870467287d84e4faf147f810ee0a04a142c5fa4a70edc89f95f38"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-01.jsonl",
+      "bytes": 8788,
+      "sha256": "136b2f8f60cd5f01bba02f8af714f93b8bd1c9014187b18d37d10a70beb08644"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-02.json",
+      "bytes": 16604,
+      "sha256": "ebf6e0f6a33771bbfbd7637796c45553df20e1bc49a9684d5cb79ad88473b112"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-02.jsonl",
+      "bytes": 9682,
+      "sha256": "22c0a5eb93e3b306f7a5ce85dec7be3f2804478fc446f8b95440e5e71076f659"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-03.json",
+      "bytes": 10455,
+      "sha256": "0b4402032f4cb349b21ee5b4c39dd41fa438aac4a37830f6ad6d34362a11d35c"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-03.jsonl",
+      "bytes": 6858,
+      "sha256": "51ad181d98e242e229cabe9167b3de30daf60bac40ac1d32b494a5dbba9ee80f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-04.json",
+      "bytes": 5925,
+      "sha256": "5c082120323ca94c39180cae77ccc358ec6d3e7545c0484bca57e3e9c0b26c54"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C06-04.jsonl",
+      "bytes": 3784,
+      "sha256": "af38716cb2172eca6d27f78b305279428b36f7a6558edbe8026c2b0a35daae97"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-01.json",
+      "bytes": 9325,
+      "sha256": "a852ea0f11cf98e3385d30dbc65915696d305074906796e6b38d35e4d174138a"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-01.jsonl",
+      "bytes": 5927,
+      "sha256": "508e9364bccbe51b021ac0a17515b017160873c508cbcfb871b4ffc6b469f0c6"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-02.json",
+      "bytes": 9211,
+      "sha256": "cadcbc52f23e5f271dc232ddbd7f3ca23f53bd55548a59d4b22a5860e469d8f6"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-02.jsonl",
+      "bytes": 5867,
+      "sha256": "f7ab085d3127ba78c2e044adb0b1751231794f0eaf7bf3abc046c9fbb3dda67a"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-03.json",
+      "bytes": 8833,
+      "sha256": "a758cf7f66746a1ea507c95d6e31b6cb7b8c29ae15efd8b09279bce5dc465a58"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-03.jsonl",
+      "bytes": 5568,
+      "sha256": "67f5c746715f888c1dc7efd2241bb240b48d9a08eef78a11638bf560173822d2"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-04.json",
+      "bytes": 9488,
+      "sha256": "916f98b44a48055bbd7db9a025b64399cdbf264d55b66615de10ddc0303c4a8c"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-04.jsonl",
+      "bytes": 6017,
+      "sha256": "ba12abb54b3391bea406d7f9a92c6d45b523d1ae4e764b2bfbe857d4ad2334b5"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-05.json",
+      "bytes": 9201,
+      "sha256": "d7f6df6d8e968f5defddf9cbc74451a991ed7127115904b2db0a6db0b833378b"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-05.jsonl",
+      "bytes": 5808,
+      "sha256": "fad1949bc69755b206dedeea8d3a90a4f2eae5f228d7612a75b4f9d101411a58"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-06.json",
+      "bytes": 8047,
+      "sha256": "40157572b7b28d54005d3134c36b29cf0a09106cff83c037b659c2e08acea2e2"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-06.jsonl",
+      "bytes": 5023,
+      "sha256": "c8e33778b516ac918b0c4f955a7436a715e5cdf47688afc1ef4c263ee9821026"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-07.json",
+      "bytes": 7669,
+      "sha256": "351c630214deb28c1f88fb58ef59b50f42319505b94685a71a2dc81fce35c7f9"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-07.jsonl",
+      "bytes": 4804,
+      "sha256": "7e4db7b15fd831910ebac5c12ad736a292b52d898588eff61e6e2324877ceb0b"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-08.json",
+      "bytes": 10804,
+      "sha256": "73a136475f3559e5ab31d02485295399ef37b64380edda5b2e13e0bbe372877f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-08.jsonl",
+      "bytes": 6769,
+      "sha256": "dd946169425ea459b9edca33dea470ce7a23c7735d0d34650f19ea40046c3ce6"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-09.json",
+      "bytes": 9418,
+      "sha256": "898f17c6007bc0558687d2ce7aad9a0336e00d686485c185726e55e404d9dea0"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-09.jsonl",
+      "bytes": 5854,
+      "sha256": "25153700aed1eeb3d42f3950f1395dbf058d799df8ada5ae21863f5b9a7b8d59"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-10.json",
+      "bytes": 8654,
+      "sha256": "db2191c0fc13e0c1b0f474a86669d99de702f404ea7a16b208f20a828d070ce9"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-C07-10.jsonl",
+      "bytes": 5394,
+      "sha256": "cd88f7b2d1925a1ff5f3eac84a7eb06fbec2ef6f42fdf92223f7490ed5ffb0f2"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-01.json",
+      "bytes": 12629,
+      "sha256": "32f422f76aceded609b61c7d85f3c6b156cad6e4bbe1cd468ae6f23135f9c165"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-01.jsonl",
+      "bytes": 7180,
+      "sha256": "ca6b520ec63c2a262f76852acc6728a3d8a29368735d36bfc470d47cc264c97a"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-02.json",
+      "bytes": 12391,
+      "sha256": "39a2c92753eed19a35ced100cfdde675426e17ae93e2b30c955c8c3f596c4060"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-02.jsonl",
+      "bytes": 7030,
+      "sha256": "070366e43084db89a837338b4129c7e269e4e7e2a5f08121b1b874df10c7c71d"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-03.json",
+      "bytes": 12309,
+      "sha256": "10ba348f966b308dd4fc0fcb8103f7bcf9e37b00cdb0166714f5b8fcb17972e6"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-03.jsonl",
+      "bytes": 6990,
+      "sha256": "ab4c8e8272e3ce4ae4559119f7401bf35341df59ae06cef4a9dd4fd868cd6da8"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-04.json",
+      "bytes": 12576,
+      "sha256": "d9d3a247bcf96e50d99baac6ca093cd4427aa3a0e47569c82323640b2555f02f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-04.jsonl",
+      "bytes": 7330,
+      "sha256": "6dfbffca8c0ee3ac2ff67692a1ef51f0b5aacbf6bded3caa48574bcf544e4ef0"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-05.json",
+      "bytes": 15271,
+      "sha256": "f6f82abbc8e97562057e26c0991d06ee61b2bba87e9fa427b378b3b85587801e"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R07-05.jsonl",
+      "bytes": 8927,
+      "sha256": "e5d7f334227903c826a447b48b52a57676f6c5232397d556e17c7cecabd67530"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-01.json",
+      "bytes": 11783,
+      "sha256": "31b34283673432a1785fd964d4dc66d74bd8567dbd664ff0307faecab5c15963"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-01.jsonl",
+      "bytes": 6815,
+      "sha256": "a3e20483b3a63740045064a5b772f229e129e3420ac8e2799edad12230cf71fb"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-02.json",
+      "bytes": 11795,
+      "sha256": "051a477e31b1b6d8077ea80e8dbfd9a1c0c751cce9115a014768ab9d32f09c74"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-02.jsonl",
+      "bytes": 6827,
+      "sha256": "1e851e11a396a57b821bb8537f107429e5cb07d6a616555e7e3e39b97ce071ae"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-03.json",
+      "bytes": 11808,
+      "sha256": "766195f3e6f556954e225cdc60fdb6d713c57c4eaf2109d374b0d2a8dfd5c9e7"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-03.jsonl",
+      "bytes": 6838,
+      "sha256": "48bd570109e438fe84f524aebb6b17c834b4404d9dac701f43c000bbc7732ffc"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-04.json",
+      "bytes": 13047,
+      "sha256": "de5fb0d731eb801d04732f2941971b949f85b519acc236ae66d4494146cb01ad"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-04.jsonl",
+      "bytes": 7586,
+      "sha256": "8c41c41859564c566f019a3882a60c5862992846e4f5c8cefb45e5b7f1db3ce3"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-05.json",
+      "bytes": 12975,
+      "sha256": "e4d67d8088b3e743a81e28fde3c525c2728e9c1dda7cd9a4e82bcbe0c1325378"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-05.jsonl",
+      "bytes": 7563,
+      "sha256": "e692b43634ac4eea5c2ef54262d54e2126036af504f984ed84038de6eee4df9a"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-06.json",
+      "bytes": 14380,
+      "sha256": "238e6ad90afb0b6a1d3ab87fc10d236fa8098fa8664f6942e04ed361471f8188"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-06.jsonl",
+      "bytes": 8436,
+      "sha256": "075e8be78f6c4c067149e56c422563cd017fb9b81d58a8d349c4ebe29bb5a11e"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-07.json",
+      "bytes": 14221,
+      "sha256": "9c2081a0d330be80dc761b76cf0f758b7058d30f8b5eb2d078d4d83a687ae9da"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-original-R08-07.jsonl",
+      "bytes": 8375,
+      "sha256": "da4b374c10240773abe78f40c2d70ea6aa777edbd2d1357a4304090df0b66652"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-recheck-1-C05-01.json",
+      "bytes": 19103,
+      "sha256": "a599467fe587b7d6ef322276ddf9a11940aa83753571c7bd85f48e8b841d2358"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-recheck-1-C05-01.jsonl",
+      "bytes": 12113,
+      "sha256": "d9c8a1b2f4f95dfefa99722453cccfd03b0b4deef1eb7ead61ad58d38e234f99"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-recheck-1-C05-05.json",
+      "bytes": 35950,
+      "sha256": "90a7cfcb9172816457fad06904e66ef51b07a9a38f470166e2b6c439371a13e6"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-recheck-1-C05-05.jsonl",
+      "bytes": 22844,
+      "sha256": "28f33726a310038414fd3fca2bef90a7e28d58ea73c2380cc24158ec3aa8e7bc"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-recheck-1-C06-03.json",
+      "bytes": 14790,
+      "sha256": "2bcb6a76ef00777a194b72fa793c0db9ba9610f46ccba406ccfb6a465bc90ce3"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-recheck-1-C06-03.jsonl",
+      "bytes": 9145,
+      "sha256": "7504735cbac6f02929f5f1010a836b531f5fe5878fdf52cd5f65ea4c41b8516f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-recheck-1-C06-04.json",
+      "bytes": 6379,
+      "sha256": "9657ef08595613ae9d80527204a29f68d27c3abb5e78b6d8a56f39186311c504"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/p1-p1-recheck-1-C06-04.jsonl",
+      "bytes": 3949,
+      "sha256": "77fff8859003be9928bd1c185b61c270a5290bee07d41dee10e024216ccd83a5"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/preflight.json",
+      "bytes": 395,
+      "sha256": "55ba3ebc09ffbaa89576d043e35c3a4b6d97cc696c2b80cbffff70484a2681f9"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/protection-audit.json",
+      "bytes": 103,
+      "sha256": "9ba52c9d741df0e909b429d80f97a495c62c44985bf1e9670bc4cc3964357d25"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/resource-identity.json",
+      "bytes": 420,
+      "sha256": "180b86ff8e737df9ff6810b2935eaf01d313ae0acd0e85e91d0ba621f71c13dc"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/results-p1-original.json",
+      "bytes": 18796,
+      "sha256": "7cc1611b0f414b5fdca6b264df54ce47544e1784970d45f37112623954b3b38b"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/results-p1-recheck-1.json",
+      "bytes": 2234,
+      "sha256": "4e9dd260176769988b38a633a4739846d44185398c99b8fc5a9c0e098d3bef29"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/run.json",
+      "bytes": 2705,
+      "sha256": "522c81fff25fd3751c8b3010fb27d8a4769352c950bed73963188278849454d5"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/selection-p1-original.txt",
+      "bytes": 3833,
+      "sha256": "5396d28fb529ac3644ef9bf6652ccd0891f06671c30096ded13c3fa3fd2a025c"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/selection-p1-recheck-1.txt",
+      "bytes": 548,
+      "sha256": "7d85f9f2f543d31fb818f60ed66180963e6a216f60343868b720ac5a9f44fb8c"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/server-http.jsonl",
+      "bytes": 33934,
+      "sha256": "dea1f04eff90da5ee65b052d97eccfffa1105d6a6bd68e27cbc958db81805ca3"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/source-after.json",
+      "bytes": 56982,
+      "sha256": "644405ed3f28de9532835beb5f6e4d6dc72e0c2dfe4be18105cf25125e43c14c"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/source-before.json",
+      "bytes": 56867,
+      "sha256": "2d8ae01850456266f15b2cb1211a9f80d74f3586ba03fde312c138b901ba6468"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/source-original/backend/src/e2e/java/e2e/McP1Fixtures.java",
+      "bytes": 5987,
+      "sha256": "cc345a3c8160d1d7096db219db977ddc0727746db63ce07973a9dc116c680a85"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/source-original/frontend/e2e/lib/mc-p1-flows.cjs",
+      "bytes": 9377,
+      "sha256": "fcfa1ee125cd7b7c5c486ced3400e89ec9d99d591594546ba3a324551d3191e8"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/source-original/frontend/e2e/tests/mc-p1.spec.cjs",
+      "bytes": 25933,
+      "sha256": "0302c8b1679051109d31498d77af18c828bf5df5d7d7a719442a2ce7f72c596a"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/source-original/frontend/src/calendar/CalendarDataContext.js",
+      "bytes": 6217,
+      "sha256": "bdf76d736c8144eeac7dc0e3d55fd80487b8597ad228acc8cddd1c5aa4aa0460"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/source-original/frontend/src/calendar/CalendarDataContext.test.js",
+      "bytes": 5962,
+      "sha256": "98182375b4ae61273f6ee796a49623630d77376832d3589e3251d3736892a7bf"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/source-p1-original.json",
+      "bytes": 10535,
+      "sha256": "832466f47db1363327969c593e0fddf4979374e5d115c855969405d862ab766f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/source-p1-recheck-1.json",
+      "bytes": 10535,
+      "sha256": "6cb5d42a36f5d35dc52ac4eec9cf9a03e3313892498929026c3c67d09ec3db8f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/storage-observed.json",
+      "bytes": 107,
+      "sha256": "4b711ec5db6c8509163a0c692baf121edd5543b4ac1b78e9cfa32fc58a994253"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/test-attempts.jsonl",
+      "bytes": 14693,
+      "sha256": "112f65706c529e9a4848393e0708a647418b25429840e0a57b8f6d69ead8e21f"
+    },
+    {
+      "file": "backend/build/full-service-e2e/5cefde0224ad/test-selection.txt",
+      "bytes": 3834,
+      "sha256": "58998be864398c3f741df401decf07e4c865a16a0a272a24ae8a19b83b166707"
+    },
+    {
+      "file": "backend/build/mc-p1-preparation/20261026/build.log",
+      "bytes": 2070,
+      "sha256": "fe4cdfc5880eb5a09cc54b759d83b0a0a0a4dee30b6a4df1a54be97dd048e75b"
+    },
+    {
+      "file": "backend/build/mc-p1-preparation/20261026/compile.log",
+      "bytes": 5230,
+      "sha256": "ba3ff4c945ff6cb072251d609662b56c04672a265a944dd37a134f54ed7028e8"
+    },
+    {
+      "file": "backend/build/mc-p1-preparation/20261026/defect-regression-before.log",
+      "bytes": 24004,
+      "sha256": "4ba377afd76b724449e084fcc44a5edff7080522752fdc0d85b6732cb0d63804"
+    },
+    {
+      "file": "backend/build/mc-p1-preparation/20261026/managed-run.log",
+      "bytes": 23466,
+      "sha256": "d68a4ac8cb68497130de9e16a326259f63e7bcd7e56519e3413bd23294afb7a9"
+    },
+    {
+      "file": "backend/build/mc-p1-preparation/20261026/p0-protection.json",
+      "bytes": 29328,
+      "sha256": "088f0838262bcc6b151842d7c028e4f30c39466b3a660dd0247e414fefd0e46a"
+    },
+    {
+      "file": "backend/build/mc-p1-preparation/20261026/pre-execution-audit.json",
+      "bytes": 213,
+      "sha256": "e9c97835dfd59aebad89953d288944560cae36cfac297d2367997697a5aa35e9"
+    },
+    {
+      "file": "backend/build/mc-p1-preparation/20261026/regression-after.log",
+      "bytes": 1926,
+      "sha256": "2fa864e0ba76c296fb6751d6b4f3b2aa0732fc564e964c4e908b778a51b68541"
+    },
+    {
+      "file": "backend/build/mc-p1-preparation/20261026/safety.log",
+      "bytes": 7590,
+      "sha256": "ff58fcfc38ec8eb303ca481690b655f49bd4517e0e8b4896a9f338855783ee4f"
+    },
+    {
+      "file": "backend/build/mc-p1-preparation/20261026/selection.txt",
+      "bytes": 7488,
+      "sha256": "7fa1fe9fff065c7a757d6bc99659b9a9b8a62797c9ae24617e9efed0ca5b4117"
+    }
+  ]
+}

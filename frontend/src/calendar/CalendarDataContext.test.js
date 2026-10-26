@@ -94,3 +94,38 @@ test("new disabled category retains the requested visibility after creation", as
   await waitFor(() => expect(api.saveCalendarCategories).toHaveBeenCalled());
   expect(api.saveCalendarCategories.mock.calls[0][0]).toEqual(expect.arrayContaining([expect.objectContaining({ serverId: 4, enabled: false })]));
 });
+
+test("retry keeps committed deletions and created IDs when the next deletion and recovery GET both fail", async () => {
+  let reads = 0, failedSecond = false;
+  const deleted = new Set();
+  const created = { id: "custom-new", serverId: 4, label: "new", color: "#006a65", enabled: true };
+  api.getCalendarCategories.mockImplementation(async () => {
+    reads++;
+    if (reads === 2) throw new Error("refresh failed");
+    return initial.filter(c => !deleted.has(c.serverId));
+  });
+  api.createCalendarCategory.mockResolvedValue(created);
+  api.deleteCalendarCategory.mockImplementation(async id => {
+    if (id === 3 && !failedSecond) { failedSecond = true; throw new Error("second deletion failed"); }
+    if (deleted.has(id)) throw new Error("already deleted");
+    deleted.add(id);
+  });
+  api.saveCalendarCategories.mockImplementation(async next => next);
+  await setup();
+  fireEvent.click(screen.getByRole("button", { name: "카테고리 추가" }));
+  fireEvent.change(screen.getByDisplayValue(""), { target: { value: "new" } });
+  fireEvent.click(screen.getByRole("checkbox", { name: "new 표시" }));
+  fireEvent.click(screen.getByRole("button", { name: "visible 삭제" }));
+  fireEvent.click(screen.getByRole("button", { name: "hidden 삭제" }));
+  fireEvent.click(screen.getByRole("button", { name: "설정 저장" }));
+  await screen.findByText("second deletion failed");
+  expect(reads).toBe(2); expect([...deleted]).toEqual([2]);
+  expect(api.createCalendarCategory).toHaveBeenCalledTimes(1);
+  expect(screen.getByDisplayValue("new")).toBeInTheDocument();
+  expect(screen.getByRole("checkbox", { name: "new 표시" })).not.toBeChecked();
+  fireEvent.click(screen.getByRole("button", { name: "설정 저장" }));
+  await waitFor(() => expect(api.saveCalendarCategories).toHaveBeenCalledTimes(1));
+  expect(api.deleteCalendarCategory.mock.calls).toEqual([[2], [3], [3]]);
+  expect(api.createCalendarCategory).toHaveBeenCalledTimes(1);
+  expect(api.saveCalendarCategories.mock.calls[0][0]).toEqual([initial[0], { ...created, enabled: false }]);
+});

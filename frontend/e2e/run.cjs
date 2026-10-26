@@ -81,10 +81,12 @@ function parseRunArguments(args) {
 
 async function main(rawArgs = process.argv.slice(2)) {
   const { retainResources, playwrightArgs: args } = parseRunArguments(rawArgs);
+  const mcP1 = args[0] === '--mc-p1';
+  if (mcP1 && (args.length !== 1 || retainResources)) throw new Error('MC P1 accepts only its fixed disposable catalog');
   const mcRechecking = args[0] === '--mc-p0-recheck';
   const mcP0 = args[0] === '--mc-p0' || mcRechecking;
   if (mcP0 && (args.length !== (mcRechecking ? 2 : 1) || retainResources)) throw new Error('MC P0 accepts only its approved disposable session');
-  if (args.some(arg => arg.startsWith('--mc-') && !['--mc-p0','--mc-p0-recheck'].includes(arg))) throw new Error('MC P1 is not approved');
+  if (args.some(arg => arg.startsWith('--mc-') && !['--mc-p0','--mc-p0-recheck','--mc-p1'].includes(arg))) throw new Error('Unknown MC mode');
   const mcRecheck = mcRechecking ? require('./mc-session.cjs').recheckSource(path.join(backend, 'build/full-service-e2e'), args[1]) : null;
   if (retainResources && args.some(arg => /^--aus-p[01](?:-recheck)?$/.test(arg))) {
     throw new Error('AUS P0/P1 requires disposable resources; retention is not supported');
@@ -128,7 +130,7 @@ async function main(rawArgs = process.argv.slice(2)) {
   }
   const testArgs = ausP1 ? ['aus-p1.spec.cjs', '--project=aus-p1', '--no-deps', ...(p1Recheck ? ['--grep','(' + p1Recheck.ids.join('|') + '):'] : [])]
     : recheck ? ['aus-p0.spec.cjs', '--project=aus-p0', '--no-deps', '--grep', '(' + recheck.ids.join('|') + ') P0:']
-    : ausP0 ? ['login.spec.cjs', 'aus-p0.spec.cjs'] : mcP0 ? require('./mc-session.cjs').selection(mcRecheck?.ids ?? require('./mc-session.cjs').CATALOG) : args;
+    : ausP0 ? ['login.spec.cjs', 'aus-p0.spec.cjs'] : mcP1 ? require('./mc-p1-session.cjs').selection() : mcP0 ? require('./mc-session.cjs').selection(mcRecheck?.ids ?? require('./mc-session.cjs').CATALOG) : args;
   const id = randomBytes(6).toString('hex');
   const name = `kkiri-e2e-${id}`;
   const env = {
@@ -142,6 +144,7 @@ async function main(rawArgs = process.argv.slice(2)) {
     ...(ausP1 ? { E2E_AUS_P1: '1', E2E_SUSPENDED_EMAIL: `suspended${id}@hknu.ac.kr`, E2E_WITHDRAWN_EMAIL: `withdrawn${id}@hknu.ac.kr` } : {}),
     ...(retainResources ? { E2E_RETAIN_RESOURCES: '1' } : {}),
     ...(mcP0 ? { E2E_MC_P0: '1' } : {}),
+    ...(mcP1 ? { E2E_MC_P1: '1' } : {}),
   };
   Object.assign(env, { MYSQL_DATABASE: env.E2E_DATABASE, MYSQL_USER: env.E2E_DB_USER,
     MYSQL_PASSWORD: env.E2E_DB_PASSWORD, MYSQL_ROOT_PASSWORD: randomBytes(24).toString('hex') });
@@ -160,7 +163,8 @@ async function main(rawArgs = process.argv.slice(2)) {
     creationAttempted: false, containerCreated: false, containerStarted: false,
     schemaPrepared: false, seedCompleted: false };
   if (mcP0) run.scope = 'MATCHING_CALENDAR_P0_ONLY';
-  const stage = value => { if (retainResources) run.phase = value; };
+  if (mcP1) run.scope = 'MATCHING_CALENDAR_P1_ONLY';
+  const stage = value => { if (retainResources || mcP1) run.phase = value; };
   console.log(`[e2e] Evidence: ${path.relative(path.dirname(frontend), env.E2E_EVIDENCE_DIR)}`);
   let ownsContainer = false;
   let stopping = false;
@@ -248,7 +252,7 @@ async function main(rawArgs = process.argv.slice(2)) {
       const container = await docker(['ps', '-aq', '--filter', `name=^/${name}$`, '--filter', `label=kkiri.e2e.owner=${id}`], 'Find owned E2E container');
       if (container) {
         const owner = await docker(['inspect', '--format', '{{index .Config.Labels "kkiri.e2e.owner"}}', container], 'Verify container ownership');
-        if (owner !== id || (mcP0 && container !== run.containerId.slice(0, container.length))) throw new Error('Refusing to remove a container with a different owner or ID.');
+        if (owner !== id || ((mcP0 || mcP1) && container !== run.containerId.slice(0, container.length))) throw new Error('Refusing to remove a container with a different owner or ID.');
         await docker(['rm', '--force', '--volumes', container], 'Remove owned E2E MySQL');
         run.containerRemoved = true;
         console.log('[e2e] Owned MySQL container and disposable data removed.');
@@ -279,13 +283,14 @@ async function main(rawArgs = process.argv.slice(2)) {
     if (engine !== 'linux') throw new Error('E2E requires Docker Linux containers. Start Docker Desktop.');
     const browserPath = require('playwright-core').chromium.executablePath();
     if (!existsSync(browserPath)) throw new Error('Existing Chromium is missing; download is not authorized.');
-    if (ausP0 || ausP1 || mcP0) {
+    if (ausP0 || ausP1 || mcP0 || mcP1) {
       const listing = await complete(start(process.execPath,
         [require.resolve('@playwright/test/cli'), 'test', ...testArgs, '--list', '--reporter=list'], frontend,
-        { E2E_AUS_P0: ausP0 ? '1' : '0', E2E_AUS_P1: ausP1 ? '1' : '0', E2E_MC_P0: mcP0 ? '1' : '0' }), 'Enumerate approved tests before resource creation');
+        { E2E_AUS_P0: ausP0 ? '1' : '0', E2E_AUS_P1: ausP1 ? '1' : '0', E2E_MC_P0: mcP0 ? '1' : '0', E2E_MC_P1: mcP1 ? '1' : '0' }), 'Enumerate approved tests before resource creation');
       const count = Number(listing.match(/Total: (\d+) tests? in/)?.[1]);
       if (mcP0) require('./mc-session.cjs').verifyListing(listing, mcRecheck?.ids);
-      if (count !== (mcP0 ? (mcRecheck ? mcRecheck.ids.length : 11) : ausP1 ? (p1Recheck ? p1Recheck.ids.length : 23) : recheck ? recheck.ids.length : 9)) throw new Error('Approved test count mismatch.');
+      if (mcP1) require('./mc-p1-session.cjs').verifyListing(listing);
+      if (count !== (mcP1 ? 31 : mcP0 ? (mcRecheck ? mcRecheck.ids.length : 11) : ausP1 ? (p1Recheck ? p1Recheck.ids.length : 23) : recheck ? recheck.ids.length : 9)) throw new Error('Approved test count mismatch.');
       run.selectedTestCount = count;
       writeFileSync(path.join(env.E2E_EVIDENCE_DIR, 'test-selection.txt'), listing + '\n');
     }
@@ -312,6 +317,7 @@ async function main(rawArgs = process.argv.slice(2)) {
       writeFileSync(ledgerFile, JSON.stringify(ledger, null, 2));
     }
     stage('container-create');
+    if (mcP1) require('./mc-p1-session.cjs').reserve(path.join(backend,'build/mc-p1-preparation'),{id,name,attemptedAt:new Date().toISOString()});
     if (mcP0) {
       const ledgerDirectory = mcRecheck ? path.join(backend, 'build/mc-p0-rechecks', mcRecheck.source) : path.join(backend, 'build/mc-p0-preparation');
       if (mcRecheck && existsSync(path.join(ledgerDirectory, 'additional-resource-approval.json'))) throw new Error('Only one approved recheck container is allowed');
@@ -329,7 +335,7 @@ async function main(rawArgs = process.argv.slice(2)) {
     stage('container-start');
     await docker(['start', name], 'Start E2E MySQL');
     if (retainResources) run.retention.containerStarted = true;
-    if (mcP0) {
+    if (mcP0 || mcP1) {
       const storage = JSON.parse(await docker(['inspect', '--format', '{"Mounts":{{json .Mounts}},"HostConfig":{"Tmpfs":{{json .HostConfig.Tmpfs}}}}', name], 'Verify new MC storage'));
       writeFileSync(path.join(env.E2E_EVIDENCE_DIR, 'storage-observed.json'), JSON.stringify(storage, null, 2));
       run.storage = require('./mc-session.cjs').verifyStorage(storage);
@@ -346,7 +352,7 @@ async function main(rawArgs = process.argv.slice(2)) {
       await pause(1000);
     }
     if (retainResources) run.retention.serverUuid = env.E2E_DB_UUID;
-    if (mcRecheck) {
+    if (mcRecheck || mcP1) {
       run.databaseIdentity = { database: env.E2E_DATABASE, account: env.E2E_DB_USER, serverUuid: env.E2E_DB_UUID };
       writeFileSync(path.join(env.E2E_EVIDENCE_DIR, 'resource-identity.json'), JSON.stringify({ runId: id,
         container: name, containerId: run.containerId, ownerLabel: id, ...run.databaseIdentity, storage: run.storage }, null, 2));
@@ -447,7 +453,11 @@ async function main(rawArgs = process.argv.slice(2)) {
     const crash = () => { if (!stopping && !restarting) { console.error('[e2e] A managed server stopped unexpectedly.'); if (playwright) void stop(playwright); } };
     api.once('close', crash); react.once('close', crash);
     try {
-      if (mcP0) {
+      if (mcP1) {
+        await require('./mc-p1-session.cjs').session({ env:{...env,E2E_CONTROL_URL:`http://127.0.0.1:${control.address().port}`,E2E_CONTROL_KEY:controlKey}, start,complete,
+          forward:(stream,write)=>forward(stream,write),failureLog,run });
+        if (run.playwrightExitCode !== 0) throw new Error('MC P1 has failed or incomplete cases');
+      } else if (mcP0) {
         await require('./mc-session.cjs').session({ env: { ...env, E2E_CONTROL_URL: `http://127.0.0.1:${control.address().port}`, E2E_CONTROL_KEY: controlKey }, start, complete,
           forward: (stream, write) => forward(stream, write), failureLog, run, recheck: mcRecheck });
         if (mcRecheck && run.playwrightExitCode !== 0) throw new Error('MC recheck contains a failed or incomplete test');

@@ -70,7 +70,7 @@ const test = base.extend({
           if (typeof error[key] === 'string') error[key] = sanitize(error[key], secrets);
         }
       }
-      const phase = process.env.E2E_MC_P0 === '1' ? process.env.E2E_MC_PHASE : null;
+      const phase = process.env.E2E_MC_P0 === '1' || process.env.E2E_MC_P1 === '1' ? process.env.E2E_MC_PHASE : null;
       if (phase && !/^[a-z0-9-]{1,50}$/.test(phase)) throw new Error('Unsafe MC phase');
       const name = (phase ? phase + '-' : '') + testInfo.testId.replace(/[^a-z0-9-]/gi, '_');
       writeFileSync(path.join(process.env.E2E_EVIDENCE_DIR, `browser-${name}.json`), JSON.stringify({ test: testInfo.title, requests, sockets, observations }, null, 2));

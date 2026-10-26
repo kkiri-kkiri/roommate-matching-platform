@@ -85,6 +85,8 @@ export function CalendarDataProvider({ children, userId }) {
           throw new Error("삭제할 사용자 카테고리를 확인해 주세요.");
         }
         await deleteCalendarCategory(id);
+        // Preserve each committed deletion even if a later write and recovery GET both fail.
+        setCategories((current) => current.filter((item) => item.serverId !== id));
       }
       for (const category of categorySettings) {
         if (!kept.has(category.serverId) && !removed.has(category.serverId)) next.push({ ...category });
