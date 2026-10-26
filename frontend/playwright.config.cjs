@@ -1,4 +1,5 @@
 const { defineConfig, devices } = require('@playwright/test');
+if (['E2E_MC_P0','E2E_MC_P1','E2E_AUS_P0','E2E_AUS_P1'].filter(key=>process.env[key]==='1').length > 1) throw new Error('Conflicting E2E modes');
 
 module.exports = defineConfig({
   testDir: './e2e/tests',
@@ -22,7 +23,11 @@ module.exports = defineConfig({
     serviceWorkers: 'block',
     launchOptions: { executablePath: require('playwright-core').chromium.executablePath() },
   },
-  projects: process.env.E2E_AUS_P1 === '1'
+  projects: process.env.E2E_MC_P1 === '1'
+    ? [{ name: 'mc-p1', testMatch: '**/mc-p1.spec.cjs', use: { ...devices['Desktop Chrome'], timezoneId: 'Asia/Seoul' } }]
+    : process.env.E2E_MC_P0 === '1'
+    ? [{ name: 'mc-p0', testMatch: '**/mc-p0.spec.cjs', use: { ...devices['Desktop Chrome'], timezoneId: 'Asia/Seoul' } }]
+    : process.env.E2E_AUS_P1 === '1'
     ? [{ name: 'aus-p1', testMatch: '**/aus-p1.spec.cjs', use: { ...devices['Desktop Chrome'] } }]
     : process.env.E2E_AUS_P0 === '1'
     ? [

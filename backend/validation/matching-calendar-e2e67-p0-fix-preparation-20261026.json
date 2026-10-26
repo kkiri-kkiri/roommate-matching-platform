@@ -1,0 +1,140 @@
+{
+  "recordedAt": "2026-10-26T04:43:20.903Z",
+  "branch": "test/frontend-backend-maching-calendar",
+  "head": "011606cbbf37e5340aea66db48c282cfb94d6350",
+  "originalRunId": "2f55ee3d8226",
+  "originalNativeResults": {
+    "pass": 6,
+    "fail": 5,
+    "blocked": 0,
+    "notRun": 0,
+    "unchanged": true
+  },
+  "currentVerification": {
+    "jest": {
+      "status": "PASS",
+      "suites": 3,
+      "tests": 25,
+      "evidence": "backend/build/mc-p0-fix-preparation/20261026/regression-final.log",
+      "kind": "API_MOCK"
+    },
+    "frontendBuild": "PASS",
+    "contractCheck": {
+      "status": "PASS",
+      "endpoints": 73,
+      "recordDtos": 75,
+      "entities": 30
+    },
+    "playwrightList": {
+      "status": "PASS",
+      "tests": 5,
+      "ids": [
+        "C04",
+        "R02",
+        "R03",
+        "R04",
+        "C02"
+      ]
+    },
+    "browserE2e": "NOT RUN",
+    "realHttp": "NOT RUN",
+    "mysql": "NOT RUN"
+  },
+  "pending": [
+    "R04/C02 instructions after truncated request",
+    "New isolated Docker resource approval scope",
+    "Actual failed-case E2E rerun"
+  ],
+  "dockerResourcesCreated": 0,
+  "dockerCommandsExecuted": 0,
+  "productBackendChanged": false,
+  "changedFiles": [
+    "frontend/src/calendar/CalendarPage.js",
+    "frontend/src/calendar/CalendarDataContext.js",
+    "frontend/src/calendar/CalendarPage.test.js",
+    "frontend/e2e/lib/mc-flows.cjs"
+  ],
+  "protection": {
+    "previousBaselineFiles": 685,
+    "changedFiles": [
+      "frontend/e2e/lib/mc-flows.cjs",
+      "frontend/src/calendar/CalendarDataContext.js",
+      "frontend/src/calendar/CalendarPage.js",
+      "frontend/src/calendar/CalendarPage.test.js"
+    ],
+    "currentProtectedEvidenceFiles": 83,
+    "alteredEvidence": []
+  },
+  "evidence": [
+    {
+      "file": "backend/build/mc-p0-fix-preparation/20261026/contracts-check.log",
+      "bytes": 152,
+      "sha256": "750d116601fa74c2d5bb08d63552306c0811a242a873b5473a015ee5c16a7e54"
+    },
+    {
+      "file": "backend/build/mc-p0-fix-preparation/20261026/failed-case-list.log",
+      "bytes": 1262,
+      "sha256": "6630e220fafa0708d628bfcadf6399d47e9bc16a01921e9286b3b9f16a65b987"
+    },
+    {
+      "file": "backend/build/mc-p0-fix-preparation/20261026/frontend-build-final.log",
+      "bytes": 2072,
+      "sha256": "95887143dce9092a01cb3eb58377c43d130733b7cac60cf1d2b5f968d4896d6b"
+    },
+    {
+      "file": "backend/build/mc-p0-fix-preparation/20261026/frontend-build.log",
+      "bytes": 2080,
+      "sha256": "1ab83c80f726cf26a53d7c471550fd0052f0c58b302097dbfb33430126a7f960"
+    },
+    {
+      "file": "backend/build/mc-p0-fix-preparation/20261026/protected-before.json",
+      "bytes": 15709,
+      "sha256": "235e8f959f6b71b3cc11d723047b28aa4dc149dfbb9957496268745feed61526"
+    },
+    {
+      "file": "backend/build/mc-p0-fix-preparation/20261026/protection-after.json",
+      "bytes": 306,
+      "sha256": "bfb8024dadc80d61a17eb8922f8a609fb9a28ca6bb4516fc963299fd9e34cffc"
+    },
+    {
+      "file": "backend/build/mc-p0-fix-preparation/20261026/regression-after.log",
+      "bytes": 1926,
+      "sha256": "be8990c15e3f3a136ada8c40e10aeaff67f9ac16ee2a61b48ee493bdf5ea3b84"
+    },
+    {
+      "file": "backend/build/mc-p0-fix-preparation/20261026/regression-before.log",
+      "bytes": 81356,
+      "sha256": "af55fa364c5143dab2fd29a297e1ece45ff574c7cdf1c80842b09939765dd180"
+    },
+    {
+      "file": "backend/build/mc-p0-fix-preparation/20261026/regression-final.log",
+      "bytes": 1896,
+      "sha256": "b207c7a08ade08c787e31bdb8103da0282a319f8f7caadf607ab009133d880e9"
+    },
+    {
+      "file": "frontend/src/calendar/CalendarPage.js",
+      "bytes": 28923,
+      "sha256": "7238b4b87ca2936431d5bba9017c41a280b30af0da4022fab0aedcc48bd099a1"
+    },
+    {
+      "file": "frontend/src/calendar/CalendarDataContext.js",
+      "bytes": 6217,
+      "sha256": "bdf76d736c8144eeac7dc0e3d55fd80487b8597ad228acc8cddd1c5aa4aa0460"
+    },
+    {
+      "file": "frontend/src/calendar/CalendarPage.test.js",
+      "bytes": 10532,
+      "sha256": "87b2a2904026e3a2eb25bc9c24a3986a74e5a228939d8be5b110152ad23b0a39"
+    },
+    {
+      "file": "frontend/e2e/lib/mc-flows.cjs",
+      "bytes": 4253,
+      "sha256": "7bf739c7cea7f6d1189cf563e147cf87653bd9b052c7d96a9a5aabf8f29f5d6b"
+    },
+    {
+      "file": "backend/MATCHING_CALENDAR_E2E67_P0_FIX_PREPARATION_20261026.md",
+      "bytes": 4226,
+      "sha256": "2121774f1e240f52d1e71245dc62db526968b038786e21ec9b3aa7fd43688a0b"
+    }
+  ]
+}

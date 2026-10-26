@@ -1,0 +1,388 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-26",
+  "timezone": "Asia/Seoul",
+  "runId": "a0ba0c8152c6",
+  "branch": "test/frontend-backend-maching-calendar",
+  "gitSha": "011606cbbf37e5340aea66db48c282cfb94d6350",
+  "scope": "MATCHING_CALENDAR_P0_ONLY",
+  "result": "BLOCKED",
+  "logicalCounts": {
+    "PASS": 0,
+    "FAIL": 0,
+    "BLOCKED": 11,
+    "NOT_RUN": 0
+  },
+  "physicalExecution": {
+    "playwrightTestsStarted": 0,
+    "playwrightTestsCompleted": 0,
+    "nativeResultFilePresent": false,
+    "nativeListingExecuted": false,
+    "runnerExitCode": 1,
+    "safetyChecks": {
+      "command": "node --test e2e/mc-safety.test.cjs",
+      "executed": 3,
+      "passed": 3,
+      "failed": 0,
+      "exitCode": 0,
+      "evidenceSource": "tool stdout; separate from P0 browser tests"
+    }
+  },
+  "tests": [
+    {
+      "id": "R01",
+      "title": "?? ???? ??????",
+      "status": "BLOCKED",
+      "executed": false,
+      "nativePlaywrightStatus": "NOT RUN",
+      "classification": "ENVIRONMENT_BLOCKED",
+      "reason": "Required existing MySQL 8.0.46 image is absent; Playwright dependencies are also missing. Browser tests not started.",
+      "browserEvidence": null,
+      "httpEvidence": null,
+      "mysqlEvidence": null
+    },
+    {
+      "id": "R02",
+      "title": "?? ???? ??",
+      "status": "BLOCKED",
+      "executed": false,
+      "nativePlaywrightStatus": "NOT RUN",
+      "classification": "ENVIRONMENT_BLOCKED",
+      "reason": "Required existing MySQL 8.0.46 image is absent; Playwright dependencies are also missing. Browser tests not started.",
+      "browserEvidence": null,
+      "httpEvidence": null,
+      "mysqlEvidence": null
+    },
+    {
+      "id": "R03",
+      "title": "????????",
+      "status": "BLOCKED",
+      "executed": false,
+      "nativePlaywrightStatus": "NOT RUN",
+      "classification": "ENVIRONMENT_BLOCKED",
+      "reason": "Required existing MySQL 8.0.46 image is absent; Playwright dependencies are also missing. Browser tests not started.",
+      "browserEvidence": null,
+      "httpEvidence": null,
+      "mysqlEvidence": null
+    },
+    {
+      "id": "R04",
+      "title": "??????????? ??",
+      "status": "BLOCKED",
+      "executed": false,
+      "nativePlaywrightStatus": "NOT RUN",
+      "classification": "ENVIRONMENT_BLOCKED",
+      "reason": "Required existing MySQL 8.0.46 image is absent; Playwright dependencies are also missing. Browser tests not started.",
+      "browserEvidence": null,
+      "httpEvidence": null,
+      "mysqlEvidence": null
+    },
+    {
+      "id": "R05",
+      "title": "?? AI ?? endpoint",
+      "status": "BLOCKED",
+      "executed": false,
+      "nativePlaywrightStatus": "NOT RUN",
+      "classification": "ENVIRONMENT_BLOCKED",
+      "reason": "Required existing MySQL 8.0.46 image is absent; Playwright dependencies are also missing. Browser tests not started.",
+      "browserEvidence": null,
+      "httpEvidence": null,
+      "mysqlEvidence": null
+    },
+    {
+      "id": "R06",
+      "title": "??? ????? ??",
+      "status": "BLOCKED",
+      "executed": false,
+      "nativePlaywrightStatus": "NOT RUN",
+      "classification": "ENVIRONMENT_BLOCKED",
+      "reason": "Required existing MySQL 8.0.46 image is absent; Playwright dependencies are also missing. Browser tests not started.",
+      "browserEvidence": null,
+      "httpEvidence": null,
+      "mysqlEvidence": null
+    },
+    {
+      "id": "C01",
+      "title": "?? ?? CRUD",
+      "status": "BLOCKED",
+      "executed": false,
+      "nativePlaywrightStatus": "NOT RUN",
+      "classification": "ENVIRONMENT_BLOCKED",
+      "reason": "Required existing MySQL 8.0.46 image is absent; Playwright dependencies are also missing. Browser tests not started.",
+      "browserEvidence": null,
+      "httpEvidence": null,
+      "mysqlEvidence": null
+    },
+    {
+      "id": "C02",
+      "title": "???? ?????",
+      "status": "BLOCKED",
+      "executed": false,
+      "nativePlaywrightStatus": "NOT RUN",
+      "classification": "ENVIRONMENT_BLOCKED",
+      "reason": "Required existing MySQL 8.0.46 image is absent; Playwright dependencies are also missing. Browser tests not started.",
+      "browserEvidence": null,
+      "httpEvidence": null,
+      "mysqlEvidence": null
+    },
+    {
+      "id": "C03",
+      "title": "????? ??????",
+      "status": "BLOCKED",
+      "executed": false,
+      "nativePlaywrightStatus": "NOT RUN",
+      "classification": "ENVIRONMENT_BLOCKED",
+      "reason": "Required existing MySQL 8.0.46 image is absent; Playwright dependencies are also missing. Browser tests not started.",
+      "browserEvidence": null,
+      "httpEvidence": null,
+      "mysqlEvidence": null
+    },
+    {
+      "id": "C04",
+      "title": "?? ?? ??? ?? ??",
+      "status": "BLOCKED",
+      "executed": false,
+      "nativePlaywrightStatus": "NOT RUN",
+      "classification": "ENVIRONMENT_BLOCKED",
+      "reason": "Required existing MySQL 8.0.46 image is absent; Playwright dependencies are also missing. Browser tests not started.",
+      "browserEvidence": null,
+      "httpEvidence": null,
+      "mysqlEvidence": null
+    },
+    {
+      "id": "X01",
+      "title": "?? ????? ?????",
+      "status": "BLOCKED",
+      "executed": false,
+      "nativePlaywrightStatus": "NOT RUN",
+      "classification": "ENVIRONMENT_BLOCKED",
+      "reason": "Required existing MySQL 8.0.46 image is absent; Playwright dependencies are also missing. Browser tests not started.",
+      "browserEvidence": null,
+      "httpEvidence": null,
+      "mysqlEvidence": null
+    }
+  ],
+  "c04": [
+    {
+      "shape": "?? 09:00~10:00",
+      "status": "BLOCKED",
+      "executed": false,
+      "titleEditable": null,
+      "patchCount": null,
+      "payload": null,
+      "httpResponse": null,
+      "datesAndTimesPreserved": null,
+      "freshGet": null,
+      "independentMysqlSnapshot": null,
+      "firstFailureReproductionObtained": false
+    },
+    {
+      "shape": "?? null/null",
+      "status": "BLOCKED",
+      "executed": false,
+      "titleEditable": null,
+      "patchCount": null,
+      "payload": null,
+      "httpResponse": null,
+      "datesAndTimesPreserved": null,
+      "freshGet": null,
+      "independentMysqlSnapshot": null,
+      "firstFailureReproductionObtained": false
+    },
+    {
+      "shape": "??? 10:00/null",
+      "status": "BLOCKED",
+      "executed": false,
+      "titleEditable": null,
+      "patchCount": null,
+      "payload": null,
+      "httpResponse": null,
+      "datesAndTimesPreserved": null,
+      "freshGet": null,
+      "independentMysqlSnapshot": null,
+      "firstFailureReproductionObtained": false
+    },
+    {
+      "shape": "??? null/11:00",
+      "status": "BLOCKED",
+      "executed": false,
+      "titleEditable": null,
+      "patchCount": null,
+      "payload": null,
+      "httpResponse": null,
+      "datesAndTimesPreserved": null,
+      "freshGet": null,
+      "independentMysqlSnapshot": null,
+      "firstFailureReproductionObtained": false
+    },
+    {
+      "shape": "??? 09:07~10:22",
+      "status": "BLOCKED",
+      "executed": false,
+      "titleEditable": null,
+      "patchCount": null,
+      "payload": null,
+      "httpResponse": null,
+      "datesAndTimesPreserved": null,
+      "freshGet": null,
+      "independentMysqlSnapshot": null,
+      "firstFailureReproductionObtained": false
+    }
+  ],
+  "observations": {
+    "browserRequests": {
+      "count": 0,
+      "collectionStarted": false
+    },
+    "browserResponses": {
+      "count": 0,
+      "collectionStarted": false
+    },
+    "browserFailures": {
+      "count": 0,
+      "collectionStarted": false
+    },
+    "serverHttp": {
+      "count": 0,
+      "collectionStarted": false
+    },
+    "mysqlSnapshots": {
+      "count": 0,
+      "connectionAttempted": false
+    },
+    "note": "Zero counts mean no observation processes started, not a tested lack of requests"
+  },
+  "defects": {
+    "confirmedFrontend": [],
+    "confirmedBackend": [],
+    "unverifiedRisks": [
+      {
+        "id": "C04-TIME-EDIT",
+        "file": "frontend/src/calendar/CalendarPage.js",
+        "line": 59,
+        "description": "Both start and end must be members of the 15-minute options; actual browser reproduction not obtained"
+      }
+    ],
+    "runnerProductFailure": false,
+    "environment": [
+      "Docker engine connection initially failed; user started engine and later Linux check passed",
+      "Required existing MySQL 8.0.46 image absent under configured tag, alternate exact tag, recorded image ID and version-filtered local image list",
+      "Offline dependency restore failed because playwright-1.64.1.tgz is not cached; packages remain unavailable",
+      "Managed Chromium cache absent; installed system Chrome not substituted or launched"
+    ]
+  },
+  "resources": {
+    "approvedMaxContainers": 1,
+    "creationAttempted": false,
+    "createdContainers": 0,
+    "createdSchemas": 0,
+    "createdAccounts": 0,
+    "createdVolumes": 0,
+    "containerRemoved": null,
+    "cleanupApplicable": false,
+    "processesStopped": true,
+    "fixtureZeroRowAuditPerformed": false,
+    "existingPreservedResourcesAccessed": false
+  },
+  "protection": {
+    "p1": {
+      "path": "backend/MATCHING_CALENDAR_E2E67_P1_PLAN.md",
+      "sha256Before": "708222d044925c3560768d0287b8a4d9374152d7c3367591a6d182a1baa94361",
+      "sha256After": "708222d044925c3560768d0287b8a4d9374152d7c3367591a6d182a1baa94361",
+      "unchanged": true
+    },
+    "sourceUnchangedDuringRun": true
+  },
+  "productCodeChanged": false,
+  "p1Executed": false,
+  "ausExecuted": false,
+  "ccraExecuted": false,
+  "gitActions": {
+    "commit": false,
+    "push": false,
+    "pr": false,
+    "merge": false
+  },
+  "evidence": {
+    "directory": "backend/build/full-service-e2e/a0ba0c8152c6",
+    "run": "run.json",
+    "sourceBefore": "source-before.json",
+    "sourceAfter": "source-after.json",
+    "preflight": "preflight-observations.json",
+    "failureLog": "logs/Docker-engine-availability.log",
+    "nativePlaywrightResults": null,
+    "supplement": "preflight-after-engine-start.json"
+  },
+  "nextSteps": [
+    "Provide a permitted existing local MySQL 8.0.46 image or an environment where that image is already available; no download was performed",
+    "Restore declared Playwright dependencies and verify a permitted existing browser without browser download",
+    "Recheck native P0 selection, ports, exact existing image ID and unique new resource name",
+    "Use at most one newly created container; execute C04 then remaining ten P0 cases and preserve results",
+    "No product fix or additional container verification without later decision"
+  ],
+  "reportStage": "FINAL_PREFLIGHT_BLOCKED",
+  "previousSnapshot": {
+    "path": "backend/validation/matching-calendar-e2e67-p0-20261026.json",
+    "sha256": "f2cb6b21685f1133458d4f9d965b376b6962b5dc8bbe6cabb0251fbfe659dac8",
+    "preserved": true
+  },
+  "supplement": {
+    "runId": "a0ba0c8152c6",
+    "recordedAt": "2026-10-26T01:17:53.659Z",
+    "source": "supplemental tool observations after user started Docker; not another managed test run",
+    "checks": {
+      "engine": {
+        "command": "docker info --format '{{.OSType}}'",
+        "exitCode": 0,
+        "output": "linux"
+      },
+      "images": [
+        {
+          "reference": "mysql:8.0.46-oraclelinux9",
+          "exists": false
+        },
+        {
+          "reference": "mysql:8.0.46",
+          "exists": false
+        },
+        {
+          "reference": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+          "exists": false
+        }
+      ],
+      "filteredImages": {
+        "command": "docker image ls --filter 'reference=*mysql*8.0.46*' --format '{{.Repository}}:{{.Tag}} {{.ID}}'",
+        "exitCode": 0,
+        "matches": []
+      },
+      "dependencyRestore": {
+        "command": "yarn.cmd install --frozen-lockfile --ignore-scripts --offline",
+        "exitCode": 1,
+        "sandboxAttempt": "EPERM creating Yarn cache directory",
+        "elevatedAttempt": "Cannot fetch uncached playwright-1.64.1.tgz in offline mode",
+        "networkDownloadPerformed": false,
+        "postCheckMissing": [
+          "@playwright/test",
+          "playwright-core",
+          "playwright"
+        ],
+        "trackedPackageOrLockFilesChanged": false
+      },
+      "systemChrome": {
+        "exists": true,
+        "used": false
+      },
+      "nativePlaywrightListExecuted": false,
+      "containersCreated": 0,
+      "schemasCreated": 0,
+      "accountsCreated": 0,
+      "volumesCreated": 0,
+      "existingContainersOrVolumesInspected": false
+    },
+    "currentBlockers": [
+      "MYSQL_8_0_46_IMAGE_MISSING",
+      "PLAYWRIGHT_DEPENDENCIES_UNAVAILABLE"
+    ],
+    "p1PlanSha256": "708222d044925c3560768d0287b8a4d9374152d7c3367591a6d182a1baa94361"
+  }
+}
