@@ -81,9 +81,11 @@ function parseRunArguments(args) {
 
 async function main(rawArgs = process.argv.slice(2)) {
   const { retainResources, playwrightArgs: args } = parseRunArguments(rawArgs);
-  const mcP0 = args[0] === '--mc-p0';
-  if (mcP0 && (args.length !== 1 || retainResources)) throw new Error('MC P0 accepts only its approved disposable session');
-  if (args.some(arg => arg.startsWith('--mc-') && arg !== '--mc-p0')) throw new Error('MC P1 is not approved');
+  const mcRechecking = args[0] === '--mc-p0-recheck';
+  const mcP0 = args[0] === '--mc-p0' || mcRechecking;
+  if (mcP0 && (args.length !== (mcRechecking ? 2 : 1) || retainResources)) throw new Error('MC P0 accepts only its approved disposable session');
+  if (args.some(arg => arg.startsWith('--mc-') && !['--mc-p0','--mc-p0-recheck'].includes(arg))) throw new Error('MC P1 is not approved');
+  const mcRecheck = mcRechecking ? require('./mc-session.cjs').recheckSource(path.join(backend, 'build/full-service-e2e'), args[1]) : null;
   if (retainResources && args.some(arg => /^--aus-p[01](?:-recheck)?$/.test(arg))) {
     throw new Error('AUS P0/P1 requires disposable resources; retention is not supported');
   }
@@ -126,7 +128,7 @@ async function main(rawArgs = process.argv.slice(2)) {
   }
   const testArgs = ausP1 ? ['aus-p1.spec.cjs', '--project=aus-p1', '--no-deps', ...(p1Recheck ? ['--grep','(' + p1Recheck.ids.join('|') + '):'] : [])]
     : recheck ? ['aus-p0.spec.cjs', '--project=aus-p0', '--no-deps', '--grep', '(' + recheck.ids.join('|') + ') P0:']
-    : ausP0 ? ['login.spec.cjs', 'aus-p0.spec.cjs'] : mcP0 ? require('./mc-session.cjs').selection(require('./mc-session.cjs').CATALOG) : args;
+    : ausP0 ? ['login.spec.cjs', 'aus-p0.spec.cjs'] : mcP0 ? require('./mc-session.cjs').selection(mcRecheck?.ids ?? require('./mc-session.cjs').CATALOG) : args;
   const id = randomBytes(6).toString('hex');
   const name = `kkiri-e2e-${id}`;
   const env = {
@@ -151,7 +153,7 @@ async function main(rawArgs = process.argv.slice(2)) {
   writeFileSync(path.join(env.E2E_EVIDENCE_DIR, 'source-before.json'), JSON.stringify(before, null, 2));
   const run = { id, startedAt: new Date().toISOString(), mysql: '8.0.46', database: env.E2E_DATABASE,
     frontend: 'http://127.0.0.1:13000', backend: 'http://127.0.0.1:18080', node: process.version,
-    gitSha: before.gitSha, testArguments: testArgs, scope: ausP1 ? 'AUS_P1_ONLY' : ausP0 ? 'AUS_P0_ONLY' : 'existing selectors', recheck: p1Recheck ?? recheck, fixtureTablesEmpty: false };
+    gitSha: before.gitSha, testArguments: testArgs, scope: ausP1 ? 'AUS_P1_ONLY' : ausP0 ? 'AUS_P0_ONLY' : 'existing selectors', recheck: mcRecheck ?? p1Recheck ?? recheck, fixtureTablesEmpty: false };
   if (retainResources) run.retention = { enabled: true, automaticDeletion: false,
     containerName: name, database: env.E2E_DATABASE, account: env.E2E_DB_USER,
     imageDirectory: env.E2E_IMAGE_DIRECTORY, serverUuid: null,
@@ -282,8 +284,8 @@ async function main(rawArgs = process.argv.slice(2)) {
         [require.resolve('@playwright/test/cli'), 'test', ...testArgs, '--list', '--reporter=list'], frontend,
         { E2E_AUS_P0: ausP0 ? '1' : '0', E2E_AUS_P1: ausP1 ? '1' : '0', E2E_MC_P0: mcP0 ? '1' : '0' }), 'Enumerate approved tests before resource creation');
       const count = Number(listing.match(/Total: (\d+) tests? in/)?.[1]);
-      if (mcP0) require('./mc-session.cjs').verifyListing(listing);
-      if (count !== (mcP0 ? 11 : ausP1 ? (p1Recheck ? p1Recheck.ids.length : 23) : recheck ? recheck.ids.length : 9)) throw new Error('Approved test count mismatch.');
+      if (mcP0) require('./mc-session.cjs').verifyListing(listing, mcRecheck?.ids);
+      if (count !== (mcP0 ? (mcRecheck ? mcRecheck.ids.length : 11) : ausP1 ? (p1Recheck ? p1Recheck.ids.length : 23) : recheck ? recheck.ids.length : 9)) throw new Error('Approved test count mismatch.');
       run.selectedTestCount = count;
       writeFileSync(path.join(env.E2E_EVIDENCE_DIR, 'test-selection.txt'), listing + '\n');
     }
@@ -311,7 +313,9 @@ async function main(rawArgs = process.argv.slice(2)) {
     }
     stage('container-create');
     if (mcP0) {
-      require('./mc-session.cjs').reserveResource(path.join(backend, 'build/mc-p0-preparation'),
+      const ledgerDirectory = mcRecheck ? path.join(backend, 'build/mc-p0-rechecks', mcRecheck.source) : path.join(backend, 'build/mc-p0-preparation');
+      if (mcRecheck && existsSync(path.join(ledgerDirectory, 'additional-resource-approval.json'))) throw new Error('Only one approved recheck container is allowed');
+      require('./mc-session.cjs').reserveResource(ledgerDirectory,
         path.join(backend, 'build/full-service-e2e'), { id, name, attemptedAt: new Date().toISOString() });
     }
     if (retainResources) run.retention.creationAttempted = true;
@@ -342,6 +346,11 @@ async function main(rawArgs = process.argv.slice(2)) {
       await pause(1000);
     }
     if (retainResources) run.retention.serverUuid = env.E2E_DB_UUID;
+    if (mcRecheck) {
+      run.databaseIdentity = { database: env.E2E_DATABASE, account: env.E2E_DB_USER, serverUuid: env.E2E_DB_UUID };
+      writeFileSync(path.join(env.E2E_EVIDENCE_DIR, 'resource-identity.json'), JSON.stringify({ runId: id,
+        container: name, containerId: run.containerId, ownerLabel: id, ...run.databaseIdentity, storage: run.storage }, null, 2));
+    }
     console.log(`[e2e] Target: ${env.E2E_DATABASE}; account: ${env.E2E_DB_USER}; server UUID verified before DDL.`);
     stage('compile-e2e');
     const gradle = process.platform === 'win32'
@@ -438,8 +447,11 @@ async function main(rawArgs = process.argv.slice(2)) {
     const crash = () => { if (!stopping && !restarting) { console.error('[e2e] A managed server stopped unexpectedly.'); if (playwright) void stop(playwright); } };
     api.once('close', crash); react.once('close', crash);
     try {
-      if (mcP0) await require('./mc-session.cjs').session({ env: { ...env, E2E_CONTROL_URL: `http://127.0.0.1:${control.address().port}`, E2E_CONTROL_KEY: controlKey }, start, complete,
-        forward: (stream, write) => forward(stream, write), failureLog, run });
+      if (mcP0) {
+        await require('./mc-session.cjs').session({ env: { ...env, E2E_CONTROL_URL: `http://127.0.0.1:${control.address().port}`, E2E_CONTROL_KEY: controlKey }, start, complete,
+          forward: (stream, write) => forward(stream, write), failureLog, run, recheck: mcRecheck });
+        if (mcRecheck && run.playwrightExitCode !== 0) throw new Error('MC recheck contains a failed or incomplete test');
+      }
       else {
         playwright = launchPlaywright();
         forward(playwright.stdout, text => process.stdout.write(text));

@@ -1,0 +1,2789 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-26",
+  "timezone": "Asia/Seoul",
+  "runId": "2d19b8963e9a",
+  "originalRunId": "2f55ee3d8226",
+  "branch": "test/frontend-backend-maching-calendar",
+  "gitSha": "011606cbbf37e5340aea66db48c282cfb94d6350",
+  "recheckCounts": {
+    "PASS": 5,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_RUN": 0
+  },
+  "finalCounts": {
+    "PASS": 11,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "NOT_RUN": 0
+  },
+  "finalCases": [
+    {
+      "id": "R01",
+      "status": "PASS",
+      "evidenceRun": "2f55ee3d8226",
+      "rerun": false,
+      "initialStatus": "PASS",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json"
+    },
+    {
+      "id": "R02",
+      "status": "PASS",
+      "evidenceRun": "2d19b8963e9a",
+      "rerun": true,
+      "initialStatus": "FAIL",
+      "nativeFile": "backend/build/full-service-e2e/2d19b8963e9a/results-failed-recheck.json"
+    },
+    {
+      "id": "R03",
+      "status": "PASS",
+      "evidenceRun": "2d19b8963e9a",
+      "rerun": true,
+      "initialStatus": "FAIL",
+      "nativeFile": "backend/build/full-service-e2e/2d19b8963e9a/results-failed-recheck.json"
+    },
+    {
+      "id": "R04",
+      "status": "PASS",
+      "evidenceRun": "2d19b8963e9a",
+      "rerun": true,
+      "initialStatus": "FAIL",
+      "nativeFile": "backend/build/full-service-e2e/2d19b8963e9a/results-failed-recheck.json"
+    },
+    {
+      "id": "R05",
+      "status": "PASS",
+      "evidenceRun": "2f55ee3d8226",
+      "rerun": false,
+      "initialStatus": "PASS",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json"
+    },
+    {
+      "id": "R06",
+      "status": "PASS",
+      "evidenceRun": "2f55ee3d8226",
+      "rerun": false,
+      "initialStatus": "PASS",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json"
+    },
+    {
+      "id": "C01",
+      "status": "PASS",
+      "evidenceRun": "2f55ee3d8226",
+      "rerun": false,
+      "initialStatus": "PASS",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json"
+    },
+    {
+      "id": "C02",
+      "status": "PASS",
+      "evidenceRun": "2d19b8963e9a",
+      "rerun": true,
+      "initialStatus": "FAIL",
+      "nativeFile": "backend/build/full-service-e2e/2d19b8963e9a/results-failed-recheck.json"
+    },
+    {
+      "id": "C03",
+      "status": "PASS",
+      "evidenceRun": "2f55ee3d8226",
+      "rerun": false,
+      "initialStatus": "PASS",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json"
+    },
+    {
+      "id": "C04",
+      "status": "PASS",
+      "evidenceRun": "2d19b8963e9a",
+      "rerun": true,
+      "initialStatus": "FAIL",
+      "nativeFile": "backend/build/full-service-e2e/2d19b8963e9a/results-c04-recheck.json"
+    },
+    {
+      "id": "X01",
+      "status": "PASS",
+      "evidenceRun": "2f55ee3d8226",
+      "rerun": false,
+      "initialStatus": "PASS",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json"
+    }
+  ],
+  "recheckedCases": [
+    {
+      "id": "C04",
+      "phase": "c04-recheck",
+      "nativeFile": "backend/build/full-service-e2e/2d19b8963e9a/results-c04-recheck.json",
+      "nativeTestId": "8627e857196c6303c709-1829a174bc1b640043fd",
+      "attempts": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "startedAt": "2026-10-26T05:29:59.540Z",
+          "durationMs": 19996,
+          "errors": [],
+          "steps": []
+        }
+      ],
+      "status": "PASS",
+      "browserEvidence": "backend/build/full-service-e2e/2d19b8963e9a/browser-c04-recheck-8627e857196c6303c709-1829a174bc1b640043fd.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2d19b8963e9a/database-c04-recheck-8627e857196c6303c709-1829a174bc1b640043fd.jsonl",
+      "observations": [
+        {
+          "name": "C04 title-only attempt",
+          "data": {
+            "title": "MC정상",
+            "original": {
+              "id": 1,
+              "title": "MC정상",
+              "startDate": "2026-10-26",
+              "endDate": "2026-10-26",
+              "startTime": "09:00",
+              "endTime": "10:00",
+              "category": "CUSTOM-MC-A",
+              "categoryId": 3,
+              "description": "MC 원본 설명",
+              "editable": true,
+              "source": null
+            },
+            "fields": {
+              "start": "09:00",
+              "end": "10:00"
+            },
+            "before": {
+              "event_id": 1,
+              "owner_user_id": 1,
+              "category_id": 3,
+              "title": "MC정상",
+              "start_date": "2026-10-26",
+              "end_date": "2026-10-26",
+              "start_time": "09:00:00",
+              "end_time": "10:00:00",
+              "is_all_day": false,
+              "description": "MC 원본 설명",
+              "source_type": "USER",
+              "source_name": null
+            },
+            "after": {
+              "event_id": 1,
+              "owner_user_id": 1,
+              "category_id": 3,
+              "title": "MC정상 수정",
+              "start_date": "2026-10-26",
+              "end_date": "2026-10-26",
+              "start_time": "09:00:00",
+              "end_time": "10:00:00",
+              "is_all_day": false,
+              "description": "MC 원본 설명",
+              "source_type": "USER",
+              "source_name": null
+            },
+            "fresh": {
+              "id": 1,
+              "title": "MC정상 수정",
+              "startDate": "2026-10-26",
+              "endDate": "2026-10-26",
+              "startTime": "09:00",
+              "endTime": "10:00",
+              "category": "CUSTOM-MC-A",
+              "categoryId": 3,
+              "description": "MC 원본 설명",
+              "editable": true,
+              "source": null
+            },
+            "patch": {
+              "status": 200,
+              "payload": {
+                "title": "MC정상 수정"
+              },
+              "data": {
+                "id": 1,
+                "title": "MC정상 수정",
+                "startDate": "2026-10-26",
+                "endDate": "2026-10-26",
+                "startTime": "09:00",
+                "endTime": "10:00",
+                "category": "CUSTOM-MC-A",
+                "categoryId": 3,
+                "description": "MC 원본 설명",
+                "editable": true,
+                "source": null
+              }
+            }
+          }
+        },
+        {
+          "name": "C04 title-only attempt",
+          "data": {
+            "title": "MC종일",
+            "original": {
+              "id": 2,
+              "title": "MC종일",
+              "startDate": "2026-10-26",
+              "endDate": "2026-10-26",
+              "startTime": null,
+              "endTime": null,
+              "category": "CUSTOM-MC-A",
+              "categoryId": 3,
+              "description": "MC 원본 설명",
+              "editable": true,
+              "source": null
+            },
+            "fields": {
+              "start": "",
+              "end": ""
+            },
+            "before": {
+              "event_id": 2,
+              "owner_user_id": 1,
+              "category_id": 3,
+              "title": "MC종일",
+              "start_date": "2026-10-26",
+              "end_date": "2026-10-26",
+              "start_time": null,
+              "end_time": null,
+              "is_all_day": true,
+              "description": "MC 원본 설명",
+              "source_type": "USER",
+              "source_name": null
+            },
+            "after": {
+              "event_id": 2,
+              "owner_user_id": 1,
+              "category_id": 3,
+              "title": "MC종일 수정",
+              "start_date": "2026-10-26",
+              "end_date": "2026-10-26",
+              "start_time": null,
+              "end_time": null,
+              "is_all_day": true,
+              "description": "MC 원본 설명",
+              "source_type": "USER",
+              "source_name": null
+            },
+            "fresh": {
+              "id": 2,
+              "title": "MC종일 수정",
+              "startDate": "2026-10-26",
+              "endDate": "2026-10-26",
+              "startTime": null,
+              "endTime": null,
+              "category": "CUSTOM-MC-A",
+              "categoryId": 3,
+              "description": "MC 원본 설명",
+              "editable": true,
+              "source": null
+            },
+            "patch": {
+              "status": 200,
+              "payload": {
+                "title": "MC종일 수정"
+              },
+              "data": {
+                "id": 2,
+                "title": "MC종일 수정",
+                "startDate": "2026-10-26",
+                "endDate": "2026-10-26",
+                "startTime": null,
+                "endTime": null,
+                "category": "CUSTOM-MC-A",
+                "categoryId": 3,
+                "description": "MC 원본 설명",
+                "editable": true,
+                "source": null
+              }
+            }
+          }
+        },
+        {
+          "name": "C04 title-only attempt",
+          "data": {
+            "title": "MC시작만",
+            "original": {
+              "id": 3,
+              "title": "MC시작만",
+              "startDate": "2026-10-26",
+              "endDate": "2026-10-26",
+              "startTime": "10:00",
+              "endTime": null,
+              "category": "CUSTOM-MC-A",
+              "categoryId": 3,
+              "description": "MC 원본 설명",
+              "editable": true,
+              "source": null
+            },
+            "fields": {
+              "start": "10:00",
+              "end": ""
+            },
+            "before": {
+              "event_id": 3,
+              "owner_user_id": 1,
+              "category_id": 3,
+              "title": "MC시작만",
+              "start_date": "2026-10-26",
+              "end_date": "2026-10-26",
+              "start_time": "10:00:00",
+              "end_time": null,
+              "is_all_day": false,
+              "description": "MC 원본 설명",
+              "source_type": "USER",
+              "source_name": null
+            },
+            "after": {
+              "event_id": 3,
+              "owner_user_id": 1,
+              "category_id": 3,
+              "title": "MC시작만 수정",
+              "start_date": "2026-10-26",
+              "end_date": "2026-10-26",
+              "start_time": "10:00:00",
+              "end_time": null,
+              "is_all_day": false,
+              "description": "MC 원본 설명",
+              "source_type": "USER",
+              "source_name": null
+            },
+            "fresh": {
+              "id": 3,
+              "title": "MC시작만 수정",
+              "startDate": "2026-10-26",
+              "endDate": "2026-10-26",
+              "startTime": "10:00",
+              "endTime": null,
+              "category": "CUSTOM-MC-A",
+              "categoryId": 3,
+              "description": "MC 원본 설명",
+              "editable": true,
+              "source": null
+            },
+            "patch": {
+              "status": 200,
+              "payload": {
+                "title": "MC시작만 수정"
+              },
+              "data": {
+                "id": 3,
+                "title": "MC시작만 수정",
+                "startDate": "2026-10-26",
+                "endDate": "2026-10-26",
+                "startTime": "10:00",
+                "endTime": null,
+                "category": "CUSTOM-MC-A",
+                "categoryId": 3,
+                "description": "MC 원본 설명",
+                "editable": true,
+                "source": null
+              }
+            }
+          }
+        },
+        {
+          "name": "C04 title-only attempt",
+          "data": {
+            "title": "MC종료만",
+            "original": {
+              "id": 4,
+              "title": "MC종료만",
+              "startDate": "2026-10-26",
+              "endDate": "2026-10-26",
+              "startTime": null,
+              "endTime": "11:00",
+              "category": "CUSTOM-MC-A",
+              "categoryId": 3,
+              "description": "MC 원본 설명",
+              "editable": true,
+              "source": null
+            },
+            "fields": {
+              "start": "",
+              "end": "11:00"
+            },
+            "before": {
+              "event_id": 4,
+              "owner_user_id": 1,
+              "category_id": 3,
+              "title": "MC종료만",
+              "start_date": "2026-10-26",
+              "end_date": "2026-10-26",
+              "start_time": null,
+              "end_time": "11:00:00",
+              "is_all_day": false,
+              "description": "MC 원본 설명",
+              "source_type": "USER",
+              "source_name": null
+            },
+            "after": {
+              "event_id": 4,
+              "owner_user_id": 1,
+              "category_id": 3,
+              "title": "MC종료만 수정",
+              "start_date": "2026-10-26",
+              "end_date": "2026-10-26",
+              "start_time": null,
+              "end_time": "11:00:00",
+              "is_all_day": false,
+              "description": "MC 원본 설명",
+              "source_type": "USER",
+              "source_name": null
+            },
+            "fresh": {
+              "id": 4,
+              "title": "MC종료만 수정",
+              "startDate": "2026-10-26",
+              "endDate": "2026-10-26",
+              "startTime": null,
+              "endTime": "11:00",
+              "category": "CUSTOM-MC-A",
+              "categoryId": 3,
+              "description": "MC 원본 설명",
+              "editable": true,
+              "source": null
+            },
+            "patch": {
+              "status": 200,
+              "payload": {
+                "title": "MC종료만 수정"
+              },
+              "data": {
+                "id": 4,
+                "title": "MC종료만 수정",
+                "startDate": "2026-10-26",
+                "endDate": "2026-10-26",
+                "startTime": null,
+                "endTime": "11:00",
+                "category": "CUSTOM-MC-A",
+                "categoryId": 3,
+                "description": "MC 원본 설명",
+                "editable": true,
+                "source": null
+              }
+            }
+          }
+        },
+        {
+          "name": "C04 title-only attempt",
+          "data": {
+            "title": "MC비정각",
+            "original": {
+              "id": 5,
+              "title": "MC비정각",
+              "startDate": "2026-10-26",
+              "endDate": "2026-10-26",
+              "startTime": "09:07",
+              "endTime": "10:22",
+              "category": "CUSTOM-MC-A",
+              "categoryId": 3,
+              "description": "MC 원본 설명",
+              "editable": true,
+              "source": null
+            },
+            "fields": {
+              "start": "09:07",
+              "end": "10:22"
+            },
+            "before": {
+              "event_id": 5,
+              "owner_user_id": 1,
+              "category_id": 3,
+              "title": "MC비정각",
+              "start_date": "2026-10-26",
+              "end_date": "2026-10-26",
+              "start_time": "09:07:00",
+              "end_time": "10:22:00",
+              "is_all_day": false,
+              "description": "MC 원본 설명",
+              "source_type": "USER",
+              "source_name": null
+            },
+            "after": {
+              "event_id": 5,
+              "owner_user_id": 1,
+              "category_id": 3,
+              "title": "MC비정각 수정",
+              "start_date": "2026-10-26",
+              "end_date": "2026-10-26",
+              "start_time": "09:07:00",
+              "end_time": "10:22:00",
+              "is_all_day": false,
+              "description": "MC 원본 설명",
+              "source_type": "USER",
+              "source_name": null
+            },
+            "fresh": {
+              "id": 5,
+              "title": "MC비정각 수정",
+              "startDate": "2026-10-26",
+              "endDate": "2026-10-26",
+              "startTime": "09:07",
+              "endTime": "10:22",
+              "category": "CUSTOM-MC-A",
+              "categoryId": 3,
+              "description": "MC 원본 설명",
+              "editable": true,
+              "source": null
+            },
+            "patch": {
+              "status": 200,
+              "payload": {
+                "title": "MC비정각 수정"
+              },
+              "data": {
+                "id": 5,
+                "title": "MC비정각 수정",
+                "startDate": "2026-10-26",
+                "endDate": "2026-10-26",
+                "startTime": "09:07",
+                "endTime": "10:22",
+                "category": "CUSTOM-MC-A",
+                "categoryId": 3,
+                "description": "MC 원본 설명",
+                "editable": true,
+                "source": null
+              }
+            }
+          }
+        }
+      ],
+      "mysqlSnapshots": 10,
+      "traffic": {
+        "id": "C04",
+        "file": "backend/build/full-service-e2e/2d19b8963e9a/traffic-c04-recheck-C04.json",
+        "request": 16,
+        "response": 16,
+        "failure": 0,
+        "failedRequests": [],
+        "filterResponses": []
+      }
+    },
+    {
+      "id": "R02",
+      "phase": "failed-recheck",
+      "nativeFile": "backend/build/full-service-e2e/2d19b8963e9a/results-failed-recheck.json",
+      "nativeTestId": "8627e857196c6303c709-639ee2e671e6ea9722b7",
+      "attempts": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "startedAt": "2026-10-26T05:30:30.313Z",
+          "durationMs": 3577,
+          "errors": [],
+          "steps": []
+        }
+      ],
+      "status": "PASS",
+      "browserEvidence": "backend/build/full-service-e2e/2d19b8963e9a/browser-failed-recheck-8627e857196c6303c709-639ee2e671e6ea9722b7.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2d19b8963e9a/database-failed-recheck-8627e857196c6303c709-639ee2e671e6ea9722b7.jsonl",
+      "observations": [
+        {
+          "name": "R02 recommendations",
+          "data": {
+            "content": [
+              {
+                "id": 17,
+                "nickname": "E2E상대",
+                "admissionYear": "20",
+                "grade": "1학년",
+                "faculty": "E2E학부",
+                "major": null,
+                "dormitory": "E2E생활관",
+                "mbti": "INTJ",
+                "introduction": null,
+                "tags": [
+                  "비흡연",
+                  "22시 이전",
+                  "주 2회"
+                ],
+                "profileImageUrl": null,
+                "matchScore": 100,
+                "liked": false
+              },
+              {
+                "id": 19,
+                "nickname": "MC후보01",
+                "admissionYear": "20",
+                "grade": "1학년",
+                "faculty": "E2E학부",
+                "major": null,
+                "dormitory": "E2E생활관",
+                "mbti": "INFP",
+                "introduction": "MC 합성 소개 1",
+                "tags": [
+                  "비흡연",
+                  "22시 이전",
+                  "주 2회"
+                ],
+                "profileImageUrl": null,
+                "matchScore": 100,
+                "liked": true
+              },
+              {
+                "id": 20,
+                "nickname": "MC후보02",
+                "admissionYear": "20",
+                "grade": "1학년",
+                "faculty": "E2E학부",
+                "major": null,
+                "dormitory": "E2E생활관",
+                "mbti": "INTJ",
+                "introduction": "MC 합성 소개 2",
+                "tags": [
+                  "비흡연",
+                  "22시 이전",
+                  "주 2회"
+                ],
+                "profileImageUrl": null,
+                "matchScore": 100,
+                "liked": true
+              },
+              {
+                "id": 21,
+                "nickname": "MC후보03",
+                "admissionYear": "20",
+                "grade": "1학년",
+                "faculty": "E2E학부",
+                "major": null,
+                "dormitory": "E2E생활관",
+                "mbti": "INFP",
+                "introduction": "MC 합성 소개 3",
+                "tags": [
+                  "비흡연",
+                  "22시 이전",
+                  "주 2회"
+                ],
+                "profileImageUrl": null,
+                "matchScore": 100,
+                "liked": true
+              },
+              {
+                "id": 22,
+                "nickname": "MC후보04",
+                "admissionYear": "20",
+                "grade": "1학년",
+                "faculty": "E2E학부",
+                "major": null,
+                "dormitory": "E2E생활관",
+                "mbti": "INTJ",
+                "introduction": "MC 합성 소개 4",
+                "tags": [
+                  "비흡연",
+                  "22시 이전",
+                  "주 2회"
+                ],
+                "profileImageUrl": null,
+                "matchScore": 100,
+                "liked": true
+              },
+              {
+                "id": 23,
+                "nickname": "MC후보05",
+                "admissionYear": "20",
+                "grade": "1학년",
+                "faculty": "E2E학부",
+                "major": null,
+                "dormitory": "E2E생활관",
+                "mbti": "INFP",
+                "introduction": "MC 합성 소개 5",
+                "tags": [
+                  "비흡연",
+                  "22시 이전",
+                  "주 2회"
+                ],
+                "profileImageUrl": null,
+                "matchScore": 100,
+                "liked": true
+              },
+              {
+                "id": 24,
+                "nickname": "MC후보06",
+                "admissionYear": "20",
+                "grade": "1학년",
+                "faculty": "E2E학부",
+                "major": null,
+                "dormitory": "E2E생활관",
+                "mbti": "INTJ",
+                "introduction": "MC 합성 소개 6",
+                "tags": [
+                  "비흡연",
+                  "22시 이전",
+                  "주 2회"
+                ],
+                "profileImageUrl": null,
+                "matchScore": 100,
+                "liked": true
+              },
+              {
+                "id": 25,
+                "nickname": "MC후보07",
+                "admissionYear": "20",
+                "grade": "1학년",
+                "faculty": "E2E학부",
+                "major": null,
+                "dormitory": "E2E생활관",
+                "mbti": "INFP",
+                "introduction": "MC 합성 소개 7",
+                "tags": [
+                  "비흡연",
+                  "22시 이전",
+                  "주 2회"
+                ],
+                "profileImageUrl": null,
+                "matchScore": 100,
+                "liked": true
+              },
+              {
+                "id": 26,
+                "nickname": "MC후보08",
+                "admissionYear": "20",
+                "grade": "1학년",
+                "faculty": "E2E학부",
+                "major": null,
+                "dormitory": "E2E생활관",
+                "mbti": "INTJ",
+                "introduction": "MC 합성 소개 8",
+                "tags": [
+                  "비흡연",
+                  "22시 이전",
+                  "주 2회"
+                ],
+                "profileImageUrl": null,
+                "matchScore": 100,
+                "liked": false
+              }
+            ],
+            "page": 0,
+            "size": 9,
+            "totalElements": 13,
+            "totalPages": 2,
+            "first": true,
+            "last": false
+          }
+        },
+        {
+          "name": "R02 empty and restored",
+          "data": {
+            "empty": {
+              "content": [],
+              "page": 0,
+              "size": 9,
+              "totalElements": 0,
+              "totalPages": 0,
+              "first": true,
+              "last": true
+            },
+            "restored": {
+              "content": [
+                {
+                  "id": 17,
+                  "nickname": "E2E상대",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": null,
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": false
+                },
+                {
+                  "id": 19,
+                  "nickname": "MC후보01",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INFP",
+                  "introduction": "MC 합성 소개 1",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 20,
+                  "nickname": "MC후보02",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": "MC 합성 소개 2",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 21,
+                  "nickname": "MC후보03",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INFP",
+                  "introduction": "MC 합성 소개 3",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 22,
+                  "nickname": "MC후보04",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": "MC 합성 소개 4",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 23,
+                  "nickname": "MC후보05",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INFP",
+                  "introduction": "MC 합성 소개 5",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 24,
+                  "nickname": "MC후보06",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": "MC 합성 소개 6",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 25,
+                  "nickname": "MC후보07",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INFP",
+                  "introduction": "MC 합성 소개 7",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 26,
+                  "nickname": "MC후보08",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": "MC 합성 소개 8",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": false
+                }
+              ],
+              "page": 0,
+              "size": 9,
+              "totalElements": 13,
+              "totalPages": 2,
+              "first": true,
+              "last": false
+            }
+          }
+        }
+      ],
+      "mysqlSnapshots": 0,
+      "traffic": {
+        "id": "R02",
+        "file": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-R02.json",
+        "request": 9,
+        "response": 8,
+        "failure": 1,
+        "failedRequests": [
+          {
+            "method": "GET",
+            "path": "/api/roommates/recommended",
+            "query": {
+              "page": "0",
+              "size": "9"
+            },
+            "reason": "net::ERR_ABORTED"
+          }
+        ],
+        "filterResponses": [
+          {
+            "method": "GET",
+            "path": "/api/roommates/recommended",
+            "query": {
+              "page": "0",
+              "size": "9",
+              "sleepTime": "23시 ~ 24시"
+            },
+            "status": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "R03",
+      "phase": "failed-recheck",
+      "nativeFile": "backend/build/full-service-e2e/2d19b8963e9a/results-failed-recheck.json",
+      "nativeTestId": "8627e857196c6303c709-530e99b31d333dac94b3",
+      "attempts": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "startedAt": "2026-10-26T05:30:42.161Z",
+          "durationMs": 5926,
+          "errors": [],
+          "steps": []
+        }
+      ],
+      "status": "PASS",
+      "browserEvidence": "backend/build/full-service-e2e/2d19b8963e9a/browser-failed-recheck-8627e857196c6303c709-530e99b31d333dac94b3.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2d19b8963e9a/database-failed-recheck-8627e857196c6303c709-530e99b31d333dac94b3.jsonl",
+      "observations": [
+        {
+          "name": "R03 filtered results",
+          "data": {
+            "filtered": {
+              "content": [
+                {
+                  "id": 32,
+                  "nickname": "E2E상대",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": null,
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": false
+                },
+                {
+                  "id": 34,
+                  "nickname": "MC후보01",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INFP",
+                  "introduction": "MC 합성 소개 1",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 35,
+                  "nickname": "MC후보02",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": "MC 합성 소개 2",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 36,
+                  "nickname": "MC후보03",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INFP",
+                  "introduction": "MC 합성 소개 3",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 37,
+                  "nickname": "MC후보04",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": "MC 합성 소개 4",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 38,
+                  "nickname": "MC후보05",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INFP",
+                  "introduction": "MC 합성 소개 5",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 39,
+                  "nickname": "MC후보06",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": "MC 합성 소개 6",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 40,
+                  "nickname": "MC후보07",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INFP",
+                  "introduction": "MC 합성 소개 7",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 41,
+                  "nickname": "MC후보08",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": "MC 합성 소개 8",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": false
+                }
+              ],
+              "page": 0,
+              "size": 9,
+              "totalElements": 11,
+              "totalPages": 2,
+              "first": true,
+              "last": false
+            },
+            "second": {
+              "content": [
+                {
+                  "id": 42,
+                  "nickname": "MC후보09",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INFP",
+                  "introduction": "MC 합성 소개 9",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": false
+                },
+                {
+                  "id": 43,
+                  "nickname": "MC후보10",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": "MC 합성 소개 10",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": false
+                }
+              ],
+              "page": 1,
+              "size": 9,
+              "totalElements": 11,
+              "totalPages": 2,
+              "first": false,
+              "last": true
+            },
+            "recommended": {
+              "content": [
+                {
+                  "id": 32,
+                  "nickname": "E2E상대",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": null,
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": false
+                },
+                {
+                  "id": 34,
+                  "nickname": "MC후보01",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INFP",
+                  "introduction": "MC 합성 소개 1",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 35,
+                  "nickname": "MC후보02",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": "MC 합성 소개 2",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 36,
+                  "nickname": "MC후보03",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INFP",
+                  "introduction": "MC 합성 소개 3",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 37,
+                  "nickname": "MC후보04",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": "MC 합성 소개 4",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 38,
+                  "nickname": "MC후보05",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INFP",
+                  "introduction": "MC 합성 소개 5",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 39,
+                  "nickname": "MC후보06",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": "MC 합성 소개 6",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 40,
+                  "nickname": "MC후보07",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INFP",
+                  "introduction": "MC 합성 소개 7",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": true
+                },
+                {
+                  "id": 41,
+                  "nickname": "MC후보08",
+                  "admissionYear": "20",
+                  "grade": "1학년",
+                  "faculty": "E2E학부",
+                  "major": null,
+                  "dormitory": "E2E생활관",
+                  "mbti": "INTJ",
+                  "introduction": "MC 합성 소개 8",
+                  "tags": [
+                    "비흡연",
+                    "22시 이전",
+                    "주 2회"
+                  ],
+                  "profileImageUrl": null,
+                  "matchScore": 100,
+                  "liked": false
+                }
+              ],
+              "page": 0,
+              "size": 9,
+              "totalElements": 9,
+              "totalPages": 1,
+              "first": true,
+              "last": true
+            }
+          }
+        }
+      ],
+      "mysqlSnapshots": 0,
+      "traffic": {
+        "id": "R03",
+        "file": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-R03.json",
+        "request": 19,
+        "response": 17,
+        "failure": 2,
+        "failedRequests": [
+          {
+            "method": "GET",
+            "path": "/api/roommates",
+            "query": {
+              "page": "0",
+              "size": "9"
+            },
+            "reason": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates/recommended",
+            "query": {
+              "page": "0",
+              "size": "9"
+            },
+            "reason": "net::ERR_ABORTED"
+          }
+        ],
+        "filterResponses": [
+          {
+            "method": "GET",
+            "path": "/api/roommates",
+            "query": {
+              "page": "0",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates",
+            "query": {
+              "page": "0",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates",
+            "query": {
+              "page": "1",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates",
+            "query": {
+              "page": "1",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates",
+            "query": {
+              "page": "0",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates/recommended",
+            "query": {
+              "page": "0",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates/recommended",
+            "query": {
+              "page": "0",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "R04",
+      "phase": "failed-recheck",
+      "nativeFile": "backend/build/full-service-e2e/2d19b8963e9a/results-failed-recheck.json",
+      "nativeTestId": "8627e857196c6303c709-4585c641bb5979c2b313",
+      "attempts": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "startedAt": "2026-10-26T05:30:54.896Z",
+          "durationMs": 3546,
+          "errors": [],
+          "steps": []
+        }
+      ],
+      "status": "PASS",
+      "browserEvidence": "backend/build/full-service-e2e/2d19b8963e9a/browser-failed-recheck-8627e857196c6303c709-4585c641bb5979c2b313.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2d19b8963e9a/database-failed-recheck-8627e857196c6303c709-4585c641bb5979c2b313.jsonl",
+      "observations": [
+        {
+          "name": "R04 agreement",
+          "data": {
+            "card": {
+              "id": 49,
+              "nickname": "MC후보01",
+              "admissionYear": "20",
+              "grade": "1학년",
+              "faculty": "E2E학부",
+              "major": null,
+              "dormitory": "E2E생활관",
+              "mbti": "INFP",
+              "introduction": "MC 합성 소개 1",
+              "tags": [
+                "비흡연",
+                "22시 이전",
+                "주 2회"
+              ],
+              "profileImageUrl": null,
+              "matchScore": 100,
+              "liked": true
+            },
+            "detail": {
+              "id": 49,
+              "nickname": "MC후보01",
+              "admissionYear": "20",
+              "grade": "1학년",
+              "faculty": "E2E학부",
+              "major": null,
+              "dormitory": "E2E생활관",
+              "mbti": "INFP",
+              "introduction": "MC 합성 소개 1",
+              "tags": [
+                "비흡연",
+                "22시 이전",
+                "주 2회"
+              ],
+              "profileImageUrl": null,
+              "matchScore": 100,
+              "liked": true,
+              "answers": {
+                "sleepTime": "22시 이전",
+                "wakeTime": "07시 이전",
+                "sleepTalking": "없음",
+                "snoring": "적음",
+                "teethGrinding": "보통",
+                "sleepSensitivity": "보통",
+                "indoorEating": "가능",
+                "smoking": "비흡연",
+                "lightingPreference": "상관없음",
+                "phoneCall": "항상 밖에서",
+                "mediaSound": "항상 이어폰 사용해주세요",
+                "showerTime": "저녁",
+                "showerDuration": "20분",
+                "cleaningFrequency": "주 2회",
+                "cleaningStyle": "같이 청소",
+                "meal": "같이 먹고 싶음",
+                "roommateInteraction": "적당히 대화",
+                "temperaturePreference": "보통",
+                "scentProductUse": "사용 안 함",
+                "desktopUse": "사용하지 않아요",
+                "sharedItems": "일부만 공유",
+                "dormStayDays": [
+                  "월",
+                  "금"
+                ],
+                "mealPlan": [
+                  "조식",
+                  "석식"
+                ],
+                "completed": true
+              }
+            }
+          }
+        }
+      ],
+      "mysqlSnapshots": 1,
+      "traffic": {
+        "id": "R04",
+        "file": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-R04.json",
+        "request": 10,
+        "response": 8,
+        "failure": 2,
+        "failedRequests": [
+          {
+            "method": "GET",
+            "path": "/api/roommates/recommended",
+            "query": {
+              "page": "0",
+              "size": "9"
+            },
+            "reason": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates/49",
+            "query": {},
+            "reason": "net::ERR_ABORTED"
+          }
+        ],
+        "filterResponses": []
+      }
+    },
+    {
+      "id": "C02",
+      "phase": "failed-recheck",
+      "nativeFile": "backend/build/full-service-e2e/2d19b8963e9a/results-failed-recheck.json",
+      "nativeTestId": "8627e857196c6303c709-4c26876a57e147fa304c",
+      "attempts": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "startedAt": "2026-10-26T05:31:05.638Z",
+          "durationMs": 5249,
+          "errors": [],
+          "steps": []
+        }
+      ],
+      "status": "PASS",
+      "browserEvidence": "backend/build/full-service-e2e/2d19b8963e9a/browser-failed-recheck-8627e857196c6303c709-4c26876a57e147fa304c.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2d19b8963e9a/database-failed-recheck-8627e857196c6303c709-4c26876a57e147fa304c.jsonl",
+      "observations": [
+        {
+          "name": "C02 persisted categories",
+          "data": {
+            "categories": [
+              {
+                "id": 27,
+                "code": "CUSTOM-MC-A",
+                "label": "MC개인A",
+                "color": "#123456",
+                "fixed": false,
+                "enabled": true
+              },
+              {
+                "id": 29,
+                "code": "CUSTOM-MC-HIDDEN",
+                "label": "MC숨김",
+                "color": "#123456",
+                "fixed": false,
+                "enabled": false
+              },
+              {
+                "id": 31,
+                "code": "CUSTOM-5d6fb59f-e4cd-4e80-91c0-6faab671e4fd",
+                "label": "MC새이름",
+                "color": "#abcdef",
+                "fixed": false,
+                "enabled": false
+              },
+              {
+                "id": 25,
+                "code": "SCHOOL",
+                "label": "학교",
+                "color": "#245fc5",
+                "fixed": true,
+                "enabled": true
+              },
+              {
+                "id": 26,
+                "code": "DORMITORY",
+                "label": "기숙사",
+                "color": "#006a65",
+                "fixed": true,
+                "enabled": true
+              }
+            ],
+            "category": {
+              "category_id": 31,
+              "owner_user_id": 61,
+              "default_name": "MC새분류"
+            },
+            "setting": {
+              "user_id": 61,
+              "category_id": 31,
+              "display_name": "MC새이름",
+              "color": "#abcdef",
+              "is_enabled": false
+            }
+          }
+        }
+      ],
+      "mysqlSnapshots": 1,
+      "traffic": {
+        "id": "C02",
+        "file": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-C02.json",
+        "request": 15,
+        "response": 15,
+        "failure": 0,
+        "failedRequests": [],
+        "filterResponses": []
+      }
+    }
+  ],
+  "originalSummary": {
+    "path": "backend/validation/matching-calendar-e2e67-p0-execution-20261026-2f55ee3d8226.json",
+    "sha256": "a65a88ddbcc5dfc2d1aaf2c54f3ba92bd2078d48efdebdc8a7fc5f4a3b047670",
+    "counts": {
+      "PASS": 6,
+      "FAIL": 5,
+      "BLOCKED": 0,
+      "NOT_RUN": 0
+    }
+  },
+  "nativeCounts": {
+    "executed": 5,
+    "passed": 5,
+    "failed": 0,
+    "retries": 0,
+    "skipped": 0,
+    "interrupted": 0,
+    "repeatedOriginalPasses": 0
+  },
+  "phases": [
+    {
+      "label": "c04-recheck",
+      "ids": [
+        "C04"
+      ],
+      "exit": 0,
+      "file": "backend/build/full-service-e2e/2d19b8963e9a/results-c04-recheck.json",
+      "sha256": "d7341e1d37ba5ea419949309eb8f2b0d4f80f1ae251d029fc30b2072ba596b79",
+      "startedAt": "2026-10-26T05:29:58.921Z",
+      "finishedAt": "2026-10-26T05:30:28.374Z",
+      "counts": {
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      }
+    },
+    {
+      "label": "failed-recheck",
+      "ids": [
+        "R02",
+        "R03",
+        "R04",
+        "C02"
+      ],
+      "exit": 0,
+      "file": "backend/build/full-service-e2e/2d19b8963e9a/results-failed-recheck.json",
+      "sha256": "aa2d3c618172e071755e0223895f4069abc9ea8b5d23d6a6ca56ce9020a84e97",
+      "startedAt": "2026-10-26T05:30:29.820Z",
+      "finishedAt": "2026-10-26T05:31:17.857Z",
+      "counts": {
+        "executed": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      }
+    }
+  ],
+  "c04": [
+    {
+      "title": "MC정상",
+      "status": "PASS",
+      "original": {
+        "id": 1,
+        "title": "MC정상",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": "09:00",
+        "endTime": "10:00",
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "editorFields": {
+        "start": "09:00",
+        "end": "10:00"
+      },
+      "patch": {
+        "status": 200,
+        "payload": {
+          "title": "MC정상 수정"
+        },
+        "data": {
+          "id": 1,
+          "title": "MC정상 수정",
+          "startDate": "2026-10-26",
+          "endDate": "2026-10-26",
+          "startTime": "09:00",
+          "endTime": "10:00",
+          "category": "CUSTOM-MC-A",
+          "categoryId": 3,
+          "description": "MC 원본 설명",
+          "editable": true,
+          "source": null
+        }
+      },
+      "freshGet": {
+        "id": 1,
+        "title": "MC정상 수정",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": "09:00",
+        "endTime": "10:00",
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "mysqlBefore": {
+        "event_id": 1,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC정상",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": "09:00:00",
+        "end_time": "10:00:00",
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "mysqlAfter": {
+        "event_id": 1,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC정상 수정",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": "09:00:00",
+        "end_time": "10:00:00",
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "nonTitleFieldsPreserved": true,
+      "patchOnlyTitle": true
+    },
+    {
+      "title": "MC종일",
+      "status": "PASS",
+      "original": {
+        "id": 2,
+        "title": "MC종일",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": null,
+        "endTime": null,
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "editorFields": {
+        "start": "",
+        "end": ""
+      },
+      "patch": {
+        "status": 200,
+        "payload": {
+          "title": "MC종일 수정"
+        },
+        "data": {
+          "id": 2,
+          "title": "MC종일 수정",
+          "startDate": "2026-10-26",
+          "endDate": "2026-10-26",
+          "startTime": null,
+          "endTime": null,
+          "category": "CUSTOM-MC-A",
+          "categoryId": 3,
+          "description": "MC 원본 설명",
+          "editable": true,
+          "source": null
+        }
+      },
+      "freshGet": {
+        "id": 2,
+        "title": "MC종일 수정",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": null,
+        "endTime": null,
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "mysqlBefore": {
+        "event_id": 2,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC종일",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": null,
+        "end_time": null,
+        "is_all_day": true,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "mysqlAfter": {
+        "event_id": 2,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC종일 수정",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": null,
+        "end_time": null,
+        "is_all_day": true,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "nonTitleFieldsPreserved": true,
+      "patchOnlyTitle": true
+    },
+    {
+      "title": "MC시작만",
+      "status": "PASS",
+      "original": {
+        "id": 3,
+        "title": "MC시작만",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": "10:00",
+        "endTime": null,
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "editorFields": {
+        "start": "10:00",
+        "end": ""
+      },
+      "patch": {
+        "status": 200,
+        "payload": {
+          "title": "MC시작만 수정"
+        },
+        "data": {
+          "id": 3,
+          "title": "MC시작만 수정",
+          "startDate": "2026-10-26",
+          "endDate": "2026-10-26",
+          "startTime": "10:00",
+          "endTime": null,
+          "category": "CUSTOM-MC-A",
+          "categoryId": 3,
+          "description": "MC 원본 설명",
+          "editable": true,
+          "source": null
+        }
+      },
+      "freshGet": {
+        "id": 3,
+        "title": "MC시작만 수정",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": "10:00",
+        "endTime": null,
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "mysqlBefore": {
+        "event_id": 3,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC시작만",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": "10:00:00",
+        "end_time": null,
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "mysqlAfter": {
+        "event_id": 3,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC시작만 수정",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": "10:00:00",
+        "end_time": null,
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "nonTitleFieldsPreserved": true,
+      "patchOnlyTitle": true
+    },
+    {
+      "title": "MC종료만",
+      "status": "PASS",
+      "original": {
+        "id": 4,
+        "title": "MC종료만",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": null,
+        "endTime": "11:00",
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "editorFields": {
+        "start": "",
+        "end": "11:00"
+      },
+      "patch": {
+        "status": 200,
+        "payload": {
+          "title": "MC종료만 수정"
+        },
+        "data": {
+          "id": 4,
+          "title": "MC종료만 수정",
+          "startDate": "2026-10-26",
+          "endDate": "2026-10-26",
+          "startTime": null,
+          "endTime": "11:00",
+          "category": "CUSTOM-MC-A",
+          "categoryId": 3,
+          "description": "MC 원본 설명",
+          "editable": true,
+          "source": null
+        }
+      },
+      "freshGet": {
+        "id": 4,
+        "title": "MC종료만 수정",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": null,
+        "endTime": "11:00",
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "mysqlBefore": {
+        "event_id": 4,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC종료만",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": null,
+        "end_time": "11:00:00",
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "mysqlAfter": {
+        "event_id": 4,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC종료만 수정",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": null,
+        "end_time": "11:00:00",
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "nonTitleFieldsPreserved": true,
+      "patchOnlyTitle": true
+    },
+    {
+      "title": "MC비정각",
+      "status": "PASS",
+      "original": {
+        "id": 5,
+        "title": "MC비정각",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": "09:07",
+        "endTime": "10:22",
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "editorFields": {
+        "start": "09:07",
+        "end": "10:22"
+      },
+      "patch": {
+        "status": 200,
+        "payload": {
+          "title": "MC비정각 수정"
+        },
+        "data": {
+          "id": 5,
+          "title": "MC비정각 수정",
+          "startDate": "2026-10-26",
+          "endDate": "2026-10-26",
+          "startTime": "09:07",
+          "endTime": "10:22",
+          "category": "CUSTOM-MC-A",
+          "categoryId": 3,
+          "description": "MC 원본 설명",
+          "editable": true,
+          "source": null
+        }
+      },
+      "freshGet": {
+        "id": 5,
+        "title": "MC비정각 수정",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": "09:07",
+        "endTime": "10:22",
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "mysqlBefore": {
+        "event_id": 5,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC비정각",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": "09:07:00",
+        "end_time": "10:22:00",
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "mysqlAfter": {
+        "event_id": 5,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC비정각 수정",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": "09:07:00",
+        "end_time": "10:22:00",
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "nonTitleFieldsPreserved": true,
+      "patchOnlyTitle": true
+    }
+  ],
+  "c04Before": [
+    {
+      "title": "MC정상",
+      "status": "PASS",
+      "patchCount": 1
+    },
+    {
+      "title": "MC종일",
+      "status": "FAIL",
+      "patchCount": 0
+    },
+    {
+      "title": "MC시작만",
+      "status": "FAIL",
+      "patchCount": 0
+    },
+    {
+      "title": "MC종료만",
+      "status": "FAIL",
+      "patchCount": 0
+    },
+    {
+      "title": "MC비정각",
+      "status": "FAIL",
+      "patchCount": 0
+    }
+  ],
+  "observations": {
+    "browser": {
+      "request": 69,
+      "response": 64,
+      "failure": 5
+    },
+    "unmatchedBrowserStarts": 0,
+    "serverHttpCompleted": 65,
+    "serverStatuses": {
+      "200": 65
+    },
+    "mysql": {
+      "snapshot": 12,
+      "reset": 5,
+      "clean": 5,
+      "cleanZeroConfirmed": 5
+    },
+    "perCase": [
+      {
+        "id": "C04",
+        "file": "backend/build/full-service-e2e/2d19b8963e9a/traffic-c04-recheck-C04.json",
+        "request": 16,
+        "response": 16,
+        "failure": 0,
+        "failedRequests": [],
+        "filterResponses": []
+      },
+      {
+        "id": "C02",
+        "file": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-C02.json",
+        "request": 15,
+        "response": 15,
+        "failure": 0,
+        "failedRequests": [],
+        "filterResponses": []
+      },
+      {
+        "id": "R02",
+        "file": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-R02.json",
+        "request": 9,
+        "response": 8,
+        "failure": 1,
+        "failedRequests": [
+          {
+            "method": "GET",
+            "path": "/api/roommates/recommended",
+            "query": {
+              "page": "0",
+              "size": "9"
+            },
+            "reason": "net::ERR_ABORTED"
+          }
+        ],
+        "filterResponses": [
+          {
+            "method": "GET",
+            "path": "/api/roommates/recommended",
+            "query": {
+              "page": "0",
+              "size": "9",
+              "sleepTime": "23시 ~ 24시"
+            },
+            "status": 200
+          }
+        ]
+      },
+      {
+        "id": "R03",
+        "file": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-R03.json",
+        "request": 19,
+        "response": 17,
+        "failure": 2,
+        "failedRequests": [
+          {
+            "method": "GET",
+            "path": "/api/roommates",
+            "query": {
+              "page": "0",
+              "size": "9"
+            },
+            "reason": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates/recommended",
+            "query": {
+              "page": "0",
+              "size": "9"
+            },
+            "reason": "net::ERR_ABORTED"
+          }
+        ],
+        "filterResponses": [
+          {
+            "method": "GET",
+            "path": "/api/roommates",
+            "query": {
+              "page": "0",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates",
+            "query": {
+              "page": "0",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates",
+            "query": {
+              "page": "1",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates",
+            "query": {
+              "page": "1",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates",
+            "query": {
+              "page": "0",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates/recommended",
+            "query": {
+              "page": "0",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates/recommended",
+            "query": {
+              "page": "0",
+              "size": "9",
+              "sleepTime": "22시 이전"
+            },
+            "status": 200
+          }
+        ]
+      },
+      {
+        "id": "R04",
+        "file": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-R04.json",
+        "request": 10,
+        "response": 8,
+        "failure": 2,
+        "failedRequests": [
+          {
+            "method": "GET",
+            "path": "/api/roommates/recommended",
+            "query": {
+              "page": "0",
+              "size": "9"
+            },
+            "reason": "net::ERR_ABORTED"
+          },
+          {
+            "method": "GET",
+            "path": "/api/roommates/49",
+            "query": {},
+            "reason": "net::ERR_ABORTED"
+          }
+        ],
+        "filterResponses": []
+      }
+    ],
+    "caveat": "Browser observations and server completion are distinct; R02/R03 use real HTTP/UI comparison, not independent matching SQL assertions."
+  },
+  "checks": {
+    "jest": {
+      "suites": 4,
+      "tests": 29,
+      "status": "PASS",
+      "file": "backend/build/mc-p0-recheck-preparation/20261026/jest.log"
+    },
+    "safety": {
+      "tests": 6,
+      "status": "PASS",
+      "file": "backend/build/mc-p0-recheck-preparation/20261026/safety.log"
+    },
+    "frontendBuild": {
+      "status": "PASS",
+      "file": "backend/build/mc-p0-recheck-preparation/20261026/build.log"
+    },
+    "e2eCompile": {
+      "status": "PASS",
+      "offline": true,
+      "file": "backend/build/mc-p0-recheck-preparation/20261026/prepare-e2e.log"
+    },
+    "contractCheck": {
+      "status": "PASS",
+      "endpoints": 73,
+      "recordDtos": 75,
+      "entities": 30,
+      "file": "backend/build/mc-p0-fix-preparation/20261026/contracts-check.log"
+    }
+  },
+  "orchestration": {
+    "exitCode": 0,
+    "playwrightExitCode": 0,
+    "sessionState": "FINISHED",
+    "evidenceErrors": [],
+    "auditOnlyFormattingError": "First read-only inspection formatting attempt omitted a closing JSON brace and stopped before DB access; corrected here. No test retried.",
+    "nativeTestRetries": 0
+  },
+  "resources": {
+    "createdContainers": 1,
+    "createdSchemas": 1,
+    "createdAccounts": 1,
+    "createdVolumes": 0,
+    "identity": {
+      "observedAt": "2026-10-26T05:30:11.375Z",
+      "container": {
+        "id": "7aefc45db0f795a3fb4eeca3e0fa392e2ebe972bc8850ec4688354b0108211a4",
+        "owner": "2d19b8963e9a",
+        "image": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+        "mounts": [],
+        "tmpfs": {
+          "/var/lib/mysql": "rw,size=1073741824"
+        }
+      },
+      "database": {
+        "schema": "kkiri_e2e_2d19b8963e9a",
+        "account": "e2e_2d19b8963e9a@%",
+        "version": "8.0.46",
+        "serverUuid": "27e1ed97-d0fe-11f1-960f-5efdbab7ed38",
+        "hostname": "kkiri-e2e",
+        "port": 3306,
+        "sessionTimezone": "+00:00"
+      },
+      "auditNote": "First read-only inspection formatting attempt omitted a closing JSON brace and stopped before DB access; corrected here. No test retried."
+    },
+    "cleanup": {
+      "checkedAt": "2026-10-26T05:31:47.098Z",
+      "runId": "2d19b8963e9a",
+      "containerId": "7aefc45db0f795a3fb4eeca3e0fa392e2ebe972bc8850ec4688354b0108211a4",
+      "containerAbsentByExactId": true,
+      "containerAbsentByExactName": true,
+      "portsRebindable": [
+        13000,
+        18080,
+        13316
+      ],
+      "runnerFixtureTablesEmpty": true,
+      "runnerOwnedProcessesStopped": true,
+      "existingResourcesAccessed": false
+    },
+    "ledger": "backend/build/mc-p0-rechecks/2f55ee3d8226/resource-ledger.json",
+    "remainingApprovedContainerBudget": 0
+  },
+  "protection": {
+    "comparedFiles": 769,
+    "changed": [],
+    "originalReportsAndP1PlanUnchanged": true,
+    "sourceUnchangedDuringRun": true
+  },
+  "external": {
+    "ai": "E2eServer.FixedAi",
+    "gatewayRequests": 0,
+    "school": "DisabledCrawler",
+    "schoolRequests": 0,
+    "smtpRequests": 0
+  },
+  "p1": {
+    "readiness": "P0_EVIDENCE_GATE_SATISFIED",
+    "executed": false,
+    "requiresSeparateApproval": true
+  },
+  "rawFiles": [
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/browser-c04-recheck-8627e857196c6303c709-1829a174bc1b640043fd.json",
+      "bytes": 14966,
+      "sha256": "965b6c2d5fb72d8abd074dac8d79392a3029c96020b9806fe0434e33d3f5b709"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/browser-failed-recheck-8627e857196c6303c709-4585c641bb5979c2b313.json",
+      "bytes": 4598,
+      "sha256": "597a5d1689139d89efa632a4d1e02c8505c9373546d468c287af47b7d22e4640"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/browser-failed-recheck-8627e857196c6303c709-4c26876a57e147fa304c.json",
+      "bytes": 5245,
+      "sha256": "2b812f0fb7ebe1f6efeda1c9133f59b5aec77bf437e11f16a4a26c107a3d832c"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/browser-failed-recheck-8627e857196c6303c709-530e99b31d333dac94b3.json",
+      "bytes": 16319,
+      "sha256": "fd96fb0a4acd7a7e3eec96bb9d4181047cf66ee016a21a899ef535538b0ce0f0"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/browser-failed-recheck-8627e857196c6303c709-639ee2e671e6ea9722b7.json",
+      "bytes": 13234,
+      "sha256": "3766e89d129af5528e9376556845992893079dfe09878c8c4af6eae30cef9837"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/cleanup-audit.json",
+      "bytes": 404,
+      "sha256": "343faaff5ca567445fa6490b664f9a97d5b62cded5b1956f3c7b0d42eb0b3288"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/database-c04-recheck-8627e857196c6303c709-1829a174bc1b640043fd.jsonl",
+      "bytes": 308866,
+      "sha256": "bc2de172a8d3013ff9e9991084ad558d7cccf8bdb5aa921cb316d4f809cd97b7"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/database-failed-recheck-8627e857196c6303c709-4585c641bb5979c2b313.jsonl",
+      "bytes": 32199,
+      "sha256": "c0238be2ba64374d36c4ef7c07abccac0b73c333eab4cba016e8d9bac91d99b9"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/database-failed-recheck-8627e857196c6303c709-4c26876a57e147fa304c.jsonl",
+      "bytes": 31595,
+      "sha256": "ed8ae0d48101866dc7879832125089dc89aa9af76374e35262815c417a946de3"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/database-failed-recheck-8627e857196c6303c709-530e99b31d333dac94b3.jsonl",
+      "bytes": 191,
+      "sha256": "46cf1efa7c0749ae00b1f2e1dac6f5ca3c267ebe16527b788939fa44c64c377e"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/database-failed-recheck-8627e857196c6303c709-639ee2e671e6ea9722b7.jsonl",
+      "bytes": 191,
+      "sha256": "1eef1e39dd9f0cab630eaaff1a5ac9c329e161f96ecdfe3c61a86ed4bc020697"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/identity-observed.json",
+      "bytes": 763,
+      "sha256": "e74c4e3458c53ae804fd571ee7bd5afcbc6ee5f6bab36bf32583be236fd78031"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/logs/MC-c04-recheck.log",
+      "bytes": 202,
+      "sha256": "39bdde82d31dfb49553ce27ebedf6b705bcd9806fc0b8f84f409dc463e62869a"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/logs/MC-failed-recheck.log",
+      "bytes": 619,
+      "sha256": "88f80aff48398156277f09efac0be96dc069f3c50eda958b1b2457e6ea9c9c0f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/logs/MySQL-readiness.log",
+      "bytes": 77,
+      "sha256": "bc3db46d117c927f9985f6f9ea64758f94dc816c6d8c690553f59b5bd3ca7bd5"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/logs/React-final.log",
+      "bytes": 969,
+      "sha256": "033f4c09df89972d351980b8e1f0837e710fe9c2b9b3c3368e0ef75578312699"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/logs/Spring-Boot-final.log",
+      "bytes": 348,
+      "sha256": "663981071959cc77de24e12c3b3b3d6b5e4162cefc0d12804ebda22680b52052"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/mc-session.json",
+      "bytes": 529,
+      "sha256": "7a86836970fa59a93186c14e8b451642aa6b0c27f85f358c9b1d1867603c9c1f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/preflight.json",
+      "bytes": 395,
+      "sha256": "5dab9e4d55eea9eaa4d6ad375420a28b8ddbfd221d75c0836ac693445cdeaf4a"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/protection-audit.json",
+      "bytes": 168,
+      "sha256": "62373c086c05ba5e1894058ab2e0bca256180bd59f7ac4616d94d93aaea926d2"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/resource-identity.json",
+      "bytes": 420,
+      "sha256": "097411e4090740fe40dc709462b0534ecec9a80f2f93592bc31e69436cc325b8"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/results-c04-recheck.json",
+      "bytes": 796,
+      "sha256": "d7341e1d37ba5ea419949309eb8f2b0d4f80f1ae251d029fc30b2072ba596b79"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/results-failed-recheck.json",
+      "bytes": 2202,
+      "sha256": "aa2d3c618172e071755e0223895f4069abc9ea8b5d23d6a6ca56ce9020a84e97"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/run.json",
+      "bytes": 2385,
+      "sha256": "1c4176ab55d8385c2258315cc893438ff6e17b48345c66716a421082b65710e8"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/selection-c04-recheck.txt",
+      "bytes": 164,
+      "sha256": "46f16c815216455218cb2b5428d70acffe741e95298c3a7a0edabec35067e7cc"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/selection-failed-recheck.txt",
+      "bytes": 516,
+      "sha256": "c5722a706eeca9338a1eb22fd0d1559f099dd42eaa4e6c350cb2a8ec1bddc918"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/server-http.jsonl",
+      "bytes": 4655,
+      "sha256": "0214120954c50d560c6a2d87c284f72a76d5e581c63297a19a419acd287a7cf5"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/source-after.json",
+      "bytes": 56934,
+      "sha256": "af393cdcfe1c63cbdacc68cf641247abdaf9d031aafa1c8fe6ca1b7ed084d8e4"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/source-before.json",
+      "bytes": 56934,
+      "sha256": "af393cdcfe1c63cbdacc68cf641247abdaf9d031aafa1c8fe6ca1b7ed084d8e4"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/storage-observed.json",
+      "bytes": 107,
+      "sha256": "4b711ec5db6c8509163a0c692baf121edd5543b4ac1b78e9cfa32fc58a994253"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/test-attempts.jsonl",
+      "bytes": 1589,
+      "sha256": "c54a5044d21fa8565ab27aa8006e86d25d545e519c726f0d05a31f49b66f0351"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/test-selection.txt",
+      "bytes": 643,
+      "sha256": "ca80c2a0dc730abf79b7307960e1682a610c5c694570258ec9e7ac36d5d45bc9"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/traffic-c04-recheck-C04.json",
+      "bytes": 3465,
+      "sha256": "cab9e87b6bbcabfefdf91dcc64cd738e57c3619c28fc949c58b236ea7140a966"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/traffic-c04-recheck-C04.jsonl",
+      "bytes": 3736,
+      "sha256": "ef22e5c22f075e14e8e934367ed540dd34a97e00aa367dad54e8acf31a990759"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-C02.json",
+      "bytes": 3254,
+      "sha256": "a594d874eb27dc8013bc73c972412a975cd020595f002c83b637dea048cc658d"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-C02.jsonl",
+      "bytes": 3508,
+      "sha256": "d2576e7e4d5fec29a0005eea8706a91f64a3a1eb9497d31632929947e6fafb86"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-R02.json",
+      "bytes": 2607,
+      "sha256": "e94944f2b8c0e58cd70ca9c3f7a30715150ae52f1f8265b3c8ed0e324882e86f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-R02.jsonl",
+      "bytes": 2404,
+      "sha256": "5fedd2c88cbf1f4b338efe23e0c4ddaf80e68b165e17199c3a1830e700b71238"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-R03.json",
+      "bytes": 5729,
+      "sha256": "3ca7e8835757bdbfe35e20340a585edeb911680c9308ce79c0762655b50e05f7"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-R03.jsonl",
+      "bytes": 5244,
+      "sha256": "102a1f36650bfaa3dbde68c0f0e87201d683c35c45e6f4281ad1f7f8512ff423"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-R04.json",
+      "bytes": 2432,
+      "sha256": "d2ebf1eb16b53a763762edd291e464b8ea74c3fb634d913ffdb14f43322db7c4"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2d19b8963e9a/traffic-failed-recheck-R04.jsonl",
+      "bytes": 2434,
+      "sha256": "d1e4c33be1bd3c4ff1c42c23819ac900c3f432e1b1307534df494b462605da3f"
+    },
+    {
+      "path": "backend/build/mc-p0-recheck-preparation/20261026/build.log",
+      "bytes": 2056,
+      "sha256": "15db13cf7212c9b6bcfe15666bbf0d564a3c4120a7b2905f32da4cfd0b1a770a"
+    },
+    {
+      "path": "backend/build/mc-p0-recheck-preparation/20261026/jest.log",
+      "bytes": 2210,
+      "sha256": "390d4377d22e8d446b7fbf6a64f2bda06cb886a65f089b1de4c8ceeb1a152350"
+    },
+    {
+      "path": "backend/build/mc-p0-recheck-preparation/20261026/managed-run.log",
+      "bytes": 2832,
+      "sha256": "23e38c9e984b4fecec618959407fd3c4b0419ce3c88793ae2448a2af6218393f"
+    },
+    {
+      "path": "backend/build/mc-p0-recheck-preparation/20261026/prepare-e2e.log",
+      "bytes": 5274,
+      "sha256": "43c31c1671034d4300447667172436f46fef87ccd266e55688694e6a79716bef"
+    },
+    {
+      "path": "backend/build/mc-p0-recheck-preparation/20261026/protected-before.json",
+      "bytes": 137824,
+      "sha256": "817e1663dde79fbfa5540f4be9182836ac96b5f3547c1821acd8110eb8409c0c"
+    },
+    {
+      "path": "backend/build/mc-p0-recheck-preparation/20261026/recheck-source.json",
+      "bytes": 405,
+      "sha256": "e3611f648eb9036cbde562432ae3fd475222bda78ef7e39c5e3e729478aa65c0"
+    },
+    {
+      "path": "backend/build/mc-p0-recheck-preparation/20261026/safety.log",
+      "bytes": 1364,
+      "sha256": "aa6188cddd9abaef0cf77b57c522160c44af1d16193c0e59d32dcba9ce68ca3f"
+    },
+    {
+      "path": "backend/build/mc-p0-recheck-preparation/20261026/selection.txt",
+      "bytes": 643,
+      "sha256": "ca80c2a0dc730abf79b7307960e1682a610c5c694570258ec9e7ac36d5d45bc9"
+    }
+  ]
+}

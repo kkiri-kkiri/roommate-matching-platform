@@ -22,6 +22,33 @@ function verifyListing(listing, ids = CATALOG) {
       selected.length !== ids.length || selected.some(id => !ids.includes(id)) || new Set(selected).size !== ids.length)
     throw new Error('MC P0 selection does not match the approved catalog');
 }
+function recheckSource(root, source) {
+  if (!/^[a-f0-9]{12}$/.test(source ?? '')) throw new Error('Invalid MC recheck source');
+  const directory = path.join(root, source);
+  const prior = JSON.parse(fs.readFileSync(path.join(directory, 'run.json'), 'utf8'));
+  if (prior.scope !== 'MATCHING_CALENDAR_P0_ONLY' || !prior.containerRemoved ||
+      !prior.ownedProcessesStopped || !prior.fixtureTablesEmpty || prior.recheck)
+    throw new Error('Original MC run must have verified cleanup before recheck');
+  const originals = [], files = [];
+  for (const phase of prior.mcPhases ?? []) {
+    if (!/^[a-z0-9-]{1,50}$/.test(phase.label)) throw new Error('Unsafe original MC phase');
+    const file = `results-${phase.label}.json`, bytes = fs.readFileSync(path.join(directory, file));
+    const sha256 = createHash('sha256').update(bytes).digest('hex');
+    if (sha256 !== phase.sha256) throw new Error('Original MC result hash mismatch');
+    const result = JSON.parse(bytes);
+    originals.push(...result.tests); files.push({ file, sha256 });
+  }
+  const originalIds = originals.map(t => t.name.split(' ')[0]);
+  if (originalIds.length !== CATALOG.length || new Set(originalIds).size !== CATALOG.length ||
+      originalIds.some(id => !CATALOG.includes(id)) ||
+      originals.some(t => t.attempts.length !== 1 || !['passed','failed','timedOut'].includes(t.attempts[0].status)))
+    throw new Error('MC recheck requires the eleven original completed results');
+  const ids = originals.filter(t => ['failed','timedOut'].includes(t.attempts[0].status)).map(t => t.name.split(' ')[0]);
+  const approved = ['C04','R02','R03','R04','C02'];
+  if (source !== '2f55ee3d8226' || ids.length !== approved.length || ids.some(id => !approved.includes(id)))
+    throw new Error('Only the five approved original failures may be rechecked');
+  return { source, ids: approved, originalResults: files };
+}
 function reserveResource(directory, root, entry) {
   const ledgerFile = path.join(directory, 'resource-ledger.json');
   const ledger = fs.existsSync(ledgerFile) ? JSON.parse(fs.readFileSync(ledgerFile, 'utf8')) : [];
@@ -40,14 +67,16 @@ function reserveResource(directory, root, entry) {
   fs.mkdirSync(directory, { recursive: true });
   fs.writeFileSync(ledgerFile, JSON.stringify([...ledger, entry], null, 2), { flag: 'w' });
 }
-async function session({ env, start, complete, forward, failureLog, run }) {
+async function session({ env, start, complete, forward, failureLog, run, recheck }) {
   const directory = env.E2E_EVIDENCE_DIR;
   const statusFile = path.join(directory, 'mc-session.json');
   const commandFile = path.join(directory, 'mc-commands.jsonl');
   const phases = [];
   const completed = new Set();
   const save = state => fs.writeFileSync(statusFile, JSON.stringify({ state, phases, completed: [...completed] }, null, 2));
-  let command = { ids: ['C04'], label: 'c04-original' }, consumed = 0;
+  const expected = recheck ? recheck.ids : CATALOG;
+  const remaining = recheck ? [{ ids: expected.filter(id => id !== 'C04'), label: 'failed-recheck' }] : [];
+  let command = { ids: ['C04'], label: recheck ? 'c04-recheck' : 'c04-original' }, consumed = 0;
   while (command) {
     const args = selection(command.ids);
     if (!/^[a-z0-9-]{1,50}$/.test(command.label) || phases.some(p => p.label === command.label)) throw new Error('Unsafe or duplicate MC phase');
@@ -68,6 +97,11 @@ async function session({ env, start, complete, forward, failureLog, run }) {
     phases.push({ label: command.label, ids: command.ids, exit, sha256: createHash('sha256').update(bytes).digest('hex') });
     for (const test of results.tests) if (test.attempts.some(a => a.status === 'passed')) completed.add(test.name.split(' ')[0]);
     run.mcPhases = phases;
+    if (recheck) {
+      command = remaining.shift();
+      if (!command) save('FINISHED');
+      continue;
+    }
     save('AWAITING_COMMAND');
     console.log(`[mc] ${command.label} completed; awaiting scoped command in ${commandFile}`);
     const deadline = Date.now() + 3_600_000;
@@ -81,6 +115,6 @@ async function session({ env, start, complete, forward, failureLog, run }) {
     if (command.finish === true) { save('FINISHED'); break; }
     selection(command.ids);
   }
-  run.playwrightExitCode = CATALOG.every(id => completed.has(id)) ? 0 : 1;
+  run.playwrightExitCode = expected.every(id => completed.has(id)) ? 0 : 1;
 }
-module.exports = { CATALOG, selection, verifyListing, verifyStorage, reserveResource, session };
+module.exports = { CATALOG, selection, verifyListing, verifyStorage, reserveResource, recheckSource, session };

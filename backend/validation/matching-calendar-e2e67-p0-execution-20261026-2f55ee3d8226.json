@@ -1,0 +1,1547 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-26",
+  "timezone": "Asia/Seoul",
+  "runId": "2f55ee3d8226",
+  "branch": "test/frontend-backend-maching-calendar",
+  "gitSha": "011606cbbf37e5340aea66db48c282cfb94d6350",
+  "scope": "MATCHING_CALENDAR_P0_ONLY",
+  "counts": {
+    "PASS": 6,
+    "FAIL": 5,
+    "BLOCKED": 0,
+    "NOT_RUN": 0
+  },
+  "nativeCounts": {
+    "executed": 11,
+    "passed": 6,
+    "failed": 5,
+    "skipped": 0,
+    "interrupted": 0,
+    "retries": 0,
+    "repeatedCases": 0
+  },
+  "classificationCounts": {
+    "confirmedFrontendDefects": 1,
+    "confirmedBackendDefects": 0,
+    "harnessFailedCases": 4,
+    "orchestrationTimeoutAfterAllTests": 1,
+    "environmentBlockedCases": 0
+  },
+  "cases": [
+    {
+      "id": "R01",
+      "title": "R01 P0: full list pages match real HTTP and a fresh GET",
+      "phase": "p0-remaining",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json",
+      "nativeTestId": "8627e857196c6303c709-72cade7c567f5d09665b",
+      "attempts": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "startedAt": "2026-10-26T02:44:19.310Z",
+          "durationMs": 4769,
+          "errors": [],
+          "steps": []
+        }
+      ],
+      "status": "PASS",
+      "classification": "VERIFIED",
+      "reason": "전체 목록 두 페이지·새 GET·fixture 후보 수 일치",
+      "browserEvidence": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-72cade7c567f5d09665b.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-72cade7c567f5d09665b.jsonl",
+      "traffic": {
+        "id": "R01",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R01.json",
+        "request": 9,
+        "response": 8,
+        "failure": 1
+      },
+      "databaseOperations": [
+        {
+          "operation": "reset"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "clean",
+          "allTablesEmpty": true
+        }
+      ]
+    },
+    {
+      "id": "R02",
+      "title": "R02 P0: recommended UI shows only the real first nine and a distinct empty state",
+      "phase": "p0-remaining",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json",
+      "nativeTestId": "8627e857196c6303c709-639ee2e671e6ea9722b7",
+      "attempts": [
+        {
+          "status": "failed",
+          "retry": 0,
+          "startedAt": "2026-10-26T02:44:33.292Z",
+          "durationMs": 12489,
+          "errors": [
+            {
+              "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('checkbox', { name: '23시 ~ 24시', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <input type=\"checkbox\" name=\"sleepTime\" value=\"23시 ~ 24시\" class=\"sc-cLNeiC frLJk\"/>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"sc-eRxydw iovSRN\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"sc-eRxydw iovSRN\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    19 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"sc-eRxydw iovSRN\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+              "stack": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('checkbox', { name: '23시 ~ 24시', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <input type=\"checkbox\" name=\"sleepTime\" value=\"23시 ~ 24시\" class=\"sc-cLNeiC frLJk\"/>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"sc-eRxydw iovSRN\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"sc-eRxydw iovSRN\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    19 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"sc-eRxydw iovSRN\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at applySleep (C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\lib\\mc-flows.cjs:45:66)\n    at C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\tests\\mc-p0.spec.cjs:54:17"
+            }
+          ],
+          "steps": []
+        }
+      ],
+      "status": "FAIL",
+      "classification": "HARNESS_INTERACTION",
+      "reason": "시각적으로 숨긴 checkbox에 직접 check하여 pointer interception. 추천 빈 결과 분기 미완료",
+      "browserEvidence": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-639ee2e671e6ea9722b7.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-639ee2e671e6ea9722b7.jsonl",
+      "traffic": {
+        "id": "R02",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R02.json",
+        "request": 7,
+        "response": 6,
+        "failure": 1
+      },
+      "databaseOperations": [
+        {
+          "operation": "reset"
+        },
+        {
+          "operation": "clean",
+          "allTablesEmpty": true
+        }
+      ]
+    },
+    {
+      "id": "R03",
+      "title": "R03 P0: existing filters chips reset and filtered all-list pagination match GET",
+      "phase": "p0-remaining",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json",
+      "nativeTestId": "8627e857196c6303c709-530e99b31d333dac94b3",
+      "attempts": [
+        {
+          "status": "failed",
+          "retry": 0,
+          "startedAt": "2026-10-26T02:44:54.104Z",
+          "durationMs": 13016,
+          "errors": [
+            {
+              "message": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('checkbox', { name: '22시 이전', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <input value=\"22시 이전\" type=\"checkbox\" name=\"sleepTime\" class=\"sc-cLNeiC frLJk\"/>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"sc-eRxydw iovSRN\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"sc-eRxydw iovSRN\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    19 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"sc-eRxydw iovSRN\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n",
+              "stack": "TimeoutError: locator.check: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('checkbox', { name: '22시 이전', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <input value=\"22시 이전\" type=\"checkbox\" name=\"sleepTime\" class=\"sc-cLNeiC frLJk\"/>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"sc-eRxydw iovSRN\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"sc-eRxydw iovSRN\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    19 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"sc-eRxydw iovSRN\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at applySleep (C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\lib\\mc-flows.cjs:45:66)\n    at C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\tests\\mc-p0.spec.cjs:61:20"
+            }
+          ],
+          "steps": []
+        }
+      ],
+      "status": "FAIL",
+      "classification": "HARNESS_INTERACTION",
+      "reason": "같은 숨김 checkbox 상호작용 실패. 필터 적용 이후 분기 미완료",
+      "browserEvidence": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-530e99b31d333dac94b3.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-530e99b31d333dac94b3.jsonl",
+      "traffic": {
+        "id": "R03",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R03.json",
+        "request": 6,
+        "response": 5,
+        "failure": 1
+      },
+      "databaseOperations": [
+        {
+          "operation": "reset"
+        },
+        {
+          "operation": "clean",
+          "allTablesEmpty": true
+        }
+      ]
+    },
+    {
+      "id": "R04",
+      "title": "R04 P0: same candidate score profile and survey agree across card detail GET and DB",
+      "phase": "p0-remaining",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json",
+      "nativeTestId": "8627e857196c6303c709-4585c641bb5979c2b313",
+      "attempts": [
+        {
+          "status": "failed",
+          "retry": 0,
+          "startedAt": "2026-10-26T02:45:14.798Z",
+          "durationMs": 2569,
+          "errors": [
+            {
+              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('22시 이전', { exact: true })\nExpected: visible\nError: strict mode violation: getByText('22시 이전', { exact: true }) resolved to 2 elements:\n    1) <span>22시 이전</span> aka locator('#filter-category-lifePattern').getByText('22시 이전')\n    2) <dd class=\"sc-AWUGL eApOTR\">22시 이전</dd> aka getByRole('tabpanel', { name: '생활 패턴' }).getByText('22시 이전')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('22시 이전', { exact: true }) with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText('22시 이전', { exact: true })\u001b[22m\n",
+              "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('22시 이전', { exact: true })\nExpected: visible\nError: strict mode violation: getByText('22시 이전', { exact: true }) resolved to 2 elements:\n    1) <span>22시 이전</span> aka locator('#filter-category-lifePattern').getByText('22시 이전')\n    2) <dd class=\"sc-AWUGL eApOTR\">22시 이전</dd> aka getByRole('tabpanel', { name: '생활 패턴' }).getByText('22시 이전')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('22시 이전', { exact: true }) with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText('22시 이전', { exact: true })\u001b[22m\n\n    at C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\tests\\mc-p0.spec.cjs:86:75"
+            }
+          ],
+          "steps": []
+        }
+      ],
+      "status": "FAIL",
+      "classification": "HARNESS_LOCATOR",
+      "reason": "배경 필터와 상세의 같은 문구가 strict locator에 중복. 이후 DB 비교 미완료",
+      "browserEvidence": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-4585c641bb5979c2b313.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-4585c641bb5979c2b313.jsonl",
+      "traffic": {
+        "id": "R04",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R04.json",
+        "request": 9,
+        "response": 7,
+        "failure": 2
+      },
+      "databaseOperations": [
+        {
+          "operation": "reset"
+        },
+        {
+          "operation": "clean",
+          "allTablesEmpty": true
+        }
+      ]
+    },
+    {
+      "id": "R05",
+      "title": "R05 P0: real analysis endpoint renders the fixed AI explanation without changing score",
+      "phase": "p0-remaining",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json",
+      "nativeTestId": "8627e857196c6303c709-16ab7311f84ac119a7ce",
+      "attempts": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "startedAt": "2026-10-26T02:45:24.785Z",
+          "durationMs": 2892,
+          "errors": [],
+          "steps": []
+        }
+      ],
+      "status": "PASS",
+      "classification": "VERIFIED",
+      "reason": "실제 분석 endpoint의 FixedAi 응답 표시·점수 보존",
+      "browserEvidence": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-16ab7311f84ac119a7ce.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-16ab7311f84ac119a7ce.jsonl",
+      "traffic": {
+        "id": "R05",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R05.json",
+        "request": 8,
+        "response": 7,
+        "failure": 1
+      },
+      "databaseOperations": [
+        {
+          "operation": "reset"
+        },
+        {
+          "operation": "clean",
+          "allTablesEmpty": true
+        }
+      ]
+    },
+    {
+      "id": "R06",
+      "title": "R06 P0: card detail and seven-person liked list stay synchronized through cancellation",
+      "phase": "p0-remaining",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json",
+      "nativeTestId": "8627e857196c6303c709-4a9027e92a1dc34ff0bf",
+      "attempts": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "startedAt": "2026-10-26T02:45:34.702Z",
+          "durationMs": 7113,
+          "errors": [],
+          "steps": []
+        }
+      ],
+      "status": "PASS",
+      "classification": "VERIFIED",
+      "reason": "좋아요 등록·상세 취소·관심 7명→6명·MySQL 일치",
+      "browserEvidence": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-4a9027e92a1dc34ff0bf.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-4a9027e92a1dc34ff0bf.jsonl",
+      "traffic": {
+        "id": "R06",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R06.json",
+        "request": 27,
+        "response": 23,
+        "failure": 4
+      },
+      "databaseOperations": [
+        {
+          "operation": "reset"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "clean",
+          "allTablesEmpty": true
+        }
+      ]
+    },
+    {
+      "id": "C01",
+      "title": "C01 P0: owner creates reads updates and deletes a normal event through React",
+      "phase": "p0-remaining",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json",
+      "nativeTestId": "8627e857196c6303c709-a9f83a4825ce39251865",
+      "attempts": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "startedAt": "2026-10-26T02:45:48.459Z",
+          "durationMs": 5670,
+          "errors": [],
+          "steps": []
+        }
+      ],
+      "status": "PASS",
+      "classification": "VERIFIED",
+      "reason": "개인 일정 생성·수정·삭제와 새 GET·MySQL 일치",
+      "browserEvidence": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-a9f83a4825ce39251865.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-a9f83a4825ce39251865.jsonl",
+      "traffic": {
+        "id": "C01",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-C01.json",
+        "request": 12,
+        "response": 12,
+        "failure": 0
+      },
+      "databaseOperations": [
+        {
+          "operation": "reset"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "clean",
+          "allTablesEmpty": true
+        }
+      ]
+    },
+    {
+      "id": "C02",
+      "title": "C02 P0: category settings persist color label visibility and explicit deletion",
+      "phase": "p0-remaining",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json",
+      "nativeTestId": "8627e857196c6303c709-4c26876a57e147fa304c",
+      "attempts": [
+        {
+          "status": "failed",
+          "retry": 0,
+          "startedAt": "2026-10-26T02:46:00.461Z",
+          "durationMs": 5140,
+          "errors": [
+            {
+              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+              "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\tests\\mc-p0.spec.cjs:161:96"
+            }
+          ],
+          "steps": []
+        }
+      ],
+      "status": "FAIL",
+      "classification": "HARNESS_EXPECTATION",
+      "reason": "PUT 설정 저장 후 default_name 변경을 잘못 요구. display_name·색·표시는 DB에 저장됨",
+      "browserEvidence": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-4c26876a57e147fa304c.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-4c26876a57e147fa304c.jsonl",
+      "traffic": {
+        "id": "C02",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-C02.json",
+        "request": 15,
+        "response": 15,
+        "failure": 0
+      },
+      "databaseOperations": [
+        {
+          "operation": "reset"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "clean",
+          "allTablesEmpty": true
+        }
+      ]
+    },
+    {
+      "id": "C03",
+      "title": "C03 P0: public events remain visible while private events and editing obey ownership",
+      "phase": "p0-remaining",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json",
+      "nativeTestId": "8627e857196c6303c709-e652e8fec9aa80a49e80",
+      "attempts": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "startedAt": "2026-10-26T02:46:12.822Z",
+          "durationMs": 6893,
+          "errors": [],
+          "steps": []
+        }
+      ],
+      "status": "PASS",
+      "classification": "VERIFIED",
+      "reason": "공개/개인 분리·편집 권한·타인 변경 403·DB 보존",
+      "browserEvidence": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-e652e8fec9aa80a49e80.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-e652e8fec9aa80a49e80.jsonl",
+      "traffic": {
+        "id": "C03",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-C03.json",
+        "request": 19,
+        "response": 16,
+        "failure": 0
+      },
+      "databaseOperations": [
+        {
+          "operation": "reset"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "clean",
+          "allTablesEmpty": true
+        }
+      ]
+    },
+    {
+      "id": "C04",
+      "title": "C04 P0: title-only editing preserves existing all-day partial and exact-minute schedules",
+      "phase": "c04-original",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-c04-original.json",
+      "nativeTestId": "8627e857196c6303c709-1829a174bc1b640043fd",
+      "attempts": [
+        {
+          "status": "failed",
+          "retry": 0,
+          "startedAt": "2026-10-26T02:42:36.920Z",
+          "durationMs": 32692,
+          "errors": [
+            {
+              "message": "Error: Every existing time shape must permit a title-only edit without changing its times\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 6\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"MC종일: UI blocked PATCH\",\u001b[39m\n\u001b[31m+   \"MC시작만: UI blocked PATCH\",\u001b[39m\n\u001b[31m+   \"MC종료만: UI blocked PATCH\",\u001b[39m\n\u001b[31m+   \"MC비정각: UI blocked PATCH\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+              "stack": "Error: Every existing time shape must permit a title-only edit without changing its times\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 6\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"MC종일: UI blocked PATCH\",\u001b[39m\n\u001b[31m+   \"MC시작만: UI blocked PATCH\",\u001b[39m\n\u001b[31m+   \"MC종료만: UI blocked PATCH\",\u001b[39m\n\u001b[31m+   \"MC비정각: UI blocked PATCH\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\e2e\\tests\\mc-p0.spec.cjs:31:106"
+            }
+          ],
+          "steps": []
+        }
+      ],
+      "status": "FAIL",
+      "classification": "FRONTEND_DEFECT",
+      "reason": "정상 대조군 외 4종이 프론트 시간 검증에 막혀 PATCH 미발생",
+      "browserEvidence": "backend/build/full-service-e2e/2f55ee3d8226/browser-c04-original-8627e857196c6303c709-1829a174bc1b640043fd.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2f55ee3d8226/database-c04-original-8627e857196c6303c709-1829a174bc1b640043fd.jsonl",
+      "traffic": {
+        "id": "C04",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-c04-original-C04.json",
+        "request": 12,
+        "response": 12,
+        "failure": 0
+      },
+      "databaseOperations": [
+        {
+          "operation": "reset"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "clean",
+          "allTablesEmpty": true
+        }
+      ]
+    },
+    {
+      "id": "X01",
+      "title": "X01 P0: account switch and natural expiry isolate matching likes events and categories",
+      "phase": "p0-remaining",
+      "nativeFile": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json",
+      "nativeTestId": "8627e857196c6303c709-e75641e24c2cf3c9fb63",
+      "attempts": [
+        {
+          "status": "passed",
+          "retry": 0,
+          "startedAt": "2026-10-26T02:46:26.587Z",
+          "durationMs": 47053,
+          "errors": [],
+          "steps": []
+        }
+      ],
+      "status": "PASS",
+      "classification": "VERIFIED",
+      "reason": "A/B 전환·실제 8초 JWT 만료 401·재로그인 복구·데이터 격리",
+      "browserEvidence": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-e75641e24c2cf3c9fb63.json",
+      "databaseEvidence": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-e75641e24c2cf3c9fb63.jsonl",
+      "traffic": {
+        "id": "X01",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-X01.json",
+        "request": 55,
+        "response": 49,
+        "failure": 5
+      },
+      "databaseOperations": [
+        {
+          "operation": "reset"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "snapshot"
+        },
+        {
+          "operation": "clean",
+          "allTablesEmpty": true
+        }
+      ]
+    }
+  ],
+  "c04": [
+    {
+      "title": "MC정상",
+      "status": "PASS",
+      "original": {
+        "id": 1,
+        "title": "MC정상",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": "09:00",
+        "endTime": "10:00",
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "editorFields": {
+        "start": "09:00",
+        "end": "10:00"
+      },
+      "patchCount": 1,
+      "patch": {
+        "status": 200,
+        "payload": {
+          "title": "MC정상 수정",
+          "startDate": "2026-10-26",
+          "endDate": "2026-10-26",
+          "startTime": "09:00",
+          "endTime": "10:00",
+          "categoryId": 3,
+          "description": "MC 원본 설명"
+        },
+        "data": {
+          "id": 1,
+          "title": "MC정상 수정",
+          "startDate": "2026-10-26",
+          "endDate": "2026-10-26",
+          "startTime": "09:00",
+          "endTime": "10:00",
+          "category": "CUSTOM-MC-A",
+          "categoryId": 3,
+          "description": "MC 원본 설명",
+          "editable": true,
+          "source": null
+        }
+      },
+      "validationMessages": [],
+      "freshGet": {
+        "id": 1,
+        "title": "MC정상 수정",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": "09:00",
+        "endTime": "10:00",
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "mysqlBefore": {
+        "event_id": 1,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC정상",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": "09:00:00",
+        "end_time": "10:00:00",
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "mysqlAfter": {
+        "event_id": 1,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC정상 수정",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": "09:00:00",
+        "end_time": "10:00:00",
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "nonTitleFieldsPreserved": true,
+      "classification": "NORMAL_CONTROL"
+    },
+    {
+      "title": "MC종일",
+      "status": "FAIL",
+      "original": {
+        "id": 2,
+        "title": "MC종일",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": null,
+        "endTime": null,
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "editorFields": {
+        "start": "",
+        "end": ""
+      },
+      "patchCount": 0,
+      "patch": null,
+      "validationMessages": [
+        "시작 시간을 15분 단위로 선택해 주세요.",
+        "종료 시간을 15분 단위로 선택해 주세요."
+      ],
+      "freshGet": {
+        "id": 2,
+        "title": "MC종일",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": null,
+        "endTime": null,
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "mysqlBefore": {
+        "event_id": 2,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC종일",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": null,
+        "end_time": null,
+        "is_all_day": true,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "mysqlAfter": {
+        "event_id": 2,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC종일",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": null,
+        "end_time": null,
+        "is_all_day": true,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "nonTitleFieldsPreserved": true,
+      "classification": "FRONTEND_VALIDATION_BLOCKED_PATCH"
+    },
+    {
+      "title": "MC시작만",
+      "status": "FAIL",
+      "original": {
+        "id": 3,
+        "title": "MC시작만",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": "10:00",
+        "endTime": null,
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "editorFields": {
+        "start": "10:00",
+        "end": ""
+      },
+      "patchCount": 0,
+      "patch": null,
+      "validationMessages": [
+        "종료 시간을 15분 단위로 선택해 주세요."
+      ],
+      "freshGet": {
+        "id": 3,
+        "title": "MC시작만",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": "10:00",
+        "endTime": null,
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "mysqlBefore": {
+        "event_id": 3,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC시작만",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": "10:00:00",
+        "end_time": null,
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "mysqlAfter": {
+        "event_id": 3,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC시작만",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": "10:00:00",
+        "end_time": null,
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "nonTitleFieldsPreserved": true,
+      "classification": "FRONTEND_VALIDATION_BLOCKED_PATCH"
+    },
+    {
+      "title": "MC종료만",
+      "status": "FAIL",
+      "original": {
+        "id": 4,
+        "title": "MC종료만",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": null,
+        "endTime": "11:00",
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "editorFields": {
+        "start": "",
+        "end": "11:00"
+      },
+      "patchCount": 0,
+      "patch": null,
+      "validationMessages": [
+        "시작 시간을 15분 단위로 선택해 주세요."
+      ],
+      "freshGet": {
+        "id": 4,
+        "title": "MC종료만",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": null,
+        "endTime": "11:00",
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "mysqlBefore": {
+        "event_id": 4,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC종료만",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": null,
+        "end_time": "11:00:00",
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "mysqlAfter": {
+        "event_id": 4,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC종료만",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": null,
+        "end_time": "11:00:00",
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "nonTitleFieldsPreserved": true,
+      "classification": "FRONTEND_VALIDATION_BLOCKED_PATCH"
+    },
+    {
+      "title": "MC비정각",
+      "status": "FAIL",
+      "original": {
+        "id": 5,
+        "title": "MC비정각",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": "09:07",
+        "endTime": "10:22",
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "editorFields": {
+        "start": "",
+        "end": ""
+      },
+      "patchCount": 0,
+      "patch": null,
+      "validationMessages": [
+        "시작 시간을 15분 단위로 선택해 주세요.",
+        "종료 시간을 15분 단위로 선택해 주세요."
+      ],
+      "freshGet": {
+        "id": 5,
+        "title": "MC비정각",
+        "startDate": "2026-10-26",
+        "endDate": "2026-10-26",
+        "startTime": "09:07",
+        "endTime": "10:22",
+        "category": "CUSTOM-MC-A",
+        "categoryId": 3,
+        "description": "MC 원본 설명",
+        "editable": true,
+        "source": null
+      },
+      "mysqlBefore": {
+        "event_id": 5,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC비정각",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": "09:07:00",
+        "end_time": "10:22:00",
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "mysqlAfter": {
+        "event_id": 5,
+        "owner_user_id": 1,
+        "category_id": 3,
+        "title": "MC비정각",
+        "start_date": "2026-10-26",
+        "end_date": "2026-10-26",
+        "start_time": "09:07:00",
+        "end_time": "10:22:00",
+        "is_all_day": false,
+        "description": "MC 원본 설명",
+        "source_type": "USER",
+        "source_name": null
+      },
+      "nonTitleFieldsPreserved": true,
+      "classification": "FRONTEND_VALIDATION_BLOCKED_PATCH"
+    }
+  ],
+  "c02ContractReview": {
+    "category": {
+      "category_id": 55,
+      "owner_user_id": 121,
+      "default_name": "MC새분류"
+    },
+    "setting": {
+      "user_id": 121,
+      "category_id": 55,
+      "display_name": "MC새이름",
+      "color": "#abcdef",
+      "is_enabled": false
+    },
+    "nativeStatusRemains": "FAIL",
+    "productDefectConfirmed": false,
+    "explanation": "PUT /calendar/categories는 사용자 설정을 저장한다. default_name=MC새분류, display_name=MC새이름이 실제 값이다."
+  },
+  "observations": {
+    "browser": {
+      "request": 179,
+      "response": 160,
+      "failure": 15
+    },
+    "unmatchedBrowserStarts": 4,
+    "serverHttpCompleted": 165,
+    "serverStatuses": {
+      "200": 162,
+      "401": 1,
+      "403": 2
+    },
+    "mysql": {
+      "snapshot": 22,
+      "reset": 11,
+      "clean": 11,
+      "cleanZeroConfirmed": 11
+    },
+    "perCase": [
+      {
+        "id": "C04",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-c04-original-C04.json",
+        "request": 12,
+        "response": 12,
+        "failure": 0
+      },
+      {
+        "id": "C01",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-C01.json",
+        "request": 12,
+        "response": 12,
+        "failure": 0
+      },
+      {
+        "id": "C02",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-C02.json",
+        "request": 15,
+        "response": 15,
+        "failure": 0
+      },
+      {
+        "id": "C03",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-C03.json",
+        "request": 19,
+        "response": 16,
+        "failure": 0
+      },
+      {
+        "id": "R01",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R01.json",
+        "request": 9,
+        "response": 8,
+        "failure": 1
+      },
+      {
+        "id": "R02",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R02.json",
+        "request": 7,
+        "response": 6,
+        "failure": 1
+      },
+      {
+        "id": "R03",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R03.json",
+        "request": 6,
+        "response": 5,
+        "failure": 1
+      },
+      {
+        "id": "R04",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R04.json",
+        "request": 9,
+        "response": 7,
+        "failure": 2
+      },
+      {
+        "id": "R05",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R05.json",
+        "request": 8,
+        "response": 7,
+        "failure": 1
+      },
+      {
+        "id": "R06",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R06.json",
+        "request": 27,
+        "response": 23,
+        "failure": 4
+      },
+      {
+        "id": "X01",
+        "file": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-X01.json",
+        "request": 55,
+        "response": 49,
+        "failure": 5
+      }
+    ],
+    "caveats": [
+      "브라우저 시작은 서버 수신과 같지 않으며 이동/취소/teardown 경계의 이벤트를 포함한다.",
+      "서버 관찰은 OPTIONS를 제외하고 완료를 기록한다. 브라우저 수와 동일하다고 주장하지 않는다.",
+      "실패로 중단된 R04 등에는 snapshot이 없으며 이후 assertion을 실행한 것으로 처리하지 않는다."
+    ]
+  },
+  "phases": [
+    {
+      "label": "c04-original",
+      "file": "backend/build/full-service-e2e/2f55ee3d8226/results-c04-original.json",
+      "exit": 1,
+      "sha256": "753e1246d2a17c5666886f5bc582721349f8cf94657532f409462be1c1056e9c",
+      "startedAt": "2026-10-26T02:42:35.823Z",
+      "finishedAt": "2026-10-26T02:43:24.745Z",
+      "counts": {
+        "executed": 1,
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      }
+    },
+    {
+      "label": "p0-remaining",
+      "file": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json",
+      "exit": 1,
+      "sha256": "627b8db19fc46b221820e65770ed29e56a14a3fa689652e16512d4668baeb148",
+      "startedAt": "2026-10-26T02:44:18.771Z",
+      "finishedAt": "2026-10-26T02:47:20.452Z",
+      "counts": {
+        "executed": 10,
+        "passed": 6,
+        "failed": 4,
+        "skipped": 0,
+        "interrupted": 0,
+        "notExecuted": 0
+      }
+    }
+  ],
+  "orchestration": {
+    "runnerExitCode": 1,
+    "recordedPlaywrightExitCode": 1,
+    "timeout": "All eleven native results were saved, then the one-hour scoped command wait expired.",
+    "originalSessionState": "AWAITING_COMMAND",
+    "sessionStateIsStale": true,
+    "cleanupFinishedAt": "2026-10-26T03:47:23.693Z",
+    "nativeResultsAffectedByTimeout": false,
+    "originalSessionFileModified": false
+  },
+  "resources": {
+    "createdContainers": 1,
+    "createdSchemas": 1,
+    "createdAccounts": 1,
+    "createdVolumes": 0,
+    "identity": {
+      "checkedAt": "2026-10-26T02:40:55.728Z",
+      "runId": "2f55ee3d8226",
+      "container": {
+        "id": "f406c1e78dcbca1c5722f051ae1e4116d2fd6cd37c2e0537315992ab0ad7c749",
+        "name": "kkiri-e2e-2f55ee3d8226",
+        "owner": "2f55ee3d8226",
+        "imageId": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+        "mounts": [],
+        "tmpfs": {
+          "/var/lib/mysql": "rw,size=1073741824"
+        },
+        "ports": {
+          "3306/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "13316"
+            }
+          ]
+        }
+      },
+      "database": {
+        "account": "e2e_2f55ee3d8226@%",
+        "version": "8.0.46",
+        "database": "kkiri_e2e_2f55ee3d8226",
+        "hostname": "kkiri-e2e",
+        "serverUuid": "8c139453-d0e6-11f1-bdd9-ba57fcc278d2",
+        "sessionTimezone": "+00:00"
+      },
+      "connectionPurpose": "read-only identity observation on newly created owned database; session timezone set to UTC"
+    },
+    "cleanup": {
+      "auditedAt": "2026-10-26T04:19:17.536Z",
+      "runId": "2f55ee3d8226",
+      "containerId": "f406c1e78dcbca1c5722f051ae1e4116d2fd6cd37c2e0537315992ab0ad7c749",
+      "name": "kkiri-e2e-2f55ee3d8226",
+      "ownerLabelAtCreation": "2f55ee3d8226",
+      "databaseAtCreation": {
+        "account": "e2e_2f55ee3d8226@%",
+        "version": "8.0.46",
+        "database": "kkiri_e2e_2f55ee3d8226",
+        "hostname": "kkiri-e2e",
+        "serverUuid": "8c139453-d0e6-11f1-bdd9-ba57fcc278d2",
+        "sessionTimezone": "+00:00"
+      },
+      "recordedFixtureTablesEmpty": true,
+      "recordedContainerRemoved": true,
+      "recordedOwnedProcessesStopped": true,
+      "containerAbsentByExactId": true,
+      "containerAbsentByExactName": true,
+      "ports": [
+        {
+          "port": 13000,
+          "free": true
+        },
+        {
+          "port": 18080,
+          "free": true
+        },
+        {
+          "port": 13316,
+          "free": true
+        }
+      ],
+      "scope": "only this newly created run resource; no old preserved resources queried"
+    },
+    "resourceLedger": "backend/build/mc-p0-preparation/resource-ledger.json",
+    "additionalContainersCreated": 0,
+    "remainingApprovedContainerBudget": 0
+  },
+  "protection": {
+    "comparedFiles": 685,
+    "changed": [],
+    "originalBlockedRun": "a0ba0c8152c6",
+    "originalP0P1AndEnvironmentReportsUnchanged": true,
+    "productCodeChanged": false,
+    "harnessCodeChanged": false,
+    "sourceUnchangedDuringRun": true,
+    "secretScan": {
+      "jwtOrGeneratedPasswordMatches": 0
+    }
+  },
+  "external": {
+    "aiMode": "E2eServer.FixedAi",
+    "gatewayRequests": 0,
+    "schoolCrawlerMode": "DisabledCrawler",
+    "schoolRequests": 0,
+    "realSmtpRequests": 0
+  },
+  "proposedFiles": [
+    {
+      "path": "frontend/src/calendar/CalendarPage.js",
+      "reason": "C04 편집 검증과 기존 원본 시간 선택값 보존"
+    },
+    {
+      "path": "frontend/src/calendar/CalendarDataContext.js",
+      "reason": "수정 시 nullable/한쪽 시간의 payload 보존 여부를 함께 검토. 현재 제품 결함으로 확정하지 않음"
+    },
+    {
+      "path": "frontend/src/calendar/CalendarPage.test.js",
+      "reason": "5종 제목 편집 회귀"
+    },
+    {
+      "path": "frontend/e2e/lib/mc-flows.cjs",
+      "reason": "R02/R03 숨김 input 직접 check 대신 실제 label 또는 키보드 입력 사용"
+    },
+    {
+      "path": "frontend/e2e/tests/mc-p0.spec.cjs",
+      "reason": "R04 상세 locator 한정, C02 settings 기준 DB 기대값"
+    }
+  ],
+  "nextDecision": "제품 수정과 실행기 보완·실패 사례 재검증은 별도 결정. 추가 컨테이너를 생성하지 않았고 P1은 실행하지 않았다.",
+  "rawFiles": [
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/browser-c04-original-8627e857196c6303c709-1829a174bc1b640043fd.json",
+      "size": 13122,
+      "sha256": "066d580336ecad0e7b7df7a44827cc5cb89b134f1edae338724c509ed1031c86"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-16ab7311f84ac119a7ce.json",
+      "size": 2419,
+      "sha256": "54b79666b8c861452a4f16686e74dfc1fa9c1df6948e0685210f7ae966c1a4b9"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-4585c641bb5979c2b313.json",
+      "size": 2215,
+      "sha256": "354fbe1a319db9248b8f1876fcfd1423844e042e0e48fa75c502cea9b14ef205"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-4a9027e92a1dc34ff0bf.json",
+      "size": 8552,
+      "sha256": "1a1a77069768c1cae3d57c32dc778ce93aee0ec18828e35423ecf7ead5e7ddbb"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-4c26876a57e147fa304c.json",
+      "size": 3763,
+      "sha256": "b36030c24e022aefe793b6869a2b4723a68c17f0d2e5da10bdc120194a8fa27a"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-530e99b31d333dac94b3.json",
+      "size": 1964,
+      "sha256": "45cf3a2e6fe41f90be01ba20e1e5c73095f73f10bd2aa57a5a88b66b03b0953d"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-639ee2e671e6ea9722b7.json",
+      "size": 7249,
+      "sha256": "2f1d44649724941ac6fd97895ec68c6e78ad94d7bf8942e5dc3f41ff15330397"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-72cade7c567f5d09665b.json",
+      "size": 10392,
+      "sha256": "4ec922d5c56acf13b244139ad28303a3a1c5d382effba82679ea55dedc2a1a93"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-a9f83a4825ce39251865.json",
+      "size": 3612,
+      "sha256": "ac12cfdaecb10bdc658176a185b444286651d6207b2c21d1f9f76188727b52c6"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-e652e8fec9aa80a49e80.json",
+      "size": 8905,
+      "sha256": "5fdf4c677fa595f2f74238986d79625be4a79ce0693c56936815634316db8cf6"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/browser-p0-remaining-8627e857196c6303c709-e75641e24c2cf3c9fb63.json",
+      "size": 34443,
+      "sha256": "673b6a8693031f4e1e5a09a74151df688d3ca38587f82ecf3c0d37614702ac57"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/cleanup-audit.json",
+      "size": 942,
+      "sha256": "3ff64663eea79951d1ee729654cb4eb76ac2d0f00e4c6808b80503097b5a6a6f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/database-c04-original-8627e857196c6303c709-1829a174bc1b640043fd.jsonl",
+      "size": 308754,
+      "sha256": "86cbfdcab5f450e349df8362584572c01cd9800f278312e288c2397dca3b2e28"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-16ab7311f84ac119a7ce.jsonl",
+      "size": 191,
+      "sha256": "5ae5ba1b4fee872033f52c5f95e109c1a41776783978dc11d5f721202e646933"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-4585c641bb5979c2b313.jsonl",
+      "size": 191,
+      "sha256": "b053c348fa743193ad4d1e6eceffee880e0a43e267e3d4f8a5e49bd3cab8bdd6"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-4a9027e92a1dc34ff0bf.jsonl",
+      "size": 95755,
+      "sha256": "ac1f577c82c0cce66a75e563d38729298609d6a647bc466e023effece051fc43"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-4c26876a57e147fa304c.jsonl",
+      "size": 31885,
+      "sha256": "8580970d858eed229981b298e5e3f3335aac6e726bd9741e4f7972b205224fce"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-530e99b31d333dac94b3.jsonl",
+      "size": 191,
+      "sha256": "0d7f6f4f47e5c4f3dc2e12ccefab42fb0ce9fcbf1f9fe58b3c299665f0e3f134"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-639ee2e671e6ea9722b7.jsonl",
+      "size": 191,
+      "sha256": "2f647ffda1a0ccd5c28605af41c1a3555a983471b031671e88f34ae4835a7012"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-72cade7c567f5d09665b.jsonl",
+      "size": 32109,
+      "sha256": "a10e348a0a63dca45b4d4ac98114eb52c3a89041d5dc68f25ad95aeef22c39f0"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-a9f83a4825ce39251865.jsonl",
+      "size": 63439,
+      "sha256": "54ed877282807fa57feb2ed1af984d8970166f949a0ed10e02aed989c9ad3d17"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-e652e8fec9aa80a49e80.jsonl",
+      "size": 63201,
+      "sha256": "dbaaa216d22c27190081c6ae8d2787e78d90141d6730674f8686699b4b957a08"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/database-p0-remaining-8627e857196c6303c709-e75641e24c2cf3c9fb63.jsonl",
+      "size": 99749,
+      "sha256": "bc90b5706cc5e30d9959325883d259837f9c5769e2e738edffaec84a94c49689"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/logs/E2E-React.log",
+      "size": 969,
+      "sha256": "e1e53825ea39257dd0cff9749a3d5c4a931faea0e5ac5ee3e81ccad6307eede3"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/logs/E2E-Spring-Boot.log",
+      "size": 677,
+      "sha256": "bbfeac0c9a6e785ed4e0594c59f45718d96a83cc4ac10483cf8af0de48448f29"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/logs/MC-c04-original.log",
+      "size": 1551,
+      "sha256": "52d2ebf7878cb68c011424b8a9e9e58200c1db74a5144cf01d49fd992d48353f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/logs/MC-p0-remaining.log",
+      "size": 9789,
+      "sha256": "de8f689e61beee4d99fccd076d32c1bcc328b74aea1b76e98ef1a1d2f9f43031"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/logs/MC-Playwright-c04-original.log",
+      "size": 1551,
+      "sha256": "52d2ebf7878cb68c011424b8a9e9e58200c1db74a5144cf01d49fd992d48353f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/logs/MC-Playwright-p0-remaining.log",
+      "size": 9789,
+      "sha256": "de8f689e61beee4d99fccd076d32c1bcc328b74aea1b76e98ef1a1d2f9f43031"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/logs/MySQL-readiness.log",
+      "size": 77,
+      "sha256": "bc3db46d117c927f9985f6f9ea64758f94dc816c6d8c690553f59b5bd3ca7bd5"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/logs/React-final.log",
+      "size": 969,
+      "sha256": "e1e53825ea39257dd0cff9749a3d5c4a931faea0e5ac5ee3e81ccad6307eede3"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/logs/Spring-Boot-final.log",
+      "size": 677,
+      "sha256": "bbfeac0c9a6e785ed4e0594c59f45718d96a83cc4ac10483cf8af0de48448f29"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/mc-commands.jsonl",
+      "size": 93,
+      "sha256": "92959f4d9f3be84ad43c84746c318afc6778eab0c6e7d28112a7a6d3553d01b7"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/mc-session.json",
+      "size": 637,
+      "sha256": "7dac0f3628bb0d2c5de2081896206556d1b78de074cde169a87cbdddfe8e15c2"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/preflight.json",
+      "size": 395,
+      "sha256": "439dd8143ef3a0fb596b3f0a2c43ce639c23b850f8b6a746383d68841341f6a8"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/protection-audit.json",
+      "size": 321,
+      "sha256": "9a6a8f11f86781555add5c593a76fa1f43964dbb044fe1ef1d5ff5853ce98e1b"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/resource-identity.json",
+      "size": 909,
+      "sha256": "16b51856f5c05e57a8aad1eb3e1fae53c5ae3b74ede8976ca8bee1ab9eb13c14"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/results-c04-original.json",
+      "size": 2331,
+      "sha256": "753e1246d2a17c5666886f5bc582721349f8cf94657532f409462be1c1056e9c"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/results-p0-remaining.json",
+      "size": 14796,
+      "sha256": "627b8db19fc46b221820e65770ed29e56a14a3fa689652e16512d4668baeb148"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/run.json",
+      "size": 1878,
+      "sha256": "1e357339b5bf7b627155d6a55e888eeef09a72e8b3930e1b31cc584c57764d31"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/selection-c04-original.txt",
+      "size": 164,
+      "sha256": "46f16c815216455218cb2b5428d70acffe741e95298c3a7a0edabec35067e7cc"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/selection-p0-remaining.txt",
+      "size": 1228,
+      "sha256": "44086d53981a2e11ca4fca272dad5c87487f45562c76d6dd09ed43063f52962d"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/server-http.jsonl",
+      "size": 11878,
+      "sha256": "8c70674344ad285c7298225a7238b0bd1295521dfeaad0d3a35a015c062468d7"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/source-after.json",
+      "size": 56193,
+      "sha256": "4747228c4e8ddbe52154c31f64efa85b903014045cb5912b8c55b4e83ea021d8"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/source-before.json",
+      "size": 56193,
+      "sha256": "4747228c4e8ddbe52154c31f64efa85b903014045cb5912b8c55b4e83ea021d8"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/storage-observed.json",
+      "size": 107,
+      "sha256": "4b711ec5db6c8509163a0c692baf121edd5543b4ac1b78e9cfa32fc58a994253"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/test-attempts.jsonl",
+      "size": 14442,
+      "sha256": "4cccd76eed253f55ced99b8adb3b9b901f8d8cb60e0d693ba6ac3ff9595683ae"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/test-selection.txt",
+      "size": 1355,
+      "sha256": "9096c434686b876e6de9e3e32f7dcd042adfc98b5ff41d6f27cbc948018794b7"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-c04-original-C04.json",
+      "size": 2157,
+      "sha256": "8e2e77d4e7823e3b7b6f0937da2c8fc204d99e57182b6f5da134f6bd7b01e394"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-c04-original-C04.jsonl",
+      "size": 2512,
+      "sha256": "b24d9a50286ad25a81e3ef2173c1ea433d0d76817243da7bc7f91dce4c06b770"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-C01.json",
+      "size": 2161,
+      "sha256": "7ffdeab29f273f6ae7c8b6937284bdb09f4ffd084f9b6cb351b198e6fdb43fa2"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-C01.jsonl",
+      "size": 2528,
+      "sha256": "1fd26517fadbf8f59744908883db8acae5b86181b27865a22e91271edcb7702a"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-C02.json",
+      "size": 2684,
+      "sha256": "36614cd599be4a84123bf158eeebc11ba2854e1a40ccad51d61b0dc2301b4d37"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-C02.jsonl",
+      "size": 3178,
+      "sha256": "e3ff5d9116478d3c84741e2223b77726ca1bb461bbcd7f6198207b247360299e"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-C03.json",
+      "size": 3018,
+      "sha256": "23b16abcb819f174910872214cf6a334d1ee818bf9c45119e4c71c4e1362264a"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-C03.jsonl",
+      "size": 3624,
+      "sha256": "6618b25c8999138bd014cb6630d5976f8def0175651b1c9c86d0b86384c9da96"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R01.json",
+      "size": 1564,
+      "sha256": "08cf626bddad617bdb35895a504c409219f2b0c0deb901cbaa6c4819774a160b"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R01.jsonl",
+      "size": 1820,
+      "sha256": "c548810890c46be3886bcef0d5c274849da95dc251fe169466f8ef7dd28224a9"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R02.json",
+      "size": 1351,
+      "sha256": "faf3dd1b4e6cc2fc637fedddc1a6f4a48855bd4ab2cce7b29eb8aa5c5b6cdde4"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R02.jsonl",
+      "size": 1496,
+      "sha256": "c3bb44aebe636a5b944205a31ff8a697e1037d9b3439f741faf99255aef5f264"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R03.json",
+      "size": 1123,
+      "sha256": "12f121d5e79b86c2de1d6427f427788ba1e454efb7477b732fba5471b616892f"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R03.jsonl",
+      "size": 1226,
+      "sha256": "d9cad0a24b39a1165333984a58668d5f2b0ced7b44bf12ae903c9f2eae72af3c"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R04.json",
+      "size": 1699,
+      "sha256": "ae0712768fbeaa0c316f4d3f573cc67353497eaf3c3a00ac94f95c1ca1d3da94"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R04.jsonl",
+      "size": 1926,
+      "sha256": "0c9ac0406c4ffaa43853f68158356dda38bab27bbeaab06937214ccd51fdce83"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R05.json",
+      "size": 1526,
+      "sha256": "f5946142e6b4aeda99e6434aa65da073fe4ad69873a7b34d70daf1c9301658ce"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R05.jsonl",
+      "size": 1708,
+      "sha256": "42b3bb2b3cf7dac4106eb83e130c02fd03a1908c617b82073b3dfdf3509ad70d"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R06.json",
+      "size": 4882,
+      "sha256": "d86dc7cfaf8210db1e4883e91e821db3ca5f58186f017c5ff8d36a1f5f0e872a"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-R06.jsonl",
+      "size": 5878,
+      "sha256": "adc5e936a439b16724d4c54fafa9fb41bc6c5c6583ef1c0972446a0e8ccc5f21"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-X01.json",
+      "size": 9367,
+      "sha256": "c822c4358f91ccb191a2fd2e0bd33fc44564f978778ba1702976e7d59f247cc2"
+    },
+    {
+      "path": "backend/build/full-service-e2e/2f55ee3d8226/traffic-p0-remaining-X01.jsonl",
+      "size": 11548,
+      "sha256": "e0348ac97671b2eab93c15a1af27b1da0b73562ab895b09826683d342a76bc7e"
+    }
+  ]
+}

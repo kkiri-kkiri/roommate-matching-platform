@@ -46,6 +46,15 @@ export function CalendarDataProvider({ children, userId }) {
     const normalized = normalizeEventTimes(draft);
     const payload = { title: draft.title.trim(), startDate: normalized.date, endDate: normalized.endDate,
       startTime: normalized.startTime, endTime: normalized.endTime, categoryId: category.serverId, description: draft.description.trim() };
+    const original = id ? events.find((event) => event.id === id) : null;
+    if (original) {
+      // PATCH omission preserves nullable values and untouched text exactly as stored.
+      const unchanged = { title: draft.title === original.title, startDate: normalized.date === original.date,
+        endDate: normalized.endDate === (original.endDate || original.date),
+        startTime: normalized.startTime === original.startTime, endTime: normalized.endTime === original.endTime,
+        categoryId: draft.category === original.category, description: draft.description === original.description };
+      for (const [field, same] of Object.entries(unchanged)) if (same) delete payload[field];
+    }
     const saved = id ? await updateCalendarEvent(id, payload) : await createCalendarEvent(payload);
     setEvents((current) => [...current.filter((event) => event.id !== saved.id), saved]);
     return saved;

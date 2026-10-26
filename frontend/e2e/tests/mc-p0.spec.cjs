@@ -54,21 +54,36 @@ test('R02 P0: recommended UI shows only the real first nine and a distinct empty
   const empty = await applySleep(page, '23시 ~ 24시');
   expect(empty.content).toEqual([]);
   await expect(page.getByText('조건에 맞는 추천 프로필이 없어요', { exact: true })).toBeVisible();
+  const reset = await responseTo(page, 'GET', '/roommates/recommended', () => page.getByRole('button', { name: '필터 모두 해제', exact: true }).click());
+  expect(new URL(reset.url()).searchParams.has('sleepTime')).toBe(false);
+  const restored = (await reset.json()).data;
+  expect(restored).toEqual(data); await assertCards(page, restored);
+  await expect(page.getByRole('button', { name: / 필터 취소$/ })).toHaveCount(0);
+  evidence.note('R02 empty and restored', { empty, restored });
 });
 
 test('R03 P0: existing filters chips reset and filtered all-list pagination match GET', async ({ page, evidence }) => {
-  await login(page, actor()); await navigate(page, '/roommates', '/roommates');
+  await login(page, actor()); const initial = await navigate(page, '/roommates', '/roommates');
   const filtered = await applySleep(page, '22시 이전'); await assertCards(page, filtered);
   expect(filtered.totalElements).toBeGreaterThan(9);
   expect(filtered).toEqual(await get(page, '/roommates?page=0&size=9&sleepTime=' + encodeURIComponent('22시 이전')));
   const next = await responseTo(page, 'GET', '/roommates', () => page.getByRole('button', { name: '2페이지', exact: true }).click());
   const second = (await next.json()).data; await assertCards(page, second);
   expect(second.content.length).toBeGreaterThan(0);
+  expect(new URL(next.url()).searchParams.get('page')).toBe('1');
+  expect(new URL(next.url()).searchParams.get('sleepTime')).toBe('22시 이전');
+  expect(second).toEqual(await get(page, '/roommates?page=1&size=9&sleepTime=' + encodeURIComponent('22시 이전')));
   const removed = await responseTo(page, 'GET', '/roommates', () => page.getByRole('button', { name: '취침시간 22시 이전 필터 취소', exact: true }).click());
   expect(new URL(removed.url()).searchParams.has('sleepTime')).toBe(false);
+  expect(new URL(removed.url()).searchParams.get('page')).toBe('0');
+  expect((await removed.json()).data).toEqual(initial); await assertCards(page, initial);
+  await expect(page.getByRole('button', { name: / 필터 취소$/ })).toHaveCount(0);
   await applySleep(page, '22시 이전');
   const reset = await responseTo(page, 'GET', '/roommates', () => page.getByRole('button', { name: '필터 초기화', exact: true }).click());
   expect(new URL(reset.url()).searchParams.has('sleepTime')).toBe(false);
+  expect((await reset.json()).data).toEqual(initial); await assertCards(page, initial);
+  await expect(page.getByRole('button', { name: / 필터 취소$/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '필터 초기화', exact: true })).toBeDisabled();
   await navigate(page, '/roommates?tab=recommended', '/roommates/recommended');
   const recommended = await applySleep(page, '22시 이전'); await assertCards(page, recommended);
   expect(recommended).toEqual(await get(page, '/roommates/recommended?page=0&size=9&sleepTime=' + encodeURIComponent('22시 이전')));
@@ -80,16 +95,19 @@ test('R04 P0: same candidate score profile and survey agree across card detail G
   const target = data.content.find(p => p.nickname.startsWith('MC후보'));
   const r = await responseTo(page, 'GET', `/roommates/${target.id}`, () => link(page,target.nickname).click());
   const detail = (await r.json()).data;
+  const dialog = page.getByRole('dialog', { name: target.nickname, exact: true });
+  const panel = dialog.getByRole('tabpanel', { name: '생활 패턴', exact: true });
   for (const key of ['id','nickname','matchScore','introduction','mbti']) expect(detail[key]).toEqual(target[key]);
-  await expect(page.getByRole('meter', { name: '나와의 매칭 점수' })).toHaveAttribute('aria-valuenow', String(target.matchScore));
-  await expect(page.getByText(target.introduction, { exact: true }).first()).toBeVisible();
-  await expect(page.getByText(detail.answers.sleepTime, { exact: true })).toBeVisible();
-  await expect(page.getByRole('tabpanel')).toContainText(detail.answers.dormStayDays.join(' · '));
+  await expect(dialog.getByRole('meter', { name: '나와의 매칭 점수' })).toHaveAttribute('aria-valuenow', String(target.matchScore));
+  await expect(dialog.getByText(target.introduction, { exact: true })).toBeVisible();
+  await expect(panel.getByText(detail.answers.sleepTime, { exact: true })).toBeVisible();
+  await expect(panel).toContainText(detail.answers.dormStayDays.join(' · '));
   expect(detail).toEqual(await get(page, `/roommates/${target.id}`));
   const snapshot = database('snapshot'), me = profile(snapshot,'E2E사용자').user_id;
   expect(snapshot.matches.find(m => m.requester_user_id === me && m.target_user_id === target.id).match_score).toBe(target.matchScore);
   expect(snapshot.surveys.find(s => s.user_id === target.id).sleep_time).toBe(detail.answers.sleepTime);
-  await page.getByRole('button', { name: '상세 프로필 닫기', exact: true }).click(); await expect(link(page,target.nickname)).toBeVisible();
+  await dialog.getByRole('button', { name: '상세 프로필 닫기', exact: true }).click();
+  await expect(dialog).toHaveCount(0); await expect(link(page,target.nickname)).toBeVisible();
   evidence.note('R04 agreement', { card: target, detail });
 });
 
@@ -158,9 +176,10 @@ test('C02 P0: category settings persist color label visibility and explicit dele
   expect(await get(page,'/calendar/categories')).toEqual(categories); await page.reload();
   await expect(page.getByRole('button',{name:'MC새이름',exact:true})).toHaveCount(0);
   await page.getByRole('button',{name:'카테고리 설정',exact:true}).click(); await expect(page.locator('input[value="MC새이름"]')).toBeVisible();
-  const db = database('snapshot'); expect(db.categories.some(c => c.default_name === 'MC새이름')).toBe(true);
+  const db = database('snapshot'); expect(db.categories.find(c => c.category_id === custom.id)).toMatchObject({default_name:'MC새분류'});
   expect(db.categorySettings.find(c => c.category_id === custom.id)).toMatchObject({display_name:'MC새이름',color:'#abcdef',is_enabled:false});
-  evidence.note('C02 persisted categories', categories);
+  evidence.note('C02 persisted categories', { categories, category:db.categories.find(c => c.category_id === custom.id),
+    setting:db.categorySettings.find(c => c.category_id === custom.id) });
 });
 
 test('C03 P0: public events remain visible while private events and editing obey ownership', async ({ page, evidence }) => {

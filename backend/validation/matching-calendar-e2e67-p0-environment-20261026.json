@@ -1,0 +1,224 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-26",
+  "timezone": "Asia/Seoul",
+  "installationId": "20261026-3cb8839a",
+  "scope": "MATCHING_CALENDAR_P0_ENVIRONMENT_PREPARATION_ONLY",
+  "status": "READY_FOR_REQUESTED_PREFLIGHT",
+  "branch": "test/frontend-backend-maching-calendar",
+  "gitSha": "011606cbbf37e5340aea66db48c282cfb94d6350",
+  "commands": [
+    {
+      "command": "docker pull mysql:8.0.46-oraclelinux9",
+      "exitCode": 0
+    },
+    {
+      "command": "yarn.cmd install --frozen-lockfile --ignore-scripts",
+      "cwd": "frontend",
+      "exitCode": 0
+    },
+    {
+      "command": "node node_modules/playwright/cli.js install chromium",
+      "cwd": "frontend",
+      "environment": {
+        "PLAYWRIGHT_SKIP_BROWSER_GC": "1"
+      },
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\node_modules\\@playwright\\test\\cli.js",
+        "test",
+        "mc-p0.spec.cjs",
+        "--project=mc-p0",
+        "--no-deps",
+        "--grep",
+        "(R01|R02|R03|R04|R05|R06|C01|C02|C03|C04|X01) P0:",
+        "--list",
+        "--reporter=list",
+        "--output=C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\backend\\build\\mc-p0-environment\\20261026-3cb8839a\\list-output"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "checks": {
+    "dockerLinuxEngine": {
+      "status": "PASS",
+      "os": "linux"
+    },
+    "mysqlImage": {
+      "status": "PASS",
+      "reference": "mysql:8.0.46-oraclelinux9",
+      "id": "sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b",
+      "repoDigests": [
+        "mysql@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b"
+      ],
+      "os": "linux",
+      "architecture": "amd64",
+      "mysqlVersion": "8.0.46-1.el9"
+    },
+    "playwrightPackages": {
+      "status": "PASS",
+      "declaredVersion": "1.64.1",
+      "normalLoad": true,
+      "packages": [
+        {
+          "name": "@playwright/test",
+          "version": "1.64.1",
+          "packageJson": "C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\node_modules\\@playwright\\test\\package.json",
+          "entry": "C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\node_modules\\@playwright\\test\\index.js"
+        },
+        {
+          "name": "playwright",
+          "version": "1.64.1",
+          "packageJson": "C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\node_modules\\playwright\\package.json",
+          "entry": "C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\node_modules\\playwright\\index.js"
+        },
+        {
+          "name": "playwright-core",
+          "version": "1.64.1",
+          "packageJson": "C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\node_modules\\playwright-core\\package.json",
+          "entry": "C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\node_modules\\playwright-core\\index.js"
+        }
+      ]
+    },
+    "chromium": {
+      "status": "PASS",
+      "checkedAt": "2026-10-26T02:28:13.6260253Z",
+      "playwrightVersion": "1.64.1",
+      "revision": "1248",
+      "expectedVersion": "156.0.8078.4",
+      "chromium": {
+        "path": "C:\\Users\\sneij\\AppData\\Local\\ms-playwright\\chromium-1248\\chrome-win64\\chrome.exe",
+        "exists": true,
+        "fileVersion": "156.0.8078.4",
+        "productVersion": "156.0.8078.4",
+        "sha256": "7F08161BBEB2853FFE1780A9DED4985087F52EFB9725D7D8207AABDD42F7CFB9"
+      },
+      "headlessShell": {
+        "path": "C:\\Users\\sneij\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1248\\chrome-headless-shell-win64\\chrome-headless-shell.exe",
+        "exists": true,
+        "fileVersion": null,
+        "productVersion": null
+      },
+      "browserLaunched": false,
+      "browserTestsExecuted": 0,
+      "skipBrowserGc": true
+    },
+    "ports": {
+      "status": "PASS",
+      "checkedAt": "2026-10-26T02:27:31.598Z",
+      "ports": [
+        {
+          "host": "127.0.0.1",
+          "port": 13000,
+          "free": true
+        },
+        {
+          "host": "127.0.0.1",
+          "port": 18080,
+          "free": true
+        },
+        {
+          "host": "127.0.0.1",
+          "port": 13316,
+          "free": true
+        }
+      ]
+    },
+    "p0Selection": {
+      "status": "PASS",
+      "checkedAt": "2026-10-26T02:27:31.563Z",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\frontend\\node_modules\\@playwright\\test\\cli.js",
+        "test",
+        "mc-p0.spec.cjs",
+        "--project=mc-p0",
+        "--no-deps",
+        "--grep",
+        "(R01|R02|R03|R04|R05|R06|C01|C02|C03|C04|X01) P0:",
+        "--list",
+        "--reporter=list",
+        "--output=C:\\Users\\sneij\\Desktop\\지성\\roommate-matching-platform\\backend\\build\\mc-p0-environment\\20261026-3cb8839a\\list-output"
+      ],
+      "environmentMode": "E2E_MC_P0=1; sanitized environment",
+      "exitCode": 0,
+      "selectedIds": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "X01"
+      ],
+      "selectedCount": 11,
+      "project": "mc-p0",
+      "nativeListingVerified": true,
+      "dependenciesDisabled": true,
+      "reporter": "list",
+      "browserTestsExecuted": 0,
+      "containersCreated": 0
+    }
+  },
+  "protection": {
+    "comparedFiles": 670,
+    "changed": [],
+    "packageJson": {
+      "path": "frontend/package.json",
+      "before": "0b5de5f74eab34893034d6a3a2f4a358e2ae5c255a0ee821c8542490c3ff90af",
+      "after": "0b5de5f74eab34893034d6a3a2f4a358e2ae5c255a0ee821c8542490c3ff90af"
+    },
+    "yarnLock": {
+      "path": "frontend/yarn.lock",
+      "before": "a41c89f2b423e41f8e7dd1661602fe48a64f007d77726b6995f86c447b07feb9",
+      "after": "a41c89f2b423e41f8e7dd1661602fe48a64f007d77726b6995f86c447b07feb9"
+    },
+    "existingP0P1EvidenceUnchanged": true,
+    "otherTeamCodeUnchanged": true,
+    "branchAndHeadUnchanged": true
+  },
+  "restrictions": {
+    "containersCreated": 0,
+    "schemasCreated": 0,
+    "accountsCreated": 0,
+    "volumesCreated": 0,
+    "existingContainersOrDatabasesOrVolumesAccessed": false,
+    "migrationsExecuted": false,
+    "browserLaunched": false,
+    "p0BrowserTestsExecuted": 0,
+    "p1TestsExecuted": 0,
+    "ausTestsExecuted": 0,
+    "ccraTestsExecuted": 0,
+    "dockerPrune": false,
+    "cachePurged": false,
+    "forceReinstall": false,
+    "packageVersionsOverridden": false,
+    "gitCommitPushPrMerge": false
+  },
+  "warnings": [
+    "Yarn detected existing package-lock.json; neither lock file was removed or edited",
+    "Existing peer dependency warnings for Babel plugins and TypeScript; no unsolicited packages added",
+    "Lifecycle scripts intentionally skipped by --ignore-scripts"
+  ],
+  "browserRuntimeAssetsInstalled": [
+    "Chromium 1248",
+    "Chromium Headless Shell 1248",
+    "FFmpeg 1013",
+    "Winldd 1007"
+  ],
+  "limitations": [
+    "Browser binary existence and Windows version metadata checked; browser launch and P0 behavior not tested",
+    "Ports were free at check time and must be rechecked before a future actual run",
+    "Spring startup, backend build, MySQL runtime/JDBC identity and fixture preparation were not run",
+    "Existing P0 BLOCKED reports remain historical and unchanged"
+  ],
+  "evidenceDirectory": "backend/build/mc-p0-environment/20261026-3cb8839a",
+  "completedAt": "2026-10-26T02:28:44.598Z"
+}

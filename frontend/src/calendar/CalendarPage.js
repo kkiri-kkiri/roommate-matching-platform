@@ -44,7 +44,7 @@ function isValidCalendarDate(value) {
     value <= "2100-12-31" && dateKey(localDate(value)) === value;
 }
 
-function validateDraft(draft, categoryIds) {
+function validateDraft(draft, categoryIds, preserveOriginalTimes) {
   const errors = {};
   if (!draft.title.trim()) errors.title = "일정 제목을 입력해 주세요.";
   else if (draft.title.trim().length > 80) errors.title = "제목은 80자 이내로 입력해 주세요.";
@@ -56,13 +56,16 @@ function validateDraft(draft, categoryIds) {
   } else if (!errors.date && draft.endDate < draft.date) {
     errors.endDate = "종료일은 시작일과 같거나 늦어야 해요.";
   }
-  if (!CALENDAR_TIME_OPTIONS.includes(draft.startTime)) errors.startTime = "시작 시간을 15분 단위로 선택해 주세요.";
-  if (!CALENDAR_TIME_OPTIONS.includes(draft.endTime)) errors.endTime = "종료 시간을 15분 단위로 선택해 주세요.";
+  if (!preserveOriginalTimes) {
+    if (!CALENDAR_TIME_OPTIONS.includes(draft.startTime)) errors.startTime = "시작 시간을 15분 단위로 선택해 주세요.";
+    if (!CALENDAR_TIME_OPTIONS.includes(draft.endTime)) errors.endTime = "종료 시간을 15분 단위로 선택해 주세요.";
+  }
   if (!errors.date && !errors.endDate && !errors.startTime && !errors.endTime) {
     const normalized = normalizeEventTimes(draft);
     if (!isValidCalendarDate(normalized.date)) errors.startTime = "24:00은 다음 날 00:00이에요. 시작일을 앞당겨 주세요.";
     if (!isValidCalendarDate(normalized.endDate)) errors.endTime = "24:00은 다음 날 00:00이에요. 종료일을 앞당겨 주세요.";
-    else if (`${normalized.endDate}T${normalized.endTime}` <= `${normalized.date}T${normalized.startTime}`) {
+    else if (normalized.startTime && normalized.endTime &&
+        `${normalized.endDate}T${normalized.endTime}` <= `${normalized.date}T${normalized.startTime}`) {
       errors.endTime = "종료 시간은 시작 시간보다 늦어야 해요.";
     }
   }
@@ -160,6 +163,8 @@ function CalendarPage() {
     return dates;
   }, [filteredEvents, range]);
   const activeEvent = dialog?.eventId ? events.find((event) => event.id === dialog.eventId) : null;
+  const preserveOriginalTimes = dialog?.mode === "edit" && activeEvent && draft &&
+    draft.startTime === activeEvent.startTime && draft.endTime === activeEvent.endTime;
   const isFormOpen = dialog?.mode === "create" || dialog?.mode === "edit";
   const calendarEvents = useMemo(() => filteredEvents.map((event) => {
     const categoryStyle = categoryStyles[event.category] || colorStyle("#006a65");
@@ -258,7 +263,7 @@ function CalendarPage() {
   const saveEvent = async (event) => {
     event.preventDefault();
     if (savingRef.current) return;
-    const nextErrors = validateDraft(draft, categorySettings.filter((item) => !item.fixed).map((item) => item.id));
+    const nextErrors = validateDraft(draft, categorySettings.filter((item) => !item.fixed).map((item) => item.id), preserveOriginalTimes);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
       event.currentTarget.elements.namedItem(Object.keys(nextErrors)[0])?.focus();
@@ -470,16 +475,20 @@ function CalendarPage() {
                 </S.Field>
                 <S.Field>
                   <label htmlFor="calendar-startTime">시작 시간 *</label>
-                  <S.Select {...fieldProps("startTime")} required>
-                    <option value="">시작 시간을 선택해 주세요</option>
+                  <S.Select {...fieldProps("startTime")} required={!preserveOriginalTimes}>
+                    <option value="">{dialog.mode === "edit" && !activeEvent?.startTime ? "시작 시간 미정" : "시작 시간을 선택해 주세요"}</option>
+                    {dialog.mode === "edit" && activeEvent?.startTime && !CALENDAR_TIME_OPTIONS.includes(activeEvent.startTime) &&
+                      <option value={activeEvent.startTime}>{formatTimeLabel(activeEvent.startTime)}</option>}
                     {CALENDAR_TIME_OPTIONS.map((time) => <option key={time} value={time}>{formatTimeLabel(time)}</option>)}
                   </S.Select>
                   {fieldError("startTime")}
                 </S.Field>
                 <S.Field>
                   <label htmlFor="calendar-endTime">종료 시간 *</label>
-                  <S.Select {...fieldProps("endTime")} required>
-                    <option value="">종료 시간을 선택해 주세요</option>
+                  <S.Select {...fieldProps("endTime")} required={!preserveOriginalTimes}>
+                    <option value="">{dialog.mode === "edit" && !activeEvent?.endTime ? "종료 시간 미정" : "종료 시간을 선택해 주세요"}</option>
+                    {dialog.mode === "edit" && activeEvent?.endTime && !CALENDAR_TIME_OPTIONS.includes(activeEvent.endTime) &&
+                      <option value={activeEvent.endTime}>{formatTimeLabel(activeEvent.endTime)}</option>}
                     {CALENDAR_TIME_OPTIONS.map((time) => <option key={time} value={time}>{formatTimeLabel(time)}</option>)}
                   </S.Select>
                   {fieldError("endTime")}

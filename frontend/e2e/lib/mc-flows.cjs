@@ -6,11 +6,13 @@ const origin = 'http://127.0.0.1:18080/api';
 const test = base.extend({
   mcTraffic: [async ({ context }, use, info) => {
     const starts = [], responses = [], failures = [];
+    const requestInfo = r => { const url = new URL(r.url()); return { method: r.method(), path: url.pathname,
+      query: Object.fromEntries([...url.searchParams].filter(([key]) => ['page','size','sleepTime'].includes(key))) }; };
     const journal = path.join(process.env.E2E_EVIDENCE_DIR, `traffic-${process.env.E2E_MC_PHASE}-${info.title.split(' ')[0]}.jsonl`);
     const record = (kind, event, list) => { list.push(event); fs.appendFileSync(journal, JSON.stringify({ kind, time:new Date().toISOString(), ...event }) + '\n'); };
-    context.on('request', r => { if (r.url().startsWith(origin)) record('request', { method: r.method(), path: new URL(r.url()).pathname }, starts); });
-    context.on('response', r => { if (r.url().startsWith(origin)) record('response', { method: r.request().method(), path: new URL(r.url()).pathname, status: r.status() }, responses); });
-    context.on('requestfailed', r => { if (r.url().startsWith(origin)) record('failure', { method: r.method(), path: new URL(r.url()).pathname, reason: r.failure()?.errorText }, failures); });
+    context.on('request', r => { if (r.url().startsWith(origin)) record('request', requestInfo(r), starts); });
+    context.on('response', r => { if (r.url().startsWith(origin)) record('response', { ...requestInfo(r.request()), status: r.status() }, responses); });
+    context.on('requestfailed', r => { if (r.url().startsWith(origin)) record('failure', { ...requestInfo(r), reason: r.failure()?.errorText }, failures); });
     try { await use({ starts, responses, failures }); }
     finally {
       const name = `${process.env.E2E_MC_PHASE}-${info.title.split(' ')[0]}`;
@@ -42,10 +44,20 @@ async function edit(page, title) {
 }
 async function applySleep(page, value) {
   await page.getByRole('button', { name: '필터 열기', exact: true }).click();
-  await page.getByRole('checkbox', { name: value, exact: true }).check();
+  const checkbox = page.getByRole('checkbox', { name: value, exact: true });
+  if (!await checkbox.isChecked()) {
+    await checkbox.locator('xpath=ancestor::label[1]').getByText(value, { exact: true }).click();
+  }
+  await expect(checkbox).toBeChecked();
   const endpoint = new URL(page.url()).searchParams.get('tab') === 'recommended' ? '/roommates/recommended' : '/roommates';
   const r = await responseTo(page, 'GET', endpoint, () => page.getByRole('button', { name: '적용', exact: true }).click());
-  return (await r.json()).data;
+  const query = new URL(r.url()).searchParams;
+  expect(query.getAll('sleepTime')).toEqual([value]);
+  expect(query.get('page')).toBe('0'); expect(query.get('size')).toBe('9');
+  await expect(page.getByRole('button', { name: `취침시간 ${value} 필터 취소`, exact: true })).toBeVisible();
+  const data = (await r.json()).data;
+  await assertCards(page, data);
+  return data;
 }
 async function assertCards(page, data) {
   await expect(page.getByRole('link', { name: /상세 프로필 보기$/ })).toHaveCount(data.content.length);
