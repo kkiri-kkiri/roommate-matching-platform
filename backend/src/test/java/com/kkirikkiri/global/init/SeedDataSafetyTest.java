@@ -29,15 +29,17 @@ class SeedDataSafetyTest {
         when(jdbc.queryForObject(anyString(),eq(Integer.class),any(Object.class))).thenReturn(0);
         when(jdbc.queryForObject(anyString(),eq(Long.class),any(Object.class))).thenReturn(1L);
         when(jdbc.queryForList(anyString(),eq(String.class),eq("profile_survey"))).thenReturn(List.of("user_id","completed"));
-        var service=new SeedDataService(users,profiles,dormitories,faculties,majors,encoder,jdbc,community,manifest);
+        var service=new SeedDataService(users,profiles,dormitories,faculties,majors,encoder,jdbc,community,manifest,
+                new SeedCreationPassword("FixtureOnly-4321!",mock(jakarta.validation.Validator.class)));
         service.createSeedData();
         verify(users,times(30)).save(any(User.class));verify(profiles,times(30)).save(any(UserProfile.class));
         verify(manifest,times(30)).registerAfterCommit(argThat(user->user.getUserId()!=null&&user.isEmailVerified()));
         verify(community,times(30)).createPosts(any(User.class),any(Dormitory.class),anyInt());
+        verify(encoder,times(30)).encode("FixtureOnly-4321!");
     }
     @Test void prodHasNoSeedOrFixedAccountInitializerEvenWhenDeleteIsConfigured() {
         new ApplicationContextRunner().withUserConfiguration(SeedDataInitializer.class,SeedDataService.class,
-                SeedUserManifest.class,DevDataInitializer.class)
+                SeedUserManifest.class,SeedCreationPassword.class,DevDataInitializer.class)
                 .withPropertyValues("spring.profiles.active=prod","app.seed.mode=DELETE")
                 .run(context->{assertNull(context.getStartupFailure());
                     assertFalse(context.containsBean("seedDataInitializer"));
@@ -56,10 +58,13 @@ class SeedDataSafetyTest {
         when(users.findBySchoolEmail(anyString())).thenReturn(Optional.of(real));
         when(users.findAllBySchoolEmailIn(any())).thenReturn(List.of(real));
         when(users.findByIdForAccountUpdate(1L)).thenReturn(Optional.of(real));
-        var service=new SeedDataService(users,profiles,dormitories,faculties,majors,mock(PasswordEncoder.class),jdbc,community,manifest);
+        var encoder=mock(PasswordEncoder.class);
+        var creation=mock(SeedCreationPassword.class);
+        var service=new SeedDataService(users,profiles,dormitories,faculties,majors,encoder,jdbc,community,manifest,creation);
         service.createSeedData();service.deleteSeedData();
         verify(users,never()).save(any()); verify(users,never()).deleteAll(any());
         verifyNoInteractions(profiles,jdbc,community); verify(manifest,never()).registerAfterCommit(any());
         verify(manifest,never()).removeAfterCommit(any());
+        verifyNoInteractions(encoder,creation);
     }
 }

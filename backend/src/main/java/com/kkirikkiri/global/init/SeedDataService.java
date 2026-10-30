@@ -41,6 +41,7 @@ public class SeedDataService {
     private final JdbcTemplate jdbcTemplate;
     private final CommunitySeedDataService communitySeedDataService;
     private final SeedUserManifest seedUserManifest;
+    private final SeedCreationPassword seedCreationPassword;
 
     private static final String[] MBTI_LIST = {
             "ISTJ", "ISFJ", "INFJ", "INTJ",
@@ -226,8 +227,7 @@ public class SeedDataService {
              */
             if (user == null) {
 
-                String randomPassword =
-                        UUID.randomUUID() + "!Aa1";
+                String randomPassword = seedCreationPassword.forNewAccount();
 
                 user = new User(
                         passwordEncoder.encode(randomPassword),

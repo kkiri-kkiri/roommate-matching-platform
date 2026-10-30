@@ -107,3 +107,31 @@ tasks.register('prepareE2e') {
         target.text = sourceSets.e2e.runtimeClasspath.asPath
     }
 }
+
+// Opt-in offline exhibition maintenance tool. Never included in the server bootJar.
+sourceSets {
+    exhibition {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+    test {
+        compileClasspath += sourceSets.exhibition.output
+        runtimeClasspath += sourceSets.exhibition.output
+    }
+}
+configurations {
+    exhibitionImplementation.extendsFrom implementation
+    exhibitionCompileOnly.extendsFrom compileOnly
+    exhibitionAnnotationProcessor.extendsFrom annotationProcessor
+    exhibitionRuntimeOnly.extendsFrom runtimeOnly
+}
+tasks.register('prepareExhibition') {
+    description = 'Builds the opt-in exhibition tool without connecting to a database.'
+    group = 'build'
+    dependsOn tasks.named('exhibitionClasses')
+    doLast {
+        def target = layout.buildDirectory.file('exhibition/classpath.txt').get().asFile
+        target.parentFile.mkdirs()
+        target.text = sourceSets.exhibition.runtimeClasspath.asPath
+    }
+}

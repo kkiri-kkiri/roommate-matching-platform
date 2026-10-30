@@ -227,6 +227,10 @@ Matching 보완(2026-10-17): 사용자별 AI 요청량은 기존 auth_limit_buck
 
 ## 프로필과 초기화
 
+전시회용 가상 데이터는 일반 시작 시드와 분리된 선택 실행 도구를 사용한다.
+미리보기·출처 확인·적용 전 백업·실패 복구와 한계는 [EXHIBITION_DATA.md](EXHIBITION_DATA.md)를 따른다.
+도구는 별도 source set이며 서버 bootJar에 포함되지 않는다. 운영에서는 실행하지 않는다.
+
 | 환경 | Hibernate DDL | SQL 초기화 | 개발 계정·시드 |
 | --- | --- | --- | --- |
 | 기본 / prod | validate | never | 빈 자체가 등록되지 않음 |

@@ -157,6 +157,24 @@ public class ChatService {
 		}
 	}
 
+	/**
+	 * 선택 실행 데이터 도구용 신규 생성. 같은 출처의 방이 생기면 기존 방을 채택하거나 갱신하지 않는다.
+	 * 출처·활성 참여자·익명성 검증은 일반 생성과 공유하며 UNIQUE 경합도 실패로 반환한다.
+	 * HTTP 생성 API의 기존 create-or-get 동작은 유지한다.
+	 */
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public ChatRoomResponse createNewRoom(Long userId, ChatRoomCreateRequest request) {
+		validateUserId(userId);
+		validateRequest(request);
+		if (request.category() != ChatRoomCategory.COMMUNITY) {
+			validateId(request.targetUserId());
+			if (userId.equals(request.targetUserId())) throw new CustomException(ErrorCode.INVALID_REQUEST);
+		}
+		TransactionTemplate transaction = new TransactionTemplate(transactionManager);
+		transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		return transaction.execute(status -> createRoom(userId, request, false, true));
+	}
+
 	/** 최신 메시지부터 조회한다. 기본 page=0, size=50이며 읽음 상태는 메시지별 확인 기록이다. */
 	public RoommatePageResponse<ChatMessageResponse> getMessages(
 			Long userId, Long roomId, ChatMessageListRequest request) {
@@ -259,6 +277,10 @@ public class ChatService {
 	}
 
 	private ChatRoomResponse createRoom(Long userId, ChatRoomCreateRequest request, boolean recovery) {
+		return createRoom(userId, request, recovery, false);
+	}
+
+	private ChatRoomResponse createRoom(Long userId, ChatRoomCreateRequest request, boolean recovery, boolean requireNew) {
 		User user = findUser(userId, ErrorCode.UNAUTHORIZED);
 		User target = request.category() == ChatRoomCategory.COMMUNITY
 				? null : findUser(request.targetUserId(), ErrorCode.INVALID_REQUEST);
@@ -305,6 +327,7 @@ public class ChatService {
 		var existing = chatRoomRepository.findByRoomKey(
 				ChatRoom.createRoomKey(userId, target.getUserId(), request.category(), post, comment));
 		if (existing.isPresent()) {
+			if (requireNew) throw new CustomException(ErrorCode.INVALID_REQUEST);
 			ChatRoomMember activeMember = findActiveMember(userId, existing.get().getChatRoomId());
 			if (post != null && !post.isAnonymous()) existing.get().updateSourcePost(post);
 			return toRoomResponse(activeMember);
