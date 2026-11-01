@@ -184,6 +184,7 @@ layer-prompts.md
 !backend/migrations/README.md
 !backend/tools/auth-user-survey-http5/README.md
 backend/local-data/
+/local-data/
 
 # Validation results are local, disposable outputs. Keep code and reports versioned.
 /backend/tools/auth-mysql-concurrency/results/

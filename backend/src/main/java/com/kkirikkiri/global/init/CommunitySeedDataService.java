@@ -18,6 +18,17 @@ import java.util.List;
 @Slf4j
 public class CommunitySeedDataService {
 
+    /** Exact historical signatures for the opt-in exhibition migration; never adopt by title alone. */
+    public record LegacyPost(int index, String category, String title, String content) {}
+
+    public static List<LegacyPost> legacyPosts() {
+        return BOARDS.stream().flatMap(board -> java.util.stream.IntStream.range(0, board.posts().size())
+                .mapToObj(index -> new LegacyPost(index + 1, board.category(),
+                        "[SEED] %02d %s".formatted(index + 1, board.posts().get(index).title()),
+                        board.posts().get(index).content() + "\n\n※ 커뮤니티 기능 확인용 테스트 게시글입니다.")))
+                .toList();
+    }
+
     private final CommunityPostRepository communityPostRepository;
     private final JdbcTemplate jdbcTemplate;
 

@@ -41,6 +41,7 @@ public class SeedDataService {
     private final JdbcTemplate jdbcTemplate;
     private final CommunitySeedDataService communitySeedDataService;
     private final SeedUserManifest seedUserManifest;
+    private final SeedCreationPassword seedCreationPassword;
 
     private static final String[] MBTI_LIST = {
             "ISTJ", "ISFJ", "INFJ", "INTJ",
@@ -226,8 +227,7 @@ public class SeedDataService {
              */
             if (user == null) {
 
-                String randomPassword =
-                        UUID.randomUUID() + "!Aa1";
+                String randomPassword = seedCreationPassword.forNewAccount();
 
                 user = new User(
                         passwordEncoder.encode(randomPassword),
@@ -437,6 +437,12 @@ public class SeedDataService {
             User user,
             int index
     ) {
+        return legacySurveyValues(user.getUserId(), index);
+    }
+
+    /** Exact historical answers for offline ownership checks; never authorizes account adoption/deletion. */
+    public static Map<String, Object> legacySurveyValues(long userId, int index) {
+        if (index < 1 || index > SEED_USER_COUNT) throw new IllegalArgumentException("Unknown legacy slot");
 
         int i = index - 1;
 
@@ -445,7 +451,7 @@ public class SeedDataService {
 
         values.put(
                 "user_id",
-                user.getUserId()
+                userId
         );
 
         values.put(
