@@ -7,6 +7,17 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ExhibitionSafetyTest {
+    @Test void demoDataNeverTargetsNormalOrOriginalSchemas() {
+        for (String schema : List.of("kkirikkiri", "kkirikkiri_exhibition_20261031", "mysql", "kkirikkiri_demo50_x;DROP")) {
+            assertThrows(IllegalStateException.class, () -> DemoDataTool.validateTarget(Map.of(
+                    "SPRING_PROFILES_ACTIVE", "local", "DEMO_DB_SCHEMA", schema,
+                    "DEMO_DB_URL", "jdbc:mysql://localhost:3306/" + schema,
+                    "DEMO_DB_USERNAME", "unused", "DEMO_DB_PASSWORD", "unused")));
+        }
+        assertNotEquals(ExhibitionCatalog.students().get(30).key(), ExhibitionCatalog.moderator().key());
+        assertEquals("seed_user31@hknu.ac.kr", ExhibitionCatalog.students().get(30).email());
+        assertEquals("admin/moderator", ExhibitionCatalog.moderator().key());
+    }
     @TempDir Path directory;
     private Map<String, String> local() {
         return new HashMap<>(Map.of("SPRING_PROFILES_ACTIVE", "local", "EXHIBITION_ENVIRONMENT", "local-exhibition",

@@ -437,6 +437,12 @@ public class SeedDataService {
             User user,
             int index
     ) {
+        return legacySurveyValues(user.getUserId(), index);
+    }
+
+    /** Exact historical answers for offline ownership checks; never authorizes account adoption/deletion. */
+    public static Map<String, Object> legacySurveyValues(long userId, int index) {
+        if (index < 1 || index > SEED_USER_COUNT) throw new IllegalArgumentException("Unknown legacy slot");
 
         int i = index - 1;
 
@@ -445,7 +451,7 @@ public class SeedDataService {
 
         values.put(
                 "user_id",
-                user.getUserId()
+                userId
         );
 
         values.put(

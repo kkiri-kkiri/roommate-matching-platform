@@ -1,5 +1,7 @@
 # 전시회 전용 로컬 DB 실행 및 실제 적용 결과
 
+> 과거 실행 기록이다. 최종 서버 방식은 IntelliJ의 일반 실행이며 현재 안내는 [DEMO_DATA.md](DEMO_DATA.md)다.
+
 현재 닉네임·대화 문구 및 기존 ID를 보존하는 갱신 절차/결과는
 [EXHIBITION_TEXT_REFRESH.md](EXHIBITION_TEXT_REFRESH.md)를 따른다. 아래 최초 적용 기록의 이전 닉네임은 이력이다.
 

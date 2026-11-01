@@ -8,11 +8,15 @@ import com.kkirikkiri.survey.dto.*;
 public final class ExhibitionCatalog {
     private ExhibitionCatalog() {}
     public static final String VERSION = "exhibition-v2-campus";
+    public static final int LEGACY_STUDENT_COUNT = 30;
+    public static final int STUDENT_COUNT = 50;
+    public static final String MODERATOR_KEY = "admin/moderator";
     public record Student(int slot, String nickname, String gender, String dormitory, String faculty,
             String major, short birthYear, String admissionYear, String grade, String mbti,
             ProfileSurveyRequest survey, RoommatePreferenceRequest preference) {
-        public String email() { return slot == 31 ? "exhibition_admin@hknu.ac.kr" : "seed_user%02d@hknu.ac.kr".formatted(slot); }
-        public String key() { return "user/" + slot; }
+        public boolean moderator() { return slot == 0; }
+        public String email() { return moderator() ? "exhibition_admin@hknu.ac.kr" : "seed_user%02d@hknu.ac.kr".formatted(slot); }
+        public String key() { return moderator() ? MODERATOR_KEY : "user/" + slot; }
     }
     public record Post(int slot, String category, String title, String content, String comment, String reply,
             boolean anonymous) {
@@ -26,7 +30,10 @@ public final class ExhibitionCatalog {
     private static final String[] NAMES = {"걍집가고싶다", "말차라떼", "잠좀자자", "냥냥펀치", "배고픈감자", "자전거도둑아님",
             "아침못먹음", "감자8호", "필름값비싸", "무음모드", "귤까먹는중", "아아연하게", "산책갈사람", "탭만서른개",
             "낯가림심함", "컨트롤제트", "소금빵두개", "향수안씀", "실습끝", "마감살려줘", "에어팟어딨지", "도서관출석",
-            "금요일엔집", "양말한짝", "오늘도밤샘", "과제는내일", "민초조아", "침대최고", "알람하나만", "밥먹고할게"};
+            "금요일엔집", "양말한짝", "오늘도밤샘", "과제는내일", "민초조아", "침대최고", "알람하나만", "밥먹고할게",
+            "공강어디감", "딸기우유", "충전기빌려줘", "후드집업", "학식두그릇", "책갈피분실", "종강만기다림", "새벽편의점",
+            "우산또두고옴", "떡볶이순한맛", "계단은힘들어", "노트북무거워", "바닐라빈", "오늘은일찍잠", "점심뭐먹지",
+            "버스놓쳤다", "조별과제중", "고양이목격", "물마시는중", "산책한바퀴"};
     private static final String[] INTRO = {
             "아침 수업이 많아 자정 전에는 쉬는 편이에요. 시험 기간에는 서로 조용히 응원해요.",
             "차와 책을 좋아해요. 공용 공간은 주말에 함께 정리하면 좋겠습니다.",
@@ -57,7 +64,27 @@ public final class ExhibitionCatalog {
             "게임은 가끔 하지만 음성 채팅은 방에서 하지 않아요.",
             "시험 기간에는 도서관에 오래 있어요. 생활 규칙을 먼저 함께 정하고 싶어요.",
             "평일과 주말 일정이 조금 달라요. 알람은 짧게 끄는 편입니다.",
-            "각자 시간을 보내다가 가끔 야식 먹는 사이면 좋아요. 쓰레기는 바로 정리해요."};
+            "각자 시간을 보내다가 가끔 야식 먹는 사이면 좋아요. 쓰레기는 바로 정리해요.",
+            "공강이면 도서관 아니면 카페에 있어요. 방에서는 조용히 쉬고 싶고 청소는 날짜 정해서 같이 해요!",
+            "아침 수업 있는 날은 일찍 자요. 냉장고 간식은 이름 붙여두는 편이고 같이 먹을 땐 따로 말할게요.",
+            "노트북으로 과제할 일이 많아요. 밤에는 이어폰 쓰고 조명도 낮출게요. 불편한 건 편하게 얘기해 주세요.",
+            "옷이 좀 많아서 제 공간 안에 잘 정리하려고 해요ㅋㅋ 빨래는 주중에 하고 건조대는 바로 치워요.",
+            "학식 같이 먹을 사람 있으면 좋아요. 매번 같이 다니기보단 시간 맞을 때 편하게 보는 사이면 좋겠어요.",
+            "책 읽는 거 좋아하고 잠귀가 밝아요. 소등 시간만 서로 맞으면 다른 건 대화하면서 정하고 싶어요.",
+            "동아리 끝나고 늦게 오는 날이 있어요. 들어오기 전에 톡 남기고 씻을 때도 최대한 조심할게요.",
+            "밤에 과제가 잘되는 편인데 밤샘은 잘 안 해요. 통화는 밖에서 하고 방에서는 이어폰 꼭 써요.",
+            "비 오는 날엔 방에서 영화 봐요. 이어폰 쓰니까 소리 걱정은 없고 환기하는 시간만 같이 맞춰요.",
+            "요리 영상 보는 거 좋아해요. 방에서는 냄새 안 나는 간식만 먹고 쓰레기는 그날 버리는 편이에요.",
+            "운동하고 돌아오면 바로 씻어요. 아침에 바쁜 날은 전날에 말할게요. 공용 세제는 같이 사도 좋아요.",
+            "실습 과제가 많아서 짐이 좀 있어요. 책상 밖으로 안 넘치게 정리하고 주말엔 집에 자주 가요.",
+            "커피는 좋아하지만 방에 향 강한 건 잘 안 둬요. 서로 물건 빌릴 때 한마디씩 해주면 좋겠어요.",
+            "이번 학기는 생활 패턴 좀 잡으려고요. 자정 전후로 자고 아침 알람은 바로 끄려고 노력해요.",
+            "처음엔 조용한데 친해지면 말 많아져요ㅋㅋ 각자 쉬는 시간은 지키면서 가끔 밥 같이 먹어요.",
+            "통학하다가 기숙사 처음 들어와요. 생활 규칙 먼저 같이 정하고 안 맞는 건 그때그때 얘기하고 싶어요.",
+            "팀플 회의는 스터디룸에서 해요. 방에서는 쉬거나 혼자 과제하고 청소는 주말에 몰아서 합니다.",
+            "산책하다 고양이 만나면 사진 찍는 게 취미예요. 주중엔 일찍 자고 주말엔 조금 늦잠 자요.",
+            "더위를 좀 타서 환기 자주 해요. 창문 여는 건 먼저 물어볼게요. 작은 소음은 크게 신경 안 써요.",
+            "저녁 먹고 한 바퀴 걷는 편이에요. 룸메랑 매일 붙어 있진 않아도 편하게 인사하는 사이면 좋겠어요."};
     private static final String[][] ACADEMICS = {
             {"컴퓨터응용수학부", "소프트웨어융합전공"}, {"법경영학부", "경영학전공"},
             {"건설환경공학부", "환경공학전공"}, {"디자인예술스포츠학부", "시각미디어디자인전공"},
@@ -70,17 +97,18 @@ public final class ExhibitionCatalog {
 
     public static List<Student> students() {
         List<Student> result = new ArrayList<>();
-        for (int i = 0; i < 30; i++) {
-            int rhythm = i / 6;
+        for (int i = 0; i < STUDENT_COUNT; i++) {
+            // Original answers stay stable. Demographics match the verified latest thirty-user DB.
+            int rhythm = i < LEGACY_STUDENT_COUNT ? i / 6 : (i - LEGACY_STUDENT_COUNT) % 5;
             String[] academic = ACADEMICS[i % ACADEMICS.length];
-            result.add(new Student(i + 1, NAMES[i], i < 15 ? "남자" : "여자", DORMS[(i / 3) % 4],
-                    academic[0], academic[1], (short)(2007 - i % 4 - (i % 3 == 0 ? 1 : 0)), "%02d".formatted(26 - i % 4),
+            result.add(new Student(i + 1, NAMES[i], i < 30 || i % 2 == 0 ? "남자" : "여자", DORMS[(i / 3) % 4],
+                    academic[0], academic[1], (short)(i < 30 ? 2000 + i % 5 : 2002 + (i - 30) % 5), "%02d".formatted(i < 30 ? 22 + i % 4 : 26 - i % 4),
                     (1 + i % 4) + "학년", MBTI[i % MBTI.length], survey(i, rhythm), preference(i, rhythm)));
         }
         return List.copyOf(result);
     }
     public static Student moderator() {
-        return new Student(31, "전시안내", "여자", "나래", ACADEMICS[0][0], ACADEMICS[0][1],
+        return new Student(0, "전시안내", "여자", "나래", ACADEMICS[0][0], ACADEMICS[0][1],
                 (short)2003, "23", "4학년", "ISFJ", survey(0, 0), preference(0, 0));
     }
 

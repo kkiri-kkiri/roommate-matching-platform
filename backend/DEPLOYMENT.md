@@ -227,6 +227,14 @@ Matching 보완(2026-10-17): 사용자별 AI 요청량은 기존 auth_limit_buck
 
 ## 프로필과 초기화
 
+2026-11-01 최신 더미 회원 50명은 [DEMO_DATA.md](DEMO_DATA.md)의 공통 데이터 준비 도구를 사용한다.
+일반 `BackendApplication`과 기본 `kkirikkiri`가 최종 사용 방식이다. 사용자 승인 후 개인 로컬 기본 DB에도
+실제 적용·보존 검사·8080 API/브라우저 검증을 완료했다. 공용/운영 DB 적용은 아니다.
+[개인 로컬 적용 결과와 백업](DEMO_LOCAL_APPLY_20261101.md)을 참고한다.
+기본 DB 복제 병합·기존 계정 보존·패치 재생·백업 복원·API/화면 검증 및 최종 수동 적용은
+[DEMO_MERGE_VALIDATION.md](DEMO_MERGE_VALIDATION.md)를 따른다. 실제 기본 DB 적용은 별도 승인 전까지 금지한다.
+기본 DB 병합과 과거 설문 컬럼 마이그레이션은 자동 실행하지 않는다. 공통 local 설정은 유지한다.
+
 전시회용 가상 데이터는 일반 시작 시드와 분리된 선택 실행 도구를 사용한다.
 미리보기·출처 확인·적용 전 백업·실패 복구와 한계는 [EXHIBITION_DATA.md](EXHIBITION_DATA.md)를 따른다.
 도구는 별도 source set이며 서버 bootJar에 포함되지 않는다. 운영에서는 실행하지 않는다.

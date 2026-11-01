@@ -81,6 +81,45 @@ class ExhibitionDataIntegrationTest {
     }
     private long count(String table) { return db.count("SELECT COUNT(*) FROM " + table); }
 
+    @Test void expansionPreservesAllOriginalRowsUsesCalculatorAndRefusesDuplicatesStalePlansAndIncompleteRetries() throws Exception {
+        var oldPlanner = new ExhibitionPlanner(db, users, legacy, manager, ExhibitionCatalog.students().subList(0, 30));
+        ExhibitionJournal.State original;
+        try (var oldJournal = new ExhibitionJournal(directory.resolve("original.json"))) {
+            var plan = oldPlanner.preview(empty(), ANCHOR, true);
+            original = writer.apply(oldJournal, empty(), oldPlanner, plan, plan.token(), legacy, "Fictional123!");
+        }
+        var baseline = DemoDataSnapshot.capture(jdbc);
+        Map<String, Long> scenarios = new TreeMap<>();
+        original.owned().forEach((key, value) -> { if (value.kind().equals("user")) scenarios.put(key, value.id()); });
+        var receipt = new DemoDataExpansion.Receipt("h2-isolated", "original", ANCHOR.toString(), "READY", DemoDataExpansion.catalog(), baseline, null, scenarios);
+        Path receiptFile = directory.resolve("expansion.json");
+        DemoDataExpansion.write(receiptFile, receipt);
+        var expansion = new DemoDataExpansion(context);
+        var newManifest = new SeedUserManifest(directory.resolve("added.properties").toString());
+        String token = expansion.preview(receipt, receipt.database());
+        assertEquals(baseline, DemoDataSnapshot.capture(jdbc), "Preview must not write");
+        assertThrows(IllegalStateException.class, () -> expansion.apply(receiptFile, receipt, receipt.database(), "0".repeat(64), newManifest, null));
+        String originalManifest = Files.readString(directory.resolve("legacy.properties"));
+        var completed = expansion.apply(receiptFile, receipt, receipt.database(), token, newManifest, "Fictional123!");
+        baseline.assertPreservedBy(DemoDataSnapshot.capture(jdbc));
+        assertEquals(originalManifest, Files.readString(directory.resolve("legacy.properties")));
+        assertEquals(51, count("`user`")); assertEquals(50, count("profile_survey"));
+        assertEquals(50, count("roommate_preference")); assertEquals(900, count("preference_criterion"));
+        assertEquals(2450, count("roommate_match"));
+        long new31 = completed.scenarios().get("user/31");
+        assertNotEquals(completed.scenarios().get(ExhibitionCatalog.MODERATOR_KEY), new31);
+        assertEquals(UserRole.USER, users.findById(new31).orElseThrow().getRole());
+        assertTrue(newManifest.contains(users.findById(new31).orElseThrow()));
+        var allRows = DemoDataSnapshot.capture(jdbc);
+        String repeated = expansion.preview(completed, completed.database());
+        expansion.apply(receiptFile, completed, completed.database(), repeated, newManifest, null);
+        assertEquals(allRows, DemoDataSnapshot.capture(jdbc));
+        jdbc.update("UPDATE community_post SET title='수동 수정' WHERE post_id=?", original.owned().get("post/자유게시판/1").id());
+        assertThrows(IllegalStateException.class, () -> expansion.preview(completed, completed.database()));
+        var incomplete = new DemoDataExpansion.Receipt(receipt.database(), receipt.source(), receipt.anchor(), "APPLYING", receipt.catalog(), baseline, null, scenarios);
+        assertThrows(IllegalStateException.class, () -> expansion.preview(incomplete, incomplete.database()));
+    }
+
     @Test void textRefreshUpdatesOnlyTextRetainsEveryRelationshipAndRefusesManualOrStaleData() throws Exception {
         ExhibitionTextRefresh.validateCopy(validator);
         try (var journal = new ExhibitionJournal(directory.resolve("exhibition.json"))) {
@@ -90,7 +129,7 @@ class ExhibitionDataIntegrationTest {
                 var old = e.getValue();
                 switch (old.kind()) {
                     case "user" -> {
-                        if (e.getKey().equals("user/31")) continue;
+                        if (e.getKey().equals(ExhibitionCatalog.MODERATOR_KEY)) continue;
                         jdbc.update("UPDATE user_profile SET nickname=? WHERE user_id=?", "이전이름" + old.id(), old.id());
                     }
                     case "post" -> {
@@ -107,7 +146,7 @@ class ExhibitionDataIntegrationTest {
             String protectedBefore = ExhibitionTextRefresh.protectedSnapshot(db);
             String originalManifest = Files.readString(directory.resolve("legacy.properties"));
             var plan = planner.preview(oldState, ANCHOR, true, true);
-            assertEquals(30L, plan.counts().get("user:UPDATE"));
+            assertEquals(50L, plan.counts().get("user:UPDATE"));
             assertEquals(80L, plan.counts().get("post:UPDATE"));
             assertEquals(8L, plan.counts().get("chat:UPDATE"));
             assertEquals(33L, plan.effects().get("chat_message.text.update"));
@@ -121,7 +160,7 @@ class ExhibitionDataIntegrationTest {
                 assertEquals(old.children(), updated.owned().get(key).children());
             });
             var again = planner.preview(updated, ANCHOR, true, true);
-            assertEquals(137L, again.counts().values().stream().mapToLong(Long::longValue).sum());
+            assertEquals(157L, again.counts().values().stream().mapToLong(Long::longValue).sum());
             assertTrue(again.entries().stream().allMatch(e -> e.action() == ExhibitionPlanner.Action.KEEP));
             var missingUser = new TreeMap<>(updated.owned());
             missingUser.remove("user/1");
@@ -130,7 +169,7 @@ class ExhibitionDataIntegrationTest {
             assertEquals(ExhibitionPlanner.Action.SKIP, missingPlan.entry("post/자유게시판/1").action());
             assertEquals(ExhibitionPlanner.Action.SKIP, missingPlan.entry("chat/morning").action());
             var noLegacy = new ExhibitionPlanner(db, users, new SeedUserManifest(directory.resolve("missing.properties").toString()), manager);
-            assertEquals(30, noLegacy.preview(updated, ANCHOR, true, true).entries().stream()
+            assertEquals(50, noLegacy.preview(updated, ANCHOR, true, true).entries().stream()
                     .filter(e -> e.kind().equals("user") && e.action() == ExhibitionPlanner.Action.SKIP).count());
             String after = databaseSnapshot();
             assertEquals(updated, writer.apply(journal, updated, planner, again, again.token(), legacy, null));
@@ -164,7 +203,7 @@ class ExhibitionDataIntegrationTest {
         String before = databaseSnapshot();
         var preview = planner.preview(empty(), ANCHOR, true);
         assertEquals(before, databaseSnapshot());
-        assertEquals(31L, preview.counts().get("user:CREATE"));
+        assertEquals(51L, preview.counts().get("user:CREATE"));
         assertEquals(80L, preview.counts().get("post:CREATE"));
         for (var student : ExhibitionCatalog.students()) {
             assertTrue(validator.validate(student.survey()).isEmpty());
@@ -172,14 +211,14 @@ class ExhibitionDataIntegrationTest {
         }
         try (var journal = new ExhibitionJournal(directory.resolve("exhibition.json"))) {
             var state = apply(journal, empty(), true);
-            assertEquals(31, count("`user`")); assertEquals(31, count("user_profile"));
-            assertEquals(30, count("profile_survey")); assertEquals(30, count("roommate_preference"));
-            assertEquals(540, count("preference_criterion"));
+            assertEquals(51, count("`user`")); assertEquals(51, count("user_profile"));
+            assertEquals(50, count("profile_survey")); assertEquals(50, count("roommate_preference"));
+            assertEquals(900, count("preference_criterion"));
             assertEquals(80, count("community_post")); assertEquals(160, count("community_comment"));
             assertEquals(200, count("post_like")); assertEquals(80, count("comment_like"));
             assertEquals(8, count("chat_room")); assertEquals(16, count("chat_room_member")); assertEquals(33, count("chat_message"));
-            assertEquals(12, count("calendar_event")); assertEquals(3, count("report")); assertEquals(870, count("roommate_match"));
-            assertEquals(15, db.count("SELECT COUNT(*) FROM user_profile p JOIN `user` u ON u.user_id=p.user_id WHERE p.gender='여자' AND u.role='USER'"));
+            assertEquals(12, count("calendar_event")); assertEquals(3, count("report")); assertEquals(2450, count("roommate_match"));
+            assertEquals(10, db.count("SELECT COUNT(*) FROM user_profile p JOIN `user` u ON u.user_id=p.user_id WHERE p.gender='여자' AND u.role='USER'"));
             long viewer = state.owned().get("user/1").id();
             assertTrue(surveys.getMyProfileSurvey(viewer).completed());
             assertTrue(preferences.getMyRoommatePreference(viewer).completed());
@@ -349,7 +388,7 @@ class ExhibitionDataIntegrationTest {
         try (var journal = new ExhibitionJournal(directory.resolve("exhibition.json"))) {
             var plan = planner.preview(empty(), ANCHOR, false);
             assertThrows(IllegalStateException.class, () -> writer.apply(journal, empty(), planner, plan, plan.token(), legacy, null));
-            assertEquals(30, count("`user`")); assertEquals(80, count("community_post"));
+            assertEquals(50, count("`user`")); assertEquals(80, count("community_post"));
             assertEquals(1, count("chat_room")); assertEquals(2, count("chat_room_member"));
             assertEquals(0, count("chat_message"));
             assertThrows(IllegalStateException.class, () -> journal.read("h2-isolated", ANCHOR.toString()));

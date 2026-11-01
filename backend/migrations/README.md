@@ -1,5 +1,9 @@
 # 익명 채팅 키 마이그레이션
 
+과거 생활 설문 필수 컬럼의 수동 보관·제거 절차는
+[20261101_profile_survey_legacy_columns.md](20261101_profile_survey_legacy_columns.md)를 따른다.
+기본 DB에 자동 적용하지 않는다.
+
 채팅 참여 상태 및 메시지별 읽음 확인 전환은 [20261019_chat_message_receipts.md](20261019_chat_message_receipts.md)를 따른다.
 
 채팅 목록 페이지 조회/집계의 비고유 인덱스 후보 3개는

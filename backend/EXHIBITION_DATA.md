@@ -1,5 +1,7 @@
 # 전시회 시연 데이터 도구
 
+> 2026-10-31의 30명 구성 기록이다. 현재 50명 준비와 일반 실행 전환은 [DEMO_DATA.md](DEMO_DATA.md)를 따른다.
+
 닉네임·게시글·댓글·메시지의 기존 ID를 보존하는 후속 갱신은
 [EXHIBITION_TEXT_REFRESH.md](EXHIBITION_TEXT_REFRESH.md)의 `TextPreview` / `TextApply`를 사용한다.
 아래의 채팅 추가 전용 제한은 일반 생성 모드에 적용된다. 텍스트 갱신 모드는 전체 출처 지문 검증을 유지한다.

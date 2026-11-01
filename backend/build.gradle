@@ -135,3 +135,15 @@ tasks.register('prepareExhibition') {
         target.text = sourceSets.exhibition.runtimeClasspath.asPath
     }
 }
+
+// Shared data preparation only; BackendApplication and bootJar remain the normal server.
+tasks.register('prepareDemoData') {
+    group = 'build'
+    description = 'Builds the portable fifty-student data preparation command; never opens a DB.'
+    dependsOn tasks.named('exhibitionClasses')
+    doLast {
+        def target = layout.buildDirectory.file('demo-data/classpath.txt').get().asFile
+        target.parentFile.mkdirs()
+        target.text = sourceSets.exhibition.runtimeClasspath.asPath
+    }
+}

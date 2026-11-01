@@ -85,7 +85,7 @@ public class ExhibitionWriter {
             // Recheck after locks, not just before acquiring them.
             if (!planner.preview(state, anchor, current.reports()).token().equals(expectedToken))
                 throw new IllegalStateException("Targets changed while acquiring locks; no core writes committed");
-            for (var s : studentList(current.reports())) {
+            for (var s : studentList(planner.students(), current.reports())) {
                 var entry = current.entry(s.key());
                 if (!entry.changes()) continue;
                 long uid = writeStudent(s, entry, legacy, newPassword, anchor);
@@ -138,14 +138,14 @@ public class ExhibitionWriter {
                         List.of("게시판 분류 확인 요청입니다. 가상의 전시 시나리오이며 실제 위반 내용은 없습니다.",
                                 "동일 내용 여부를 확인하는 가상의 신고 사례입니다. 실제 이용자 조치는 하지 않습니다.",
                                 "안내 문구를 오해한 가상 신고입니다. 검토 후 반려하는 흐름을 보여 줍니다.").get(i - 1)));
-                if (i > 1) admin.processReport(uid(owned, 31), rid, new AdminReportProcessRequest(i == 2 ? "COMPLETE" : "REJECT"));
+                if (i > 1) admin.processReport(owned.get(ExhibitionCatalog.MODERATOR_KEY).id(), rid, new AdminReportProcessRequest(i == 2 ? "COMPLETE" : "REJECT"));
                 owned.put(entry.key(), marker(entry, rid, reporter, Map.of()));
                 em.flush();
                 capture(owned, entry.key(), db);
             }
         });
         if (current.entries().stream().anyMatch(e -> e.kind().equals("user") && e.changes())) {
-            List<Long> demoIds = ExhibitionCatalog.students().stream().filter(s -> current.entry(s.key()).usable())
+            List<Long> demoIds = planner.students().stream().filter(s -> current.entry(s.key()).usable())
                     .map(s -> uid(owned, s.slot())).sorted().toList();
             // Never refreshIncoming/outgoing: those would also touch real-user pairs.
             for (Long id : demoIds) matching.refreshTargets(id, demoIds.stream().filter(other -> !other.equals(id)).toList());
@@ -162,7 +162,7 @@ public class ExhibitionWriter {
         return completed;
     }
 
-    private long writeStudent(ExhibitionCatalog.Student s, ExhibitionPlanner.Entry entry,
+    long writeStudent(ExhibitionCatalog.Student s, ExhibitionPlanner.Entry entry,
             SeedUserManifest legacy, String newPassword, LocalDate anchor) {
         long id;
         if (entry.action() == CREATE) {
@@ -174,18 +174,18 @@ public class ExhibitionWriter {
             var dorm = dormitories.findByDormitoryName(s.dormitory()).filter(Dormitory::isActive).orElseThrow();
             var faculty = faculties.findByFacultyName(s.faculty()).filter(Faculty::isActive).orElseThrow();
             var major = majors.findByFaculty_FacultyIdAndMajorName(faculty.getFacultyId(), s.major()).filter(Major::isActive).orElseThrow();
-            User user = new User(encoder.encode(password), s.email(), s.slot() == 31 ? UserRole.ADMIN : UserRole.USER);
+            User user = new User(encoder.encode(password), s.email(), s.moderator() ? UserRole.ADMIN : UserRole.USER);
             user.verifyEmail(); users.saveAndFlush(user); id = user.getUserId();
             profiles.saveAndFlush(new UserProfile(user, s.nickname(), s.gender(), dorm, faculty, major,
                     s.birthYear(), s.admissionYear(), s.grade(), s.mbti()));
             // The optional moderator must never become eligible for the old DELETE seed selector.
-            if (s.slot() <= 30) legacy.registerAfterCommit(user);
+            if (!s.moderator()) legacy.registerAfterCommit(user);
         } else {
             id = entry.id();
             userService.updateMyInfo(id, new UserUpdateRequest(s.nickname(), s.dormitory(), s.grade(), s.faculty(), s.major(),
                     s.mbti().substring(0, 1), s.mbti().substring(1, 2), s.mbti().substring(2, 3), s.mbti().substring(3, 4)));
         }
-        if (s.slot() <= 30) {
+        if (!s.moderator()) {
             surveys.saveOrUpdateMyProfileSurvey(id, s.survey());
             preferences.saveOrUpdateMyRoommatePreference(id, s.preference());
         }
@@ -310,8 +310,8 @@ public class ExhibitionWriter {
     private static long uid(Map<String, ExhibitionJournal.Owned> owned, int slot) { return owned.get("user/" + slot).id(); }
     static int commenterSlot(int slot) { return (slot + 1) % 30 + 1; }
     static int likerSlot(int slot, int offset) { return (slot + 3 + offset) % 30 + 1; }
-    private static List<ExhibitionCatalog.Student> studentList(boolean moderator) {
-        List<ExhibitionCatalog.Student> result = new ArrayList<>(ExhibitionCatalog.students());
+    private static List<ExhibitionCatalog.Student> studentList(List<ExhibitionCatalog.Student> students, boolean moderator) {
+        List<ExhibitionCatalog.Student> result = new ArrayList<>(students);
         if (moderator) result.add(ExhibitionCatalog.moderator());
         return result;
     }

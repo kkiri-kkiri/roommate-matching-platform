@@ -103,6 +103,9 @@ public final class ExhibitionTool {
             if (options.textOnly()) ExhibitionTextRefresh.validateCopy(context.getBean(jakarta.validation.Validator.class));
             try (var journal = new ExhibitionJournal(options.journal())) {
                 var state = journal.read(identity, options.anchor().toString());
+                var oldModerator = state.owned().get("user/31");
+                if (oldModerator != null && jdbc.queryForObject("SELECT COUNT(*) FROM `user` WHERE user_id=? AND role='ADMIN'", Long.class, oldModerator.id()) > 0)
+                    throw new IllegalStateException("Legacy moderator key detected. Preserve source; use the verified clone expansion workflow instead.");
                 var plan = planner.preview(state, options.anchor(), options.reports(), options.textOnly());
                 printPlan(plan);
                 if (options.textOnly()) printTextReview(new ExhibitionDatabase(jdbc), plan);
@@ -144,7 +147,7 @@ public final class ExhibitionTool {
         plan.effects().forEach((key, count) -> System.out.println("Affected rows " + key + "=" + count));
         for (var entry : plan.entries()) System.out.println(entry.action() + " " + entry.key() + " id=" + entry.id()
                 + " owner=" + entry.owner() + (entry.reason() == null ? "" : " reason=" + entry.reason()));
-        long participants = plan.entries().stream().filter(e -> e.kind().equals("user") && !e.key().equals("user/31") && e.usable()).count();
+        long participants = plan.entries().stream().filter(e -> e.kind().equals("user") && !e.key().equals(ExhibitionCatalog.MODERATOR_KEY) && e.usable()).count();
         System.out.println(plan.textOnly() ? "Text refresh: no inserts/deletes; profile, survey, matching, timestamps and relationships preserved."
                 : "Matching scope: only the verified fictional cohort, at most " + participants * (participants - 1) + " directional pairs; existing calculator only.");
         System.out.println("Preview token: " + plan.token());

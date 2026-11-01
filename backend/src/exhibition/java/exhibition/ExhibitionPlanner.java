@@ -28,11 +28,18 @@ public final class ExhibitionPlanner {
     private final UserRepository users;
     private final SeedUserManifest legacy;
     private final TransactionTemplate read;
+    private final List<ExhibitionCatalog.Student> cohort;
     public ExhibitionPlanner(ExhibitionDatabase db, UserRepository users, SeedUserManifest legacy,
             PlatformTransactionManager manager) {
+        this(db, users, legacy, manager, ExhibitionCatalog.students());
+    }
+    ExhibitionPlanner(ExhibitionDatabase db, UserRepository users, SeedUserManifest legacy,
+            PlatformTransactionManager manager, List<ExhibitionCatalog.Student> cohort) {
         this.db = db; this.users = users; this.legacy = legacy;
+        this.cohort = List.copyOf(cohort);
         read = new TransactionTemplate(manager); read.setReadOnly(true);
     }
+    List<ExhibitionCatalog.Student> students() { return cohort; }
     public Plan preview(ExhibitionJournal.State state, LocalDate anchor, boolean reports) {
         return preview(state, anchor, reports, false);
     }
@@ -44,12 +51,12 @@ public final class ExhibitionPlanner {
     }
     private Plan build(ExhibitionJournal.State state, LocalDate anchor, boolean reports, boolean textOnly) {
         List<Entry> entries = new ArrayList<>();
-        List<ExhibitionCatalog.Student> students = new ArrayList<>(ExhibitionCatalog.students());
+        List<ExhibitionCatalog.Student> students = new ArrayList<>(cohort);
         if (reports) students.add(ExhibitionCatalog.moderator());
         for (var student : students) entries.add(user(student, state));
         if (textOnly) entries.replaceAll(e -> !state.owned().containsKey(e.key())
                 ? new Entry(e.key(), e.kind(), Action.SKIP, e.id(), e.owner(), e.before(), e.desired(), "text refresh requires existing exhibition provenance")
-                : e.kind().equals("user") && !e.key().equals("user/31") && e.id() != null
+                : e.kind().equals("user") && !e.key().equals(ExhibitionCatalog.MODERATOR_KEY) && e.id() != null
                 && !legacy.contains(users.findById(e.id()).orElseThrow())
                 ? new Entry(e.key(), e.kind(), Action.SKIP, e.id(), e.owner(), e.before(), e.desired(), "original seed provenance missing or changed") : e);
         for (var post : ExhibitionCatalog.posts()) {
@@ -92,7 +99,7 @@ public final class ExhibitionPlanner {
         }
         if (reports) for (int i = 1; i <= 3; i++) {
             Entry reporter = find(entries, "user/" + (i + 3));
-            Entry moderator = find(entries, "user/31");
+            Entry moderator = find(entries, ExhibitionCatalog.MODERATOR_KEY);
             Entry post = find(entries, "post/자유게시판/" + i);
             String reason = !reporter.usable() || !moderator.usable() || !post.usable() ? "report participant/target skipped" : null;
             if (reason == null && !state.owned().containsKey("report/" + i) && reporter.id() != null && post.id() != null
@@ -124,7 +131,7 @@ public final class ExhibitionPlanner {
                 default -> throw new IllegalStateException("Non-text catalog change requires ordinary review: " + e.key());
             }
         } else {
-        for (var student : students) if (student.slot() <= 30 && find(entries, student.key()).changes()) {
+        for (var student : students) if (!student.moderator() && find(entries, student.key()).changes()) {
             effects.merge("profile_survey.upsert", 1L, Long::sum);
             effects.merge("roommate_preference.upsert", 1L, Long::sum);
             effects.merge("preference_criterion.replace", 18L, Long::sum);
@@ -157,11 +164,11 @@ public final class ExhibitionPlanner {
         if (!referencesExist(student)) reason = "missing or inactive dormitory/faculty/major";
         if (db.count("SELECT COUNT(*) FROM user_profile WHERE nickname=? AND (? IS NULL OR user_id<>?)", student.nickname(), uid, uid) > 0)
             reason = "nickname already used; never rename another account";
-        if (uid != null && (!Objects.equals(row.get("role"), student.slot() == 31 ? "ADMIN" : "USER")
+        if (uid != null && (!Objects.equals(row.get("role"), student.moderator() ? "ADMIN" : "USER")
                 || !Objects.equals(row.get("status"), "ACTIVE") || !truth(row.get("email_verified")))) reason = "account role/status/verification conflict";
         var owned = state.owned().get(key);
         if (owned != null && (uid == null || owned.id() != uid || !owned.snapshot().equals(before))) reason = "owned account changed or missing";
-        if (uid != null && owned == null && (student.slot() == 31 || !legacy.contains(users.findById(uid).orElseThrow())))
+        if (uid != null && owned == null && (student.moderator() || !legacy.contains(users.findById(uid).orElseThrow())))
             reason = "account provenance unavailable; email alone is insufficient";
         if (uid != null && db.count("SELECT COUNT(*) FROM user_profile WHERE user_id=?", uid) != 1) reason = "existing profile missing; do not repair unknown state";
         if (uid != null && owned == null && db.count("SELECT COUNT(*) FROM user_profile WHERE user_id=? AND profile_image_url IS NOT NULL AND TRIM(profile_image_url)<>''", uid) > 0)
